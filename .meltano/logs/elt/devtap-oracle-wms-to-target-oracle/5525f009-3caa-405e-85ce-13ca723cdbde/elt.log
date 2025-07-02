@@ -1,4 +1,0 @@
-2025-07-02T08:45:46.973686Z [info     ] Using systemdb state backend
-2025-07-02T08:45:46.976230Z [warning  ] No state was found, complete import.
-2025-07-02T08:45:50.304402Z [error    ] Cannot start plugin target-oracle: [Errno 13] Permission denied: '/home/marlonsc/flext/gruponos-meltano-native/simple_target_wrapper.py'
-2025-07-02T08:45:50.304594Z [error    ] Block run completed.           block_type=ExtractLoadBlocks err=RunnerError("Cannot start plugin target-oracle: [Errno 13] Permission denied: '/home/marlonsc/flext/gruponos-meltano-native/simple_target_wrapper.py'") exit_codes={} set_number=0 success=False

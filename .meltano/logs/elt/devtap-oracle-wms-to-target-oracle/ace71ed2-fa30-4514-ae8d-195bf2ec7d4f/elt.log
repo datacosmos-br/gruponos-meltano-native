@@ -1,5 +1,0 @@
-2025-07-02T02:17:55.374382Z [info     ] Marked stale run that started at 2025-07-02 02:00:45.778546+00:00 as failed: No heartbeat recorded for 5 minutes. The process was likely killed unceremoniously.
-2025-07-02T02:17:55.576963Z [info     ] Using systemdb state backend
-2025-07-02T02:17:55.578103Z [warning  ] No state was found, complete import.
-2025-07-02T02:17:58.949121Z [error    ] Cannot start plugin target-oracle: Executable 'python -m flext_target_oracle.target' could not be found. Loader 'target-oracle' may not have been installed yet using `meltano install loader target-oracle`, or the executable name may be incorrect.
-2025-07-02T02:17:58.949303Z [error    ] Block run completed.           block_type=ExtractLoadBlocks err=RunnerError("Cannot start plugin target-oracle: Executable 'python -m flext_target_oracle.target' could not be found. Loader 'target-oracle' may not have been installed yet using `meltano install loader target-oracle`, or the executable name may be incorrect.") exit_codes={} set_number=0 success=False

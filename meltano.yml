@@ -5,93 +5,34 @@ project_id: gruponos-meltano-native
 environments:
 - name: dev
 
-  config:
-    plugins:
-      extractors:
-      - name: tap-oracle-wms
-        config:
-          limit: '100'
 plugins:
   extractors:
   - name: tap-oracle-wms
-    namespace: tap_oracle_wms_custom
-    executable: ./tap_oracle_wms_native.py
-    capabilities:
-    - discover
-    - catalog
-    - properties
-    - state
+    namespace: tap_oracle_wms
+    executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
     config:
       base_url: $TAP_ORACLE_WMS_BASE_URL
       username: $TAP_ORACLE_WMS_USERNAME
       password: $TAP_ORACLE_WMS_PASSWORD
+      entities: ["allocation", "order_hdr", "order_dtl"]
       page_size: 1000
-      request_timeout: 7200
-      enable_incremental: true
-      entities:
-      - allocation
-      - order_hdr  
-      - order_dtl
-      company_code: '*'
-      facility_code: '*'
 
   loaders:
   - name: target-oracle
-    namespace: target_oracle_advanced
-    executable: /home/marlonsc/flext/.venv/bin/target-oracle
+    namespace: target_oracle
+    executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
     config:
       host: $FLEXT_TARGET_ORACLE_HOST
-      port: $FLEXT_TARGET_ORACLE_PORT
+      port: 1522
       service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
       username: $FLEXT_TARGET_ORACLE_USERNAME
       password: $FLEXT_TARGET_ORACLE_PASSWORD
       protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
-      batch_size: 1
-      pool_size: 1
-      use_bulk_insert: false
+      ssl_server_dn_match: false
+      batch_size_rows: 1000
+      pool_size: 5
       add_record_metadata: false
-
-jobs:
-- name: allocation-full-sync
-  tasks:
-  - tap-oracle-wms target-oracle
-
-- name: allocation-incremental-sync
-  tasks:
-  - tap-oracle-wms target-oracle
-
-- name: order-hdr-full-sync
-  tasks:
-  - tap-oracle-wms target-oracle
-
-- name: order-hdr-incremental-sync
-  tasks:
-  - tap-oracle-wms target-oracle
-
-- name: order-dtl-full-sync
-  tasks:
-  - tap-oracle-wms target-oracle
-
-- name: order-dtl-incremental-sync
-  tasks:
-  - tap-oracle-wms target-oracle
-
-schedules:
-- name: allocation-full-schedule
-  interval: 0 0 * * 0
-  job: allocation-full-sync
-- name: allocation-incremental-schedule
-  interval: '*/1 * * * *'
-  job: allocation-incremental-sync
-- name: order-hdr-full-schedule
-  interval: 0 1 * * 0
-  job: order-hdr-full-sync
-- name: order-hdr-incremental-schedule
-  interval: '*/1 * * * *'
-  job: order-hdr-incremental-sync
-- name: order-dtl-full-schedule
-  interval: 0 2 * * 0
-  job: order-dtl-full-sync
-- name: order-dtl-incremental-schedule
-  interval: '*/1 * * * *'
-  job: order-dtl-incremental-sync
+      validate_records: false
+      load_method: append-only
+      enable_historical_versioning: true
+      historical_versioning_column: mod_ts

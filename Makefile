@@ -1,362 +1,405 @@
-# =============================================================================
-# GRUPONOS MELTANO NATIVE - MAKEFILE
-# =============================================================================
+# ============================================================================
+# GRUPONOS MELTANO NATIVE - MAKEFILE PRODUCTION-READY
+# Gerenciamento robusto de sincronizações, logs, análise de falhas e validação
+# ============================================================================
 
-.PHONY: help setup install test run clean docs health-check validate
+.PHONY: help env status full-sync incremental-sync validate-oracle analyze-failures clean-logs monitor stop-sync
 
-# Default environment
-ENV ?= dev
+# ============================================================================
+# CONFIGURAÇÃO DE CAMINHOS E AMBIENTE
+# ============================================================================
 
-# Project directories
-PROJECT_DIR := $(shell pwd)
-VENV_DIR := $(PROJECT_DIR)/.venv
-SCRIPTS_DIR := $(PROJECT_DIR)/scripts
-TRANSFORM_DIR := $(PROJECT_DIR)/transform
-LOGS_DIR := $(PROJECT_DIR)/logs
+PROJECT_DIR := /home/marlonsc/flext/gruponos-meltano-native
+VENV_PATH := /home/marlonsc/flext/.venv
+VENV_ACTIVATE := $(VENV_PATH)/bin/activate
+ENV_FILE := $(PROJECT_DIR)/.env
 
-# Colors for output
-BLUE := \033[36m
-GREEN := \033[32m
-YELLOW := \033[33m
-RED := \033[31m
-NC := \033[0m
+# Diretórios de logs
+LOG_DIR := $(PROJECT_DIR)/logs
+SYNC_LOG_DIR := $(LOG_DIR)/sync
+ERROR_LOG_DIR := $(LOG_DIR)/error
+VALIDATION_LOG_DIR := $(LOG_DIR)/validation
+PID_DIR := $(PROJECT_DIR)/pids
+STATE_DIR := $(PROJECT_DIR)/state
 
-# Default target
-help: ## Show this help message
-	@echo "$(BLUE)GrupoNOS WMS Meltano Native Pipeline$(NC)"
-	@echo "$(BLUE)=====================================$(NC)"
+# Configuração de ambiente padronizada
+ENV_CMD = cd $(PROJECT_DIR) && source $(VENV_ACTIVATE) && set -a && source $(ENV_FILE) && set +a
+
+# Timestamps para logs
+TIMESTAMP := $(shell date '+%Y%m%d_%H%M%S')
+LOG_TIMESTAMP := $(shell date '+%Y-%m-%d %H:%M:%S')
+
+# ============================================================================
+# COMANDOS PRINCIPAIS
+# ============================================================================
+
+help:
+	@echo "=========================================================="
+	@echo "GrupoNOS Meltano Native - Makefile Production-Ready"
+	@echo "=========================================================="
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo "📊 MONITORAMENTO E STATUS:"
+	@echo "  make status           # Status geral do sistema"
+	@echo "  make monitor          # Monitor em tempo real"
+	@echo "  make validate-oracle  # Validar dados no Oracle"
 	@echo ""
-	@echo "$(YELLOW)Examples:$(NC)"
-	@echo "  make setup                 # Initial project setup"
-	@echo "  make install               # Install dependencies"
-	@echo "  make test                  # Run all tests"
-	@echo "  make run                   # Run full pipeline"
-	@echo "  make run-allocation        # Run allocation sync only"
-	@echo "  make health-check          # Check system health"
+	@echo "🔄 SINCRONIZAÇÕES:"
+	@echo "  make full-sync        # Sincronização full (background)"
+	@echo "  make incremental-sync # Sincronização incremental"
+	@echo "  make stop-sync        # Parar sincronizações ativas"
+	@echo "  make force-full-sync  # Full sync com tabelas recriadas"
+	@echo ""
+	@echo "🏗️ GERENCIAMENTO DE TABELAS:"
+	@echo "  make recreate-tables  # Recriar todas as tabelas otimizadas"
+	@echo "  make recreate-table ENTITY=allocation  # Recriar tabela específica"
+	@echo "  make test-oracle-connection # Testar conexão Oracle"
+	@echo ""
+	@echo "🔍 ANÁLISE E CORREÇÃO:"
+	@echo "  make analyze-failures # Analisar e corrigir falhas"
+	@echo "  make fix-errors       # Corrigir erros encontrados"
+	@echo "  make health-check     # Verificação completa de saúde"
+	@echo "  make validate-data    # Validar tipos de dados"
+	@echo ""
+	@echo "🧹 MANUTENÇÃO:"
+	@echo "  make clean-logs       # Limpar logs antigos"
+	@echo "  make reset-state      # Reset do estado Meltano"
+	@echo "  make env              # Testar ambiente"
+	@echo ""
 
-## Setup and Installation
+# ============================================================================
+# MONITORAMENTO E STATUS
+# ============================================================================
 
-setup: ## Complete project setup (includes install)
-	@echo "$(BLUE)Setting up GrupoNOS WMS Meltano Native Pipeline...$(NC)"
-	./setup.sh
-	@echo "$(GREEN)Setup completed successfully!$(NC)"
-
-setup-with-airflow: ## Setup project with Airflow orchestration
-	@echo "$(BLUE)Setting up with Airflow orchestration...$(NC)"
-	./setup.sh --with-airflow
-	@echo "$(GREEN)Setup with Airflow completed successfully!$(NC)"
-
-install: ## Install Python dependencies
-	@echo "$(BLUE)Installing dependencies...$(NC)"
-	@if [ ! -d "$(VENV_DIR)" ]; then \
-		echo "$(YELLOW)Creating virtual environment...$(NC)"; \
-		python3 -m venv $(VENV_DIR); \
+status:
+	@echo "========================================"
+	@echo "STATUS DO SISTEMA - $(LOG_TIMESTAMP)"
+	@echo "========================================"
+	@echo ""
+	@echo "🔧 AMBIENTE:"
+	@$(ENV_CMD) && echo "  ✅ Ambiente: OK" || echo "  ❌ Ambiente: ERRO"
+	@test -f $(ENV_FILE) && echo "  ✅ .env: OK" || echo "  ❌ .env: MISSING"
+	@test -f $(VENV_ACTIVATE) && echo "  ✅ venv: OK" || echo "  ❌ venv: MISSING"
+	@echo ""
+	@echo "📊 PROCESSOS ATIVOS:"
+	@if [ -f $(PID_DIR)/full_sync.pid ]; then \
+		if ps -p $$(cat $(PID_DIR)/full_sync.pid) > /dev/null 2>&1; then \
+			echo "  🟢 Full Sync: EXECUTANDO (PID: $$(cat $(PID_DIR)/full_sync.pid))"; \
+		else \
+			echo "  🔴 Full Sync: PID MORTO"; \
+			rm -f $(PID_DIR)/full_sync.pid; \
+		fi \
+	else \
+		echo "  ⚪ Full Sync: PARADO"; \
 	fi
-	@. $(VENV_DIR)/bin/activate && \
-		pip install --upgrade pip && \
-		pip install -r requirements.txt
-	@echo "$(GREEN)Dependencies installed successfully!$(NC)"
+	@if [ -f $(PID_DIR)/incremental_sync.pid ]; then \
+		if ps -p $$(cat $(PID_DIR)/incremental_sync.pid) > /dev/null 2>&1; then \
+			echo "  🟢 Incremental Sync: EXECUTANDO (PID: $$(cat $(PID_DIR)/incremental_sync.pid))"; \
+		else \
+			echo "  🔴 Incremental Sync: PID MORTO"; \
+			rm -f $(PID_DIR)/incremental_sync.pid; \
+		fi \
+	else \
+		echo "  ⚪ Incremental Sync: PARADO"; \
+	fi
+	@echo ""
+	@echo "📁 LOGS RECENTES:"
+	@if [ -d $(SYNC_LOG_DIR) ]; then \
+		echo "  📄 Logs de Sync: $$(ls -1 $(SYNC_LOG_DIR) | wc -l) arquivos"; \
+		if [ -n "$$(ls -t $(SYNC_LOG_DIR)/*.log 2>/dev/null | head -1)" ]; then \
+			echo "  📅 Último log: $$(ls -t $(SYNC_LOG_DIR)/*.log | head -1 | xargs basename)"; \
+		fi \
+	fi
+	@if [ -d $(ERROR_LOG_DIR) ]; then \
+		ERROR_COUNT=$$(ls -1 $(ERROR_LOG_DIR)/*.log 2>/dev/null | wc -l); \
+		if [ $$ERROR_COUNT -gt 0 ]; then \
+			echo "  ⚠️  Logs de Erro: $$ERROR_COUNT arquivos"; \
+		else \
+			echo "  ✅ Logs de Erro: Nenhum"; \
+		fi \
+	fi
+	@echo ""
 
-install-dev: ## Install development dependencies
-	@echo "$(BLUE)Installing development dependencies...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		pip install -r requirements.txt && \
-		pip install -e ../flext-tap-oracle-wms && \
-		pip install -e ../flext-target-oracle-wms
-	@echo "$(GREEN)Development dependencies installed!$(NC)"
+monitor:
+	@echo "🔍 INICIANDO MONITOR EM TEMPO REAL..."
+	@echo "Press Ctrl+C to stop"
+	@while true; do \
+		clear; \
+		$(MAKE) status; \
+		echo ""; \
+		echo "📊 ÚLTIMAS 10 LINHAS DOS LOGS:"; \
+		if [ -n "$$(ls -t $(SYNC_LOG_DIR)/*.log 2>/dev/null | head -1)" ]; then \
+			echo ""; \
+			echo "🔄 SYNC LOG:"; \
+			tail -5 $$(ls -t $(SYNC_LOG_DIR)/*.log | head -1) 2>/dev/null || echo "  Nenhum log disponível"; \
+		fi; \
+		if [ -n "$$(ls -t $(ERROR_LOG_DIR)/*.log 2>/dev/null | head -1)" ]; then \
+			echo ""; \
+			echo "❌ ERROR LOG:"; \
+			tail -5 $$(ls -t $(ERROR_LOG_DIR)/*.log | head -1) 2>/dev/null || echo "  Nenhum erro recente"; \
+		fi; \
+		sleep 5; \
+	done
 
-## Environment Management
+env:
+	@echo "🧪 TESTANDO AMBIENTE..."
+	@$(ENV_CMD) && echo "✅ Ambiente configurado corretamente" || (echo "❌ Erro no ambiente" && exit 1)
+	@$(ENV_CMD) && meltano --version && echo "✅ Meltano funcionando" || (echo "❌ Meltano com problema" && exit 1)
+	@$(ENV_CMD) && python -c "import oracledb; print('✅ Oracle client disponível')" || echo "❌ Oracle client com problema"
 
-env-check: ## Check environment configuration
-	@echo "$(BLUE)Checking environment configuration...$(NC)"
-	@if [ ! -f ".env" ]; then \
-		echo "$(RED)Error: .env file not found. Copy from .env.example$(NC)"; \
+# ============================================================================
+# SINCRONIZAÇÕES
+# ============================================================================
+
+full-sync:
+	@echo "🚀 INICIANDO SINCRONIZAÇÃO FULL EM BACKGROUND..."
+	@mkdir -p $(SYNC_LOG_DIR) $(ERROR_LOG_DIR) $(PID_DIR) $(STATE_DIR)
+	@if [ -f $(PID_DIR)/full_sync.pid ] && ps -p $$(cat $(PID_DIR)/full_sync.pid) > /dev/null 2>&1; then \
+		echo "❌ Sincronização full já está executando (PID: $$(cat $(PID_DIR)/full_sync.pid))"; \
 		exit 1; \
 	fi
-	@. $(VENV_DIR)/bin/activate && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano config list
-	@echo "$(GREEN)Environment configuration OK$(NC)"
+	@echo "📝 Logs serão salvos em: $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log"
+	@nohup bash -c ' \
+		echo "$(LOG_TIMESTAMP) - INÍCIO: Sincronização Full" > $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+		echo "$(LOG_TIMESTAMP) - CONFIG: Testando ambiente..." >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+		if $(ENV_CMD) && echo "Ambiente OK" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
+			echo "$(LOG_TIMESTAMP) - EXEC: Executando meltano run..." >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+			if $(ENV_CMD) && timeout 3600 meltano run tap-oracle-wms target-oracle >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
+				echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização full concluída" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+				echo "FULL_SYNC_SUCCESS" > $(STATE_DIR)/last_full_sync.state; \
+			else \
+				echo "$(LOG_TIMESTAMP) - ERRO: Sincronização full falhou" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+				cp $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/full_sync_error_$(TIMESTAMP).log; \
+				echo "FULL_SYNC_ERROR" > $(STATE_DIR)/last_full_sync.state; \
+			fi; \
+		else \
+			echo "$(LOG_TIMESTAMP) - ERRO: Ambiente inválido" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+			cp $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/env_error_$(TIMESTAMP).log; \
+		fi; \
+		rm -f $(PID_DIR)/full_sync.pid; \
+	' & echo $$! > $(PID_DIR)/full_sync.pid
+	@echo "✅ Sincronização full iniciada em background (PID: $$(cat $(PID_DIR)/full_sync.pid))"
+	@echo "📊 Use 'make status' ou 'make monitor' para acompanhar"
 
-env-dev: ## Set development environment
-	@echo "export MELTANO_ENVIRONMENT=dev" > .env.current
-	@echo "$(GREEN)Environment set to development$(NC)"
+incremental-sync:
+	@echo "⚡ EXECUTANDO SINCRONIZAÇÃO INCREMENTAL..."
+	@mkdir -p $(SYNC_LOG_DIR) $(ERROR_LOG_DIR) $(PID_DIR) $(STATE_DIR)
+	@if [ -f $(PID_DIR)/incremental_sync.pid ] && ps -p $$(cat $(PID_DIR)/incremental_sync.pid) > /dev/null 2>&1; then \
+		echo "❌ Sincronização incremental já está executando (PID: $$(cat $(PID_DIR)/incremental_sync.pid))"; \
+		exit 1; \
+	fi
+	@echo "📝 Logs: $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log"
+	@nohup bash -c ' \
+		echo "$(LOG_TIMESTAMP) - INÍCIO: Sincronização Incremental" > $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
+		if $(ENV_CMD) && timeout 1800 meltano run tap-oracle-wms target-oracle >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log 2>&1; then \
+			echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização incremental concluída" >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
+			echo "INCREMENTAL_SYNC_SUCCESS" > $(STATE_DIR)/last_incremental_sync.state; \
+		else \
+			echo "$(LOG_TIMESTAMP) - ERRO: Sincronização incremental falhou" >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
+			cp $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/incremental_sync_error_$(TIMESTAMP).log; \
+			echo "INCREMENTAL_SYNC_ERROR" > $(STATE_DIR)/last_incremental_sync.state; \
+		fi; \
+		rm -f $(PID_DIR)/incremental_sync.pid; \
+	' & echo $$! > $(PID_DIR)/incremental_sync.pid
+	@echo "✅ Sincronização incremental iniciada (PID: $$(cat $(PID_DIR)/incremental_sync.pid))"
 
-env-staging: ## Set staging environment
-	@echo "export MELTANO_ENVIRONMENT=staging" > .env.current
-	@echo "$(GREEN)Environment set to staging$(NC)"
+stop-sync:
+	@echo "🛑 PARANDO SINCRONIZAÇÕES..."
+	@if [ -f $(PID_DIR)/full_sync.pid ]; then \
+		if ps -p $$(cat $(PID_DIR)/full_sync.pid) > /dev/null 2>&1; then \
+			echo "Parando Full Sync (PID: $$(cat $(PID_DIR)/full_sync.pid))..."; \
+			kill $$(cat $(PID_DIR)/full_sync.pid) 2>/dev/null || true; \
+			sleep 2; \
+			kill -9 $$(cat $(PID_DIR)/full_sync.pid) 2>/dev/null || true; \
+		fi; \
+		rm -f $(PID_DIR)/full_sync.pid; \
+	fi
+	@if [ -f $(PID_DIR)/incremental_sync.pid ]; then \
+		if ps -p $$(cat $(PID_DIR)/incremental_sync.pid) > /dev/null 2>&1; then \
+			echo "Parando Incremental Sync (PID: $$(cat $(PID_DIR)/incremental_sync.pid))..."; \
+			kill $$(cat $(PID_DIR)/incremental_sync.pid) 2>/dev/null || true; \
+			sleep 2; \
+			kill -9 $$(cat $(PID_DIR)/incremental_sync.pid) 2>/dev/null || true; \
+		fi; \
+		rm -f $(PID_DIR)/incremental_sync.pid; \
+	fi
+	@echo "✅ Todas as sincronizações foram paradas"
 
-env-prod: ## Set production environment
-	@echo "export MELTANO_ENVIRONMENT=prod" > .env.current
-	@echo "$(GREEN)Environment set to production$(NC)"
+# ============================================================================
+# VALIDAÇÃO ORACLE
+# ============================================================================
 
-## Pipeline Operations
+validate-oracle:
+	@echo "🔍 VALIDANDO DADOS NO ORACLE..."
+	@mkdir -p $(VALIDATION_LOG_DIR)
+	@$(ENV_CMD) && python3 oracle_validator.py
 
-run: env-check ## Run complete WMS pipeline
-	@echo "$(BLUE)Running complete WMS pipeline (env: $(ENV))...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano run tap-oracle-wms target-oracle && \
-		meltano invoke dbt-oracle-wms:run && \
-		meltano invoke dbt-oracle-wms:test
-	@echo "$(GREEN)Pipeline completed successfully!$(NC)"
+# ============================================================================
+# ANÁLISE E CORREÇÃO DE FALHAS
+# ============================================================================
 
-run-extract: env-check ## Run extraction only
-	@echo "$(BLUE)Running WMS data extraction...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano run tap-oracle-wms target-oracle
-	@echo "$(GREEN)Extraction completed successfully!$(NC)"
+analyze-failures:
+	@echo "🔍 ANALISANDO FALHAS E ERROS..."
+	@mkdir -p $(ERROR_LOG_DIR)
+	@if [ ! -d $(ERROR_LOG_DIR) ] || [ -z "$$(ls -A $(ERROR_LOG_DIR) 2>/dev/null)" ]; then \
+		echo "✅ Nenhum erro encontrado para analisar"; \
+		exit 0; \
+	fi
+	@echo "📊 RELATÓRIO DE ANÁLISE DE FALHAS - $(LOG_TIMESTAMP)" > $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log
+	@echo "====================================================" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log
+	@echo "" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log
+	@for error_file in $(ERROR_LOG_DIR)/*.log; do \
+		if [ -f "$$error_file" ] && [[ $$error_file != *"analysis_"* ]]; then \
+			echo "🔍 Analisando: $$(basename $$error_file)" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+			echo "----------------------------------------" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+			if grep -q "timeout" "$$error_file"; then \
+				echo "❌ PROBLEMA: Timeout detectado" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+				echo "💡 SOLUÇÃO: Aumentar timeout ou verificar conexão" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+			fi; \
+			if grep -q "ORA-" "$$error_file"; then \
+				echo "❌ PROBLEMA: Erro Oracle detectado" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+				grep "ORA-" "$$error_file" | head -3 >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+				echo "💡 SOLUÇÃO: Verificar conexão Oracle e permissões" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+			fi; \
+			if grep -q "Connection" "$$error_file"; then \
+				echo "❌ PROBLEMA: Erro de conexão" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+				echo "💡 SOLUÇÃO: Verificar credenciais e conectividade" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+			fi; \
+			echo "" >> $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log; \
+		fi; \
+	done
+	@echo "✅ Análise concluída: $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log"
+	@cat $(ERROR_LOG_DIR)/analysis_$(TIMESTAMP).log
 
-run-transform: env-check ## Run dbt transformations only
-	@echo "$(BLUE)Running dbt transformations...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		cd $(TRANSFORM_DIR) && \
-		dbt run --profiles-dir profiles
-	@echo "$(GREEN)Transformations completed successfully!$(NC)"
+fix-errors:
+	@echo "🔧 TENTANDO CORRIGIR ERROS AUTOMATICAMENTE..."
+	@echo "1️⃣ Verificando e corrigindo permissões..."
+	@chmod +x $(PROJECT_DIR)/*.sh 2>/dev/null || true
+	@echo "2️⃣ Limpando estado corrompido..."
+	@rm -f $(PROJECT_DIR)/.meltano/run/state.json 2>/dev/null || true
+	@echo "3️⃣ Testando conectividade Oracle..."
+	@$(ENV_CMD) && python3 -c "import oracledb; print('Oracle client OK')" || echo "⚠️ Problema com Oracle client"
+	@echo "4️⃣ Verificando espaço em disco..."
+	@df -h $(PROJECT_DIR) | tail -1 | awk '{print "Espaço disponível: " $$4}'
+	@echo "✅ Correções automáticas aplicadas"
 
-run-allocation: env-check ## Run allocation sync job
-	@echo "$(BLUE)Running allocation synchronization...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano run wms_allocation_sync
-	@echo "$(GREEN)Allocation sync completed!$(NC)"
-
-run-orders: env-check ## Run orders sync job
-	@echo "$(BLUE)Running orders synchronization...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano run wms_orders_daily_sync
-	@echo "$(GREEN)Orders sync completed!$(NC)"
-
-run-master-data: env-check ## Run master data sync job
-	@echo "$(BLUE)Running master data synchronization...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano run wms_master_data_weekly
-	@echo "$(GREEN)Master data sync completed!$(NC)"
-
-## Testing and Validation
-
-test: env-check ## Run all tests
-	@echo "$(BLUE)Running all tests...$(NC)"
-	@make test-connections
-	@make test-dbt
-	@make test-data-quality
-	@echo "$(GREEN)All tests passed!$(NC)"
-
-test-connections: env-check ## Test database connections
-	@echo "$(BLUE)Testing database connections...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano invoke tap-oracle-wms --test-connection && \
-		meltano invoke target-oracle --test-connection
-	@echo "$(GREEN)Connection tests passed!$(NC)"
-
-test-dbt: env-check ## Run dbt tests
-	@echo "$(BLUE)Running dbt tests...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		cd $(TRANSFORM_DIR) && \
-		dbt test --profiles-dir profiles
-	@echo "$(GREEN)dbt tests passed!$(NC)"
-
-test-data-quality: env-check ## Run data quality checks
-	@echo "$(BLUE)Running data quality checks...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		cd $(TRANSFORM_DIR) && \
-		dbt source freshness --profiles-dir profiles
-	@echo "$(GREEN)Data quality checks passed!$(NC)"
-
-validate: env-check ## Validate configuration and setup
-	@echo "$(BLUE)Validating configuration...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano config list && \
-		meltano schedule list && \
-		meltano job list
-	@echo "$(GREEN)Configuration validation completed!$(NC)"
-
-## Discovery and Schema
-
-discover: env-check ## Discover WMS schema
-	@echo "$(BLUE)Discovering WMS schema...$(NC)"
-	@mkdir -p schema
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano invoke tap-oracle-wms --discover > schema/catalog.json
-	@echo "$(GREEN)Schema discovery completed! Check schema/catalog.json$(NC)"
-
-catalog-select: env-check ## Select streams in catalog
-	@echo "$(BLUE)Selecting streams in catalog...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		meltano select tap-oracle-wms "*.*"
-	@echo "$(GREEN)All streams selected$(NC)"
-
-## Monitoring and Health
-
-health-check: env-check ## Comprehensive system health check
-	@echo "$(BLUE)Running system health check...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export MELTANO_ENVIRONMENT=$(ENV) && \
-		export $$(grep -v '^#' .env | xargs) && \
-		echo "1. Testing WMS connection..." && \
-		meltano invoke tap-oracle-wms --test-connection && \
-		echo "2. Testing target connection..." && \
-		meltano invoke target-oracle --test-connection && \
-		echo "3. Checking dbt connection..." && \
-		cd $(TRANSFORM_DIR) && dbt debug --profiles-dir profiles && \
-		echo "4. Checking data freshness..." && \
-		dbt source freshness --profiles-dir profiles
-	@echo "$(GREEN)Health check completed successfully!$(NC)"
-
-status: ## Show pipeline status
-	@echo "$(BLUE)Pipeline Status$(NC)"
-	@echo "$(BLUE)===============$(NC)"
-	@echo "Environment: $(ENV)"
-	@echo "Last run logs:"
-	@if [ -f "$(LOGS_DIR)/meltano/meltano.log" ]; then \
-		tail -5 $(LOGS_DIR)/meltano/meltano.log; \
+health-check:
+	@echo "🩺 VERIFICAÇÃO COMPLETA DE SAÚDE DO SISTEMA"
+	@echo "============================================"
+	@echo ""
+	@$(MAKE) env
+	@echo ""
+	@$(MAKE) validate-oracle
+	@echo ""
+	@$(MAKE) analyze-failures
+	@echo ""
+	@echo "🚨 VERIFICAÇÃO DE ALERTAS:"
+	@$(ENV_CMD) && python3 src/monitoring/alert_manager.py
+	@echo ""
+	@echo "🎯 RESUMO DO HEALTH CHECK:"
+	@if [ -f $(STATE_DIR)/last_full_sync.state ]; then \
+		echo "  📊 Último Full Sync: $$(cat $(STATE_DIR)/last_full_sync.state)"; \
 	else \
-		echo "$(YELLOW)No logs found$(NC)"; \
+		echo "  📊 Último Full Sync: NUNCA EXECUTADO"; \
 	fi
-
-logs: ## Show recent logs
-	@echo "$(BLUE)Recent Pipeline Logs$(NC)"
-	@echo "$(BLUE)====================$(NC)"
-	@if [ -f "$(LOGS_DIR)/meltano/meltano.log" ]; then \
-		tail -20 $(LOGS_DIR)/meltano/meltano.log; \
+	@if [ -f $(STATE_DIR)/last_incremental_sync.state ]; then \
+		echo "  ⚡ Último Incremental: $$(cat $(STATE_DIR)/last_incremental_sync.state)"; \
 	else \
-		echo "$(YELLOW)No Meltano logs found$(NC)"; \
+		echo "  ⚡ Último Incremental: NUNCA EXECUTADO"; \
 	fi
-	@if [ -f "$(LOGS_DIR)/dbt/dbt.log" ]; then \
-		echo "\n$(BLUE)dbt logs:$(NC)"; \
-		tail -10 $(LOGS_DIR)/dbt/dbt.log; \
+	@echo "✅ Health check concluído"
+
+validate-data:
+	@echo "🔍 VALIDANDO DADOS COM CONVERSOR PROFISSIONAL..."
+	@$(ENV_CMD) && python3 src/validators/data_validator.py
+
+test-oracle-connection:
+	@echo "🔗 TESTANDO CONEXÃO ORACLE COM DIAGNÓSTICOS..."
+	@$(ENV_CMD) && PYTHONPATH=/home/marlonsc/flext/gruponos-meltano-native python3 src/oracle/connection_manager.py
+
+recreate-tables:
+	@echo "🔨 RECRIANDO TABELAS ORACLE COM ESTRUTURA OTIMIZADA..."
+	@echo "📋 Este comando irá:"
+	@echo "  1. Descobrir schemas via tap-oracle-wms"
+	@echo "  2. Gerar DDL Oracle otimizado"
+	@echo "  3. Recriar tabelas com estrutura enterprise"
+	@echo ""
+	@$(ENV_CMD) && PYTHONPATH=/home/marlonsc/flext/gruponos-meltano-native python3 src/oracle/table_creator.py
+
+recreate-table:
+	@echo "🔨 RECRIANDO TABELA ESPECÍFICA..."
+	@if [ -z "$(ENTITY)" ]; then \
+		echo "❌ Use: make recreate-table ENTITY=allocation|order_hdr|order_dtl"; \
+		exit 1; \
+	fi
+	@echo "📋 Recriando tabela para entidade: $(ENTITY)"
+	@$(ENV_CMD) && PYTHONPATH=/home/marlonsc/flext/gruponos-meltano-native python3 src/oracle/table_creator.py $(ENTITY)
+
+force-full-sync:
+	@echo "🚀 SINCRONIZAÇÃO FULL FORÇADA COM TABELAS RECRIADAS..."
+	@echo "📋 Este comando irá:"
+	@echo "  1. Parar processos ativos"
+	@echo "  2. Recriar todas as tabelas"
+	@echo "  3. Limpar estado Meltano"
+	@echo "  4. Executar full sync"
+	@echo ""
+	@$(MAKE) stop-sync
+	@$(MAKE) recreate-tables
+	@$(MAKE) reset-state
+	@$(MAKE) full-sync
+
+# ============================================================================
+# MANUTENÇÃO
+# ============================================================================
+
+clean-logs:
+	@echo "🧹 LIMPANDO LOGS ANTIGOS..."
+	@find $(LOG_DIR) -name "*.log" -mtime +7 -delete 2>/dev/null || true
+	@find $(ERROR_LOG_DIR) -name "*.log" -mtime +3 -delete 2>/dev/null || true
+	@echo "✅ Logs antigos removidos (>7 dias para sync, >3 dias para errors)"
+
+reset-state:
+	@echo "🔄 RESETANDO ESTADO DO MELTANO..."
+	@rm -rf $(PROJECT_DIR)/.meltano/run/state 2>/dev/null || true
+	@rm -f $(STATE_DIR)/*.state 2>/dev/null || true
+	@$(ENV_CMD) && meltano state clear tap-oracle-wms 2>/dev/null || true
+	@echo "✅ Estado resetado"
+
+# ============================================================================
+# COMANDOS AVANÇADOS
+# ============================================================================
+
+discover:
+	@echo "🔍 DESCOBRINDO ENTIDADES..."
+	@$(ENV_CMD) && meltano invoke tap-oracle-wms --discover
+
+test-connections:
+	@echo "🔗 TESTANDO CONEXÕES..."
+	@echo "📡 Testando TAP Oracle WMS..."
+	@$(ENV_CMD) && meltano invoke tap-oracle-wms --test-connection || echo "❌ TAP falhou"
+	@echo "🎯 Testando TARGET Oracle..."
+	@$(ENV_CMD) && timeout 30 meltano invoke target-oracle --test-connection || echo "❌ TARGET falhou"
+
+logs:
+	@echo "📄 LOGS MAIS RECENTES:"
+	@echo "====================="
+	@if [ -n "$$(ls -t $(SYNC_LOG_DIR)/*.log 2>/dev/null | head -1)" ]; then \
+		echo "🔄 ÚLTIMO SYNC LOG:"; \
+		tail -20 $$(ls -t $(SYNC_LOG_DIR)/*.log | head -1); \
+		echo ""; \
+	fi
+	@if [ -n "$$(ls -t $(ERROR_LOG_DIR)/*.log 2>/dev/null | head -1)" ]; then \
+		echo "❌ ÚLTIMO ERROR LOG:"; \
+		tail -10 $$(ls -t $(ERROR_LOG_DIR)/*.log | head -1); \
 	fi
 
-## Documentation
+# ============================================================================
+# COMANDOS LEGACY (compatibilidade)
+# ============================================================================
 
-docs: ## Generate and serve documentation
-	@echo "$(BLUE)Generating documentation...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		cd $(TRANSFORM_DIR) && \
-		dbt docs generate --profiles-dir profiles && \
-		dbt docs serve --profiles-dir profiles --port 8081
-	@echo "$(GREEN)Documentation server started at http://localhost:8081$(NC)"
+run:
+	@echo "⚠️  COMANDO LEGACY - Use 'make incremental-sync' ou 'make full-sync'"
+	@$(MAKE) incremental-sync
 
-docs-generate: ## Generate documentation only
-	@echo "$(BLUE)Generating dbt documentation...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		cd $(TRANSFORM_DIR) && \
-		dbt docs generate --profiles-dir profiles
-	@echo "$(GREEN)Documentation generated in transform/target/$(NC)"
-
-## Development
-
-dev-setup: ## Setup development environment
-	@echo "$(BLUE)Setting up development environment...$(NC)"
-	@make install-dev
-	@make env-dev
-	@echo "$(GREEN)Development environment ready!$(NC)"
-
-format: ## Format code with ruff
-	@echo "$(BLUE)Formatting code...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		ruff format . && \
-		ruff check --fix .
-	@echo "$(GREEN)Code formatting completed!$(NC)"
-
-lint: ## Lint code with ruff and mypy
-	@echo "$(BLUE)Linting code...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		ruff check . && \
-		mypy --config-file pyproject.toml .
-	@echo "$(GREEN)Linting completed!$(NC)"
-
-pre-commit: ## Run pre-commit hooks
-	@echo "$(BLUE)Running pre-commit hooks...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		pre-commit run --all-files
-	@echo "$(GREEN)Pre-commit checks completed!$(NC)"
-
-## Utilities
-
-clean: ## Clean temporary files and caches
-	@echo "$(BLUE)Cleaning temporary files...$(NC)"
-	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
-	@find . -name "*.pyc" -delete 2>/dev/null || true
-	@rm -rf $(TRANSFORM_DIR)/target $(TRANSFORM_DIR)/dbt_packages
-	@rm -rf .pytest_cache .coverage
-	@echo "$(GREEN)Cleanup completed!$(NC)"
-
-reset: ## Reset project state (clean + remove venv)
-	@echo "$(YELLOW)Resetting project state...$(NC)"
-	@make clean
-	@rm -rf $(VENV_DIR)
-	@rm -f .env.current
-	@echo "$(GREEN)Project reset completed!$(NC)"
-
-backup: ## Backup configuration and state
-	@echo "$(BLUE)Creating backup...$(NC)"
-	@mkdir -p backups
-	@tar -czf backups/backup-$$(date +%Y%m%d_%H%M%S).tar.gz \
-		.env meltano.yml transform/ schema/ --exclude=transform/target --exclude=transform/logs
-	@echo "$(GREEN)Backup created in backups/$(NC)"
-
-## Production Deployment
-
-deploy-staging: ## Deploy to staging environment
-	@echo "$(BLUE)Deploying to staging...$(NC)"
-	@make env-staging
-	@make test
-	@make run
-	@echo "$(GREEN)Staging deployment completed!$(NC)"
-
-deploy-prod: ## Deploy to production environment
-	@echo "$(BLUE)Deploying to production...$(NC)"
-	@make env-prod
-	@make test
-	@make run
-	@echo "$(GREEN)Production deployment completed!$(NC)"
-
-## Scheduling (Airflow)
-
-airflow-init: ## Initialize Airflow (if using Airflow)
-	@echo "$(BLUE)Initializing Airflow...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export AIRFLOW_HOME=$(PROJECT_DIR)/orchestrate && \
-		airflow db init
-	@echo "$(GREEN)Airflow initialized!$(NC)"
-
-airflow-start: ## Start Airflow services
-	@echo "$(BLUE)Starting Airflow services...$(NC)"
-	@. $(VENV_DIR)/bin/activate && \
-		export AIRFLOW_HOME=$(PROJECT_DIR)/orchestrate && \
-		airflow webserver --port 8080 --daemon && \
-		airflow scheduler --daemon
-	@echo "$(GREEN)Airflow services started! Web UI: http://localhost:8080$(NC)"
-
-airflow-stop: ## Stop Airflow services
-	@echo "$(BLUE)Stopping Airflow services...$(NC)"
-	@pkill -f "airflow webserver" || true
-	@pkill -f "airflow scheduler" || true
-	@echo "$(GREEN)Airflow services stopped!$(NC)"
+clean:
+	@echo "⚠️  COMANDO LEGACY - Use 'make clean-logs'"
+	@$(MAKE) clean-logs

@@ -1,8 +1,0 @@
-2025-07-01T23:27:37.518854Z [info     ] Using systemdb state backend
-2025-07-01T23:27:37.520113Z [warning  ] No state was found, complete import.
-2025-07-01T23:27:37.542024Z [error    ] Cannot start plugin tap-oracle-wms: Catalog discovery failed: command ['python', '--config', '/home/marlonsc/flext/gruponos-meltano-native/.meltano/run/tap-oracle-wms/tap.c85feaf0-df65-4310-97b4-2da0429ff50c.config.json', '--discover'] returned 2 with stderr:
- unknown option --config
-usage: python [option] ... [-c cmd | -m mod | file | -] [arg] ...
-Try `python -h' for more information.
-
-2025-07-01T23:27:37.542200Z [error    ] Block run completed.           block_type=ExtractLoadBlocks err=RunnerError("Cannot start plugin tap-oracle-wms: Catalog discovery failed: command ['python', '--config', '/home/marlonsc/flext/gruponos-meltano-native/.meltano/run/tap-oracle-wms/tap.c85feaf0-df65-4310-97b4-2da0429ff50c.config.json', '--discover'] returned 2 with stderr:\n unknown option --config\nusage: python [option] ... [-c cmd | -m mod | file | -] [arg] ...\nTry `python -h' for more information.\n") exit_codes={} set_number=0 success=False

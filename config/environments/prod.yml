@@ -1,0 +1,41 @@
+# ============================================================================
+# GRUPONOS MELTANO NATIVE - PRODUCTION ENVIRONMENT
+# Professional configuration for production environment
+# ============================================================================
+
+# Data validation settings - strict for production
+validation:
+  strict_typing: true
+  allow_string_numbers: false
+  fail_on_validation_error: true
+  schema_evolution: true
+
+# Oracle connection settings for production
+oracle:
+  connection:
+    protocol: tcps
+    ssl_verification: true
+    connection_timeout: 120
+    retry_attempts: 5
+    retry_delay: 10
+  
+  performance:
+    batch_size: 5000
+    pool_size: 10
+    parallel_degree: 8
+    use_compression: true
+    enable_partitioning: true
+
+# Logging configuration
+logging:
+  level: WARN
+  format: structured
+  retention_days: 30
+  archive_after_days: 7
+
+# Monitoring
+monitoring:
+  enabled: true
+  health_check_interval: 10
+  alert_on_failure: true
+  metrics_collection: true

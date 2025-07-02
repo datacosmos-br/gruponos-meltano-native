@@ -1,0 +1,36 @@
+# ============================================================================
+# GRUPONOS MELTANO NATIVE - DEVELOPMENT ENVIRONMENT
+# Professional configuration for development environment
+# ============================================================================
+
+# Data validation settings - lenient for development
+validation:
+  strict_typing: false
+  allow_string_numbers: true
+  fail_on_validation_error: false
+
+# Oracle connection settings for development
+oracle:
+  connection:
+    protocol: tcps
+    ssl_verification: false  # Disabled for development due to cert issues
+    connection_timeout: 60
+    retry_attempts: 3
+    retry_delay: 5
+  
+  performance:
+    batch_size: 100
+    pool_size: 1
+    parallel_degree: 1
+
+# Logging configuration
+logging:
+  level: INFO
+  format: structured
+  retention_days: 7
+
+# Monitoring
+monitoring:
+  enabled: true
+  health_check_interval: 30
+  alert_on_failure: false  # Disabled for dev

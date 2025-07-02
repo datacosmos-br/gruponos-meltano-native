@@ -1,0 +1,88 @@
+2025-07-02 11:16:27,629 | INFO     | tap-oracle-wms       | tap-oracle-wms v0.1.0, Meltano SDK v0.47.4
+Traceback (most recent call last):
+  File "/home/marlonsc/flext/.venv/bin/tap-oracle-wms", line 8, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/cli.py", line 10, in main
+    TapOracleWMS.cli()
+    ~~~~~~~~~~~~~~~~^^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/core.py", line 1442, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/core.py", line 1363, in main
+    rv = self.invoke(ctx)
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/plugin_base.py", line 98, in invoke
+    return super().invoke(ctx)
+           ~~~~~~~~~~~~~~^^^^^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/core.py", line 1226, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/core.py", line 794, in invoke
+    return callback(*args, **kwargs)
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/tap_base.py", line 546, in invoke
+    tap = cls(
+        config=config_files,  # type: ignore[arg-type]
+    ...<3 lines>...
+        validate_config=True,
+    )
+  File "/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/tap.py", line 187, in __init__
+    super().__init__(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/tap_base.py", line 98, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        config=config,
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        message_writer=message_writer,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/plugin_base.py", line 863, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        config=config,
+        ^^^^^^^^^^^^^^
+        parse_env_config=parse_env_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        validate_config=validate_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/plugin_base.py", line 715, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        config=config,
+        ^^^^^^^^^^^^^^
+        parse_env_config=parse_env_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        validate_config=validate_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/plugin_base.py", line 193, in __init__
+    config_dict.update(read_json_file(config_path))
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/helpers/_util.py", line 67, in read_json_file
+    return load_json(Path(path).read_text(encoding="utf-8"))
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/helpers/_util.py", line 47, in load_json
+    return simplejson.loads(  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        json_str,
+        ^^^^^^^^^
+        parse_float=decimal.Decimal,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **kwargs,
+        ^^^^^^^^^
+    )
+    ^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/simplejson/__init__.py", line 533, in loads
+    return cls(encoding=encoding, **kw).decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/simplejson/decoder.py", line 386, in decode
+    obj, end = self.raw_decode(s)
+               ~~~~~~~~~~~~~~~^^^
+  File "/home/marlonsc/flext/.venv/lib/python3.13/site-packages/simplejson/decoder.py", line 416, in raw_decode
+    return self.scan_once(s, idx=_w(s, idx).end())
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+simplejson.errors.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
