@@ -1,0 +1,16 @@
+singer-sdk>=0.47.4
+sqlalchemy>=2.0.0
+oracledb>=1.4.0
+click>=8.0.0
+jsonschema>=4.0.0
+
+[dev]
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+mypy>=1.0.0
+
+[performance]
+pandas>=1.5.0
+pyarrow>=10.0.0

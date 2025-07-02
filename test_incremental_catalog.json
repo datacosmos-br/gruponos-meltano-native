@@ -1,0 +1,35 @@
+{
+  "streams": [
+    {
+      "tap_stream_id": "allocation",
+      "replication_method": "INCREMENTAL",
+      "replication_key": "mod_ts",
+      "key_properties": [],
+      "schema": {
+        "properties": {
+          "alloc_qty": {"type": "number"},
+          "id": {"type": "string"},
+          "mod_ts": {"type": "string", "format": "date-time"},
+          "status_id": {"type": "string"},
+          "_entity_name": {"type": "string"},
+          "_extracted_at": {"format": "date-time", "type": "string"}
+        },
+        "type": "object",
+        "required": ["alloc_qty", "id", "status_id"],
+        "additionalProperties": false
+      },
+      "stream": "allocation",
+      "metadata": [
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "inclusion": "available",
+            "selected": true,
+            "selected-by-default": true,
+            "table-key-properties": []
+          }
+        }
+      ]
+    }
+  ]
+}

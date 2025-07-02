@@ -1,0 +1,11 @@
+singer-sdk>=0.44.0
+sqlalchemy>=2.0.0
+oracledb>=1.4.0
+python-dotenv>=1.0.0
+
+[dev]
+pytest>=6.0
+pytest-cov>=3.0
+mypy>=1.0
+black>=22.0
+flake8>=5.0

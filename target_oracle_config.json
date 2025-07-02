@@ -1,0 +1,34 @@
+{
+  "host": "10.93.10.114",
+  "port": 1522,
+  "service_name": "gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com",
+  "username": "oic",
+  "password": "aehaz232dfNuupah_#",
+  "protocol": "tcps",
+  "schema": "oic",
+
+  "batch_size": 5000,
+  "max_workers": 4,
+  "pool_size": 10,
+  "pool_recycle": 3600,
+  "pool_pre_ping": true,
+
+  "table_prefix": "",
+  "table_suffix": "",
+  "add_record_metadata": true,
+  "validate_records": true,
+  "max_varchar_length": 4000,
+
+  "use_bulk_insert": true,
+  "parallel_degree": 4,
+  "commit_frequency": 1000,
+  "use_merge_upsert": false,
+
+  "enable_performance_metrics": true,
+  "log_sql_statements": false,
+  "connection_timeout": 60,
+
+  "max_retries": 3,
+  "retry_delay": 1.0,
+  "ignore_duplicate_keys": true
+}

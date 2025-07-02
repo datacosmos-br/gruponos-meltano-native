@@ -1,0 +1,2 @@
+{"type": "SCHEMA", "stream": "order_hdr", "schema": {"type": "object", "properties": {"id": {"type": "integer"}, "order_nbr": {"type": "string"}, "priority": {"type": "integer"}}}, "key_properties": ["id"]}
+{"type": "RECORD", "stream": "order_hdr", "record": {"id": 777777, "order_nbr": "ORD-SIMPLE", "priority": 50}, "time_extracted": "2025-07-02T05:50:50.927003+00:00"}

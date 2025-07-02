@@ -1,0 +1,108 @@
+name: 'oracle_wms_transforms'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'oracle_wms'
+
+# These configurations specify where dbt should look for different types of files.
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Model configurations
+models:
+  oracle_wms_transforms:
+    # Staging models - raw data cleanup and standardization
+    staging:
+      +materialized: view
+      +docs:
+        node_color: "#FFE4B5"
+    
+    # Intermediate models - business logic transformations
+    intermediate:
+      +materialized: view
+      +docs:
+        node_color: "#E6E6FA"
+    
+    # Marts - final business-ready data models
+    marts:
+      +materialized: table
+      +post-hook: "{{ oracle_analyze_table() }}"
+      +docs:
+        node_color: "#98FB98"
+      
+      # Core business entities
+      core:
+        +materialized: table
+        +post-hook: "{{ oracle_analyze_table() }}"
+      
+      # Warehouse operations
+      warehouse:
+        +materialized: table
+        +post-hook: "{{ oracle_analyze_table() }}"
+      
+      # Inventory management
+      inventory:
+        +materialized: table
+        +post-hook: "{{ oracle_analyze_table() }}"
+
+# Snapshot configurations
+snapshots:
+  oracle_wms_transforms:
+    +target_schema: snapshots
+    +strategy: timestamp
+    +updated_at: updated_at
+
+# Seed configurations  
+seeds:
+  oracle_wms_transforms:
+    +schema: reference_data
+    +docs:
+      node_color: "#D3D3D3"
+
+# Test configurations
+tests:
+  +store_failures: true
+  +schema: test_results
+
+# Variable configurations
+vars:
+  # dbt-date settings
+  'dbt-date:time_zone': 'America/Sao_Paulo'
+  
+  # WMS-specific configurations
+  wms_schema: 'WMS_SYNC'
+  staging_schema: 'WMS_STAGING' 
+  mart_schema: 'WMS_MART'
+  
+  # Data quality thresholds
+  allocation_freshness_hours: 2
+  order_freshness_hours: 24
+  master_data_freshness_days: 7
+  
+  # Business rules
+  valid_allocation_statuses: ['ALLOCATED', 'RESERVED', 'PICKED', 'SHIPPED']
+  valid_order_statuses: ['NEW', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
+  
+  # Performance settings
+  batch_size: 10000
+  parallel_dbt_threads: 4
+
+# Documentation settings
+docs:
+  serve:
+    port: 8081
+
+# Dispatch settings for cross-database compatibility
+dispatch:
+  - macro_namespace: dbt_utils
+    search_order: ['oracle_wms_transforms', 'dbt_utils']

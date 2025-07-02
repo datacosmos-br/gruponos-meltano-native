@@ -1,0 +1,75 @@
+2025-07-01 19:40:49 [allocation] Starting HYBRID incremental pipeline for allocation
+2025-07-01 19:40:49 [allocation] Using simulated tap + real Oracle target
+2025-07-01 19:40:49 [allocation] Requirement: incremental a cada minuto
+2025-07-01 19:40:49 [allocation] Iteration 1: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ALLOCATION already exists
+📝 Schema received for allocation
+💾 State received: {'bookmarks': {'allocation': {'replication_key_value': '2025-07-01T22:40:49.397613Z', 'version': 1}}}
+✅ Finished processing. Total records: 53
+2025-07-01 19:40:56 [allocation] HYBRID SYNC: Completed ~179 records in 7 seconds
+2025-07-01 19:40:56 [allocation] Total records processed: 179
+2025-07-01 19:40:56 [allocation] Waiting 4 seconds for next minute...
+2025-07-01 19:41:00 [allocation] Iteration 2: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ALLOCATION already exists
+📝 Schema received for allocation
+📊 Processed 100 records for allocation
+💾 State received: {'bookmarks': {'allocation': {'replication_key_value': '2025-07-01T22:41:00.452467Z', 'version': 1}}}
+✅ Finished processing. Total records: 181
+2025-07-01 19:41:18 [allocation] HYBRID SYNC: Completed ~123 records in 18 seconds
+2025-07-01 19:41:18 [allocation] Total records processed: 302
+2025-07-01 19:41:18 [allocation] Waiting 42 seconds for next minute...
+2025-07-01 19:42:00 [allocation] Iteration 3: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ALLOCATION already exists
+📝 Schema received for allocation
+💾 State received: {'bookmarks': {'allocation': {'replication_key_value': '2025-07-01T22:42:01.011243Z', 'version': 1}}}
+✅ Finished processing. Total records: 89
+2025-07-01 19:42:10 [allocation] HYBRID SYNC: Completed ~105 records in 10 seconds
+2025-07-01 19:42:10 [allocation] Total records processed: 407
+2025-07-01 19:42:10 [allocation] Waiting 50 seconds for next minute...
+2025-07-01 19:43:00 [allocation] Iteration 4: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ALLOCATION already exists
+📝 Schema received for allocation
+💾 State received: {'bookmarks': {'allocation': {'replication_key_value': '2025-07-01T22:43:00.916923Z', 'version': 1}}}
+✅ Finished processing. Total records: 79
+2025-07-01 19:43:09 [allocation] HYBRID SYNC: Completed ~77 records in 9 seconds
+2025-07-01 19:43:09 [allocation] Total records processed: 484

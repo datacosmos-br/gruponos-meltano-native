@@ -1,0 +1,17 @@
+2025-07-01 19:31:56 [allocation] Starting REAL incremental pipeline for allocation
+2025-07-01 19:31:56 [allocation] Using tap-oracle-wms + simple_target_oracle
+2025-07-01 19:31:56 [allocation] Requirement: incremental a cada minuto
+2025-07-01 19:31:56 [allocation] Iteration 1: Starting REAL sync...
+2025-07-01 19:31:56 [allocation] Executing: python /home/marlonsc/flext/flext-tap-oracle-wms/tap_oracle_wms/main.py --config tap-config.json --catalog catalog_allocation_incremental.json | python simple_target_oracle.py
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+❌ Invalid JSON: python: can't open file '/home/marlonsc/flext/flext-tap-oracle-wms/tap_oracle_wms/main.py': [Errno 2] No such file or directory
+✅ Finished processing. Total records: 0

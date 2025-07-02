@@ -1,0 +1,35 @@
+{
+  "streams": [
+    {
+      "tap_stream_id": "allocation",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "alloc_qty": {"type": "number"},
+          "create_ts": {"type": "string", "format": "date-time"},
+          "mod_ts": {"type": "string", "format": "date-time"},
+          "mod_user": {"type": "string"},
+          "order_dtl_id": {"type": "integer"},
+          "from_inventory_id": {"type": "integer"},
+          "to_inventory_id": {"type": "integer"},
+          "task_id": {"type": "integer"},
+          "status_id": {"type": "integer"}
+        }
+      },
+      "metadata": [
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "replication-method": "INCREMENTAL",
+            "replication-key": "mod_ts",
+            "inclusion": "available",
+            "selected": true,
+            "table-key-properties": ["id"]
+          }
+        }
+      ]
+    }
+  ]
+}
+EOF < /dev/null

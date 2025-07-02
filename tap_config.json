@@ -1,0 +1,14 @@
+{
+  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "username": "USER_WMS_INTEGRA",
+  "password": "jmCyS7BK94YvhS@",
+  "page_size": 1000,
+  "timeout": 7200,
+  "enable_incremental": true,
+  "verify_ssl": true,
+  "max_retries": 3,
+  "retry_delay": 1.0,
+  "entities": ["allocation", "order_hdr", "order_dtl"],
+  "company_code": "*",
+  "facility_code": "*"
+}

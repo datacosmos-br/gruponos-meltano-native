@@ -1,0 +1,111 @@
+2025-07-01 19:40:53 [order_hdr] Starting HYBRID incremental pipeline for order_hdr
+2025-07-01 19:40:53 [order_hdr] Using simulated tap + real Oracle target
+2025-07-01 19:40:53 [order_hdr] Requirement: incremental a cada minuto
+2025-07-01 19:40:53 [order_hdr] Iteration 1: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Created table ORDER_HDR
+📝 Schema received for order_hdr
+💾 State received: {'bookmarks': {'order_hdr': {'replication_key_value': '2025-07-01T22:40:53.405998Z', 'version': 1}}}
+✅ Finished processing. Total records: 73
+2025-07-01 19:41:01 [order_hdr] HYBRID SYNC: Completed ~84 records in 8 seconds
+2025-07-01 19:41:01 [order_hdr] Total records processed: 84
+2025-07-01 19:41:01 [order_hdr] Waiting 59 seconds for next minute...
+2025-07-01 19:42:00 [order_hdr] Iteration 2: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_HDR already exists
+📝 Schema received for order_hdr
+💾 State received: {'bookmarks': {'order_hdr': {'replication_key_value': '2025-07-01T22:42:00.998235Z', 'version': 1}}}
+✅ Finished processing. Total records: 62
+2025-07-01 19:42:07 [order_hdr] HYBRID SYNC: Completed ~51 records in 7 seconds
+2025-07-01 19:42:07 [order_hdr] Total records processed: 135
+2025-07-01 19:42:07 [order_hdr] Waiting 53 seconds for next minute...
+2025-07-01 19:43:00 [order_hdr] Iteration 3: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_HDR already exists
+📝 Schema received for order_hdr
+💾 State received: {'bookmarks': {'order_hdr': {'replication_key_value': '2025-07-01T22:43:01.008051Z', 'version': 1}}}
+✅ Finished processing. Total records: 81
+2025-07-01 19:43:10 [order_hdr] HYBRID SYNC: Completed ~78 records in 10 seconds
+2025-07-01 19:43:10 [order_hdr] Total records processed: 213
+2025-07-01 19:43:10 [order_hdr] Waiting 50 seconds for next minute...
+2025-07-01 19:44:00 [order_hdr] Iteration 4: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_HDR already exists
+📝 Schema received for order_hdr
+💾 State received: {'bookmarks': {'order_hdr': {'replication_key_value': '2025-07-01T22:44:00.258713Z', 'version': 1}}}
+✅ Finished processing. Total records: 60
+2025-07-01 19:44:07 [order_hdr] HYBRID SYNC: Completed ~183 records in 7 seconds
+2025-07-01 19:44:07 [order_hdr] Total records processed: 396
+2025-07-01 19:44:07 [order_hdr] Waiting 53 seconds for next minute...
+2025-07-01 19:45:00 [order_hdr] Iteration 5: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_HDR already exists
+📝 Schema received for order_hdr
+📊 Processed 100 records for order_hdr
+💾 State received: {'bookmarks': {'order_hdr': {'replication_key_value': '2025-07-01T22:45:00.436865Z', 'version': 1}}}
+✅ Finished processing. Total records: 120
+2025-07-01 19:45:16 [order_hdr] HYBRID SYNC: Completed ~54 records in 16 seconds
+2025-07-01 19:45:16 [order_hdr] Total records processed: 450
+2025-07-01 19:45:16 [order_hdr] Waiting 44 seconds for next minute...
+2025-07-01 19:46:00 [order_hdr] Iteration 6: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_HDR already exists
+📝 Schema received for order_hdr
+💾 State received: {'bookmarks': {'order_hdr': {'replication_key_value': '2025-07-01T22:46:00.553636Z', 'version': 1}}}
+✅ Finished processing. Total records: 76
+2025-07-01 19:46:09 [order_hdr] HYBRID SYNC: Completed ~77 records in 9 seconds
+2025-07-01 19:46:09 [order_hdr] Total records processed: 527

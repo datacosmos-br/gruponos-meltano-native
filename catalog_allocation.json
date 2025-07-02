@@ -1,0 +1,23 @@
+{
+  "streams": [
+    {
+      "tap_stream_id": "allocation",
+      "stream": "allocation",
+      "schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "metadata": [
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "inclusion": "selected",
+            "selected": true,
+            "table-key-properties": [],
+            "forced-replication-method": "incremental"
+          }
+        }
+      ]
+    }
+  ]
+}

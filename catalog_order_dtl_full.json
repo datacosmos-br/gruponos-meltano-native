@@ -1,0 +1,31 @@
+{
+  "streams": [
+    {
+      "tap_stream_id": "order_dtl",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "order_hdr_id": {"type": "integer"},
+          "item_id": {"type": "integer"},
+          "qty": {"type": "number"},
+          "unit_price": {"type": "number"},
+          "create_ts": {"type": "string", "format": "date-time"},
+          "mod_ts": {"type": "string", "format": "date-time"},
+          "mod_user": {"type": "string"}
+        }
+      },
+      "metadata": [
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "replication-method": "FULL_TABLE",
+            "inclusion": "available",
+            "selected": true,
+            "table-key-properties": ["id"]
+          }
+        }
+      ]
+    }
+  ]
+}

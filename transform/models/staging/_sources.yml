@@ -1,0 +1,227 @@
+version: 2
+
+sources:
+  - name: wms_raw
+    description: Raw WMS data extracted from Oracle WMS system
+    database: "{{ env_var('TARGET_ORACLE_HOST') }}"
+    schema: "{{ var('wms_schema') }}"
+    
+    tables:
+      - name: allocation
+        description: Inventory allocation records from WMS
+        columns:
+          - name: allocation_id
+            description: Unique identifier for allocation
+            tests:
+              - not_null
+              - unique
+          - name: order_id
+            description: Related order identifier
+            tests:
+              - not_null
+          - name: item_id
+            description: Item being allocated
+            tests:
+              - not_null
+          - name: location_id
+            description: Storage location identifier
+            tests:
+              - not_null
+          - name: quantity_allocated
+            description: Quantity allocated
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 0
+          - name: allocation_status
+            description: Current allocation status
+            tests:
+              - not_null
+              - accepted_values:
+                  values: "{{ var('valid_allocation_statuses') }}"
+          - name: last_updated
+            description: Last update timestamp for incremental sync
+            tests:
+              - not_null
+          - name: created_date
+            description: Allocation creation date
+            tests:
+              - not_null
+        
+        freshness:
+          warn_after: 
+            count: "{{ var('allocation_freshness_hours') }}"
+            period: hour
+          error_after:
+            count: "{{ var('allocation_freshness_hours') * 2 }}"
+            period: hour
+        
+        loaded_at_field: _sdc_batched_at
+
+      - name: order_hdr
+        description: Order header records from WMS
+        columns:
+          - name: order_id
+            description: Unique order identifier
+            tests:
+              - not_null
+              - unique
+          - name: customer_id
+            description: Customer identifier
+            tests:
+              - not_null
+          - name: order_date
+            description: Order creation date
+            tests:
+              - not_null
+          - name: order_status
+            description: Current order status
+            tests:
+              - not_null
+              - accepted_values:
+                  values: "{{ var('valid_order_statuses') }}"
+          - name: total_amount
+            description: Total order amount
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 0
+          - name: last_updated
+            description: Last update timestamp
+            tests:
+              - not_null
+        
+        freshness:
+          warn_after: 
+            count: "{{ var('order_freshness_hours') }}"
+            period: hour
+          error_after:
+            count: "{{ var('order_freshness_hours') * 2 }}"
+            period: hour
+        
+        loaded_at_field: _sdc_batched_at
+
+      - name: order_dtl
+        description: Order detail/line items from WMS
+        columns:
+          - name: order_detail_id
+            description: Unique order detail identifier
+            tests:
+              - not_null
+              - unique
+          - name: order_id
+            description: Parent order identifier
+            tests:
+              - not_null
+              - relationships:
+                  to: source('wms_raw', 'order_hdr')
+                  field: order_id
+          - name: item_id
+            description: Item identifier
+            tests:
+              - not_null
+          - name: quantity_ordered
+            description: Quantity ordered
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 0
+          - name: unit_price
+            description: Unit price for item
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 0
+          - name: line_total
+            description: Line total amount
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 0
+        
+        loaded_at_field: _sdc_batched_at
+
+      - name: item_master
+        description: Item master data from WMS
+        columns:
+          - name: item_id
+            description: Unique item identifier
+            tests:
+              - not_null
+              - unique
+          - name: item_code
+            description: Item code/SKU
+            tests:
+              - not_null
+          - name: item_description
+            description: Item description
+            tests:
+              - not_null
+          - name: item_category
+            description: Item category
+          - name: unit_of_measure
+            description: Unit of measure
+            tests:
+              - not_null
+          - name: standard_cost
+            description: Standard cost per unit
+            tests:
+              - dbt_utils.accepted_range:
+                  min_value: 0
+          - name: is_active
+            description: Active status flag
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['Y', 'N']
+        
+        freshness:
+          warn_after: 
+            count: "{{ var('master_data_freshness_days') }}"
+            period: day
+          error_after:
+            count: "{{ var('master_data_freshness_days') * 2 }}"
+            period: day
+        
+        loaded_at_field: _sdc_batched_at
+
+      - name: location
+        description: Warehouse location master data
+        columns:
+          - name: location_id
+            description: Unique location identifier
+            tests:
+              - not_null
+              - unique
+          - name: location_code
+            description: Location code
+            tests:
+              - not_null
+          - name: location_type
+            description: Type of location (PICK, RESERVE, etc.)
+            tests:
+              - not_null
+          - name: zone_id
+            description: Zone identifier
+          - name: aisle
+            description: Aisle identifier
+          - name: bay
+            description: Bay identifier
+          - name: level
+            description: Level identifier
+          - name: is_active
+            description: Active status flag
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['Y', 'N']
+        
+        freshness:
+          warn_after: 
+            count: "{{ var('master_data_freshness_days') }}"
+            period: day
+          error_after:
+            count: "{{ var('master_data_freshness_days') * 2 }}"
+            period: day
+        
+        loaded_at_field: _sdc_batched_at

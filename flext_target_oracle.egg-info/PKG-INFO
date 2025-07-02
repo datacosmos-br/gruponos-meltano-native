@@ -1,0 +1,48 @@
+Metadata-Version: 2.4
+Name: flext-target-oracle
+Version: 0.1.0
+Summary: Advanced Oracle target for Singer with SQLAlchemy and performance optimizations
+Home-page: https://github.com/flext/flext-target-oracle
+Author: FLEXT Team
+Author-email: dev@flext.io
+Project-URL: Documentation, https://flext.io/docs/target-oracle
+Project-URL: Source, https://github.com/flext/flext-target-oracle
+Project-URL: Tracker, https://github.com/flext/flext-target-oracle/issues
+Keywords: singer oracle etl data-pipeline sqlalchemy target
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Database
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.8
+Requires-Dist: singer-sdk>=0.47.4
+Requires-Dist: sqlalchemy>=2.0.0
+Requires-Dist: oracledb>=1.4.0
+Requires-Dist: click>=8.0.0
+Requires-Dist: jsonschema>=4.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: black>=22.0.0; extra == "dev"
+Requires-Dist: flake8>=5.0.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+Provides-Extra: performance
+Requires-Dist: pandas>=1.5.0; extra == "performance"
+Requires-Dist: pyarrow>=10.0.0; extra == "performance"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: project-url
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

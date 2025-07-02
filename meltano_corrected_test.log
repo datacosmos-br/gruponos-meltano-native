@@ -1,0 +1,4 @@
+Need help fixing this problem? Visit http://melta.no/ for troubleshooting steps, or to
+join our friendly Slack community.
+
+meltano.core.setting_definition.SettingDefinition() argument after ** must be a mapping, not str

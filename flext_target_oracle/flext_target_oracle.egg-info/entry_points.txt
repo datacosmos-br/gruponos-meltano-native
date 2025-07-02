@@ -1,0 +1,3 @@
+[console_scripts]
+flext-target-oracle = target:TargetOracle.cli
+target-oracle = target:TargetOracle.cli

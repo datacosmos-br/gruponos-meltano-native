@@ -1,0 +1,16 @@
+{
+  "host": "10.93.10.114",
+  "port": "1522", 
+  "service_name": "gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com",
+  "username": "oic",
+  "password": "aehaz232dfNuupah_#",
+  "protocol": "tcps",
+  "batch_size": 250,
+  "pool_size": 2,
+  "enable_performance_metrics": true,
+  "use_bulk_insert": true,
+  "add_record_metadata": true,
+  "connection_timeout": 180,
+  "max_retries": 5,
+  "retry_delay": 2.0
+}

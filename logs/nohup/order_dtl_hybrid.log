@@ -1,0 +1,132 @@
+2025-07-01 19:40:57 [order_dtl] Starting HYBRID incremental pipeline for order_dtl
+2025-07-01 19:40:57 [order_dtl] Using simulated tap + real Oracle target
+2025-07-01 19:40:57 [order_dtl] Requirement: incremental a cada minuto
+2025-07-01 19:40:57 [order_dtl] Iteration 1: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Created table ORDER_DTL
+📝 Schema received for order_dtl
+📊 Processed 100 records for order_dtl
+💾 State received: {'bookmarks': {'order_dtl': {'replication_key_value': '2025-07-01T22:40:57.442456Z', 'version': 1}}}
+✅ Finished processing. Total records: 162
+2025-07-01 19:41:14 [order_dtl] HYBRID SYNC: Completed ~178 records in 17 seconds
+2025-07-01 19:41:14 [order_dtl] Total records processed: 178
+2025-07-01 19:41:14 [order_dtl] Waiting 46 seconds for next minute...
+2025-07-01 19:42:00 [order_dtl] Iteration 2: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_DTL already exists
+📝 Schema received for order_dtl
+💾 State received: {'bookmarks': {'order_dtl': {'replication_key_value': '2025-07-01T22:42:00.514952Z', 'version': 1}}}
+✅ Finished processing. Total records: 61
+2025-07-01 19:42:07 [order_dtl] HYBRID SYNC: Completed ~146 records in 7 seconds
+2025-07-01 19:42:07 [order_dtl] Total records processed: 324
+2025-07-01 19:42:07 [order_dtl] Waiting 53 seconds for next minute...
+2025-07-01 19:43:00 [order_dtl] Iteration 3: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_DTL already exists
+📝 Schema received for order_dtl
+📊 Processed 100 records for order_dtl
+💾 State received: {'bookmarks': {'order_dtl': {'replication_key_value': '2025-07-01T22:43:00.284491Z', 'version': 1}}}
+✅ Finished processing. Total records: 160
+2025-07-01 19:43:17 [order_dtl] HYBRID SYNC: Completed ~75 records in 17 seconds
+2025-07-01 19:43:17 [order_dtl] Total records processed: 399
+2025-07-01 19:43:17 [order_dtl] Waiting 43 seconds for next minute...
+2025-07-01 19:44:00 [order_dtl] Iteration 4: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_DTL already exists
+📝 Schema received for order_dtl
+💾 State received: {'bookmarks': {'order_dtl': {'replication_key_value': '2025-07-01T22:44:00.886500Z', 'version': 1}}}
+✅ Finished processing. Total records: 88
+2025-07-01 19:44:11 [order_dtl] HYBRID SYNC: Completed ~90 records in 11 seconds
+2025-07-01 19:44:11 [order_dtl] Total records processed: 489
+2025-07-01 19:44:11 [order_dtl] Waiting 49 seconds for next minute...
+2025-07-01 19:45:00 [order_dtl] Iteration 5: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_DTL already exists
+📝 Schema received for order_dtl
+📊 Processed 100 records for order_dtl
+💾 State received: {'bookmarks': {'order_dtl': {'replication_key_value': '2025-07-01T22:45:00.094276Z', 'version': 1}}}
+✅ Finished processing. Total records: 168
+2025-07-01 19:45:22 [order_dtl] HYBRID SYNC: Completed ~56 records in 22 seconds
+2025-07-01 19:45:22 [order_dtl] Total records processed: 545
+2025-07-01 19:45:22 [order_dtl] Waiting 38 seconds for next minute...
+2025-07-01 19:46:00 [order_dtl] Iteration 6: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_DTL already exists
+📝 Schema received for order_dtl
+📊 Processed 100 records for order_dtl
+💾 State received: {'bookmarks': {'order_dtl': {'replication_key_value': '2025-07-01T22:46:00.142858Z', 'version': 1}}}
+✅ Finished processing. Total records: 180
+2025-07-01 19:46:21 [order_dtl] HYBRID SYNC: Completed ~117 records in 21 seconds
+2025-07-01 19:46:21 [order_dtl] Total records processed: 662
+2025-07-01 19:46:21 [order_dtl] Waiting 39 seconds for next minute...
+2025-07-01 19:47:00 [order_dtl] Iteration 7: Starting hybrid sync...
+📋 Loaded environment from /home/marlonsc/flext/gruponos-meltano-native/.env
+🔗 Connecting to Oracle Autonomous Database
+   Protocol: tcps
+   Host: 10.93.10.114:1522
+   Service: gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+   User: oic
+🔒 Using TCPS secure connection
+✅ Connected to Oracle successfully
+✅ Connection test passed: (1,)
+🎵 Processing Singer messages...
+📊 Table ORDER_DTL already exists
+📝 Schema received for order_dtl
+💾 State received: {'bookmarks': {'order_dtl': {'replication_key_value': '2025-07-01T22:47:00.116152Z', 'version': 1}}}
+✅ Finished processing. Total records: 90
+2025-07-01 19:47:09 [order_dtl] HYBRID SYNC: Completed ~144 records in 9 seconds
+2025-07-01 19:47:09 [order_dtl] Total records processed: 806

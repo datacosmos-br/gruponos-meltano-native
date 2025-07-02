@@ -1,0 +1,34 @@
+{
+  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "username": "USER_WMS_INTEGRA",
+  "password": "jmCyS7BK94YvhS@",
+  "auth_method": "basic",
+  "page_size": 1000,
+  "request_timeout": 7200,
+  "entities": ["allocation", "order_hdr", "order_dtl"],
+  "enable_incremental": true,
+  "entity_filters": {
+    "allocation": {
+      "mod_ts__gte": "today-7d"
+    },
+    "order_hdr": {
+      "mod_ts__gte": "today-7d"
+    },
+    "order_dtl": {
+      "mod_ts__gte": "today-7d"
+    }
+  },
+  "simple_date_expressions": {
+    "allocation": {
+      "mod_ts__gte": "today-7d"
+    },
+    "order_hdr": {
+      "mod_ts__gte": "today-7d"
+    }
+  },
+  "circuit_breaker": {
+    "enabled": true,
+    "failure_threshold": 5,
+    "recovery_timeout": 60
+  }
+}

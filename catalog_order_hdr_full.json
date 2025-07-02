@@ -1,0 +1,38 @@
+{
+  "streams": [
+    {
+      "tap_stream_id": "order_hdr",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "order_nbr": {"type": "string"},
+          "order_type": {"type": "string"},
+          "status": {"type": "string"},
+          "priority": {"type": "integer"},
+          "ship_date": {"type": "string", "format": "date-time"},
+          "create_ts": {"type": "string", "format": "date-time"},
+          "mod_ts": {"type": "string", "format": "date-time"},
+          "mod_user": {"type": "string"},
+          "facility_id": {"type": "integer"},
+          "client_id": {"type": "integer"},
+          "customer_id": {"type": "integer"},
+          "carrier_id": {"type": "integer"},
+          "ship_to_name": {"type": "string"},
+          "ship_to_address": {"type": "string"}
+        }
+      },
+      "metadata": [
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "replication-method": "FULL_TABLE",
+            "inclusion": "available",
+            "selected": true,
+            "table-key-properties": ["id"]
+          }
+        }
+      ]
+    }
+  ]
+}

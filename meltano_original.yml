@@ -1,0 +1,434 @@
+version: 1
+default_environment: dev
+project_id: fbc8fc3c-b6b7-4d37-9b3a-48a5c8b3a7b9
+
+environments:
+- name: dev
+  config:
+    plugins:
+      extractors:
+      - name: tap-oracle-wms
+        config:
+          base_url: ${WMS_BASE_URL}
+          username: ${WMS_USERNAME}
+          password: ${WMS_PASSWORD}
+          auth_method: basic
+          page_size: ${WMS_PAGE_SIZE:1000}
+          request_timeout: ${WMS_TIMEOUT:7200}
+          entities: ["allocation", "order_hdr", "order_dtl"]
+          enable_incremental: ${WMS_ENABLE_INCREMENTAL:true}
+          # Entity-specific configuration for sync patterns
+          entity_filters:
+            allocation:
+              # Incremental sync based on mod_ts
+              mod_ts__gte: "today-7d"
+            order_hdr:
+              # Incremental sync based on mod_ts
+              mod_ts__gte: "today-7d"
+            order_dtl:
+              # Full table refresh for detail records
+              # No filter - extract all records
+          simple_date_expressions:
+            allocation:
+              mod_ts__gte: "today-7d"
+            order_hdr:
+              mod_ts__gte: "today-7d"
+          # Circuit breaker for resilience
+          circuit_breaker:
+            enabled: true
+            failure_threshold: 5
+            recovery_timeout: 60
+      loaders:
+      - name: target-oracle
+        config:
+          host: ${DATABASE__HOST}
+          port: ${DATABASE__PORT}
+          service_name: ${DATABASE__SERVICE_NAME}
+          username: ${DATABASE__USERNAME}
+          password: ${DATABASE__PASSWORD}
+          schema: ${DATABASE__SCHEMA:oic}
+          protocol: ${DATABASE__PROTOCOL:tcps}
+          batch_size: ${PROCESSING_DB_BATCH_SIZE:1000}
+          add_metadata_columns: true
+          load_method: upsert
+          default_target_schema: oic
+          # Connection pool settings for Oracle ADB
+          pool_size: ${DATABASE__POOL_SIZE:5}
+          pool_recycle: ${DATABASE__POOL_RECYCLE:3600}
+          connect_timeout: ${DATABASE__CONNECT_TIMEOUT:30}
+
+- name: staging
+  config:
+    plugins:
+      extractors:
+      - name: tap-oracle-wms
+        config:
+          host: ${STAGING_WMS_ORACLE_HOST}
+          port: ${WMS_ORACLE_PORT:1521}
+          sid: ${STAGING_WMS_ORACLE_SID}
+          username: ${STAGING_WMS_ORACLE_USERNAME}
+          password: ${STAGING_WMS_ORACLE_PASSWORD}
+          batch_size: ${WMS_BATCH_SIZE:2000}
+          request_timeout: ${WMS_REQUEST_TIMEOUT:600}
+      loaders:
+      - name: target-oracle
+        config:
+          host: ${STAGING_TARGET_ORACLE_HOST}
+          port: ${TARGET_ORACLE_PORT:1521}
+          service_name: ${STAGING_TARGET_ORACLE_SERVICE_NAME}
+          username: ${STAGING_TARGET_ORACLE_USERNAME}
+          password: ${STAGING_TARGET_ORACLE_PASSWORD}
+          schema: ${STAGING_TARGET_ORACLE_SCHEMA:WMS_SYNC_STG}
+
+- name: prod
+  config:
+    plugins:
+      extractors:
+      - name: tap-oracle-wms
+        config:
+          host: ${PROD_WMS_ORACLE_HOST}
+          port: ${WMS_ORACLE_PORT:1521}
+          sid: ${PROD_WMS_ORACLE_SID}
+          username: ${PROD_WMS_ORACLE_USERNAME}
+          password: ${PROD_WMS_ORACLE_PASSWORD}
+          batch_size: ${WMS_BATCH_SIZE:5000}
+          request_timeout: ${WMS_REQUEST_TIMEOUT:300}
+          parallel_extraction: false
+          connection_pool_size: 5
+      loaders:
+      - name: target-oracle
+        config:
+          host: ${PROD_TARGET_ORACLE_HOST}
+          port: ${TARGET_ORACLE_PORT:1521}
+          service_name: ${PROD_TARGET_ORACLE_SERVICE_NAME}
+          username: ${PROD_TARGET_ORACLE_USERNAME}
+          password: ${PROD_TARGET_ORACLE_PASSWORD}
+          schema: ${PROD_TARGET_ORACLE_SCHEMA:WMS_SYNC}
+          batch_size: ${TARGET_BATCH_SIZE:10000}
+          load_method: upsert
+
+plugins:
+  extractors:
+  - name: tap-oracle-wms
+    namespace: tap_oracle_wms
+    pip_url: /home/marlonsc/flext/flext-tap-oracle-wms
+    capabilities:
+    - catalog
+    - discover
+    - properties
+    - state
+    settings:
+    - name: host
+      label: Oracle Host
+      kind: string
+      description: Oracle database hostname or IP address
+    - name: port
+      label: Oracle Port
+      kind: integer
+      default: 1521
+      description: Oracle database port number
+    - name: sid
+      label: Oracle SID
+      kind: string
+      description: Oracle database SID (Service Identifier)
+    - name: username
+      label: Username
+      kind: string
+      description: Oracle database username
+    - name: password
+      label: Password
+      kind: password
+      description: Oracle database password
+      sensitive: true
+    - name: batch_size
+      label: Batch Size
+      kind: integer
+      default: 1000
+      description: Number of records to fetch in each batch
+    - name: request_timeout
+      label: Request Timeout
+      kind: integer
+      default: 300
+      description: Request timeout in seconds
+    - name: connection_timeout
+      label: Connection Timeout
+      kind: integer
+      default: 60
+      description: Connection timeout in seconds
+    - name: parallel_extraction
+      label: Parallel Extraction
+      kind: boolean
+      default: false
+      description: Enable parallel extraction for large datasets
+    - name: connection_pool_size
+      label: Connection Pool Size
+      kind: integer
+      default: 3
+      description: Size of Oracle connection pool
+    - name: stream_maps
+      label: Stream Maps
+      kind: object
+      description: Stream-specific configuration for replication methods
+    commands:
+      describe:
+        args: --format=json
+        description: Get tap configuration schema
+      test:
+        args: --config $MELTANO_EXTRACTOR_CONFIG --test-connection
+        description: Test database connection
+      schema:
+        args: --config $MELTANO_EXTRACTOR_CONFIG --discover
+        description: Get available streams schema
+
+  loaders:
+  - name: target-oracle
+    namespace: flext_target_oracle_wms
+    pip_url: ../flext-target-oracle-wms
+    capabilities:
+    - about
+    - stream-maps
+    settings:
+    - name: host
+      label: Target Oracle Host
+      kind: string
+      description: Target Oracle database hostname or IP
+    - name: port
+      label: Target Oracle Port
+      kind: integer
+      default: 1521
+      description: Target Oracle database port
+    - name: service_name
+      label: Service Name
+      kind: string
+      description: Oracle service name for connection
+    - name: username
+      label: Target Username
+      kind: string
+      description: Target Oracle database username
+    - name: password
+      label: Target Password
+      kind: password
+      description: Target Oracle database password
+      sensitive: true
+    - name: schema
+      label: Target Schema
+      kind: string
+      default: WMS_SYNC
+      description: Target schema for data loading
+    - name: batch_size
+      label: Target Batch Size
+      kind: integer
+      default: 5000
+      description: Batch size for data loading
+    - name: add_metadata_columns
+      label: Add Metadata Columns
+      kind: boolean
+      default: true
+      description: Add metadata columns (_sdc_* columns)
+    - name: load_method
+      label: Load Method
+      kind: options
+      default: upsert
+      options:
+      - label: Append Only
+        value: append
+      - label: Upsert
+        value: upsert
+      - label: Overwrite
+        value: overwrite
+      description: Method for loading data into target tables
+    - name: default_target_schema
+      label: Default Target Schema
+      kind: string
+      default: WMS_SYNC
+      description: Default schema for target tables
+
+  transformers:
+  - name: dbt-oracle-wms
+    namespace: dbt
+    pip_url: dbt-core~=1.8.0 dbt-oracle~=1.8.0
+    settings:
+    - name: project_dir
+      label: dbt Project Directory
+      kind: string
+      default: transform
+      description: Directory containing dbt_project.yml
+    - name: profiles_dir
+      label: dbt Profiles Directory
+      kind: string
+      default: transform/profiles
+      description: Directory containing profiles.yml
+    - name: target
+      label: dbt Target
+      kind: string
+      default: dev
+      description: dbt target environment
+
+  orchestrators:
+  - name: airflow
+    namespace: airflow
+    pip_url: apache-airflow==2.9.0 apache-airflow-providers-oracle
+    settings:
+    - name: core.dags_folder
+      label: DAGs Folder
+      kind: string
+      default: $MELTANO_PROJECT_ROOT/orchestrate/dags
+    - name: core.plugins_folder
+      label: Plugins Folder
+      kind: string
+      default: $MELTANO_PROJECT_ROOT/orchestrate/plugins
+    - name: core.base_log_folder
+      label: Base Log Folder
+      kind: string
+      default: $MELTANO_PROJECT_ROOT/logs/airflow
+    - name: webserver.web_server_port
+      label: Web Server Port
+      kind: integer
+      default: 8080
+    - name: core.executor
+      label: Executor
+      kind: string
+      default: LocalExecutor
+
+# =============================================================================
+# GRUPONOS SPECIFIC SCHEDULES FOR 3 ENTITIES
+# User requirement: "o full só quero uma vez, o incremental a cada minuto, 
+# e mesmo assim quero um job para cada entidade pq elas são gigantescas"
+# =============================================================================
+
+schedules:
+# INCREMENTAL SYNC - Every minute for each entity (separate jobs)
+# Allocation incremental sync - every minute
+- name: allocation_incremental_sync
+  extractor: tap-oracle-wms
+  loader: target-oracle
+  transform: run
+  interval: "* * * * *"  # Every minute - high frequency allocation incremental
+  start_date: 2025-01-01 00:00:00
+  env:
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITIES: '["allocation"]'
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITY_FILTERS: |
+      {
+        "allocation": {
+          "mod_ts__gte": "today-1h"
+        }
+      }
+    MELTANO_EXTRACTOR_tap_oracle_wms_STREAM_MAPS: |
+      {
+        "allocation": {
+          "replication_method": "INCREMENTAL",
+          "replication_key": "mod_ts"
+        }
+      }
+
+# Order Header incremental sync - every minute
+- name: order_hdr_incremental_sync
+  extractor: tap-oracle-wms
+  loader: target-oracle
+  transform: run
+  interval: "* * * * *"  # Every minute - high frequency order_hdr incremental
+  start_date: 2025-01-01 00:00:00
+  env:
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITIES: '["order_hdr"]'
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITY_FILTERS: |
+      {
+        "order_hdr": {
+          "mod_ts__gte": "today-1h"
+        }
+      }
+    MELTANO_EXTRACTOR_tap_oracle_wms_STREAM_MAPS: |
+      {
+        "order_hdr": {
+          "replication_method": "INCREMENTAL",
+          "replication_key": "mod_ts"
+        }
+      }
+
+# Order Detail incremental sync - every minute
+- name: order_dtl_incremental_sync
+  extractor: tap-oracle-wms
+  loader: target-oracle
+  transform: run
+  interval: "* * * * *"  # Every minute - high frequency order_dtl incremental
+  start_date: 2025-01-01 00:00:00
+  env:
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITIES: '["order_dtl"]'
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITY_FILTERS: |
+      {
+        "order_dtl": {
+          "mod_ts__gte": "today-1h"
+        }
+      }
+    MELTANO_EXTRACTOR_tap_oracle_wms_STREAM_MAPS: |
+      {
+        "order_dtl": {
+          "replication_method": "INCREMENTAL",
+          "replication_key": "mod_ts"
+        }
+      }
+
+jobs:
+# FULL SYNC JOBS - Manual execution only ("full só quero uma vez")
+- name: allocation_full_sync
+  tasks:
+  - tap-oracle-wms target-oracle
+  description: One-time full sync for allocation entity (MANUAL EXECUTION ONLY)
+  env:
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITIES: '["allocation"]'
+    MELTANO_EXTRACTOR_tap_oracle_wms_STREAM_MAPS: |
+      {
+        "allocation": {
+          "replication_method": "FULL_TABLE"
+        }
+      }
+
+- name: order_hdr_full_sync
+  tasks:
+  - tap-oracle-wms target-oracle
+  description: One-time full sync for order_hdr entity (MANUAL EXECUTION ONLY)
+  env:
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITIES: '["order_hdr"]'
+    MELTANO_EXTRACTOR_tap_oracle_wms_STREAM_MAPS: |
+      {
+        "order_hdr": {
+          "replication_method": "FULL_TABLE"
+        }
+      }
+
+- name: order_dtl_full_sync
+  tasks:
+  - tap-oracle-wms target-oracle
+  description: One-time full sync for order_dtl entity (MANUAL EXECUTION ONLY)
+  env:
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITIES: '["order_dtl"]'
+    MELTANO_EXTRACTOR_tap_oracle_wms_STREAM_MAPS: |
+      {
+        "order_dtl": {
+          "replication_method": "FULL_TABLE"
+        }
+      }
+
+# OPERATIONAL JOBS
+- name: wms_test_connection
+  tasks:
+  - tap-oracle-wms:test
+  description: Test WMS Oracle connection
+
+- name: wms_schema_discovery
+  tasks:
+  - tap-oracle-wms:schema
+  description: Discover WMS schema and generate catalog
+
+# COMBINED JOBS (if needed)
+- name: all_entities_full_sync
+  tasks:
+  - tap-oracle-wms target-oracle dbt-oracle-wms:run
+  description: Full sync for all 3 entities with transformations (MANUAL EXECUTION ONLY)
+  env:
+    MELTANO_EXTRACTOR_tap_oracle_wms_ENTITIES: '["allocation", "order_hdr", "order_dtl"]'
+    MELTANO_EXTRACTOR_tap_oracle_wms_STREAM_MAPS: |
+      {
+        "allocation": {"replication_method": "FULL_TABLE"},
+        "order_hdr": {"replication_method": "FULL_TABLE"},
+        "order_dtl": {"replication_method": "FULL_TABLE"}
+      }
