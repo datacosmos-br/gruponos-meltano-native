@@ -15,10 +15,11 @@ plugins:
       username: $TAP_ORACLE_WMS_USERNAME
       password: $TAP_ORACLE_WMS_PASSWORD
       entities: ["allocation", "order_hdr", "order_dtl"]
-      page_size: 1000
-      force_full_table: false
+      page_size: 500
+      force_full_table: true
       ordering: "-id"
       filter_mode: "id_recovery"
+      timeout: 600
       
   - name: tap-oracle-wms-incremental
     namespace: tap_oracle_wms
