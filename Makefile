@@ -488,6 +488,88 @@ restart-full-sync:
 	@echo "✅ Full sync reiniciado do zero"
 
 # ============================================================================
+# COMANDOS DE VALIDAÇÃO DE DADOS E PERSISTÊNCIA
+# ============================================================================
+
+check-data-persistence:
+	@echo "🔍 VALIDANDO PERSISTÊNCIA DOS DADOS ENTRE SYNCS..."
+	@echo "📊 Contando registros antes e depois de recovery..."
+	@$(ENV_CMD) && python3 -c "\
+import sys; \
+sys.path.insert(0, 'src'); \
+from oracle.validate_sync import validate_sync; \
+print('📋 ANTES DO RECOVERY:'); \
+validate_sync(); \
+"
+
+check-incremental-order:
+	@echo "🔍 VERIFICANDO ORDEM INCREMENTAL POR MOD_TS..."
+	@$(ENV_CMD) && python3 -c "\
+import oracledb; \
+import os; \
+conn_str = f'{os.getenv(\"TARGET_ORACLE_USERNAME\")}/{os.getenv(\"TARGET_ORACLE_PASSWORD\")}@{os.getenv(\"TARGET_ORACLE_HOST\")}:{os.getenv(\"TARGET_ORACLE_PORT\")}/{os.getenv(\"TARGET_ORACLE_SERVICE_NAME\")}'; \
+conn = oracledb.connect(conn_str); \
+cursor = conn.cursor(); \
+print('📊 ALLOCATION - Ordem incremental (mod_ts):'); \
+cursor.execute('''SELECT id, mod_ts, ROW_NUMBER() OVER (ORDER BY mod_ts ASC) as row_order FROM WMS_ALLOCATION ORDER BY mod_ts ASC FETCH FIRST 10 ROWS ONLY'''); \
+for row in cursor.fetchall(): \
+    print(f'  ID: {row[0]} | mod_ts: {row[1]} | order: {row[2]}'); \
+print(); \
+print('📊 Estatísticas temporais:'); \
+cursor.execute('''SELECT COUNT(*) as total, MIN(mod_ts) as oldest, MAX(mod_ts) as newest, COUNT(DISTINCT mod_ts) as unique_ts FROM WMS_ALLOCATION'''); \
+result = cursor.fetchone(); \
+print(f'  Total: {result[0]} | Oldest: {result[1]} | Newest: {result[2]} | Unique timestamps: {result[3]}'); \
+cursor.close(); \
+conn.close(); \
+"
+
+check-overwrite-behavior:
+	@$(ENV_CMD) && python3 check_data_behavior.py overwrite
+
+check-incremental-order:
+	@$(ENV_CMD) && python3 check_data_behavior.py order
+
+check-all-data-behavior:
+	@$(ENV_CMD) && python3 check_data_behavior.py
+
+# Comando para configurar FULL SYNC em modo RECOVERY (não OVERWRITE)
+configure-recovery-mode:
+	@echo "🔧 CONFIGURANDO FULL SYNC PARA MODO RECOVERY..."
+	@echo "📋 Mudando de OVERWRITE → APPEND-ONLY (recovery mode)"
+	@echo "⚠️  Isso fará o full sync ADICIONAR dados ao invés de SUBSTITUIR"
+	@echo ""
+	@read -p "Confirmar mudança para RECOVERY mode? [y/N]: " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "🔧 Aplicando configuração de recovery mode..."
+	@sed -i 's/load_method: overwrite/load_method: append-only/' meltano.yml
+	@echo "✅ Recovery mode configurado - próximo full sync será incremental"
+	@echo "📋 Para reverter: sed -i 's/load_method: append-only/load_method: overwrite/' meltano.yml"
+
+# Comando para verificar o modo atual
+check-sync-mode:
+	@echo "🔍 VERIFICANDO MODO DE SYNC ATUAL..."
+	@echo ""
+	@echo "📊 FULL SYNC (target-oracle-full):"
+	@grep -A1 "load_method" meltano.yml | head -2 | grep -E "load_method|--"
+	@echo ""
+	@echo "📊 INCREMENTAL SYNC (target-oracle-incremental):"
+	@grep -A15 "target-oracle-incremental" meltano.yml | grep "load_method"
+	@echo ""
+	@echo "📋 Explicação dos modos:"
+	@echo "  - overwrite: TRUNCATE + INSERT (substitui todos os dados)"
+	@echo "  - append-only: INSERT apenas (adiciona dados existentes)"
+
+# Comando para reverter para OVERWRITE mode  
+configure-overwrite-mode:
+	@echo "🔧 CONFIGURANDO FULL SYNC PARA MODO OVERWRITE..."
+	@echo "📋 Mudando de APPEND-ONLY → OVERWRITE mode"
+	@echo "⚠️  Isso fará o full sync SUBSTITUIR todos os dados"
+	@echo ""
+	@read -p "Confirmar mudança para OVERWRITE mode? [y/N]: " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "🔧 Aplicando configuração de overwrite mode..."
+	@sed -i 's/load_method: append-only/load_method: overwrite/' meltano.yml  
+	@echo "✅ Overwrite mode configurado - próximo full sync substituirá dados"
+
+# ============================================================================
 # COMANDOS AVANÇADOS
 # ============================================================================
 

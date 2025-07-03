@@ -16,7 +16,9 @@ plugins:
       password: $TAP_ORACLE_WMS_PASSWORD
       entities: ["allocation", "order_hdr", "order_dtl"]
       page_size: 1000
-      force_full_table: true
+      force_full_table: false
+      ordering: "-id"
+      filter_mode: "id_recovery"
       
   - name: tap-oracle-wms-incremental
     namespace: tap_oracle_wms
@@ -28,7 +30,9 @@ plugins:
       entities: ["allocation", "order_hdr", "order_dtl"]
       page_size: 1000
       force_full_table: false
-      start_date: "2024-01-01T00:00:00Z"
+      ordering: "mod_ts"
+      filter_mode: "incremental"
+      lookback_minutes: 5
 
   loaders:
   - name: target-oracle-full
@@ -46,7 +50,8 @@ plugins:
       pool_size: 5
       add_record_metadata: false
       validate_records: false
-      load_method: overwrite
+      load_method: append-only
+      ignore_pk_errors: true
       enable_historical_versioning: false
       table_prefix: WMS_
       debug_type_mapping: true
@@ -67,6 +72,7 @@ plugins:
       add_record_metadata: false
       validate_records: false
       load_method: append-only
+      ignore_pk_errors: true
       enable_historical_versioning: true
       historical_versioning_column: mod_ts
       table_prefix: WMS_

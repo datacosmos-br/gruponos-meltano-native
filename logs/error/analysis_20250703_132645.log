@@ -1,0 +1,201 @@
+📊 RELATÓRIO DE ANÁLISE DE FALHAS - 2025-07-03 13:26:45
+====================================================
+
+🔍 Analisando: full_sync_error_20250702_102720.log
+----------------------------------------
+❌ PROBLEMA: Timeout detectado
+💡 SOLUÇÃO: Aumentar timeout ou verificar conexão
+❌ PROBLEMA: Erro de conexão
+💡 SOLUÇÃO: Verificar credenciais e conectividade
+
+🔍 Analisando: full_sync_error_20250702_131906.log
+----------------------------------------
+❌ PROBLEMA: Timeout detectado
+💡 SOLUÇÃO: Aumentar timeout ou verificar conexão
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-02T16:27:41.968100Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.IntegrityError: ORA-00001: unique constraint (OIC.SYS_C00120244) violated[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m3122a49b-57b6-4f04-8e22-23ac5a857785[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+[2m2025-07-02T16:27:41.983318Z[0m [[32m[1minfo     [0m] [1msqlalchemy.exc.IntegrityError: (oracledb.exceptions.IntegrityError) ORA-00001: unique constraint (OIC.SYS_C00120244) violated[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m3122a49b-57b6-4f04-8e22-23ac5a857785[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+[2m2025-07-02T16:27:41.989096Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.IntegrityError: ORA-00001: unique constraint (OIC.SYS_C00120244) violated[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m3122a49b-57b6-4f04-8e22-23ac5a857785[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+❌ PROBLEMA: Erro de conexão
+💡 SOLUÇÃO: Verificar credenciais e conectividade
+
+🔍 Analisando: full_sync_error_20250702_133235.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_145829.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_145900.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_151101.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_151439.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_152242.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_152353.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_152517.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-02T18:28:55.149804Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.IntegrityError: ORA-00001: unique constraint (OIC.SYS_C00120244) violated[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mab87d91b-3f58-49fc-9f63-e61a8fdc8247[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+[2m2025-07-02T18:28:55.155607Z[0m [[32m[1minfo     [0m] [1msqlalchemy.exc.IntegrityError: (oracledb.exceptions.IntegrityError) ORA-00001: unique constraint (OIC.SYS_C00120244) violated[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mab87d91b-3f58-49fc-9f63-e61a8fdc8247[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+[2m2025-07-02T18:28:55.157758Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.IntegrityError: ORA-00001: unique constraint (OIC.SYS_C00120244) violated[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mab87d91b-3f58-49fc-9f63-e61a8fdc8247[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250702_153005.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_153039.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_153412.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_154009.log
+----------------------------------------
+
+🔍 Analisando: full_sync_error_20250702_154436.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-02T18:44:41.423808Z[0m [[32m[1minfo     [0m] [1m🚨 ORACLE TARGET CRITICAL ERROR - Type: DatabaseError - Message: (oracledb.exceptions.DatabaseError) ORA-02420: missing schema authorization clause[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mb57be5f2-bf90-421e-8720-c4def490d75c[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-02T18:44:41.427480Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-02420: missing schema authorization clause[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mb57be5f2-bf90-421e-8720-c4def490d75c[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-02T18:44:41.442765Z[0m [[32m[1minfo     [0m] [1msqlalchemy.exc.DatabaseError: (oracledb.exceptions.DatabaseError) ORA-02420: missing schema authorization clause[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mb57be5f2-bf90-421e-8720-c4def490d75c[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250702_160128.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-02T19:02:21.479421Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-12899: value too large for column "OIC"."ALLOCATION"."CREATE_USER" (actual: 14, maximum: 10)[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mcd7ad692-ccf3-4877-b57a-16ea91adbaaa[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-02T19:02:21.490155Z[0m [[32m[1minfo     [0m] [1msqlalchemy.exc.DatabaseError: (oracledb.exceptions.DatabaseError) ORA-12899: value too large for column "OIC"."ALLOCATION"."CREATE_USER" (actual: 14, maximum: 10)[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mcd7ad692-ccf3-4877-b57a-16ea91adbaaa[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-02T19:02:21.494392Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-12899: value too large for column "OIC"."ALLOCATION"."CREATE_USER" (actual: 14, maximum: 10)[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mcd7ad692-ccf3-4877-b57a-16ea91adbaaa[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_094212.log
+----------------------------------------
+❌ PROBLEMA: Timeout detectado
+💡 SOLUÇÃO: Aumentar timeout ou verificar conexão
+
+🔍 Analisando: full_sync_error_20250703_094410.log
+----------------------------------------
+❌ PROBLEMA: Erro de conexão
+💡 SOLUÇÃO: Verificar credenciais e conectividade
+
+🔍 Analisando: full_sync_error_20250703_100215.log
+----------------------------------------
+❌ PROBLEMA: Timeout detectado
+💡 SOLUÇÃO: Aumentar timeout ou verificar conexão
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T13:04:53.994003Z[0m [[32m[1mdebug    [0m] [1mAdded to state dev:tap-oracle-wms-full-to-target-oracle-full state payload {'singer_state': {'timestamp': '2025-07-03T13:04:53.976516+00:00', 'level': 'ERROR', 'logger': 'flext_target_oracle', 'message': '❌ Failed to truncate table: (oracledb.exceptions.DatabaseError) ORA-00942: table or view does not exist\nHelp: https://docs.oracle.com/error-help/db/ora-00942/\n[SQL: TRUNCATE TABLE WMS_order_hdr]\n(Background on this error at: https://sqlalche.me/e/20/4xp6)', 'module': 'logging_config', 'function': '_log', 'line': 488, 'taskName': None, 'session_id': 'oracle_target_1751547737_3748373', 'component': 'oracle_target'}}[0m
+[2m2025-07-03T13:04:54.007132Z[0m [[32m[1mdebug    [0m] [1mIncremental state: {'timestamp': '2025-07-03T13:04:53.976516+00:00', 'level': 'ERROR', 'logger': 'flext_target_oracle', 'message': '❌ Failed to truncate table: (oracledb.exceptions.DatabaseError) ORA-00942: table or view does not exist\nHelp: https://docs.oracle.com/error-help/db/ora-00942/\n[SQL: TRUNCATE TABLE WMS_order_hdr]\n(Background on this error at: https://sqlalche.me/e/20/4xp6)', 'module': 'logging_config', 'function': '_log', 'line': 488, 'taskName': None, 'session_id': 'oracle_target_1751547737_3748373', 'component': 'oracle_target'}[0m
+[2m2025-07-03T13:04:54.007209Z[0m [[32m[1minfo     [0m] [1m{"timestamp": "2025-07-03T13:04:53.976516+00:00", "level": "ERROR", "logger": "flext_target_oracle", "message": "\u274c Failed to truncate table: (oracledb.exceptions.DatabaseError) ORA-00942: table or view does not exist\nHelp: https://docs.oracle.com/error-help/db/ora-00942/\n[SQL: TRUNCATE TABLE WMS_order_hdr]\n(Background on this error at: https://sqlalche.me/e/20/4xp6)", "module": "logging_config", "function": "_log", "line": 488, "taskName": null, "session_id": "oracle_target_1751547737_3748373", "component": "oracle_target"}[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m0a6a393e-7e1f-4447-9f7b-814ab1149fe4[0m [36mstdio[0m=[35mstdout[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_124437.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T15:45:36.714070Z[0m [[32m[1minfo     [0m] [1m❌ Failed to create table WMS_ALLOCATION: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mb7788568-5846-472b-9f48-d7d704bae000[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:45:36.717430Z[0m [[32m[1minfo     [0m] [1m❌ CUSTOM TABLE CREATION FAILED - allocation: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mb7788568-5846-472b-9f48-d7d704bae000[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:45:36.722040Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mb7788568-5846-472b-9f48-d7d704bae000[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_124915.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T15:50:15.725470Z[0m [[32m[1minfo     [0m] [1m❌ Failed to create table WMS_ALLOCATION: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m672ebf8a-858a-443a-a826-72db1c5bf4c6[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:50:15.728642Z[0m [[32m[1minfo     [0m] [1m❌ CUSTOM TABLE CREATION FAILED - allocation: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m672ebf8a-858a-443a-a826-72db1c5bf4c6[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:50:15.733216Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m672ebf8a-858a-443a-a826-72db1c5bf4c6[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_125349.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T15:54:51.122270Z[0m [[32m[1minfo     [0m] [1m❌ Failed to create table WMS_ALLOCATION: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mbc454972-e345-4071-bd4b-48bc6bd998b1[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:54:51.130506Z[0m [[32m[1minfo     [0m] [1m❌ CUSTOM TABLE CREATION FAILED - allocation: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mbc454972-e345-4071-bd4b-48bc6bd998b1[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:54:51.138358Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mbc454972-e345-4071-bd4b-48bc6bd998b1[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_125543.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T15:56:41.302753Z[0m [[32m[1minfo     [0m] [1m❌ Failed to create table WMS_ALLOCATION: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m53c7c710-db92-4c30-af3f-c0495b5b4bc8[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:56:41.305992Z[0m [[32m[1minfo     [0m] [1m❌ CUSTOM TABLE CREATION FAILED - allocation: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m53c7c710-db92-4c30-af3f-c0495b5b4bc8[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:56:41.310723Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m53c7c710-db92-4c30-af3f-c0495b5b4bc8[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_125828.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T15:59:26.139664Z[0m [[32m[1minfo     [0m] [1m❌ Failed to create table WMS_ALLOCATION: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mceea466b-a8e1-47c5-ae44-2f4b9eda8727[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:59:26.142827Z[0m [[32m[1minfo     [0m] [1m❌ CUSTOM TABLE CREATION FAILED - allocation: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mceea466b-a8e1-47c5-ae44-2f4b9eda8727[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T15:59:26.147185Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mceea466b-a8e1-47c5-ae44-2f4b9eda8727[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_130012.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T16:01:11.087744Z[0m [[32m[1minfo     [0m] [1m❌ Failed to create table WMS_ALLOCATION: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m3637f69f-9d19-4a72-9cc3-7924fe4555a1[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T16:01:11.091656Z[0m [[32m[1minfo     [0m] [1m❌ CUSTOM TABLE CREATION FAILED - allocation: (oracledb.exceptions.DatabaseError) ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m3637f69f-9d19-4a72-9cc3-7924fe4555a1[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T16:01:11.098991Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m3637f69f-9d19-4a72-9cc3-7924fe4555a1[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_130416.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T16:05:14.243434Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00904: "URL": invalid identifier[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m871ad8bb-4b43-4b85-aa31-bc9b655efeac[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T16:05:14.250038Z[0m [[32m[1minfo     [0m] [1msqlalchemy.exc.DatabaseError: (oracledb.exceptions.DatabaseError) ORA-00904: "URL": invalid identifier[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m871ad8bb-4b43-4b85-aa31-bc9b655efeac[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T16:05:14.252354Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00904: "URL": invalid identifier[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m871ad8bb-4b43-4b85-aa31-bc9b655efeac[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: full_sync_error_20250703_130717.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-03T16:08:15.256626Z[0m [[32m[1minfo     [0m] [1m❌ Failed to create table WMS_ALLOCATION: (oracledb.exceptions.DatabaseError) ORA-00955: name is already used by an existing object[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m88ed4022-a3f5-45a2-bb40-009899fcafbc[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T16:08:15.262309Z[0m [[32m[1minfo     [0m] [1m❌ CUSTOM TABLE CREATION FAILED - allocation: (oracledb.exceptions.DatabaseError) ORA-00955: name is already used by an existing object[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m88ed4022-a3f5-45a2-bb40-009899fcafbc[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T16:08:15.266808Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00955: name is already used by an existing object[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-full-to-target-oracle-full[0m [36mname[0m=[35mtarget-oracle-full[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35m88ed4022-a3f5-45a2-bb40-009899fcafbc[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle-full[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: incremental_sync_error_20250702_100113.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_100516.log
+----------------------------------------
+❌ PROBLEMA: Erro Oracle detectado
+[2m2025-07-02T13:08:19.553076Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00906: missing left parenthesis[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mcecdf7d0-b4a0-4ae1-943e-57f4a49f93e4[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+[2m2025-07-02T13:08:19.561317Z[0m [[32m[1minfo     [0m] [1msqlalchemy.exc.DatabaseError: (oracledb.exceptions.DatabaseError) ORA-00906: missing left parenthesis[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mcecdf7d0-b4a0-4ae1-943e-57f4a49f93e4[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+[2m2025-07-02T13:08:19.562848Z[0m [[32m[1minfo     [0m] [1moracledb.exceptions.DatabaseError: ORA-00906: missing left parenthesis[0m [36mcmd_type[0m=[35melb[0m [36mconsumer[0m=[35mTrue[0m [36mjob_name[0m=[35mdev:tap-oracle-wms-to-target-oracle[0m [36mname[0m=[35mtarget-oracle[0m [36mproducer[0m=[35mFalse[0m [36mrun_id[0m=[35mcecdf7d0-b4a0-4ae1-943e-57f4a49f93e4[0m [36mstdio[0m=[35mstderr[0m [36mstring_id[0m=[35mtarget-oracle[0m
+💡 SOLUÇÃO: Verificar conexão Oracle e permissões
+
+🔍 Analisando: incremental_sync_error_20250702_110842.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_111015.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_111714.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_130358.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_130642.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_151053.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_153008.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_153042.log
+----------------------------------------
+
+🔍 Analisando: incremental_sync_error_20250702_153415.log
+----------------------------------------
+
