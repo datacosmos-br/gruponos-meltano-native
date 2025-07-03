@@ -3,11 +3,9 @@
 Handles type conversion and validation issues found in production
 """
 
-import json
 import re
 from datetime import date, datetime
-from decimal import Decimal
-from typing import Any, Dict, Union
+from typing import Any
 
 
 class DataValidator:
@@ -20,7 +18,7 @@ class DataValidator:
             "strings_converted_to_numbers": 0,
             "dates_normalized": 0,
             "nulls_handled": 0,
-            "validation_errors": 0
+            "validation_errors": 0,
         }
 
     def validate_and_convert_record(self, record: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
@@ -42,7 +40,7 @@ class DataValidator:
             if field_name in schema["properties"]:
                 field_schema = schema["properties"][field_name]
                 converted_record[field_name] = self._convert_field(
-                    field_value, field_schema, field_name
+                    field_value, field_schema, field_name,
                 )
             else:
                 # Pass through unknown fields
@@ -70,7 +68,8 @@ class DataValidator:
             if expected_type == "boolean":
                 return self._convert_to_boolean(value, field_name)
             if expected_type == "string" and field_schema.get("format") in ["date", "date-time"]:
-                return self._convert_to_date(value, field_schema.get("format"), field_name)
+                date_format = field_schema.get("format") or "date-time"
+                return self._convert_to_date(value, date_format, field_name)
             return str(value) if value is not None else None
 
         except Exception as e:
@@ -81,7 +80,7 @@ class DataValidator:
             print(f"⚠️  Warning: Could not convert {field_name}={value} to {expected_type}: {e}")
             return value
 
-    def _convert_to_number(self, value: Any, expected_type: str, field_name: str) -> int | float:
+    def _convert_to_number(self, value: Any, expected_type: str, field_name: str) -> int | float | None:
         """Convert value to number, handling string numbers."""
         if isinstance(value, (int, float)):
             return value
@@ -149,7 +148,7 @@ class DataValidator:
             raise ValueError(f"Cannot convert {type(value)} '{value}' to boolean")
         return bool(value)
 
-    def _convert_to_date(self, value: Any, date_format: str, field_name: str) -> str:
+    def _convert_to_date(self, value: Any, date_format: str, field_name: str) -> str | None:
         """Convert value to standardized date format."""
         if isinstance(value, (datetime, date)):
             self.conversion_stats["dates_normalized"] += 1
@@ -200,7 +199,7 @@ if __name__ == "__main__":
         "amount": "540.50",
         "count": "42",
         "active": "true",
-        "created_date": "2025-07-02T10:00:00"
+        "created_date": "2025-07-02T10:00:00",
     }
 
     test_schema = {
@@ -209,8 +208,8 @@ if __name__ == "__main__":
             "amount": {"type": "number"},
             "count": {"type": "integer"},
             "active": {"type": "boolean"},
-            "created_date": {"type": "string", "format": "date-time"}
-        }
+            "created_date": {"type": "string", "format": "date-time"},
+        },
     }
 
     result = validator.validate_and_convert_record(test_record, test_schema)

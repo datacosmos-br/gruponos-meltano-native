@@ -6,18 +6,16 @@ Uses metadata-first pattern for consistency with tap discovery.
 
 import json
 import os
+import subprocess
 import sys
+import tempfile
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from src.oracle.connection_manager import create_connection_manager_from_env
 
 # Import centralized type mapping for Singer schema processing
 sys.path.insert(0, "/home/marlonsc/flext/flext-tap-oracle-wms/src")
-from tap_oracle_wms.type_mapping import (
-    convert_metadata_type_to_singer,
-    infer_type_enhanced,
-)
 
 # Oracle DDL Type Mappings (moved from type_mapping.py)
 WMS_METADATA_TO_ORACLE = {
@@ -49,21 +47,25 @@ FIELD_PATTERNS_TO_ORACLE = {
     "code_patterns": "VARCHAR2(50 CHAR)",
     "name_patterns": "VARCHAR2(255 CHAR)",
     "addr_patterns": "VARCHAR2(500 CHAR)",
+    "decimal_patterns": "NUMBER",
+    "set_patterns": "VARCHAR2(4000 CHAR)",
 }
 
 # Pattern matching rules (same as in type_mapping.py)
 FIELD_PATTERN_RULES = {
     "id_patterns": ["*_id", "id"],
     "key_patterns": ["*_key"],
-    "qty_patterns": ["*_qty", "*_quantity", "*_count", "*_amount"],
-    "price_patterns": ["*_price", "*_cost", "*_rate", "*_percent"],
+    "qty_patterns": ["*_qty", "*_quantity", "*_count", "*_amount", "alloc_qty", "ord_qty", "packed_qty", "ordered_uom_qty", "orig_ord_qty"],
+    "price_patterns": ["*_price", "*_cost", "*_rate", "*_percent", "cost", "sale_price", "unit_declared_value", "orig_sale_price"],
     "weight_patterns": ["*_weight", "*_volume", "*_length", "*_width", "*_height"],
-    "date_patterns": ["*_date", "*_time", "*_ts", "*_timestamp"],
+    "date_patterns": ["*_date", "*_time", "*_ts", "*_timestamp", "cust_date_*"],
     "flag_patterns": ["*_flg", "*_flag", "*_enabled", "*_active"],
     "desc_patterns": ["*_desc", "*_description", "*_note", "*_comment"],
     "code_patterns": ["*_code", "*_status", "*_type"],
     "name_patterns": ["*_name", "*_title"],
     "addr_patterns": ["*_addr", "*_address"],
+    "decimal_patterns": ["cust_decimal_*", "cust_number_*", "voucher_amount", "total_orig_ord_qty"],
+    "set_patterns": ["*_set"],
 }
 
 
@@ -98,18 +100,19 @@ def convert_metadata_type_to_oracle(
     column_lower = column_name.lower()
     for pattern_key, patterns in FIELD_PATTERN_RULES.items():
         for pattern in patterns:
-            pattern_clean = pattern.replace("*_", "").replace("*", "")
-            if (
-                (pattern.startswith("*_") and column_lower.endswith("_" + pattern_clean)) or
-                (pattern.endswith("_*") and column_lower.startswith(pattern_clean + "_")) or
-                (pattern == column_lower)
-            ):
+            # Handle wildcard patterns
+            if "*" in pattern:
+                pattern_clean = pattern.replace("*", "")
+                if (pattern.startswith("*_") and column_lower.endswith(pattern_clean)) or (pattern.endswith("_*") and column_lower.startswith(pattern_clean)):
+                    oracle_type = FIELD_PATTERNS_TO_ORACLE[pattern_key]
+                    if oracle_type.startswith("VARCHAR2") and max_length:
+                        return f"VARCHAR2({min(max_length, 4000)} CHAR)"
+                    return oracle_type
+            # Exact match
+            elif pattern == column_lower:
                 oracle_type = FIELD_PATTERNS_TO_ORACLE[pattern_key]
-
-                # Apply max_length override for VARCHAR2 types
                 if oracle_type.startswith("VARCHAR2") and max_length:
                     return f"VARCHAR2({min(max_length, 4000)} CHAR)"
-
                 return oracle_type
 
     # Priority 3: Sample value inference (last resort)
@@ -136,7 +139,7 @@ def oracle_ddl_from_singer_schema(singer_schema: dict[str, Any], column_name: st
     return convert_metadata_type_to_oracle(
         metadata_type=metadata_type,
         column_name=column_name,
-        max_length=max_length
+        max_length=max_length,
     )
 
 
@@ -172,7 +175,7 @@ def _looks_like_date(value: str) -> bool:
 class OracleTableCreator:
     """Professional Oracle table creator with optimized DDL."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize table creator."""
         self.connection_manager = create_connection_manager_from_env()
         self.schema_mapping = {
@@ -225,7 +228,7 @@ class OracleTableCreator:
                 primary_key_field = id_fields[0]  # Use first ID field as PK
 
             column_def = self._generate_wms_column_definition(
-                primary_key_field, properties[primary_key_field]
+                primary_key_field, properties[primary_key_field],
             )
             columns.append(f"    {column_def}")
             if primary_key_field.upper().endswith("_ID"):
@@ -247,7 +250,7 @@ class OracleTableCreator:
 
         for prop_name in other_fields:
             column_def = self._generate_wms_column_definition(
-                prop_name, properties[prop_name]
+                prop_name, properties[prop_name],
             )
             columns.append(f"    {column_def}")
 
@@ -268,7 +271,7 @@ class OracleTableCreator:
         for prop_name in sorted(fk_fields):
             if not prop_name.upper().endswith("_URL"):
                 column_def = self._generate_wms_column_definition(
-                    prop_name, properties[prop_name]
+                    prop_name, properties[prop_name],
                 )
                 columns.append(f"    {column_def}")
 
@@ -292,7 +295,7 @@ class OracleTableCreator:
 
         # 5. Add TK_DATE field
         columns.append(
-            '    "TK_DATE" TIMESTAMP (6) DEFAULT CURRENT_TIMESTAMP NOT NULL ENABLE'
+            '    "TK_DATE" TIMESTAMP (6) DEFAULT CURRENT_TIMESTAMP NOT NULL ENABLE',
         )
         index_columns.append("TK_DATE")
 
@@ -301,7 +304,7 @@ class OracleTableCreator:
             [
                 col + ("," if i < len(columns) - 1 else "")
                 for i, col in enumerate(columns)
-            ]
+            ],
         )
 
         # Add primary key constraint (PK field + MOD_TS)
@@ -309,7 +312,7 @@ class OracleTableCreator:
             pk_name = f"PK_{table_name}"
             pk_columns = f'"{primary_key_field.upper()}", "MOD_TS"'
             ddl_lines.append(
-                f'     , CONSTRAINT "{pk_name}" PRIMARY KEY ({pk_columns})'
+                f'     , CONSTRAINT "{pk_name}" PRIMARY KEY ({pk_columns})',
             )
 
         # Close table definition
@@ -321,7 +324,7 @@ class OracleTableCreator:
         for col_name in sorted(set(index_columns)):
             index_name = f"IDX_{table_name}_{col_name}"
             ddl_lines.append(
-                f'CREATE INDEX "{index_name}" ON "OIC"."{table_name}" ("{col_name}");'
+                f'CREATE INDEX "{index_name}" ON "OIC"."{table_name}" ("{col_name}");',
             )
 
         ddl_lines.append("")
@@ -329,19 +332,15 @@ class OracleTableCreator:
         return "\n".join(ddl_lines)
 
     def _generate_wms_column_definition(
-        self, column_name: str, column_schema: dict[str, Any]
+        self, column_name: str, column_schema: dict[str, Any],
     ) -> str:
         """Generate Oracle column definition following WMS enterprise rules."""
         col_name = f'"{column_name.upper()}"'
         col_type = self._map_to_wms_oracle_type(column_name, column_schema)
 
-        # Determine nullability - only primary key fields are NOT NULL
+        # Determine nullability - only ID, MOD_TS and TK_DATE are NOT NULL
         nullable = ""
-        if (
-            column_name.upper() == "ID"
-            or column_name.upper().endswith("_TS")
-            or column_name.upper() == "TK_DATE"
-        ):
+        if column_name.upper() in ["ID", "MOD_TS", "TK_DATE"]:
             nullable = " NOT NULL ENABLE"
 
         # Add collation for string types
@@ -366,11 +365,11 @@ class OracleTableCreator:
             metadata_type=metadata_type,
             column_name=column_name,
             max_length=max_length,
-            sample_value=None  # Not available during table creation
+            sample_value=None,  # Not available during table creation
         )
 
     def _generate_column_definition(
-        self, column_name: str, column_schema: dict[str, Any]
+        self, column_name: str, column_schema: dict[str, Any],
     ) -> str:
         """Generate Oracle column definition from JSON schema."""
         col_name = f'"{column_name.upper()}"'
@@ -393,7 +392,7 @@ class OracleTableCreator:
         """Map JSON schema to optimized Oracle types following the WMS pattern."""
         # Check if we have the original Oracle type preserved
         if "oracle_type" in schema:
-            return schema["oracle_type"]
+            return str(schema["oracle_type"])
 
         json_type = schema.get("type", "string")
         json_format = schema.get("format", "")
@@ -416,7 +415,7 @@ class OracleTableCreator:
             return "CLOB"
         return "VARCHAR2(4000 CHAR)"
 
-    def discover_and_create_tables(self, entities: list[str] = None) -> dict[str, str]:
+    def discover_and_create_tables(self, entities: list[str] | None = None) -> dict[str, str]:
         """Discover schemas and create optimized tables.
 
         Args:
@@ -450,30 +449,61 @@ class OracleTableCreator:
 
     def _discover_schemas(self) -> dict[str, Any]:
         """Discover schemas dynamically using tap-oracle-wms via API describe."""
-        import subprocess
+        # First, check if we have saved schemas
+        schema_file = "sql/wms_schemas.json"
+        if os.path.exists(schema_file):
+            print(f"📄 Using saved schemas from {schema_file}")
+            try:
+                with open(schema_file) as f:
+                    schemas = json.load(f)
+
+                for entity, schema in schemas.items():
+                    prop_count = len(schema.get("properties", {}))
+                    print(f"  ✅ Loaded schema for {entity} ({prop_count} properties)")
+
+                return dict(schemas)
+            except Exception as e:
+                print(f"⚠️  Could not load saved schemas: {e}")
+                print("🔄 Attempting fresh discovery...")
 
         try:
             print("🔍 Running WMS API schema discovery...")
 
-            # Use the working schema test mode directly
+            # Use meltano's built-in discover command instead of custom --test parameter
             cmd = [
                 "/home/marlonsc/flext/.venv/bin/meltano",
                 "invoke",
-                "tap-oracle-wms",
-                "--test=schema",
+                "tap-oracle-wms-full",
+                "--discover",
             ]
+
+            # First, ensure environment variables are loaded
+            env = os.environ.copy()
+
+            # Check if essential WMS config is available
+            required_vars = ["TAP_ORACLE_WMS_BASE_URL", "TAP_ORACLE_WMS_USERNAME", "TAP_ORACLE_WMS_PASSWORD"]
+            missing_vars = [var for var in required_vars if not env.get(var)]
+
+            if missing_vars:
+                print(f"❌ Missing required environment variables: {missing_vars}")
+                print("💡 Configure these in your .env file or environment")
+                print("🔄 Attempting direct tap discovery instead...")
+                return self._discover_schemas_direct()
 
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
                 cwd="/home/marlonsc/flext/gruponos-meltano-native",
-                env=os.environ.copy(), check=False,
+                env=env,
+                timeout=120,  # 2 minute timeout
+                check=False,
             )
 
             if result.returncode != 0:
-                print(f"❌ Schema discovery failed: {result.stderr}")
-                return self._get_fallback_schemas()
+                print(f"❌ Meltano schema discovery failed: {result.stderr}")
+                print("🔄 Attempting direct tap discovery instead...")
+                return self._discover_schemas_direct()
 
             # Parse SCHEMA messages from output
             schemas = {}
@@ -490,34 +520,124 @@ class OracleTableCreator:
                             schemas[stream_name] = schema
                             prop_count = len(schema.get("properties", {}))
                             print(
-                                f"  ✅ Discovered schema for {stream_name} ({prop_count} properties via WMS API)"
+                                f"  ✅ Discovered schema for {stream_name} ({prop_count} properties via WMS API)",
                             )
                     except json.JSONDecodeError:
                         continue
 
             if not schemas:
-                print("⚠️  No schemas found in tap output, using fallback")
-                return self._get_fallback_schemas()
+                print("❌ No schemas found in meltano output")
+                print("🚨 CRITICAL: Cannot proceed without proper schema discovery")
+                raise Exception("Schema discovery failed - check WMS credentials and connectivity")
 
             return schemas
 
+        except subprocess.TimeoutExpired:
+            print("❌ Schema discovery timed out")
+            raise Exception("Schema discovery timed out - check WMS API connectivity")
         except Exception as e:
             print(f"❌ Error in schema discovery: {e}")
-            return self._get_fallback_schemas()
+            raise Exception(f"Schema discovery failed: {e}")
+
+    def _discover_schemas_direct(self) -> dict[str, Any]:
+        """Discover schemas by calling tap-oracle-wms directly."""
+        try:
+            print("🔍 Running direct tap-oracle-wms schema discovery...")
+
+            # Call the tap directly with --discover
+            cmd = [
+                "/home/marlonsc/flext/.venv/bin/tap-oracle-wms",
+                "--discover",
+            ]
+
+            # Build config from environment variables
+            config = {
+                "base_url": os.environ.get("TAP_ORACLE_WMS_BASE_URL", ""),
+                "username": os.environ.get("TAP_ORACLE_WMS_USERNAME", ""),
+                "password": os.environ.get("TAP_ORACLE_WMS_PASSWORD", ""),
+                "entities": ["allocation", "order_hdr", "order_dtl"],
+                "page_size": 1000,
+                "force_full_table": True,
+            }
+
+            # Check if we have minimal config
+            if not all([config["base_url"], config["username"], config["password"]]):
+                print("❌ Missing WMS credentials for direct discovery")
+                raise Exception("WMS credentials not configured - cannot discover schemas")
+
+            # Write temporary config file
+
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+                json.dump(config, f)
+                config_file = f.name
+
+            try:
+                # Run tap with config
+                result = subprocess.run(
+                    cmd + ["--config", config_file],
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                    check=False,
+                )
+
+                if result.returncode != 0:
+                    print(f"❌ Direct tap discovery failed: {result.stderr}")
+                    raise Exception(f"Direct tap discovery failed: {result.stderr}")
+
+                # Parse SCHEMA messages from output
+                schemas = {}
+                lines = result.stdout.strip().split("\n")
+
+                for line in lines:
+                    if line.startswith('{"type":"SCHEMA"'):
+                        try:
+                            schema_msg = json.loads(line)
+                            stream_name = schema_msg.get("stream")
+                            schema = schema_msg.get("schema")
+
+                            if stream_name and schema:
+                                schemas[stream_name] = schema
+                                prop_count = len(schema.get("properties", {}))
+                                print(
+                                    f"  ✅ Direct discovered schema for {stream_name} ({prop_count} properties)",
+                                )
+                        except json.JSONDecodeError:
+                            continue
+
+                if not schemas:
+                    print("❌ No schemas found in direct tap output")
+                    raise Exception("Direct schema discovery failed - no schemas returned")
+
+                return schemas
+
+            finally:
+                # Clean up temp config file
+                try:
+                    os.unlink(config_file)
+                except:
+                    pass
+
+        except subprocess.TimeoutExpired:
+            print("❌ Direct tap discovery timed out")
+            raise Exception("Direct tap discovery timed out")
+        except Exception as e:
+            print(f"❌ Error in direct schema discovery: {e}")
+            raise Exception(f"Direct schema discovery failed: {e}")
 
     def _get_fallback_schemas(self) -> dict[str, Any]:
-        """Get fallback schemas if discovery fails."""
-        return {
-            "allocation": self._create_default_schema("allocation"),
-            "order_hdr": self._create_default_schema("order_hdr"),
-            "order_dtl": self._create_default_schema("order_dtl"),
-        }
+        """REMOVED: Fallback schemas are dangerous and should never be used."""
+        raise Exception(
+            "Fallback schemas are disabled. "
+            "Configure proper WMS credentials to discover real schemas. "
+            "Required: TAP_ORACLE_WMS_BASE_URL, TAP_ORACLE_WMS_USERNAME, TAP_ORACLE_WMS_PASSWORD",
+        )
 
     def _oracle_to_json_schema(
-        self, data_type: str, length: int, precision: int, scale: int, nullable: bool
+        self, data_type: str, length: int, precision: int, scale: int, nullable: bool,
     ) -> dict[str, Any]:
         """Convert Oracle column type to JSON schema with original type tracking."""
-        schema = {}
+        schema: dict[str, Any] = {}
 
         if data_type in ["NUMBER"]:
             if precision and scale and scale > 0:
@@ -538,7 +658,7 @@ class OracleTableCreator:
             schema = {
                 "type": ["string", "null"] if nullable else ["string"],
                 "format": "date-time",
-                "oracle_type": "TIMESTAMP (6)",
+                "oracle_type": "TIMESTAMP(6)",
             }
         else:
             schema = {"type": ["string", "null"] if nullable else ["string"]}
@@ -547,53 +667,14 @@ class OracleTableCreator:
         return schema
 
     def _create_default_schema(self, entity: str) -> dict[str, Any]:
-        """Create default schema for entity if table doesn't exist."""
-        base_properties = {
-            "id": {"type": ["integer", "null"]},
-            "mod_ts": {"type": ["string", "null"], "format": "date-time"},
-        }
-
-        if entity == "allocation":
-            base_properties.update(
-                {
-                    "allocation_id": {"type": ["string", "null"]},
-                    "item_id": {"type": ["string", "null"]},
-                    "location_id": {"type": ["string", "null"]},
-                    "qty_allocated": {"type": ["number", "null"]},
-                    "allocation_date": {
-                        "type": ["string", "null"],
-                        "format": "date-time",
-                    },
-                    "status": {"type": ["string", "null"]},
-                    "user_id": {"type": ["string", "null"]},
-                }
-            )
-        elif entity == "order_hdr":
-            base_properties.update(
-                {
-                    "order_id": {"type": ["string", "null"]},
-                    "customer_id": {"type": ["string", "null"]},
-                    "order_date": {"type": ["string", "null"], "format": "date-time"},
-                    "status": {"type": ["string", "null"]},
-                    "total_amount": {"type": ["number", "null"]},
-                }
-            )
-        elif entity == "order_dtl":
-            base_properties.update(
-                {
-                    "order_id": {"type": ["string", "null"]},
-                    "line_number": {"type": ["integer", "null"]},
-                    "item_id": {"type": ["string", "null"]},
-                    "qty_ordered": {"type": ["number", "null"]},
-                    "unit_price": {"type": ["number", "null"]},
-                    "line_amount": {"type": ["number", "null"]},
-                }
-            )
-
-        return {"type": "object", "properties": base_properties}
+        """REMOVED: Default schemas are dangerous and should never be used."""
+        raise Exception(
+            f"Default schema creation is disabled for entity '{entity}'. "
+            "Use proper schema discovery with WMS API credentials.",
+        )
 
     def execute_ddl(
-        self, ddl_statements: dict[str, str], drop_existing: bool = True
+        self, ddl_statements: dict[str, str], drop_existing: bool = True,
     ) -> bool:
         """Execute DDL statements on Oracle database.
 
@@ -652,7 +733,7 @@ class OracleTableCreator:
                                 table_name = stmt.split('"')[3]  # Extract table name
                                 try:
                                     cursor.execute(
-                                        f'DROP TABLE "OIC"."{table_name}" CASCADE CONSTRAINTS'
+                                        f'DROP TABLE "OIC"."{table_name}" CASCADE CONSTRAINTS',
                                     )
                                     cursor.execute(stmt)
                                     print(f"  ✅ Recreated table: {table_name}")
@@ -674,8 +755,15 @@ class OracleTableCreator:
             return False
 
 
-def main():
+def main() -> int:
     """Main execution function."""
+    # Check if we should discover schemas first
+    if len(sys.argv) > 1 and sys.argv[1] == "--discover-only":
+        print("🔍 Running schema discovery only...")
+        from src.oracle.discover_and_save_schemas import discover_schemas
+        success = discover_schemas()
+        return 0 if success else 1
+
     creator = OracleTableCreator()
 
     # Get entities from command line or use default

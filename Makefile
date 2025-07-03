@@ -3,7 +3,7 @@
 # Gerenciamento robusto de sincronizações, logs, análise de falhas e validação
 # ============================================================================
 
-.PHONY: help env status full-sync incremental-sync validate-oracle analyze-failures clean-logs monitor stop-sync
+.PHONY: help env status full-sync incremental-sync validate-oracle analyze-failures clean-logs monitor stop-sync recreate-tables discover-schemas
 
 # ============================================================================
 # CONFIGURAÇÃO DE CAMINHOS E AMBIENTE
@@ -44,9 +44,11 @@ help:
 	@echo "  make validate-oracle  # Validar dados no Oracle"
 	@echo ""
 	@echo "🔄 SINCRONIZAÇÕES:"
-	@echo "  make full-sync        # Sincronização full (background)"
-	@echo "  make incremental-sync # Sincronização incremental"
+	@echo "  make full-sync        # Sincronização full (background) - recovery por ID"
+	@echo "  make incremental-sync # Sincronização incremental - checkpoint mod_ts"
+	@echo "  make dual-sync        # Ambas sincronizações simultaneamente"
 	@echo "  make stop-sync        # Parar sincronizações ativas"
+	@echo "  make restart-full-sync # Reiniciar full sync do zero"
 	@echo "  make force-full-sync  # Full sync com tabelas recriadas"
 	@echo ""
 	@echo "🏗️ GERENCIAMENTO DE TABELAS:"
@@ -61,9 +63,11 @@ help:
 	@echo "  make validate-data    # Validar tipos de dados"
 	@echo ""
 	@echo "🧹 MANUTENÇÃO:"
-	@echo "  make clean-logs       # Limpar logs antigos"
-	@echo "  make reset-state      # Reset do estado Meltano"
-	@echo "  make env              # Testar ambiente"
+	@echo "  make clean-logs          # Limpar logs antigos"
+	@echo "  make reset-state         # Reset do estado Meltano (todos)"
+	@echo "  make reset-full-sync     # Reset apenas estado full sync"
+	@echo "  make reset-incremental-sync # Reset apenas estado incremental"
+	@echo "  make env                 # Testar ambiente"
 	@echo ""
 
 # ============================================================================
@@ -163,7 +167,7 @@ full-sync:
 		echo "$(LOG_TIMESTAMP) - CONFIG: Testando ambiente..." >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
 		if $(ENV_CMD) && echo "Ambiente OK" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
 			echo "$(LOG_TIMESTAMP) - EXEC: Executando meltano run..." >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
-			if $(ENV_CMD) && timeout 3600 meltano run tap-oracle-wms target-oracle >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
+			if $(ENV_CMD) && timeout 3600 meltano run full-sync-job >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
 				echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização full concluída" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
 				echo "FULL_SYNC_SUCCESS" > $(STATE_DIR)/last_full_sync.state; \
 			else \
@@ -190,7 +194,7 @@ incremental-sync:
 	@echo "📝 Logs: $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log"
 	@nohup bash -c ' \
 		echo "$(LOG_TIMESTAMP) - INÍCIO: Sincronização Incremental" > $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
-		if $(ENV_CMD) && timeout 1800 meltano run tap-oracle-wms target-oracle >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log 2>&1; then \
+		if $(ENV_CMD) && timeout 1800 meltano run incremental-sync-job >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log 2>&1; then \
 			echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização incremental concluída" >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
 			echo "INCREMENTAL_SYNC_SUCCESS" > $(STATE_DIR)/last_incremental_sync.state; \
 		else \
@@ -201,6 +205,19 @@ incremental-sync:
 		rm -f $(PID_DIR)/incremental_sync.pid; \
 	' & echo $$! > $(PID_DIR)/incremental_sync.pid
 	@echo "✅ Sincronização incremental iniciada (PID: $$(cat $(PID_DIR)/incremental_sync.pid))"
+
+# Job para rodar ambos simultaneamente
+dual-sync:
+	@echo "🚀 INICIANDO SINCRONIZAÇÃO DUAL (FULL + INCREMENTAL) EM PARALELO..."
+	@echo "📋 Este comando iniciará dois processos separados:"
+	@echo "  1. Full Sync → Schema WMS_FULL (modo overwrite)"
+	@echo "  2. Incremental Sync → Schema WMS_INCREMENTAL (modo append-only com versionamento)"
+	@echo ""
+	@$(MAKE) full-sync
+	@sleep 3
+	@$(MAKE) incremental-sync
+	@echo "✅ Ambas sincronizações iniciadas simultaneamente"
+	@echo "📊 Use 'make status' para acompanhar ambas"
 
 stop-sync:
 	@echo "🛑 PARANDO SINCRONIZAÇÕES..."
@@ -362,7 +379,44 @@ reset-state:
 	@rm -rf $(PROJECT_DIR)/.meltano/run/state 2>/dev/null || true
 	@rm -f $(STATE_DIR)/*.state 2>/dev/null || true
 	@$(ENV_CMD) && meltano state clear tap-oracle-wms 2>/dev/null || true
-	@echo "✅ Estado resetado"
+	@$(ENV_CMD) && meltano state clear tap-oracle-wms-full 2>/dev/null || true
+	@$(ENV_CMD) && meltano state clear tap-oracle-wms-incremental 2>/dev/null || true
+	@echo "✅ Estado resetado para todos os taps"
+
+# Reset apenas do Full Sync para reiniciar do ID mais alto
+reset-full-sync:
+	@echo "🔄 RESETANDO ESTADO DO FULL SYNC..."
+	@echo "📋 Isso fará o full sync recomeçar do ID mais alto"
+	@$(ENV_CMD) && echo "y" | meltano state clear tap-oracle-wms-full
+	@rm -f $(STATE_DIR)/last_full_sync.state 2>/dev/null || true
+	@echo "✅ Estado do full sync resetado - próxima execução começará do início"
+
+# Reset apenas do Incremental Sync para reiniciar do start_date
+reset-incremental-sync:
+	@echo "🔄 RESETANDO ESTADO DO INCREMENTAL SYNC..."
+	@echo "📋 Isso fará o incremental sync recomeçar do start_date configurado"
+	@$(ENV_CMD) && echo "y" | meltano state clear tap-oracle-wms-incremental
+	@rm -f $(STATE_DIR)/last_incremental_sync.state 2>/dev/null || true
+	@echo "✅ Estado do incremental sync resetado - próxima execução começará do start_date"
+
+# Comando para reiniciar full sync automaticamente
+restart-full-sync:
+	@echo "🔄 REINICIANDO FULL SYNC DO ZERO..."
+	@echo "📋 Este comando irá:"
+	@echo "  1. Parar full sync ativo (se houver)"
+	@echo "  2. Resetar estado do full sync"
+	@echo "  3. Iniciar novo full sync do ID mais alto"
+	@echo ""
+	@if [ -f $(PID_DIR)/full_sync.pid ] && ps -p $$(cat $(PID_DIR)/full_sync.pid) > /dev/null 2>&1; then \
+		echo "Parando full sync ativo..."; \
+		kill $$(cat $(PID_DIR)/full_sync.pid) 2>/dev/null || true; \
+		rm -f $(PID_DIR)/full_sync.pid; \
+		sleep 2; \
+	fi
+	@$(MAKE) reset-full-sync
+	@sleep 1
+	@$(MAKE) full-sync
+	@echo "✅ Full sync reiniciado do zero"
 
 # ============================================================================
 # COMANDOS AVANÇADOS
@@ -403,3 +457,13 @@ run:
 clean:
 	@echo "⚠️  COMANDO LEGACY - Use 'make clean-logs'"
 	@$(MAKE) clean-logs
+
+# Descobrir e salvar schemas WMS
+discover-schemas:
+	@echo "🔍 DESCOBRINDO SCHEMAS WMS..."
+	@echo "📋 Este comando irá:"
+	@echo "  1. Conectar na API WMS"
+	@echo "  2. Descobrir schemas reais de todas as entidades"
+	@echo "  3. Salvar em sql/wms_schemas.json"
+	@echo ""
+	@$(ENV_CMD) && python3 src/oracle/discover_and_save_schemas.py

@@ -6,7 +6,7 @@ Handles SSL/TCPS connections with proper error handling and fallbacks
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any
 
 import oracledb
 
@@ -67,12 +67,12 @@ class OracleConnectionManager:
                             logger.error(f"Fallback connection also failed: {fallback_error}")
                             raise ConnectionError(
                                 f"Could not establish Oracle connection after {self.config.retry_attempts} attempts. "
-                                f"Last error: {e}, Fallback error: {fallback_error}"
+                                f"Last error: {e}, Fallback error: {fallback_error}",
                             )
                     else:
                         raise ConnectionError(
                             f"Could not establish Oracle connection after {self.config.retry_attempts} attempts. "
-                            f"Last error: {e}"
+                            f"Last error: {e}",
                         )
 
                 # Wait before retry
@@ -105,18 +105,18 @@ class OracleConnectionManager:
         except:
             pass  # Older oracledb versions may not support this
 
-        return oracledb.connect(**connection_params)
+        return oracledb.connect(**connection_params)  # type: ignore[no-any-return]
 
     def _connect_tcp(self) -> oracledb.Connection:
         """Connect using standard TCP protocol."""
         logger.debug("Connecting with standard TCP")
 
-        return oracledb.connect(
+        return oracledb.connect(  # type: ignore[no-any-return]
             user=self.config.username,
             password=self.config.password,
             host=self.config.host,
             port=self.config.port,
-            service_name=self.config.service_name
+            service_name=self.config.service_name,
         )
 
     def _connect_tcp_fallback(self) -> oracledb.Connection:
@@ -133,10 +133,10 @@ class OracleConnectionManager:
             f")"
         )
 
-        return oracledb.connect(
+        return oracledb.connect(  # type: ignore[no-any-return]
             user=self.config.username,
             password=self.config.password,
-            dsn=dsn
+            dsn=dsn,
         )
 
     def test_connection(self) -> dict[str, Any]:
@@ -145,13 +145,13 @@ class OracleConnectionManager:
         Returns:
             Dictionary with connection test results
         """
-        result = {
+        result: dict[str, Any] = {
             "success": False,
             "protocol_used": None,
             "oracle_version": None,
             "current_user": None,
             "connection_time_ms": None,
-            "error": None
+            "error": None,
         }
 
         import time
@@ -177,7 +177,7 @@ class OracleConnectionManager:
                 "protocol_used": self.config.protocol,
                 "oracle_version": oracle_version,
                 "current_user": current_user,
-                "connection_time_ms": round(connection_time, 2)
+                "connection_time_ms": round(connection_time, 2),
             })
 
         except Exception as e:
@@ -188,17 +188,26 @@ class OracleConnectionManager:
 
 def create_connection_manager_from_env() -> OracleConnectionManager:
     """Create connection manager from environment variables."""
+    # Get required environment variables with validation
+    host = os.getenv("FLEXT_TARGET_ORACLE_HOST")
+    service_name = os.getenv("FLEXT_TARGET_ORACLE_SERVICE_NAME")
+    username = os.getenv("FLEXT_TARGET_ORACLE_USERNAME")
+    password = os.getenv("FLEXT_TARGET_ORACLE_PASSWORD")
+
+    if not all([host, service_name, username, password]):
+        raise ValueError("Missing required Oracle connection environment variables")
+
     config = OracleConnectionConfig(
-        host=os.getenv("FLEXT_TARGET_ORACLE_HOST"),
-        port=int(os.getenv("FLEXT_TARGET_ORACLE_PORT", 1522)),
-        service_name=os.getenv("FLEXT_TARGET_ORACLE_SERVICE_NAME"),
-        username=os.getenv("FLEXT_TARGET_ORACLE_USERNAME"),
-        password=os.getenv("FLEXT_TARGET_ORACLE_PASSWORD"),
+        host=host,  # type: ignore[arg-type]
+        port=int(os.getenv("FLEXT_TARGET_ORACLE_PORT", "1522")),
+        service_name=service_name,  # type: ignore[arg-type]
+        username=username,  # type: ignore[arg-type]
+        password=password,  # type: ignore[arg-type]
         protocol=os.getenv("FLEXT_TARGET_ORACLE_PROTOCOL", "tcps"),
         ssl_server_dn_match=os.getenv("FLEXT_TARGET_ORACLE_SSL_DN_MATCH", "false").lower() == "true",
-        connection_timeout=int(os.getenv("FLEXT_TARGET_ORACLE_TIMEOUT", 60)),
+        connection_timeout=int(os.getenv("FLEXT_TARGET_ORACLE_TIMEOUT", "60")),
         retry_attempts=int(os.getenv("FLEXT_TARGET_ORACLE_RETRIES", 3)),
-        retry_delay=int(os.getenv("FLEXT_TARGET_ORACLE_RETRY_DELAY", 5))
+        retry_delay=int(os.getenv("FLEXT_TARGET_ORACLE_RETRY_DELAY", 5)),
     )
 
     return OracleConnectionManager(config)

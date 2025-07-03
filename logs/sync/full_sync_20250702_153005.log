@@ -1,0 +1,10 @@
+2025-07-02 15:30:05 - INÍCIO: Sincronização Full
+2025-07-02 15:30:05 - CONFIG: Testando ambiente...
+Ambiente OK
+2025-07-02 15:30:05 - EXEC: Executando meltano run...
+[2m2025-07-02T18:30:06.401468Z[0m [[32m[1minfo     [0m] [1mEnvironment 'dev' is active   [0m
+Usage: meltano job [OPTIONS] COMMAND [ARGS]...
+Try 'meltano job --help' for help.
+
+Error: No such command 'run'.
+2025-07-02 15:30:05 - ERRO: Sincronização full falhou

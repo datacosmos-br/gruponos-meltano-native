@@ -1,0 +1,12 @@
+2025-07-02 14:58:29 - INÍCIO: Sincronização Full
+2025-07-02 14:58:29 - CONFIG: Testando ambiente...
+Ambiente OK
+2025-07-02 14:58:29 - EXEC: Executando meltano run...
+[2m2025-07-02T17:58:30.562001Z[0m [[32m[1minfo     [0m] [1mEnvironment 'dev' is active   [0m
+[2m2025-07-02T17:58:30.793951Z[0m [[31m[1merror    [0m] [1mAnother 'dev:tap-oracle-wms-to-target-oracle' pipeline is already running which started at 2025-07-02 17:53:20.767017+00:00. Wait until 2025-07-02 17:59:53.579495+00:00 when the job will be automatically cancelled if stale, or ignore this check using the '--force' option.[0m
+[2m2025-07-02T17:58:30.794209Z[0m [[31m[1merror    [0m] [1mBlock run completed.          [0m [36mblock_type[0m=[35mExtractLoadBlocks[0m [36merr[0m=[35mRunnerError("Another 'dev:tap-oracle-wms-to-target-oracle' pipeline is already running which started at 2025-07-02 17:53:20.767017+00:00. Wait until 2025-07-02 17:59:53.579495+00:00 when the job will be automatically cancelled if stale, or ignore this check using the '--force' option.")[0m [36mexit_codes[0m=[35m{}[0m [36mset_number[0m=[35m0[0m [36msuccess[0m=[35mFalse[0m
+Need help fixing this problem? Visit http://melta.no/ for troubleshooting steps, or to
+join our friendly Slack community.
+
+Run invocation could not be completed as block failed: Another 'dev:tap-oracle-wms-to-target-oracle' pipeline is already running which started at 2025-07-02 17:53:20.767017+00:00. Wait until 2025-07-02 17:59:53.579495+00:00 when the job will be automatically cancelled if stale, or ignore this check using the '--force' option.
+2025-07-02 14:58:29 - ERRO: Sincronização full falhou

@@ -1,0 +1,225 @@
+2025-07-02T22:00:21.053950Z [info     ] tap-oracle-wms v0.1.0, Meltano SDK v0.47.4 cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:21.054459Z [info     ] /home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/plugin_base.py:715: SingerSDKDeprecationWarning: Passing a list of config file paths is deprecated. Please pass the config as a dictionary instead. cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:21.054650Z [info     ]   super().__init__(            cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:21.054788Z [info     ]                                cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:21.054913Z [info     ] Skipping parse of env var settings... cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:21.119082Z [info     ] flext-target-oracle v1.0.0, Meltano SDK v0.47.4 cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:21.119422Z [info     ] /home/marlonsc/flext/.venv/lib/python3.13/site-packages/singer_sdk/plugin_base.py:715: SingerSDKDeprecationWarning: Passing a list of config file paths is deprecated. Please pass the config as a dictionary instead. cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:21.119590Z [info     ]   super().__init__(            cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:21.119720Z [info     ]                                cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:21.119850Z [info     ] Skipping parse of env var settings... cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:21.141380Z [info     ] Using systemdb state backend
+2025-07-02T22:00:21.156121Z [info     ] Incremental state has been updated at 2025-07-02 22:00:21.156095+00:00.
+2025-07-02T22:00:21.156391Z [info     ] Oracle Target initialized      cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:21.186637Z [info     ] Incremental state has been updated at 2025-07-02 22:00:21.186613+00:00.
+2025-07-02T22:00:21.216791Z [info     ] Incremental state has been updated at 2025-07-02 22:00:21.216758+00:00.
+2025-07-02T22:00:21.217008Z [info     ] Initializing Oracle Target monitoring cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:21.217128Z [info     ] Operation started              cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:22.024678Z [info     ] HTTP Request: GET https://a29.wms.ocs.oraclecloud.com/raizen/wms/lgfapi/v10/entity//allocation/describe/ "HTTP/1.1 200 OK" cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.953884Z [info     ] HTTP Request: GET https://a29.wms.ocs.oraclecloud.com/raizen/wms/lgfapi/v10/entity//allocation?page_size=5&page_mode=sequenced "HTTP/1.1 200 OK" cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.956577Z [info     ] Generated hybrid schema for allocation with 31 properties cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.957347Z [info     ] Configured stream: allocation with 31 WMS-specific properties cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.957998Z [info     ] Beginning full_table sync of 'allocation' cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.958340Z [info     ] Starting incremental sync with bookmark value: None cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.958521Z [info     ] WMS GET_RECORDS START - Entity: allocation cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.958758Z [info     ] WMS REQUEST PARAMS - Entity: allocation cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.959019Z [info     ] Full sync starting from beginning (highest ID) cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.959176Z [info     ] WMS FINAL PARAMS - Entity: allocation - URL: https://a29.wms.ocs.oraclecloud.com/raizen/wms/lgfapi/v10/entity/allocation - PARAMS: {'page_size': 10, 'page_mode': 'sequenced', 'ordering': '-id'} cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.985851Z [info     ] Incremental state has been updated at 2025-07-02 22:00:22.985823+00:00.
+2025-07-02T22:00:22.986051Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:22.986164Z [info     ] 🔍 SINK SETUP DEBUG - Stream: allocation - Schema properties: 31 cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:22.986342Z [info     ] WMS HTTP REQUEST #1 - Entity: allocation cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.986443Z [info     ] WMS REQUEST PARAMS - Entity: allocation cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.986514Z [info     ] Full sync starting from beginning (highest ID) cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.986580Z [info     ] WMS FINAL PARAMS - Entity: allocation - URL: https://a29.wms.ocs.oraclecloud.com/raizen/wms/lgfapi/v10/entity/allocation - PARAMS: {'page_size': 10, 'page_mode': 'sequenced', 'ordering': '-id'} cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.986648Z [info     ] WMS INDIVIDUAL HTTP CALL - Entity: allocation - URL: https://a29.wms.ocs.oraclecloud.com/raizen/wms/lgfapi/v10/entity/allocation?page_size=10&page_mode=sequenced&ordering=-id - HEADERS: 8 cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:22.986720Z [info     ] 🔍 SINK SETUP - After conform_schema - Stream: allocation - Properties: 31 cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:24.033720Z [info     ] METRIC: {"type": "timer", "metric": "http_request_duration", "value": 1.073564, "tags": {"stream": "allocation", "endpoint": "/wms/lgfapi/v10/entity/allocation", "http_status_code": 200, "status": "succeeded"}} cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.033997Z [info     ] WMS HTTP RESPONSE - Entity: allocation cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.035276Z [info     ] WMS RESPONSE STRUCTURE - Entity: allocation cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.035450Z [info     ] WMS YIELDING RECORDS - Entity: allocation - Count: 10 cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.035657Z [info     ] 🚨 SCHEMA EXTENSION: Found 2 fields in data not present in schema discovery: ['mhe_system_key', 'wave_key'] cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.035816Z [info     ] 🔧 AUTO-ADDED field 'wave_key' to schema with type ['string', 'null'] cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.035973Z [info     ] 🔧 AUTO-ADDED field 'mhe_system_key' to schema with type ['string', 'null'] cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.036129Z [info     ] Properties ('_sdc_extracted_at', '_sdc_entity') were present in the 'allocation' stream but not found in catalog schema. Ignoring. cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.036401Z [info     ] 🚨 SCHEMA EXTENSION: Found 1 fields in data not present in schema discovery: ['task_key'] cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.036557Z [info     ] 🔧 AUTO-ADDED field 'task_key' to schema with type ['string', 'null'] cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.036776Z [info     ] METRIC: {"type": "counter", "metric": "http_request_count", "value": 1, "tags": {"stream": "allocation", "endpoint": "/wms/lgfapi/v10/entity/allocation", "pid": 3207035}} cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.036924Z [info     ] WMS GET_RECORDS END - Entity: allocation cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.037060Z [info     ] METRIC: {"type": "timer", "metric": "sync_duration", "value": 1.0783874988555908, "tags": {"stream": "allocation", "pid": 3207035, "context": {}, "status": "succeeded"}} cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:24.037195Z [info     ] METRIC: {"type": "counter", "metric": "record_count", "value": 10, "tags": {"stream": "allocation", "pid": 3207035, "context": {}}} cmd_type=elb consumer=False job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=tap-oracle-wms-full producer=True run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=tap-oracle-wms-full
+2025-07-02T22:00:27.436851Z [info     ] 🔍 SINK SETUP COMPLETE - Stream: allocation - Table: allocation cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.437311Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.437483Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.437614Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.437734Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.437848Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.437961Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438069Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438184Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438308Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438419Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438523Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438626Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438728Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438829Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.438929Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439033Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439133Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439233Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439347Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439449Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439550Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439650Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439749Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439847Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.439946Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440044Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440144Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440244Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440357Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440463Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440581Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440687Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440793Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.440897Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441004Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441111Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441213Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441325Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441437Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441547Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441651Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441757Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441865Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.441970Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442076Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442181Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442293Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442393Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442490Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442587Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442682Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442778Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442878Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.442975Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443073Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443172Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443270Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443449Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443540Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443598Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443650Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443698Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443746Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443793Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443840Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443886Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443932Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.443978Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444023Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444070Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444117Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444165Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444212Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444261Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444316Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444361Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444407Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444456Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444503Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444549Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444594Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444642Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444690Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444740Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444800Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444856Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444905Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444952Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.444999Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445047Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445093Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445139Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445187Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445233Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445285Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445342Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445389Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445436Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445484Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.445535Z [warning  ] Received state is invalid, incremental state has not been updated
+2025-07-02T22:00:27.475344Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.475302+00:00.
+2025-07-02T22:00:27.475629Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.475819Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.475984Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.507247Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.507217+00:00.
+2025-07-02T22:00:27.531928Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.531898+00:00.
+2025-07-02T22:00:27.557658Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.557621+00:00.
+2025-07-02T22:00:27.587221Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.587193+00:00.
+2025-07-02T22:00:27.613019Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.612989+00:00.
+2025-07-02T22:00:27.640636Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.640607+00:00.
+2025-07-02T22:00:27.669702Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.669656+00:00.
+2025-07-02T22:00:27.699566Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.699529+00:00.
+2025-07-02T22:00:27.726931Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.726909+00:00.
+2025-07-02T22:00:27.754421Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.754387+00:00.
+2025-07-02T22:00:27.783514Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.783492+00:00.
+2025-07-02T22:00:27.808430Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.808399+00:00.
+2025-07-02T22:00:27.834910Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.834885+00:00.
+2025-07-02T22:00:27.863624Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.863598+00:00.
+2025-07-02T22:00:27.893954Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.893927+00:00.
+2025-07-02T22:00:27.919434Z [info     ] Incremental state has been updated at 2025-07-02 22:00:27.919403+00:00.
+2025-07-02T22:00:27.919676Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.919997Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920201Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920360Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920453Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920530Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920600Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920670Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920736Z [info     ] No schema for record field 'task_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920803Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920877Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.920943Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921012Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921086Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921156Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921225Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921303Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921374Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921456Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921524Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921594Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921662Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921730Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921800Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921868Z [info     ] Creating sink for stream       cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.921938Z [info     ] No schema for record field 'wave_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922003Z [info     ] No schema for record field 'mhe_system_key' cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922075Z [info     ] Performance statistics         cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922162Z [info     ] Operation completed            cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922241Z [info     ] Reader 'flext-target-oracle' completed processing 12 lines of input (1 schemas, 10 records, 0 batch manifests, 1 state messages, 0 activate version messages). cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922330Z [info     ] 📦 BATCH #1 STARTING            cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922427Z [info     ] Batch processed                cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922496Z [info     ] Operation started              cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922576Z [info     ] 🔧 INTERNAL BATCH PROCESSING    cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922652Z [info     ] ➕ USING APPEND-ONLY MODE for allocation cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:27.922726Z [info     ] Inserting with SQL: INSERT INTO allocation (alloc_qty, alloc_uom_id, cartonize_uom_id, create_ts, create_user, final_oblpn_nbr, from_inventory_id, id, is_picking_flg, mhe_system_id, mod_ts, mod_user, ob_lpn_type_id, order_dtl_id, packed_qty, pick_locn_str, pick_user, picked_ts, status_id, task_id, task_seq_nbr, to_inventory_id, type_id, wave_id, type_key, to_inventory_key, alloc_uom_key, cartonize_uom_key, order_dtl_key, from_inventory_key, url) VALUES (:alloc_qty, :alloc_uom_id, :cartonize_uom_id, :create_ts, :create_user, :final_oblpn_nbr, :from_inventory_id, :id, :is_picking_flg, :mhe_system_id, :mod_ts, :mod_user, :ob_lpn_type_id, :order_dtl_id, :packed_qty, :pick_locn_str, :pick_user, :picked_ts, :status_id, :task_id, :task_seq_nbr, :to_inventory_id, :type_id, :wave_id, :type_key, :to_inventory_key, :alloc_uom_key, :cartonize_uom_key, :order_dtl_key, :from_inventory_key, :url) cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.299695Z [info     ] Incremental state has been updated at 2025-07-02 22:00:28.299666+00:00.
+2025-07-02T22:00:28.299912Z [info     ] Operation completed            cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.300025Z [info     ] ✅ ORACLE SINK - BATCH #1 COMPLETED cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.325949Z [info     ] Incremental state has been updated at 2025-07-02 22:00:28.325917+00:00.
+2025-07-02T22:00:28.326301Z [info     ] METRIC: {"type": "timer", "metric": "batch_processing_time", "value": 0.8320508003234863, "tags": {"stream": "allocation", "pid": 3207036, "status": "succeeded"}} cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.326524Z [info     ] 🧹 Starting cleanup for stream allocation cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.352455Z [info     ] Incremental state has been updated at 2025-07-02 22:00:28.352420+00:00.
+2025-07-02T22:00:28.817541Z [info     ] Incremental state has been updated at 2025-07-02 22:00:28.817508+00:00.
+2025-07-02T22:00:28.846073Z [info     ] Incremental state has been updated at 2025-07-02 22:00:28.846050+00:00.
+2025-07-02T22:00:28.846264Z [info     ] 📊 FINAL STATISTICS REPORT - STREAM: allocation cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.846384Z [info     ] 🎯 QUICK SUMMARY - allocation: 10 records → 0 inserted, 0 updated, 0 failed | Final table count: 10 | Success rate: 100.0% | Avg speed: 0 rec/sec cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.872365Z [info     ] Incremental state has been updated at 2025-07-02 22:00:28.872328+00:00.
+2025-07-02T22:00:28.899346Z [info     ] Incremental state has been updated at 2025-07-02 22:00:28.899312+00:00.
+2025-07-02T22:00:28.930950Z [info     ] Incremental state has been updated at 2025-07-02 22:00:28.930919+00:00.
+2025-07-02T22:00:28.931163Z [info     ] Oracle performance metrics     cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.931275Z [info     ] Cleanup completed for stream allocation cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.931375Z [info     ] METRIC: {"type": "counter", "metric": "record_count", "value": 10, "tags": {"stream": "allocation", "pid": 3207036}} cmd_type=elb consumer=True job_name=dev:tap-oracle-wms-full-to-target-oracle-full name=target-oracle-full producer=False run_id=f71a8827-45fc-4607-b859-4f74f091f245 stdio=stderr string_id=target-oracle-full
+2025-07-02T22:00:28.975686Z [info     ] Block run completed.           block_type=ExtractLoadBlocks err=None set_number=0 success=True

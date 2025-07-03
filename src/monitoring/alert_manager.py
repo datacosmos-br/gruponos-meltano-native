@@ -5,14 +5,10 @@ Monitors system health and sends alerts based on configurable thresholds
 
 import json
 import logging
-import smtplib
-import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import requests
 
@@ -89,7 +85,7 @@ class AlertManager:
                     message=f"Sync log file not found: {sync_log_path}",
                     component="sync_monitor",
                     timestamp=datetime.now(),
-                    metrics={"log_path": sync_log_path}
+                    metrics={"log_path": sync_log_path},
                 )
 
             # Read log file
@@ -99,7 +95,7 @@ class AlertManager:
             # Check for error patterns
             error_indicators = [
                 "ERRO:", "ERROR:", "Failed", "Exception", "Traceback",
-                "Connection refused", "Timeout", "Certificate verification failed"
+                "Connection refused", "Timeout", "Certificate verification failed",
             ]
 
             errors_found = []
@@ -117,8 +113,8 @@ class AlertManager:
                     metrics={
                         "log_path": sync_log_path,
                         "errors_found": errors_found,
-                        "log_size": len(log_content)
-                    }
+                        "log_size": len(log_content),
+                    },
                 )
 
             # Check sync duration
@@ -134,8 +130,8 @@ class AlertManager:
                         timestamp=datetime.now(),
                         metrics={
                             "duration_minutes": duration_minutes,
-                            "threshold_minutes": self.config.max_sync_duration_minutes
-                        }
+                            "threshold_minutes": self.config.max_sync_duration_minutes,
+                        },
                     )
 
             return None
@@ -147,7 +143,7 @@ class AlertManager:
                 message=f"Could not check sync health: {e!s}",
                 component="health_monitor",
                 timestamp=datetime.now(),
-                metrics={"error": str(e)}
+                metrics={"error": str(e)},
             )
 
     def check_oracle_connection(self) -> Alert | None:
@@ -169,7 +165,7 @@ class AlertManager:
                     message=f"Cannot connect to Oracle database: {result['error']}",
                     component="oracle_connection",
                     timestamp=datetime.now(),
-                    metrics=result
+                    metrics=result,
                 )
 
             # Check connection time
@@ -180,7 +176,7 @@ class AlertManager:
                     message=f"Oracle connection took {result['connection_time_ms']:.0f}ms (threshold: {self.config.max_connection_time_seconds * 1000:.0f}ms)",
                     component="oracle_performance",
                     timestamp=datetime.now(),
-                    metrics=result
+                    metrics=result,
                 )
 
             return None
@@ -192,7 +188,7 @@ class AlertManager:
                 message=f"Could not test Oracle connection: {e!s}",
                 component="oracle_monitor",
                 timestamp=datetime.now(),
-                metrics={"error": str(e)}
+                metrics={"error": str(e)},
             )
 
     def check_system_resources(self) -> list[Alert]:
@@ -218,8 +214,8 @@ class AlertManager:
                     metrics={
                         "memory_percent": memory.percent,
                         "memory_available_gb": memory.available / (1024**3),
-                        "memory_total_gb": memory.total / (1024**3)
-                    }
+                        "memory_total_gb": memory.total / (1024**3),
+                    },
                 ))
 
             # Check CPU usage
@@ -233,8 +229,8 @@ class AlertManager:
                     timestamp=datetime.now(),
                     metrics={
                         "cpu_percent": cpu_percent,
-                        "cpu_count": psutil.cpu_count()
-                    }
+                        "cpu_count": psutil.cpu_count(),
+                    },
                 ))
 
         except ImportError:
@@ -247,7 +243,7 @@ class AlertManager:
                 message=f"Could not check system resources: {e!s}",
                 component="system_monitor",
                 timestamp=datetime.now(),
-                metrics={"error": str(e)}
+                metrics={"error": str(e)},
             ))
 
         return alerts
@@ -349,7 +345,7 @@ class AlertManager:
             "title": alert.title,
             "message": alert.message,
             "component": alert.component,
-            "metrics": alert.metrics
+            "metrics": alert.metrics,
         }
 
         with open(log_file, "a") as f:
@@ -360,13 +356,13 @@ class AlertManager:
         try:
             payload = {
                 "alert": asdict(alert),
-                "timestamp": alert.timestamp.isoformat()
+                "timestamp": alert.timestamp.isoformat(),
             }
 
             response = requests.post(
                 self.config.webhook_url,
                 json=payload,
-                timeout=10
+                timeout=10,
             )
 
             return response.status_code == 200

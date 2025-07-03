@@ -7,7 +7,7 @@ environments:
 
 plugins:
   extractors:
-  - name: tap-oracle-wms
+  - name: tap-oracle-wms-full
     namespace: tap_oracle_wms
     executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
     config:
@@ -16,9 +16,42 @@ plugins:
       password: $TAP_ORACLE_WMS_PASSWORD
       entities: ["allocation", "order_hdr", "order_dtl"]
       page_size: 1000
+      force_full_table: true
+      
+  - name: tap-oracle-wms-incremental
+    namespace: tap_oracle_wms
+    executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
+    config:
+      base_url: $TAP_ORACLE_WMS_BASE_URL
+      username: $TAP_ORACLE_WMS_USERNAME
+      password: $TAP_ORACLE_WMS_PASSWORD
+      entities: ["allocation", "order_hdr", "order_dtl"]
+      page_size: 1000
+      force_full_table: false
+      start_date: "2024-01-01T00:00:00Z"
 
   loaders:
-  - name: target-oracle
+  - name: target-oracle-full
+    namespace: target_oracle
+    executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
+    config:
+      host: $FLEXT_TARGET_ORACLE_HOST
+      port: 1522
+      service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
+      username: $FLEXT_TARGET_ORACLE_USERNAME
+      password: $FLEXT_TARGET_ORACLE_PASSWORD
+      protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
+      ssl_server_dn_match: false
+      batch_size_rows: 1000
+      pool_size: 5
+      add_record_metadata: false
+      validate_records: false
+      load_method: overwrite
+      enable_historical_versioning: false
+      table_prefix: WMS_
+      debug_type_mapping: true
+
+  - name: target-oracle-incremental
     namespace: target_oracle
     executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
     config:
@@ -36,3 +69,15 @@ plugins:
       load_method: append-only
       enable_historical_versioning: true
       historical_versioning_column: mod_ts
+      table_prefix: WMS_
+
+jobs:
+  - name: full-sync-job
+    tasks:
+      - tap-oracle-wms-full target-oracle-full
+      
+  - name: incremental-sync-job
+    tasks:
+      - tap-oracle-wms-incremental target-oracle-incremental
+
+schedules: []
