@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 import os
+
 import oracledb
 
 # Get Oracle connection parameters from environment
-host = os.getenv('FLEXT_TARGET_ORACLE_HOST')
-port = int(os.getenv('FLEXT_TARGET_ORACLE_PORT', 1522))
-service_name = os.getenv('FLEXT_TARGET_ORACLE_SERVICE_NAME')
-username = os.getenv('FLEXT_TARGET_ORACLE_USERNAME')
-password = os.getenv('FLEXT_TARGET_ORACLE_PASSWORD')
-protocol = os.getenv('FLEXT_TARGET_ORACLE_PROTOCOL', 'tcps')
+host = os.getenv("FLEXT_TARGET_ORACLE_HOST")
+port = int(os.getenv("FLEXT_TARGET_ORACLE_PORT", 1522))
+service_name = os.getenv("FLEXT_TARGET_ORACLE_SERVICE_NAME")
+username = os.getenv("FLEXT_TARGET_ORACLE_USERNAME")
+password = os.getenv("FLEXT_TARGET_ORACLE_PASSWORD")
+protocol = os.getenv("FLEXT_TARGET_ORACLE_PROTOCOL", "tcps")
 
 # Connect to Oracle
-if protocol == 'tcps':
-    dsn = f'(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST={host})(PORT={port}))(CONNECT_DATA=(SERVICE_NAME={service_name})))'
+if protocol == "tcps":
+    dsn = f"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST={host})(PORT={port}))(CONNECT_DATA=(SERVICE_NAME={service_name})))"
     conn = oracledb.connect(user=username, password=password, dsn=dsn, ssl_server_dn_match=False)
 else:
     conn = oracledb.connect(user=username, password=password, host=host, port=port, service_name=service_name)

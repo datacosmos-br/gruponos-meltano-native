@@ -2,6 +2,8 @@
 """Oracle Table Creator - Professional DDL Generation
 Creates optimized Oracle tables based on WMS schema with enterprise features
 Uses metadata-first pattern for consistency with tap discovery.
+
+REFATORADO: Agora usa type_mapping_rules.py como módulo compartilhado
 """
 
 import json
@@ -14,162 +16,17 @@ from typing import Any
 
 from src.oracle.connection_manager import create_connection_manager_from_env
 
+# Import centralized type mapping rules
+from src.oracle.type_mapping_rules import (
+    FIELD_PATTERN_RULES,
+    FIELD_PATTERNS_TO_ORACLE,
+    WMS_METADATA_TO_ORACLE,
+    convert_metadata_type_to_oracle,
+    oracle_ddl_from_singer_schema,
+)
+
 # Import centralized type mapping for Singer schema processing
 sys.path.insert(0, "/home/marlonsc/flext/flext-tap-oracle-wms/src")
-
-# Oracle DDL Type Mappings (moved from type_mapping.py)
-WMS_METADATA_TO_ORACLE = {
-    "pk": "NUMBER",
-    "varchar": "VARCHAR2(255 CHAR)",
-    "char": "CHAR(10)",
-    "number": "NUMBER",
-    "decimal": "NUMBER",
-    "integer": "NUMBER",
-    "boolean": "NUMBER(1,0)",
-    "datetime": "TIMESTAMP(6)",
-    "date": "TIMESTAMP(6)",
-    "time": "TIMESTAMP(6)",
-    "text": "VARCHAR2(4000 CHAR)",
-    "clob": "CLOB",
-    "relation": "VARCHAR2(255 CHAR)",
-}
-
-# Field Name Patterns to Oracle Types
-FIELD_PATTERNS_TO_ORACLE = {
-    "id_patterns": "NUMBER",
-    "key_patterns": "VARCHAR2(255 CHAR)",
-    "qty_patterns": "NUMBER",
-    "price_patterns": "NUMBER",
-    "weight_patterns": "NUMBER",
-    "date_patterns": "TIMESTAMP(6)",
-    "flag_patterns": "NUMBER(1,0)",
-    "desc_patterns": "VARCHAR2(500 CHAR)",
-    "code_patterns": "VARCHAR2(50 CHAR)",
-    "name_patterns": "VARCHAR2(255 CHAR)",
-    "addr_patterns": "VARCHAR2(500 CHAR)",
-    "decimal_patterns": "NUMBER",
-    "set_patterns": "VARCHAR2(4000 CHAR)",
-}
-
-# Pattern matching rules (same as in type_mapping.py)
-FIELD_PATTERN_RULES = {
-    "id_patterns": ["*_id", "id"],
-    "key_patterns": ["*_key"],
-    "qty_patterns": ["*_qty", "*_quantity", "*_count", "*_amount", "alloc_qty", "ord_qty", "packed_qty", "ordered_uom_qty", "orig_ord_qty"],
-    "price_patterns": ["*_price", "*_cost", "*_rate", "*_percent", "cost", "sale_price", "unit_declared_value", "orig_sale_price"],
-    "weight_patterns": ["*_weight", "*_volume", "*_length", "*_width", "*_height"],
-    "date_patterns": ["*_date", "*_time", "*_ts", "*_timestamp", "cust_date_*"],
-    "flag_patterns": ["*_flg", "*_flag", "*_enabled", "*_active"],
-    "desc_patterns": ["*_desc", "*_description", "*_note", "*_comment"],
-    "code_patterns": ["*_code", "*_status", "*_type"],
-    "name_patterns": ["*_name", "*_title"],
-    "addr_patterns": ["*_addr", "*_address"],
-    "decimal_patterns": ["cust_decimal_*", "cust_number_*", "voucher_amount", "total_orig_ord_qty"],
-    "set_patterns": ["*_set"],
-}
-
-
-def convert_metadata_type_to_oracle(
-    metadata_type: str | None = None,
-    column_name: str = "",
-    max_length: int | None = None,
-    sample_value: Any = None,
-) -> str:
-    """Convert WMS metadata type to Oracle DDL type using metadata-first pattern.
-    
-    Args:
-        metadata_type: WMS metadata type
-        column_name: Field name for pattern matching
-        max_length: Maximum length for string fields
-        sample_value: Sample value for type inference
-        
-    Returns:
-        Oracle DDL type string (e.g., 'VARCHAR2(255 CHAR)', 'NUMBER')
-    """
-    # Priority 1: WMS metadata types
-    if metadata_type and metadata_type.lower() in WMS_METADATA_TO_ORACLE:
-        oracle_type = WMS_METADATA_TO_ORACLE[metadata_type.lower()]
-
-        # Apply max_length override for VARCHAR2 types
-        if oracle_type.startswith("VARCHAR2") and max_length:
-            return f"VARCHAR2({min(max_length, 4000)} CHAR)"
-
-        return oracle_type
-
-    # Priority 2: Field name patterns
-    column_lower = column_name.lower()
-    for pattern_key, patterns in FIELD_PATTERN_RULES.items():
-        for pattern in patterns:
-            # Handle wildcard patterns
-            if "*" in pattern:
-                pattern_clean = pattern.replace("*", "")
-                if (pattern.startswith("*_") and column_lower.endswith(pattern_clean)) or (pattern.endswith("_*") and column_lower.startswith(pattern_clean)):
-                    oracle_type = FIELD_PATTERNS_TO_ORACLE[pattern_key]
-                    if oracle_type.startswith("VARCHAR2") and max_length:
-                        return f"VARCHAR2({min(max_length, 4000)} CHAR)"
-                    return oracle_type
-            # Exact match
-            elif pattern == column_lower:
-                oracle_type = FIELD_PATTERNS_TO_ORACLE[pattern_key]
-                if oracle_type.startswith("VARCHAR2") and max_length:
-                    return f"VARCHAR2({min(max_length, 4000)} CHAR)"
-                return oracle_type
-
-    # Priority 3: Sample value inference (last resort)
-    if sample_value is not None:
-        return _infer_oracle_from_sample(sample_value)
-
-    # Default fallback
-    return "VARCHAR2(255 CHAR)"
-
-
-def oracle_ddl_from_singer_schema(singer_schema: dict[str, Any], column_name: str = "") -> str:
-    """Convert Singer schema back to Oracle DDL type.
-    
-    Useful for table creation from discovered Singer schemas.
-    """
-    # Extract metadata if available
-    metadata_type = None
-    if "x-wms-metadata" in singer_schema:
-        metadata_type = singer_schema["x-wms-metadata"].get("original_metadata_type")
-
-    # Get max length if specified
-    max_length = singer_schema.get("maxLength")
-
-    return convert_metadata_type_to_oracle(
-        metadata_type=metadata_type,
-        column_name=column_name,
-        max_length=max_length,
-    )
-
-
-def _infer_oracle_from_sample(sample_value: Any) -> str:
-    """Infer Oracle type from sample value."""
-    if isinstance(sample_value, bool):
-        return "NUMBER(1,0)"
-    if isinstance(sample_value, int) or isinstance(sample_value, float):
-        return "NUMBER"
-    if isinstance(sample_value, str):
-        if _looks_like_date(sample_value):
-            return "TIMESTAMP(6)"
-        length = min(len(sample_value) * 2, 4000)
-        return f"VARCHAR2({length} CHAR)"
-    return "VARCHAR2(255 CHAR)"
-
-
-def _looks_like_date(value: str) -> bool:
-    """Check if string value looks like a date."""
-    import re
-    date_patterns = [
-        r"\d{4}-\d{2}-\d{2}",  # YYYY-MM-DD
-        r"\d{2}/\d{2}/\d{4}",  # MM/DD/YYYY
-        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}",  # ISO datetime
-    ]
-
-    for pattern in date_patterns:
-        if re.match(pattern, value):
-            return True
-    return False
 
 
 class OracleTableCreator:

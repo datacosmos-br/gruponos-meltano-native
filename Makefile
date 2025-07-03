@@ -3,7 +3,7 @@
 # Gerenciamento robusto de sincronizações, logs, análise de falhas e validação
 # ============================================================================
 
-.PHONY: help env status full-sync incremental-sync validate-oracle analyze-failures clean-logs monitor stop-sync recreate-tables discover-schemas
+.PHONY: help env status full-sync incremental-sync validate-oracle analyze-failures clean-logs monitor stop-sync recreate-tables discover-schemas full-sync-debug
 
 # ============================================================================
 # CONFIGURAÇÃO DE CAMINHOS E AMBIENTE
@@ -51,9 +51,11 @@ help:
 	@echo "  make restart-full-sync # Reiniciar full sync do zero"
 	@echo "  make force-full-sync  # Full sync com tabelas recriadas"
 	@echo ""
-	@echo "🏗️ GERENCIAMENTO DE TABELAS:"
-	@echo "  make recreate-tables  # Recriar todas as tabelas otimizadas"
-	@echo "  make recreate-table ENTITY=allocation  # Recriar tabela específica"
+	@echo "🏗️ GERENCIAMENTO DE TABELAS (MELTANO NATIVO):"
+	@echo "  make native-recreate-tables # 🚀 Recrear tabelas via Meltano (RECOMENDADO)"
+	@echo "  make reset-state         # Reset estado (força schema discovery)"
+	@echo "  make reset-full-sync     # Reset apenas estado full sync"
+	@echo "  make recreate-tables     # [LEGACY] Recriar via script Python"
 	@echo "  make test-oracle-connection # Testar conexão Oracle"
 	@echo ""
 	@echo "🔍 ANÁLISE E CORREÇÃO:"
@@ -64,9 +66,8 @@ help:
 	@echo ""
 	@echo "🧹 MANUTENÇÃO:"
 	@echo "  make clean-logs          # Limpar logs antigos"
-	@echo "  make reset-state         # Reset do estado Meltano (todos)"
-	@echo "  make reset-full-sync     # Reset apenas estado full sync"
 	@echo "  make reset-incremental-sync # Reset apenas estado incremental"
+	@echo "  make clear-all-state     # Limpar TODOS os estados (cuidado!)"
 	@echo "  make env                 # Testar ambiente"
 	@echo ""
 
@@ -184,6 +185,41 @@ full-sync:
 	@echo "✅ Sincronização full iniciada em background (PID: $$(cat $(PID_DIR)/full_sync.pid))"
 	@echo "📊 Use 'make status' ou 'make monitor' para acompanhar"
 
+full-sync-debug:
+	@echo "🚀 INICIANDO SINCRONIZAÇÃO FULL COM DEBUG EM BACKGROUND..."
+	@mkdir -p $(SYNC_LOG_DIR) $(ERROR_LOG_DIR) $(PID_DIR) $(STATE_DIR)
+	@if [ -f $(PID_DIR)/full_sync.pid ] && ps -p $$(cat $(PID_DIR)/full_sync.pid) > /dev/null 2>&1; then \
+		echo "❌ Sincronização full já está executando (PID: $$(cat $(PID_DIR)/full_sync.pid))"; \
+		exit 1; \
+	fi
+	@echo "📝 Logs serão salvos em: $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log"
+	@nohup bash -c ' \
+		echo "$(LOG_TIMESTAMP) - INÍCIO: Sincronização Full com DEBUG" > $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+		echo "$(LOG_TIMESTAMP) - CONFIG: Testando ambiente..." >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+		if $(ENV_CMD) && echo "Ambiente OK" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log 2>&1; then \
+			echo "$(LOG_TIMESTAMP) - DEBUG: Habilitando logs detalhados..." >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+			export MELTANO_LOG_LEVEL=debug; \
+			export TAP_ORACLE_WMS_DEBUG=true; \
+			export TARGET_ORACLE_DEBUG=true; \
+			export SINGER_SDK_LOG_LEVEL=DEBUG; \
+			echo "$(LOG_TIMESTAMP) - EXEC: Executando meltano run com debug..." >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+			if $(ENV_CMD) && timeout 3600 meltano --log-level=debug run full-sync-job >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log 2>&1; then \
+				echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização full concluída" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+				echo "FULL_SYNC_SUCCESS" > $(STATE_DIR)/last_full_sync.state; \
+			else \
+				echo "$(LOG_TIMESTAMP) - ERRO: Sincronização full falhou" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+				cp $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log $(ERROR_LOG_DIR)/full_sync_error_$(TIMESTAMP).log; \
+				echo "FULL_SYNC_ERROR" > $(STATE_DIR)/last_full_sync.state; \
+			fi; \
+		else \
+			echo "$(LOG_TIMESTAMP) - ERRO: Ambiente inválido" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+			cp $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log $(ERROR_LOG_DIR)/env_error_$(TIMESTAMP).log; \
+		fi; \
+		rm -f $(PID_DIR)/full_sync.pid; \
+	' & echo $$! > $(PID_DIR)/full_sync.pid
+	@echo "✅ Sincronização full com DEBUG iniciada em background (PID: $$(cat $(PID_DIR)/full_sync.pid))"
+	@echo "📊 Use 'make monitor' para acompanhar ou 'tail -f $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log'"
+
 incremental-sync:
 	@echo "⚡ EXECUTANDO SINCRONIZAÇÃO INCREMENTAL..."
 	@mkdir -p $(SYNC_LOG_DIR) $(ERROR_LOG_DIR) $(PID_DIR) $(STATE_DIR)
@@ -248,7 +284,7 @@ stop-sync:
 validate-oracle:
 	@echo "🔍 VALIDANDO DADOS NO ORACLE..."
 	@mkdir -p $(VALIDATION_LOG_DIR)
-	@$(ENV_CMD) && python3 oracle_validator.py
+	@$(ENV_CMD) && python3 src/oracle/validate_sync.py
 
 # ============================================================================
 # ANÁLISE E CORREÇÃO DE FALHAS
@@ -334,11 +370,14 @@ test-oracle-connection:
 	@$(ENV_CMD) && PYTHONPATH=/home/marlonsc/flext/gruponos-meltano-native python3 src/oracle/connection_manager.py
 
 recreate-tables:
-	@echo "🔨 RECRIANDO TABELAS ORACLE COM ESTRUTURA OTIMIZADA..."
-	@echo "📋 Este comando irá:"
+	@echo "🔨 [LEGACY] RECRIANDO TABELAS VIA SCRIPT..."
+	@echo "⚠️  AVISO: Use 'make reset-state' + 'make full-sync' para método Meltano nativo"
+	@echo "📋 Este comando (legacy) irá:"
 	@echo "  1. Descobrir schemas via tap-oracle-wms"
 	@echo "  2. Gerar DDL Oracle otimizado"
 	@echo "  3. Recriar tabelas com estrutura enterprise"
+	@echo ""
+	@echo "💡 RECOMENDADO: make reset-state && make full-sync"
 	@echo ""
 	@$(ENV_CMD) && PYTHONPATH=/home/marlonsc/flext/gruponos-meltano-native python3 src/oracle/table_creator.py
 
@@ -374,23 +413,6 @@ clean-logs:
 	@find $(ERROR_LOG_DIR) -name "*.log" -mtime +3 -delete 2>/dev/null || true
 	@echo "✅ Logs antigos removidos (>7 dias para sync, >3 dias para errors)"
 
-reset-state:
-	@echo "🔄 RESETANDO ESTADO DO MELTANO..."
-	@rm -rf $(PROJECT_DIR)/.meltano/run/state 2>/dev/null || true
-	@rm -f $(STATE_DIR)/*.state 2>/dev/null || true
-	@$(ENV_CMD) && meltano state clear tap-oracle-wms 2>/dev/null || true
-	@$(ENV_CMD) && meltano state clear tap-oracle-wms-full 2>/dev/null || true
-	@$(ENV_CMD) && meltano state clear tap-oracle-wms-incremental 2>/dev/null || true
-	@echo "✅ Estado resetado para todos os taps"
-
-# Reset apenas do Full Sync para reiniciar do ID mais alto
-reset-full-sync:
-	@echo "🔄 RESETANDO ESTADO DO FULL SYNC..."
-	@echo "📋 Isso fará o full sync recomeçar do ID mais alto"
-	@$(ENV_CMD) && echo "y" | meltano state clear tap-oracle-wms-full
-	@rm -f $(STATE_DIR)/last_full_sync.state 2>/dev/null || true
-	@echo "✅ Estado do full sync resetado - próxima execução começará do início"
-
 # Reset apenas do Incremental Sync para reiniciar do start_date
 reset-incremental-sync:
 	@echo "🔄 RESETANDO ESTADO DO INCREMENTAL SYNC..."
@@ -398,6 +420,53 @@ reset-incremental-sync:
 	@$(ENV_CMD) && echo "y" | meltano state clear tap-oracle-wms-incremental
 	@rm -f $(STATE_DIR)/last_incremental_sync.state 2>/dev/null || true
 	@echo "✅ Estado do incremental sync resetado - próxima execução começará do start_date"
+
+# ============================================================================
+# COMANDOS MELTANO NATIVOS - GERENCIAMENTO DE ESTADO E TABELAS
+# ============================================================================
+
+reset-state:
+	@echo "🔄 MELTANO NATIVO: RESETANDO ESTADO PARA FORÇAR RECRIAÇÃO DE TABELAS..."
+	@echo "📋 Este comando irá:"
+	@echo "  1. Limpar estado Meltano (força descoberta fresh de schema)"
+	@echo "  2. Na próxima execução, target criará tabelas automaticamente"
+	@echo "  3. Usa regras unificadas do type_mapping_rules.py"
+	@echo ""
+	@$(ENV_CMD) && echo "y" | meltano state clear --all --force
+	@rm -rf $(PROJECT_DIR)/.meltano/run/state 2>/dev/null || true
+	@rm -f $(STATE_DIR)/*.state 2>/dev/null || true
+	@echo "✅ Estado resetado - próximo sync criará tabelas com regras unificadas"
+
+reset-full-sync:
+	@echo "🔄 MELTANO NATIVO: RESETANDO APENAS FULL SYNC..."
+	@echo "📋 Força full sync começar do início, mas mantém estado incremental"
+	@$(ENV_CMD) && echo "y" | meltano state clear dev:tap-oracle-wms-full-to-target-oracle-full
+	@rm -f $(STATE_DIR)/last_full_sync.state 2>/dev/null || true
+	@echo "✅ Full sync resetado - manterá tabelas existentes"
+
+clear-all-state:
+	@echo "⚠️  CUIDADO: LIMPANDO TODOS OS ESTADOS MELTANO..."
+	@echo "📋 Isso remove TODOS os checkpoints e força recomeço total"
+	@read -p "Tem certeza? Digite 'sim' para confirmar: " confirm && [ "$$confirm" = "sim" ] || exit 1
+	@$(ENV_CMD) && meltano state clear --all --force
+	@rm -rf $(PROJECT_DIR)/.meltano/run/state 2>/dev/null || true
+	@rm -rf $(STATE_DIR) 2>/dev/null || true
+	@mkdir -p $(STATE_DIR)
+	@echo "✅ TODOS os estados removidos - próximo sync começará do zero absoluto"
+
+native-recreate-tables:
+	@echo "🚀 MELTANO NATIVO: RECREAÇÃO DE TABELAS..."
+	@echo "📋 Processo 100% Meltano nativo:"
+	@echo "  1. Reset estado (força schema discovery)"
+	@echo "  2. Full sync (target cria tabelas automaticamente)"
+	@echo "  3. Usa regras unificadas type_mapping_rules.py"
+	@echo ""
+	@$(MAKE) reset-state
+	@echo ""
+	@echo "🚀 Iniciando full sync para criar tabelas..."
+	@$(MAKE) full-sync
+	@echo ""
+	@echo "✅ Tabelas criadas via Meltano nativo com regras unificadas!"
 
 # Comando para reiniciar full sync automaticamente
 restart-full-sync:

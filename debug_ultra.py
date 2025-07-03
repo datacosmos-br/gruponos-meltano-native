@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""
-ULTRA DEBUG SCRIPT - Inject maximum logging into parse_response method
+"""ULTRA DEBUG SCRIPT - Inject maximum logging into parse_response method
 """
 
-import sys
 import re
+import sys
 
 # Read the current streams.py file
-with open('/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/streams.py', 'r') as f:
+with open("/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/streams.py") as f:
     content = f.read()
 
 # Find the parse_response method and inject ULTRA logging
@@ -125,11 +124,11 @@ new_parse_response = '''    def parse_response(self, response: requests.Response
             raise RetriableAPIError(msg) from e'''
 
 # Replace the existing parse_response method
-pattern = r'def parse_response\(self, response: requests\.Response\) -> Iterable\[dict\[str, Any\]\]:.*?except json\.JSONDecodeError as e:.*?raise RetriableAPIError\(msg\) from e'
+pattern = r"def parse_response\(self, response: requests\.Response\) -> Iterable\[dict\[str, Any\]\]:.*?except json\.JSONDecodeError as e:.*?raise RetriableAPIError\(msg\) from e"
 new_content = re.sub(pattern, new_parse_response, content, flags=re.DOTALL)
 
 # Write the modified content back
-with open('/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/streams.py', 'w') as f:
+with open("/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/streams.py", "w") as f:
     f.write(new_content)
 
 print("✅ ULTRA DEBUG INJECTED - parse_response method now has maximum logging")
