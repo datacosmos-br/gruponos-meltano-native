@@ -1,0 +1,316 @@
+2025-07-03 17:46:28 - INÍCIO: Sincronização Full com DEBUG
+2025-07-03 17:46:28 - CONFIG: Testando ambiente...
+Ambiente OK
+2025-07-03 17:46:28 - DEBUG: Habilitando logs detalhados...
+2025-07-03 17:46:28 - EXEC: Executando meltano run com debug...
+[2m2025-07-03T20:46:29.359383Z[0m [[32m[1mdebug    [0m] [1mMeltano 3.7.8, Python 3.13.3, Linux (x86_64)[0m
+[2m2025-07-03T20:46:29.361405Z[0m [[32m[1mdebug    [0m] [1m/etc/timezone found, contents:
+ America/Sao_Paulo
+[0m
+[2m2025-07-03T20:46:29.361615Z[0m [[32m[1mdebug    [0m] [1m/etc/localtime found          [0m
+[2m2025-07-03T20:46:29.362398Z[0m [[32m[1mdebug    [0m] [1m2 found:
+ {'/etc/timezone': 'America/Sao_Paulo', '/etc/localtime is a symlink to': 'America/Sao_Paulo'}[0m
+[2m2025-07-03T20:46:29.365165Z[0m [[32m[1minfo     [0m] [1mEnvironment 'dev' is active   [0m
+[2m2025-07-03T20:46:29.381982Z[0m [[32m[1mdebug    [0m] [1mCreating DB engine for project at '/home/marlonsc/flext/gruponos-meltano-native' with DB URI 'sqlite:////home/marlonsc/flext/gruponos-meltano-native/.meltano/meltano.db'[0m
+[2m2025-07-03T20:46:29.512472Z[0m [[32m[1mdebug    [0m] [1mexpanding job to tasks        [0m [36mjob_name[0m=[35mfull-sync-job[0m [36mtasks[0m=[35m['tap-oracle-wms-full', 'target-oracle-full'][0m
+[2m2025-07-03T20:46:29.512910Z[0m [[32m[1mdebug    [0m] [1mfound plugin in cli invocation[0m [36mplugin_name[0m=[35mtap-oracle-wms-full[0m
+[2m2025-07-03T20:46:29.513132Z[0m [[32m[1mdebug    [0m] [1mfound plugin in cli invocation[0m [36mplugin_name[0m=[35mtarget-oracle-full[0m
+[2m2025-07-03T20:46:29.513234Z[0m [[32m[1mdebug    [0m] [1mhead of set is extractor as expected[0m [36mblock[0m=[35mtap-oracle-wms-full[0m
+[2m2025-07-03T20:46:29.591308Z[0m [[32m[1mdebug    [0m] [1mfound block                   [0m [36mblock_type[0m=[35mloaders[0m [36mindex[0m=[35m1[0m
+[2m2025-07-03T20:46:29.591457Z[0m [[32m[1mdebug    [0m] [1mblocks                        [0m [36midx[0m=[35m1[0m [36moffset[0m=[35m0[0m
+[2m2025-07-03T20:46:29.626044Z[0m [[32m[1mdebug    [0m] [1mfound ExtractLoadBlocks set   [0m [36moffset[0m=[35m0[0m
+[2m2025-07-03T20:46:29.626177Z[0m [[32m[1mdebug    [0m] [1mvalidating ExtractLoadBlock.  [0m [36mset_number[0m=[35m0[0m
+[2m2025-07-03T20:46:29.626242Z[0m [[32m[1mdebug    [0m] [1mAll ExtractLoadBlocks validated, starting execution.[0m
+[2m2025-07-03T20:46:29.638606Z[0m [[32m[1mdebug    [0m] [1mSkipped installing extractor 'tap-oracle-wms-full'[0m
+[2m2025-07-03T20:46:29.651206Z[0m [[32m[1mdebug    [0m] [1mSkipped installing loader 'target-oracle-full'[0m
+[2m2025-07-03T20:46:29.651418Z[0m [[32m[1mdebug    [0m] [1mInstalled 0/2 plugins         [0m
+[2m2025-07-03T20:46:29.651480Z[0m [[32m[1mdebug    [0m] [1mSkipped installing 2/2 plugins[0m
+[2m2025-07-03T20:46:29.662764Z[0m [[31m[1merror    [0m] [1mAnother 'dev:tap-oracle-wms-full-to-target-oracle-full' pipeline is already running which started at 2025-07-03 20:40:38.068673+00:00. Wait until 2025-07-03 20:47:36.508106+00:00 when the job will be automatically cancelled if stale, or ignore this check using the '--force' option.[0m
+[2m2025-07-03T20:46:29.663020Z[0m [[31m[1merror    [0m] [1mBlock run completed.          [0m [36mblock_type[0m=[35mExtractLoadBlocks[0m [36merr[0m=[35mRunnerError("Another 'dev:tap-oracle-wms-full-to-target-oracle-full' pipeline is already running which started at 2025-07-03 20:40:38.068673+00:00. Wait until 2025-07-03 20:47:36.508106+00:00 when the job will be automatically cancelled if stale, or ignore this check using the '--force' option.")[0m [36mexit_codes[0m=[35m{}[0m [36mset_number[0m=[35m0[0m [36msuccess[0m=[35mFalse[0m
+[2m2025-07-03T20:46:29.664186Z[0m [[32m[1mdebug    [0m] [1mNeed help fixing this problem? Visit http://melta.no/ for troubleshooting steps, or to
+join our friendly Slack community.
+
+Run invocation could not be completed as block failed: Another 'dev:tap-oracle-wms-full-to-target-oracle-full' pipeline is already running which started at 2025-07-03 20:40:38.068673+00:00. Wait until 2025-07-03 20:47:36.508106+00:00 when the job will be automatically cancelled if stale, or ignore this check using the '--force' option.[0m
+[31m╭─[0m[31m────────────────────[0m[31m [0m[1;31mTraceback [0m[1;2;31m(most recent call last)[0m[31m [0m[31m─────────────────────[0m[31m─╮[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mrun.py[0m:2 [31m│[0m
+[31m│[0m 18 in _run_blocks                                                            [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m215 [0m[2m│   │   │   [0m[94mcontinue[0m                                                   [31m│[0m
+[31m│[0m   [2m216 [0m[2m│   │   [0m                                                               [31m│[0m
+[31m│[0m   [2m217 [0m[2m│   │   [0m[94mtry[0m:                                                           [31m│[0m
+[31m│[0m [31m❱ [0m218 [2m│   │   │   [0m[94mawait[0m blk.run()                                            [31m│[0m
+[31m│[0m   [2m219 [0m[2m│   │   [0m[94mexcept[0m RunnerError [94mas[0m err:                                     [31m│[0m
+[31m│[0m   [2m220 [0m[2m│   │   │   [0mlogger.error(                                              [31m│[0m
+[31m│[0m   [2m221 [0m[2m│   │   │   │   [0m[33m"[0m[33mBlock run completed.[0m[33m"[0m,                                [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/core/block/[0m[1me[0m [31m│[0m
+[31m│[0m [1mxtract_load.py[0m:509 in run                                                    [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m506 [0m[2m│   │   │   [0m[2m# TODO: legacy `meltano elt` style logging should be depre[0m [31m│[0m
+[31m│[0m   [2m507 [0m[2m│   │   │   [0mlegacy_log_handler = [96mself[0m.output_logger.out([33m"[0m[33mmeltano[0m[33m"[0m, log [31m│[0m
+[31m│[0m   [2m508 [0m[2m│   │   │   [0m[94mwith[0m legacy_log_handler.redirect_logging():                [31m│[0m
+[31m│[0m [31m❱ [0m509 [2m│   │   │   │   [0m[1;4;94mawait[0m[1;4m [0m[1;4;96mself[0m[1;4m.run_with_job()[0m                              [31m│[0m
+[31m│[0m   [2m510 [0m[2m│   │   │   │   [0m[94mreturn[0m                                                 [31m│[0m
+[31m│[0m   [2m511 [0m[2m│   │   [0m[94melse[0m:                                                          [31m│[0m
+[31m│[0m   [2m512 [0m[2m│   │   │   [0mlogger.warning(                                            [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/core/block/[0m[1me[0m [31m│[0m
+[31m│[0m [1mxtract_load.py[0m:545 in run_with_job                                           [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m542 [0m[2m│   │   │   │   [0m[33m"[0m[33mautomatically cancelled if stale, or ignore this chec[0m [31m│[0m
+[31m│[0m   [2m543 [0m[2m│   │   │   │   [0m[33m"[0m[33m'[0m[33m--force[0m[33m'[0m[33m option.[0m[33m"[0m                                    [31m│[0m
+[31m│[0m   [2m544 [0m[2m│   │   │   [0m)                                                          [31m│[0m
+[31m│[0m [31m❱ [0m545 [2m│   │   │   [0m[1;4;94mraise[0m[1;4m RunnerError(msg)[0m                                     [31m│[0m
+[31m│[0m   [2m546 [0m[2m│   │   [0m                                                               [31m│[0m
+[31m│[0m   [2m547 [0m[2m│   │   [0m[94mwith[0m closing([96mself[0m.context.session) [94mas[0m session:                 [31m│[0m
+[31m│[0m   [2m548 [0m[2m│   │   │   [0m[94masync[0m [94mwith[0m job.run(session):                               [31m│[0m
+[31m╰──────────────────────────────────────────────────────────────────────────────╯[0m
+[1;91mRunnerError: [0mAnother [32m'dev:tap-oracle-wms-full-to-target-oracle-full'[0m pipeline is
+already running which started at [1;36m2025[0m-[1;36m07[0m-[1;36m03[0m [1;92m20:40:38[0m.[1;36m068673[0m+[1;92m00:00[0m. Wait until 
+[1;36m2025[0m-[1;36m07[0m-[1;36m03[0m [1;92m20:47:36[0m.[1;36m508106[0m+[1;92m00:00[0m when the job will be automatically cancelled if
+stale, or ignore this check using the [32m'--force'[0m option.
+
+[3mThe above exception was the direct cause of the following exception:[0m
+
+[31m╭─[0m[31m────────────────────[0m[31m [0m[1;31mTraceback [0m[1;2;31m(most recent call last)[0m[31m [0m[31m─────────────────────[0m[31m─╮[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1m__init__[0m [31m│[0m
+[31m│[0m [1m.py[0m:104 in _run_cli                                                          [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m101 [0m[2;33m│   [0m[33m"""[0m                                                                [31m│[0m
+[31m│[0m   [2m102 [0m[2m│   [0m[94mtry[0m:                                                               [31m│[0m
+[31m│[0m   [2m103 [0m[2m│   │   [0m[94mtry[0m:                                                           [31m│[0m
+[31m│[0m [31m❱ [0m104 [2m│   │   │   [0mcli(obj={[33m"[0m[33mproject[0m[33m"[0m: [94mNone[0m})                                 [31m│[0m
+[31m│[0m   [2m105 [0m[2m│   │   [0m[94mexcept[0m ProjectReadonly [94mas[0m err:                                 [31m│[0m
+[31m│[0m   [2m106 [0m[2m│   │   │   [0m[94mraise[0m CliError(                                            [31m│[0m
+[31m│[0m   [2m107 [0m[2m│   │   │   │   [0m[33mf[0m[33m"[0m[33mThe requested action could not be completed: [0m[33m{[0merr[33m}[0m[33m"[0m, [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/[0m[1mcore.py[0m:1442   [31m│[0m
+[31m│[0m in __call__                                                                  [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m1439 [0m[2m│   [0m                                                                  [31m│[0m
+[31m│[0m   [2m1440 [0m[2m│   [0m[94mdef[0m[90m [0m[92m__call__[0m([96mself[0m, *args: t.Any, **kwargs: t.Any) -> t.Any:       [31m│[0m
+[31m│[0m   [2m1441 [0m[2;90m│   │   [0m[33m"""Alias for :meth:`main`."""[0m                                 [31m│[0m
+[31m│[0m [31m❱ [0m1442 [2m│   │   [0m[94mreturn[0m [1;4;96mself[0m[1;4m.main(*args, **kwargs)[0m                             [31m│[0m
+[31m│[0m   [2m1443 [0m                                                                      [31m│[0m
+[31m│[0m   [2m1444 [0m                                                                      [31m│[0m
+[31m│[0m   [2m1445 [0m[94mclass[0m[90m [0m[4;92m_FakeSubclassCheck[0m([96mtype[0m):                                       [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mcli.py[0m:4 [31m│[0m
+[31m│[0m 6 in main                                                                    [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m 43 [0m[2;33m│   │   │   [0m[33margs: Positional arguments for the Click group.[0m            [31m│[0m
+[31m│[0m   [2m 44 [0m[2;33m│   │   │   [0m[33mkwargs: Keyword arguments for the Click group.[0m             [31m│[0m
+[31m│[0m   [2m 45 [0m[2;33m│   │   [0m[33m"""[0m                                                            [31m│[0m
+[31m│[0m [31m❱ [0m 46 [2m│   │   [0m[94mreturn[0m [1;4;96msuper[0m[1;4m().main(*args, windows_expand_args=[0m[1;4;94mFalse[0m[1;4m, **kwargs[0m [31m│[0m
+[31m│[0m   [2m 47 [0m                                                                       [31m│[0m
+[31m│[0m   [2m 48 [0m                                                                       [31m│[0m
+[31m│[0m   [2m 49 [0m[1;95m@click[0m.group(                                                          [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/[0m[1mcore.py[0m:1363   [31m│[0m
+[31m│[0m in main                                                                      [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m1360 [0m[2m│   │   [0m[94mtry[0m:                                                          [31m│[0m
+[31m│[0m   [2m1361 [0m[2m│   │   │   [0m[94mtry[0m:                                                      [31m│[0m
+[31m│[0m   [2m1362 [0m[2m│   │   │   │   [0m[94mwith[0m [96mself[0m.make_context(prog_name, args, **extra) [94mas[0m c [31m│[0m
+[31m│[0m [31m❱ [0m1363 [2m│   │   │   │   │   [0mrv = [96mself[0m.invoke(ctx)                             [31m│[0m
+[31m│[0m   [2m1364 [0m[2m│   │   │   │   │   [0m[94mif[0m [95mnot[0m standalone_mode:                           [31m│[0m
+[31m│[0m   [2m1365 [0m[2m│   │   │   │   │   │   [0m[94mreturn[0m rv                                     [31m│[0m
+[31m│[0m   [2m1366 [0m[2m│   │   │   │   │   [0m[2m# it's not safe to `ctx.exit(rv)` here![0m           [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mutils.py[0m [31m│[0m
+[31m│[0m :582 in invoke                                                               [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m579 [0m[2m│   │   │   [0mctx.obj[[33m"[0m[33mtracker[0m[33m"[0m].add_contexts(CliContext.from_click_cont [31m│[0m
+[31m│[0m   [2m580 [0m[2m│   │   [0m[2m# Typing these mixin hierarchies is a bit messy, so we'll just[0m [31m│[0m
+[31m│[0m   [2m581 [0m[2m│   │   [0m[2m# https://mypy.readthedocs.io/en/latest/more_types.html#mixin-[0m [31m│[0m
+[31m│[0m [31m❱ [0m582 [2m│   │   [0m[1;4;96msuper[0m[1;4m().invoke(ctx)[0m  [2m# type: ignore[misc][0m                      [31m│[0m
+[31m│[0m   [2m583 [0m                                                                       [31m│[0m
+[31m│[0m   [2m584 [0m                                                                       [31m│[0m
+[31m│[0m   [2m585 [0m[94mclass[0m[90m [0m[4;92mInstrumentedDefaultGroup[0m(InstrumentedGroupMixin, DefaultGroup, D [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/[0m[1mcore.py[0m:1830   [31m│[0m
+[31m│[0m in invoke                                                                    [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m1827 [0m[2m│   │   │   │   [0m[96msuper[0m().invoke(ctx)                                   [31m│[0m
+[31m│[0m   [2m1828 [0m[2m│   │   │   │   [0msub_ctx = cmd.make_context(cmd_name, args, parent=ctx [31m│[0m
+[31m│[0m   [2m1829 [0m[2m│   │   │   │   [0m[94mwith[0m sub_ctx:                                         [31m│[0m
+[31m│[0m [31m❱ [0m1830 [2m│   │   │   │   │   [0m[94mreturn[0m _process_result([1;4msub_ctx.command.invoke(sub[0m [31m│[0m
+[31m│[0m   [2m1831 [0m[2m│   │   [0m                                                              [31m│[0m
+[31m│[0m   [2m1832 [0m[2m│   │   [0m[2m# In chain mode we create the contexts step by step, but afte[0m [31m│[0m
+[31m│[0m   [2m1833 [0m[2m│   │   [0m[2m# base command has been invoked.  Because at that point we do[0m [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mutils.py[0m [31m│[0m
+[31m│[0m :631 in invoke                                                               [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m628 [0m[2m│   │   [0m[94mif[0m ctx.obj.get([33m"[0m[33mtracker[0m[33m"[0m):                                     [31m│[0m
+[31m│[0m   [2m629 [0m[2m│   │   │   [0mctx.obj[[33m"[0m[33mtracker[0m[33m"[0m].add_contexts(CliContext.from_click_cont [31m│[0m
+[31m│[0m   [2m630 [0m[2m│   │   │   [0mctx.obj[[33m"[0m[33mtracker[0m[33m"[0m].track_command_event(CliEvent.started)   [31m│[0m
+[31m│[0m [31m❱ [0m631 [2m│   │   [0m[1;4;96msuper[0m[1;4m().invoke(ctx)[0m                                            [31m│[0m
+[31m│[0m   [2m632 [0m                                                                       [31m│[0m
+[31m│[0m   [2m633 [0m                                                                       [31m│[0m
+[31m│[0m   [2m634 [0m[94mclass[0m[90m [0m[4;92mAutoInstallBehavior[0m(StrEnum):                                    [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/[0m[1mcore.py[0m:1226   [31m│[0m
+[31m│[0m in invoke                                                                    [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m1223 [0m[2m│   │   │   [0mecho(style(message, fg=[33m"[0m[33mred[0m[33m"[0m), err=[94mTrue[0m)                  [31m│[0m
+[31m│[0m   [2m1224 [0m[2m│   │   [0m                                                              [31m│[0m
+[31m│[0m   [2m1225 [0m[2m│   │   [0m[94mif[0m [96mself[0m.callback [95mis[0m [95mnot[0m [94mNone[0m:                                 [31m│[0m
+[31m│[0m [31m❱ [0m1226 [2m│   │   │   [0m[94mreturn[0m [1;4mctx.invoke([0m[1;4;96mself[0m[1;4m.callback, **ctx.params)[0m            [31m│[0m
+[31m│[0m   [2m1227 [0m[2m│   [0m                                                                  [31m│[0m
+[31m│[0m   [2m1228 [0m[2m│   [0m[94mdef[0m[90m [0m[92mshell_complete[0m([96mself[0m, ctx: Context, incomplete: [96mstr[0m) -> [96mlist[0m[C [31m│[0m
+[31m│[0m   [2m1229 [0m[2;90m│   │   [0m[33m"""Return a list of completions for the incomplete value. Loo[0m [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/[0m[1mcore.py[0m:794 in [31m│[0m
+[31m│[0m invoke                                                                       [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m 791 [0m[2m│   │   [0m                                                              [31m│[0m
+[31m│[0m   [2m 792 [0m[2m│   │   [0m[94mwith[0m augment_usage_errors([96mself[0m):                              [31m│[0m
+[31m│[0m   [2m 793 [0m[2m│   │   │   [0m[94mwith[0m ctx:                                                 [31m│[0m
+[31m│[0m [31m❱ [0m 794 [2m│   │   │   │   [0m[94mreturn[0m [1;4mcallback(*args, **kwargs)[0m                      [31m│[0m
+[31m│[0m   [2m 795 [0m[2m│   [0m                                                                  [31m│[0m
+[31m│[0m   [2m 796 [0m[2m│   [0m[94mdef[0m[90m [0m[92mforward[0m([96mself[0m, cmd: Command, /, *args: t.Any, **kwargs: t.Any) [31m│[0m
+[31m│[0m   [2m 797 [0m[2;90m│   │   [0m[33m"""Similar to :meth:`invoke` but fills in default keyword[0m     [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mparams.p[0m [31m│[0m
+[31m│[0m [1my[0m:75 in decorate                                                             [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m 72 [0m[2m│   │   [0m[94mif[0m database_uri:                                               [31m│[0m
+[31m│[0m   [2m 73 [0m[2m│   │   │   [0mProjectSettingsService.config_override[[33m"[0m[33mdatabase_uri[0m[33m"[0m] = d [31m│[0m
+[31m│[0m   [2m 74 [0m[2m│   │   [0m                                                               [31m│[0m
+[31m│[0m [31m❱ [0m 75 [2m│   │   [0m[94mreturn[0m [1;4mfunc(*args, **kwargs)[0m                                   [31m│[0m
+[31m│[0m   [2m 76 [0m[2m│   [0m                                                                   [31m│[0m
+[31m│[0m   [2m 77 [0m[2m│   [0m[94mreturn[0m functools.update_wrapper(decorate, func)                    [31m│[0m
+[31m│[0m   [2m 78 [0m                                                                       [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mparams.p[0m [31m│[0m
+[31m│[0m [1my[0m:165 in decorate                                                            [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m162 [0m[2m│   │   │   │   [0m[94mexcept[0m MigrationError [94mas[0m err:                          [31m│[0m
+[31m│[0m   [2m163 [0m[2m│   │   │   │   │   [0m[94mraise[0m CliError([96mstr[0m(err)) [94mfrom[0m[90m [0m[4;96merr[0m                  [31m│[0m
+[31m│[0m   [2m164 [0m[2m│   │   │   [0m                                                           [31m│[0m
+[31m│[0m [31m❱ [0m165 [2m│   │   │   [0m[1;4mfunc(project, *args, **kwargs)[0m                             [31m│[0m
+[31m│[0m   [2m166 [0m[2m│   │   [0m                                                               [31m│[0m
+[31m│[0m   [2m167 [0m[2m│   │   [0m[94mreturn[0m functools.update_wrapper(decorate, func)                [31m│[0m
+[31m│[0m   [2m168 [0m                                                                       [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/click/[0m[1mdecorators.py[0m: [31m│[0m
+[31m│[0m 34 in new_func                                                               [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m 31 [0m[2;33m│   [0m[33m"""[0m                                                                [31m│[0m
+[31m│[0m   [2m 32 [0m[2m│   [0m                                                                   [31m│[0m
+[31m│[0m   [2m 33 [0m[2m│   [0m[94mdef[0m[90m [0m[92mnew_func[0m(*args: P.args, **kwargs: P.kwargs) -> R:              [31m│[0m
+[31m│[0m [31m❱ [0m 34 [2m│   │   [0m[94mreturn[0m [1;4mf(get_current_context(), *args, **kwargs)[0m               [31m│[0m
+[31m│[0m   [2m 35 [0m[2m│   [0m                                                                   [31m│[0m
+[31m│[0m   [2m 36 [0m[2m│   [0m[94mreturn[0m update_wrapper(new_func, f)                                 [31m│[0m
+[31m│[0m   [2m 37 [0m                                                                       [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/core/utils/[0m[1m_[0m [31m│[0m
+[31m│[0m [1m_init__.py[0m:80 in wrapper                                                     [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m 77 [0m[2m│   [0m                                                                   [31m│[0m
+[31m│[0m   [2m 78 [0m[2m│   [0m[1;95m@functools[0m.wraps(func)                                             [31m│[0m
+[31m│[0m   [2m 79 [0m[2m│   [0m[94mdef[0m[90m [0m[92mwrapper[0m(*args, **kwargs):  [2m# noqa: ANN002, ANN003, ANN202[0m      [31m│[0m
+[31m│[0m [31m❱ [0m 80 [2m│   │   [0m[94mreturn[0m [1;4masyncio.run(func(*args, **kwargs))[0m                      [31m│[0m
+[31m│[0m   [2m 81 [0m[2m│   [0m                                                                   [31m│[0m
+[31m│[0m   [2m 82 [0m[2m│   [0m[94mreturn[0m wrapper                                                     [31m│[0m
+[31m│[0m   [2m 83 [0m                                                                       [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/usr/lib/python3.13/asyncio/[0m[1mrunners.py[0m:195 in run                            [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m192 [0m[2m│   │   │   [0m[33m"[0m[33masyncio.run() cannot be called from a running event loop[0m[33m"[0m [31m│[0m
+[31m│[0m   [2m193 [0m[2m│   [0m                                                                   [31m│[0m
+[31m│[0m   [2m194 [0m[2m│   [0m[94mwith[0m Runner(debug=debug, loop_factory=loop_factory) [94mas[0m runner:     [31m│[0m
+[31m│[0m [31m❱ [0m195 [2m│   │   [0m[94mreturn[0m [1;4mrunner.run(main)[0m                                        [31m│[0m
+[31m│[0m   [2m196 [0m                                                                       [31m│[0m
+[31m│[0m   [2m197 [0m                                                                       [31m│[0m
+[31m│[0m   [2m198 [0m[94mdef[0m[90m [0m[92m_cancel_all_tasks[0m(loop):                                           [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/usr/lib/python3.13/asyncio/[0m[1mrunners.py[0m:118 in run                            [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m115 [0m[2m│   │   [0m                                                               [31m│[0m
+[31m│[0m   [2m116 [0m[2m│   │   [0m[96mself[0m._interrupt_count = [94m0[0m                                      [31m│[0m
+[31m│[0m   [2m117 [0m[2m│   │   [0m[94mtry[0m:                                                           [31m│[0m
+[31m│[0m [31m❱ [0m118 [2m│   │   │   [0m[94mreturn[0m [96mself[0m._loop.run_until_complete(task)                 [31m│[0m
+[31m│[0m   [2m119 [0m[2m│   │   [0m[94mexcept[0m exceptions.CancelledError:                              [31m│[0m
+[31m│[0m   [2m120 [0m[2m│   │   │   [0m[94mif[0m [96mself[0m._interrupt_count > [94m0[0m:                              [31m│[0m
+[31m│[0m   [2m121 [0m[2m│   │   │   │   [0muncancel = [96mgetattr[0m(task, [33m"[0m[33muncancel[0m[33m"[0m, [94mNone[0m)             [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/usr/lib/python3.13/asyncio/[0m[1mbase_events.py[0m:719 in run_until_complete         [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m 716 [0m[2m│   │   [0m[94mif[0m [95mnot[0m future.done():                                         [31m│[0m
+[31m│[0m   [2m 717 [0m[2m│   │   │   [0m[94mraise[0m [96mRuntimeError[0m([33m'[0m[33mEvent loop stopped before Future comp[0m [31m│[0m
+[31m│[0m   [2m 718 [0m[2m│   │   [0m                                                              [31m│[0m
+[31m│[0m [31m❱ [0m 719 [2m│   │   [0m[94mreturn[0m [1;4mfuture.result()[0m                                        [31m│[0m
+[31m│[0m   [2m 720 [0m[2m│   [0m                                                                  [31m│[0m
+[31m│[0m   [2m 721 [0m[2m│   [0m[94mdef[0m[90m [0m[92mstop[0m([96mself[0m):                                                   [31m│[0m
+[31m│[0m   [2m 722 [0m[2;90m│   │   [0m[33m"""Stop running the event loop.[0m                               [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mrun.py[0m:1 [31m│[0m
+[31m│[0m 86 in run                                                                    [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m183 [0m[2m│   │   [0m[94mawait[0m _run_blocks(tracker, parsed_blocks, dry_run=dry_run)     [31m│[0m
+[31m│[0m   [2m184 [0m[2m│   [0m[94mexcept[0m [96mException[0m [94mas[0m err:                                           [31m│[0m
+[31m│[0m   [2m185 [0m[2m│   │   [0mtracker.track_command_event(CliEvent.failed)                   [31m│[0m
+[31m│[0m [31m❱ [0m186 [2m│   │   [0m[1;4;94mraise[0m[1;4m err[0m                                                      [31m│[0m
+[31m│[0m   [2m187 [0m[2m│   [0mtracker.track_command_event(CliEvent.completed)                    [31m│[0m
+[31m│[0m   [2m188 [0m                                                                       [31m│[0m
+[31m│[0m   [2m189 [0m                                                                       [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mrun.py[0m:1 [31m│[0m
+[31m│[0m 83 in run                                                                    [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m180 [0m[2m│   [0m)                                                                  [31m│[0m
+[31m│[0m   [2m181 [0m[2m│   [0m                                                                   [31m│[0m
+[31m│[0m   [2m182 [0m[2m│   [0m[94mtry[0m:                                                               [31m│[0m
+[31m│[0m [31m❱ [0m183 [2m│   │   [0m[94mawait[0m _run_blocks(tracker, parsed_blocks, dry_run=dry_run)     [31m│[0m
+[31m│[0m   [2m184 [0m[2m│   [0m[94mexcept[0m [96mException[0m [94mas[0m err:                                           [31m│[0m
+[31m│[0m   [2m185 [0m[2m│   │   [0mtracker.track_command_event(CliEvent.failed)                   [31m│[0m
+[31m│[0m   [2m186 [0m[2m│   │   [0m[1;4;94mraise[0m[1;4m err[0m                                                      [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1mrun.py[0m:2 [31m│[0m
+[31m│[0m 30 in _run_blocks                                                            [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m227 [0m[2m│   │   │   [0m)                                                          [31m│[0m
+[31m│[0m   [2m228 [0m[2m│   │   │   [0m[94mwith[0m tracker.with_contexts(tracking_ctx):                  [31m│[0m
+[31m│[0m   [2m229 [0m[2m│   │   │   │   [0mtracker.track_block_event(blk_name, BlockEvents.failed [31m│[0m
+[31m│[0m [31m❱ [0m230 [2m│   │   │   [0m[1;4;94mraise[0m[1;4m CliError([0m                                            [31m│[0m
+[31m│[0m   [2m231 [0m[2m│   │   │   │   [0m[1;4;33mf[0m[1;4;33m"[0m[1;4;33mRun invocation could not be completed as block faile[0m [31m│[0m
+[31m│[0m   [2m232 [0m[2m│   │   │   [0m[1;4m) [0m[1;4;94mfrom[0m[1;4;90m [0m[1;4;96merr[0m                                                 [31m│[0m
+[31m│[0m   [2m233 [0m[2m│   │   [0m[94mexcept[0m [96mException[0m [94mas[0m bare_err:                                  [31m│[0m
+[31m╰──────────────────────────────────────────────────────────────────────────────╯[0m
+[1;91mCliError: [0mRun invocation could not be completed as block failed: Another 
+[32m'dev:tap-oracle-wms-full-to-target-oracle-full'[0m pipeline is already running 
+which started at [1;36m2025[0m-[1;36m07[0m-[1;36m03[0m [1;92m20:40:38[0m.[1;36m068673[0m+[1;92m00:00[0m. Wait until [1;36m2025[0m-[1;36m07[0m-[1;36m03[0m 
+[1;92m20:47:36[0m.[1;36m508106[0m+[1;92m00:00[0m when the job will be automatically cancelled if stale, or 
+ignore this check using the [32m'--force'[0m option.
+
+[3mThe above exception was the direct cause of the following exception:[0m
+
+[31m╭─[0m[31m────────────────────[0m[31m [0m[1;31mTraceback [0m[1;2;31m(most recent call last)[0m[31m [0m[31m─────────────────────[0m[31m─╮[0m
+[31m│[0m [2m/home/marlonsc/flext/.venv/lib/python3.13/site-packages/meltano/cli/[0m[1m__init__[0m [31m│[0m
+[31m│[0m [1m.py[0m:114 in _run_cli                                                          [31m│[0m
+[31m│[0m                                                                              [31m│[0m
+[31m│[0m   [2m111 [0m[2m│   │   [0m[94mexcept[0m MeltanoError [94mas[0m err:                                    [31m│[0m
+[31m│[0m   [2m112 [0m[2m│   │   │   [0mhandle_meltano_error(err)                                  [31m│[0m
+[31m│[0m   [2m113 [0m[2m│   │   [0m[94mexcept[0m [96mException[0m [94mas[0m err:                                       [31m│[0m
+[31m│[0m [31m❱ [0m114 [2m│   │   │   [0m[94mraise[0m CliError([33mf[0m[33m"[0m[33m{[0mtroubleshooting_message[33m}[0m[33m\n[0m[33m{[0merr[33m}[0m[33m"[0m) [94mfrom[0m[90m [0m[4;96me[0m [31m│[0m
+[31m│[0m   [2m115 [0m[2m│   [0m[94mexcept[0m CliError [94mas[0m cli_error:                                      [31m│[0m
+[31m│[0m   [2m116 [0m[2m│   │   [0m[1;4mcli_error.print()[0m                                              [31m│[0m
+[31m│[0m   [2m117 [0m[2m│   │   [0msys.exit(cli_error.exit_code)                                  [31m│[0m
+[31m╰──────────────────────────────────────────────────────────────────────────────╯[0m
+[1;91mCliError: [0mNeed help fixing this problem? Visit [4;94mhttp://melta.no/[0m for 
+troubleshooting steps, or to
+join our friendly Slack community.
+
+Run invocation could not be completed as block failed: Another 
+[32m'dev:tap-oracle-wms-full-to-target-oracle-full'[0m pipeline is already running 
+which started at [1;36m2025[0m-[1;36m07[0m-[1;36m03[0m [1;92m20:40:38[0m.[1;36m068673[0m+[1;92m00:00[0m. Wait until [1;36m2025[0m-[1;36m07[0m-[1;36m03[0m 
+[1;92m20:47:36[0m.[1;36m508106[0m+[1;92m00:00[0m when the job will be automatically cancelled if stale, or 
+ignore this check using the [32m'--force'[0m option.
+
+Need help fixing this problem? Visit http://melta.no/ for troubleshooting steps, or to
+join our friendly Slack community.
+
+Run invocation could not be completed as block failed: Another 'dev:tap-oracle-wms-full-to-target-oracle-full' pipeline is already running which started at 2025-07-03 20:40:38.068673+00:00. Wait until 2025-07-03 20:47:36.508106+00:00 when the job will be automatically cancelled if stale, or ignore this check using the '--force' option.
+2025-07-03 17:46:28 - ERRO: Sincronização full falhou

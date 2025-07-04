@@ -1,5 +1,5 @@
 -- Optimized Oracle table for order_hdr
--- Generated on 2025-07-03T11:20:45.075652
+-- Generated on 2025-07-03T17:38:45.807799
 DROP TABLE "OIC"."WMS_ORDER_HDR" CASCADE CONSTRAINTS;
 
 CREATE TABLE "OIC"."WMS_ORDER_HDR"

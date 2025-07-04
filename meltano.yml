@@ -15,11 +15,14 @@ plugins:
       username: $TAP_ORACLE_WMS_USERNAME
       password: $TAP_ORACLE_WMS_PASSWORD
       entities: ["allocation", "order_hdr", "order_dtl"]
-      page_size: 500
+      page_size: 100
       force_full_table: true
       ordering: "-id"
       filter_mode: "id_recovery"
-      timeout: 600
+      timeout: 3600
+      request_timeout: 3600
+      batch_size_rows: 100
+      max_sync_duration: 10800
       
   - name: tap-oracle-wms-incremental
     namespace: tap_oracle_wms
@@ -29,11 +32,46 @@ plugins:
       username: $TAP_ORACLE_WMS_USERNAME
       password: $TAP_ORACLE_WMS_PASSWORD
       entities: ["allocation", "order_hdr", "order_dtl"]
-      page_size: 1000
+      page_size: 100
       force_full_table: false
       ordering: "mod_ts"
       filter_mode: "incremental"
-      lookback_minutes: 5
+      lookback_minutes: 30
+      incremental_overlap_minutes: 30
+      timeout: 2700
+      request_timeout: 2700
+      max_sync_duration: 5400
+
+  # Individual entity extractors for parallel processing
+  - name: tap-oracle-wms-allocation-full
+    inherit_from: tap-oracle-wms-full
+    config:
+      entities: ["allocation"]
+      
+  - name: tap-oracle-wms-order-hdr-full
+    inherit_from: tap-oracle-wms-full
+    config:
+      entities: ["order_hdr"]
+      
+  - name: tap-oracle-wms-order-dtl-full
+    inherit_from: tap-oracle-wms-full
+    config:
+      entities: ["order_dtl"]
+      
+  - name: tap-oracle-wms-allocation-incremental
+    inherit_from: tap-oracle-wms-incremental
+    config:
+      entities: ["allocation"]
+      
+  - name: tap-oracle-wms-order-hdr-incremental
+    inherit_from: tap-oracle-wms-incremental
+    config:
+      entities: ["order_hdr"]
+      
+  - name: tap-oracle-wms-order-dtl-incremental
+    inherit_from: tap-oracle-wms-incremental
+    config:
+      entities: ["order_dtl"]
 
   loaders:
   - name: target-oracle-full
@@ -48,14 +86,18 @@ plugins:
       protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
       ssl_server_dn_match: false
       batch_size_rows: 1000
-      pool_size: 5
+      pool_size: 2
+      max_overflow: 5
+      parallel_threads: 1
       add_record_metadata: false
       validate_records: false
       load_method: append-only
-      ignore_pk_errors: true
-      enable_historical_versioning: false
+      default_target_schema: OIC
+      primary_key_required: true
+      primary_key_includes_mod_ts: true
       table_prefix: WMS_
-      debug_type_mapping: true
+      debug_type_mapping: false
+      use_null_pool: true
 
   - name: target-oracle-incremental
     namespace: target_oracle
@@ -68,12 +110,15 @@ plugins:
       password: $FLEXT_TARGET_ORACLE_PASSWORD
       protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
       ssl_server_dn_match: false
-      batch_size_rows: 1000
-      pool_size: 5
+      batch_size_rows: 5000
+      pool_size: 8
+      parallel_threads: 2
       add_record_metadata: false
       validate_records: false
       load_method: append-only
-      ignore_pk_errors: true
+      default_target_schema: OIC
+      primary_key_required: true
+      primary_key_includes_mod_ts: true
       enable_historical_versioning: true
       historical_versioning_column: mod_ts
       table_prefix: WMS_
@@ -86,5 +131,30 @@ jobs:
   - name: incremental-sync-job
     tasks:
       - tap-oracle-wms-incremental target-oracle-incremental
+
+  # Single entity sync jobs - configured via entity selection
+  - name: sync-allocation-full
+    tasks:
+      - tap-oracle-wms-allocation-full target-oracle-full
+      
+  - name: sync-order-hdr-full
+    tasks:
+      - tap-oracle-wms-order-hdr-full target-oracle-full
+      
+  - name: sync-order-dtl-full
+    tasks:
+      - tap-oracle-wms-order-dtl-full target-oracle-full
+      
+  - name: sync-allocation-incremental
+    tasks:
+      - tap-oracle-wms-allocation-incremental target-oracle-incremental
+      
+  - name: sync-order-hdr-incremental
+    tasks:
+      - tap-oracle-wms-order-hdr-incremental target-oracle-incremental
+      
+  - name: sync-order-dtl-incremental
+    tasks:
+      - tap-oracle-wms-order-dtl-incremental target-oracle-incremental
 
 schedules: []

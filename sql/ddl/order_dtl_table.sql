@@ -1,5 +1,5 @@
 -- Optimized Oracle table for order_dtl
--- Generated on 2025-07-03T11:20:45.076388
+-- Generated on 2025-07-03T17:38:45.808580
 DROP TABLE "OIC"."WMS_ORDER_DTL" CASCADE CONSTRAINTS;
 
 CREATE TABLE "OIC"."WMS_ORDER_DTL"

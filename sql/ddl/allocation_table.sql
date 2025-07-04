@@ -1,5 +1,5 @@
 -- Optimized Oracle table for allocation
--- Generated on 2025-07-03T11:20:45.075501
+-- Generated on 2025-07-03T17:38:45.807633
 DROP TABLE "OIC"."WMS_ALLOCATION" CASCADE CONSTRAINTS;
 
 CREATE TABLE "OIC"."WMS_ALLOCATION"
