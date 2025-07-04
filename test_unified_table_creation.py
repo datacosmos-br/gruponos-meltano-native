@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Test script para verificar se o target oracle usa as mesmas regras do table_creator.py
-"""
+"""Test script para verificar se o target oracle usa as mesmas regras do table_creator.py."""
 
 import json
 import sys

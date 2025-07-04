@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Professional Oracle Connection Manager
-Handles SSL/TCPS connections with proper error handling and fallbacks
+Handles SSL/TCPS connections with proper error handling and fallbacks.
 """
 
 import logging
@@ -39,10 +39,10 @@ class OracleConnectionManager:
 
     def connect(self) -> oracledb.Connection:
         """Establish Oracle connection with professional error handling.
-        
+
         Returns:
             Active Oracle connection
-            
+
         Raises:
             ConnectionError: If connection cannot be established
         """
@@ -64,22 +64,29 @@ class OracleConnectionManager:
                         try:
                             return self._connect_tcp_fallback()
                         except Exception as fallback_error:
-                            logger.error(f"Fallback connection also failed: {fallback_error}")
-                            raise ConnectionError(
+                            logger.exception(f"Fallback connection also failed: {fallback_error}")
+                            msg = (
                                 f"Could not establish Oracle connection after {self.config.retry_attempts} attempts. "
-                                f"Last error: {e}, Fallback error: {fallback_error}",
+                                f"Last error: {e}, Fallback error: {fallback_error}"
+                            )
+                            raise ConnectionError(
+                                msg,
                             )
                     else:
-                        raise ConnectionError(
+                        msg = (
                             f"Could not establish Oracle connection after {self.config.retry_attempts} attempts. "
-                            f"Last error: {e}",
+                            f"Last error: {e}"
+                        )
+                        raise ConnectionError(
+                            msg,
                         )
 
                 # Wait before retry
                 import time
                 time.sleep(self.config.retry_delay)
 
-        raise ConnectionError("Connection attempts exhausted")
+        msg = "Connection attempts exhausted"
+        raise ConnectionError(msg)
 
     def _connect_tcps(self) -> oracledb.Connection:
         """Connect using TCPS (SSL) protocol."""
@@ -141,7 +148,7 @@ class OracleConnectionManager:
 
     def test_connection(self) -> dict[str, Any]:
         """Test Oracle connection and return diagnostic information.
-        
+
         Returns:
             Dictionary with connection test results
         """
@@ -195,7 +202,8 @@ def create_connection_manager_from_env() -> OracleConnectionManager:
     password = os.getenv("FLEXT_TARGET_ORACLE_PASSWORD")
 
     if not all([host, service_name, username, password]):
-        raise ValueError("Missing required Oracle connection environment variables")
+        msg = "Missing required Oracle connection environment variables"
+        raise ValueError(msg)
 
     config = OracleConnectionConfig(
         host=host,  # type: ignore[arg-type]

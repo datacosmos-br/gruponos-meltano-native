@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Test simples para verificar conversão de tipos unificada
-"""
+"""Test simples para verificar conversão de tipos unificada."""
 
 def test_table_creator_rules():
     """Test direto das regras de conversão."""
@@ -71,7 +70,7 @@ def test_table_creator_rules():
             # Handle nullable types like ["string", "null"]
             schema_type = next((t for t in schema_type if t != "null"), "string")
 
-        if schema_type == "integer" or schema_type == "number":
+        if schema_type in ("integer", "number"):
             return "NUMBER"
         if schema_type == "boolean":
             return "NUMBER(1,0)"

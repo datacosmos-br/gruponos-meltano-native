@@ -44,7 +44,7 @@ def validate_sync():
             if count > 0:
                 # Get date range
                 cursor.execute(f"""
-                    SELECT 
+                    SELECT
                         MIN("MOD_TS") as min_date,
                         MAX("MOD_TS") as max_date,
                         COUNT(DISTINCT "ID") as unique_ids

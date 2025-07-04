@@ -6,6 +6,7 @@ Uses metadata-first pattern for consistency with tap discovery.
 REFATORADO: Agora usa type_mapping_rules.py como módulo compartilhado
 """
 
+import contextlib
 import json
 import os
 import subprocess
@@ -73,7 +74,7 @@ class OracleTableCreator:
         # 1. First add ID field (primary key) - prioritize simple 'ID' field
         id_fields = [
             name
-            for name in properties.keys()
+            for name in properties
             if name.upper() == "ID"
             or (name.upper().endswith("_ID") and not name.upper().endswith("_ID_ID"))
         ]
@@ -122,7 +123,7 @@ class OracleTableCreator:
         # 3. Add complex foreign key fields (_ID_KEY, _ID_URL, etc.)
         fk_fields = [
             name
-            for name in properties.keys()
+            for name in properties
             if "_ID_" in name.upper() and not name.upper().endswith("_URL")
         ]
         for prop_name in sorted(fk_fields):
@@ -259,7 +260,7 @@ class OracleTableCreator:
             json_type = next((t for t in json_type if t != "null"), "string")
 
         # Map to Oracle types following WMS pattern
-        if json_type == "integer" or json_type == "number":
+        if json_type in ("integer", "number"):
             return "NUMBER"
         if json_type == "boolean":
             return "NUMBER"  # Oracle boolean as NUMBER
@@ -291,7 +292,8 @@ class OracleTableCreator:
         schema_data = self._discover_schemas()
 
         if not schema_data:
-            raise Exception("Failed to discover schemas from tap")
+            msg = "Failed to discover schemas from tap"
+            raise Exception(msg)
 
         # Generate DDL for each entity
         for entity in entities:
@@ -385,16 +387,19 @@ class OracleTableCreator:
             if not schemas:
                 print("❌ No schemas found in meltano output")
                 print("🚨 CRITICAL: Cannot proceed without proper schema discovery")
-                raise Exception("Schema discovery failed - check WMS credentials and connectivity")
+                msg = "Schema discovery failed - check WMS credentials and connectivity"
+                raise Exception(msg)
 
             return schemas
 
         except subprocess.TimeoutExpired:
             print("❌ Schema discovery timed out")
-            raise Exception("Schema discovery timed out - check WMS API connectivity")
+            msg = "Schema discovery timed out - check WMS API connectivity"
+            raise Exception(msg)
         except Exception as e:
             print(f"❌ Error in schema discovery: {e}")
-            raise Exception(f"Schema discovery failed: {e}")
+            msg = f"Schema discovery failed: {e}"
+            raise Exception(msg)
 
     def _discover_schemas_direct(self) -> dict[str, Any]:
         """Discover schemas by calling tap-oracle-wms directly."""
@@ -420,7 +425,8 @@ class OracleTableCreator:
             # Check if we have minimal config
             if not all([config["base_url"], config["username"], config["password"]]):
                 print("❌ Missing WMS credentials for direct discovery")
-                raise Exception("WMS credentials not configured - cannot discover schemas")
+                msg = "WMS credentials not configured - cannot discover schemas"
+                raise Exception(msg)
 
             # Write temporary config file
 
@@ -431,7 +437,7 @@ class OracleTableCreator:
             try:
                 # Run tap with config
                 result = subprocess.run(
-                    cmd + ["--config", config_file],
+                    [*cmd, "--config", config_file],
                     capture_output=True,
                     text=True,
                     timeout=120,
@@ -440,7 +446,8 @@ class OracleTableCreator:
 
                 if result.returncode != 0:
                     print(f"❌ Direct tap discovery failed: {result.stderr}")
-                    raise Exception(f"Direct tap discovery failed: {result.stderr}")
+                    msg = f"Direct tap discovery failed: {result.stderr}"
+                    raise Exception(msg)
 
                 # Parse SCHEMA messages from output
                 schemas = {}
@@ -464,30 +471,34 @@ class OracleTableCreator:
 
                 if not schemas:
                     print("❌ No schemas found in direct tap output")
-                    raise Exception("Direct schema discovery failed - no schemas returned")
+                    msg = "Direct schema discovery failed - no schemas returned"
+                    raise Exception(msg)
 
                 return schemas
 
             finally:
                 # Clean up temp config file
-                try:
+                with contextlib.suppress(Exception):
                     os.unlink(config_file)
-                except:
-                    pass
 
         except subprocess.TimeoutExpired:
             print("❌ Direct tap discovery timed out")
-            raise Exception("Direct tap discovery timed out")
+            msg = "Direct tap discovery timed out"
+            raise Exception(msg)
         except Exception as e:
             print(f"❌ Error in direct schema discovery: {e}")
-            raise Exception(f"Direct schema discovery failed: {e}")
+            msg = f"Direct schema discovery failed: {e}"
+            raise Exception(msg)
 
     def _get_fallback_schemas(self) -> dict[str, Any]:
         """REMOVED: Fallback schemas are dangerous and should never be used."""
-        raise Exception(
+        msg = (
             "Fallback schemas are disabled. "
             "Configure proper WMS credentials to discover real schemas. "
-            "Required: TAP_ORACLE_WMS_BASE_URL, TAP_ORACLE_WMS_USERNAME, TAP_ORACLE_WMS_PASSWORD",
+            "Required: TAP_ORACLE_WMS_BASE_URL, TAP_ORACLE_WMS_USERNAME, TAP_ORACLE_WMS_PASSWORD"
+        )
+        raise Exception(
+            msg,
         )
 
     def _oracle_to_json_schema(
@@ -525,9 +536,12 @@ class OracleTableCreator:
 
     def _create_default_schema(self, entity: str) -> dict[str, Any]:
         """REMOVED: Default schemas are dangerous and should never be used."""
-        raise Exception(
+        msg = (
             f"Default schema creation is disabled for entity '{entity}'. "
-            "Use proper schema discovery with WMS API credentials.",
+            "Use proper schema discovery with WMS API credentials."
+        )
+        raise Exception(
+            msg,
         )
 
     def execute_ddl(

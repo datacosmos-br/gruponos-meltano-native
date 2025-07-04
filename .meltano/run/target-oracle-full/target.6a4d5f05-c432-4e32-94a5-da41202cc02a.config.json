@@ -1,0 +1,22 @@
+{
+  "host": "10.93.10.114",
+  "port": 1522,
+  "service_name": "gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com",
+  "username": "oic",
+  "password": "aehaz232dfNuupah_#",
+  "protocol": "tcps",
+  "ssl_server_dn_match": false,
+  "batch_size_rows": 1000,
+  "pool_size": 2,
+  "max_overflow": 5,
+  "parallel_threads": 1,
+  "add_record_metadata": false,
+  "validate_records": false,
+  "load_method": "append-only",
+  "default_target_schema": "OIC",
+  "primary_key_required": true,
+  "primary_key_includes_mod_ts": true,
+  "table_prefix": "WMS_",
+  "debug_type_mapping": false,
+  "use_null_pool": true
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Professional Alert Manager for GrupoNOS Meltano Native
-Monitors system health and sends alerts based on configurable thresholds
+Monitors system health and sends alerts based on configurable thresholds.
 """
 
 import json
@@ -70,10 +70,10 @@ class AlertManager:
 
     def check_sync_health(self, sync_log_path: str) -> Alert | None:
         """Monitor sync process health from log files.
-        
+
         Args:
             sync_log_path: Path to sync log file
-            
+
         Returns:
             Alert if issues detected, None otherwise
         """
@@ -148,7 +148,7 @@ class AlertManager:
 
     def check_oracle_connection(self) -> Alert | None:
         """Test Oracle database connectivity.
-        
+
         Returns:
             Alert if connection issues detected
         """
@@ -193,7 +193,7 @@ class AlertManager:
 
     def check_system_resources(self) -> list[Alert]:
         """Monitor system resource usage.
-        
+
         Returns:
             List of alerts for resource issues
         """
@@ -250,10 +250,10 @@ class AlertManager:
 
     def send_alert(self, alert: Alert) -> bool:
         """Send alert through configured notification channels.
-        
+
         Args:
             alert: Alert to send
-            
+
         Returns:
             True if alert sent successfully
         """
@@ -278,7 +278,7 @@ class AlertManager:
 
     def run_health_check(self) -> list[Alert]:
         """Run comprehensive health check and return any alerts.
-        
+
         Returns:
             List of active alerts
         """
@@ -368,7 +368,7 @@ class AlertManager:
             return response.status_code == 200
 
         except Exception as e:
-            logger.error(f"Failed to send webhook alert: {e}")
+            logger.exception(f"Failed to send webhook alert: {e}")
             return False
 
     def _send_email(self, alert: Alert) -> bool:

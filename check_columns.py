@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check Oracle table columns"""
+"""Check Oracle table columns."""
 
 import os
 import sys

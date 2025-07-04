@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Script para analisar comportamento de dados Oracle entre syncs"""
+"""Script para analisar comportamento de dados Oracle entre syncs."""
 
 import os
 from datetime import datetime
@@ -8,7 +8,7 @@ import oracledb
 
 
 def check_overwrite_behavior():
-    """Analisa se dados são substituídos ou acumulados"""
+    """Analisa se dados são substituídos ou acumulados."""
     print("🔍 ANALISANDO COMPORTAMENTO OVERWRITE vs RECOVERY...")
     print("📋 Verificando se dados são substituídos ou acumulados...")
     print()
@@ -26,9 +26,9 @@ def check_overwrite_behavior():
         try:
             # Check mod_ts range (source data timestamps)
             cursor.execute(f"""
-                SELECT COUNT(*) as total, 
-                       MIN(mod_ts) as oldest, 
-                       MAX(mod_ts) as newest 
+                SELECT COUNT(*) as total,
+                       MIN(mod_ts) as oldest,
+                       MAX(mod_ts) as newest
                 FROM {table}
             """)
             result = cursor.fetchone()
@@ -39,8 +39,8 @@ def check_overwrite_behavior():
 
             # Check TK_DATE range (actual insert timestamps)
             cursor.execute(f"""
-                SELECT MIN(TK_DATE) as first_insert, 
-                       MAX(TK_DATE) as last_insert 
+                SELECT MIN(TK_DATE) as first_insert,
+                       MAX(TK_DATE) as last_insert
                 FROM {table}
             """)
             tk_result = cursor.fetchone()
@@ -50,9 +50,9 @@ def check_overwrite_behavior():
             cursor.execute(f"""
                 SELECT COUNT(*) as total_rows,
                        COUNT(DISTINCT id) as unique_ids,
-                       CASE WHEN COUNT(*) > COUNT(DISTINCT id) 
-                            THEN 'DUPLICATES FOUND' 
-                            ELSE 'NO DUPLICATES' 
+                       CASE WHEN COUNT(*) > COUNT(DISTINCT id)
+                            THEN 'DUPLICATES FOUND'
+                            ELSE 'NO DUPLICATES'
                        END as duplicate_status
                 FROM {table}
             """)
@@ -69,7 +69,7 @@ def check_overwrite_behavior():
 
 
 def check_incremental_order():
-    """Verifica se incremental está ordenado por mod_ts"""
+    """Verifica se incremental está ordenado por mod_ts."""
     print("🔍 VERIFICANDO ORDEM INCREMENTAL POR MOD_TS...")
     print()
 
@@ -80,10 +80,10 @@ def check_incremental_order():
 
     print("📊 ALLOCATION - Ordem incremental (mod_ts):")
     cursor.execute("""
-        SELECT id, mod_ts, 
-               ROW_NUMBER() OVER (ORDER BY mod_ts ASC) as row_order 
-        FROM WMS_ALLOCATION 
-        ORDER BY mod_ts ASC 
+        SELECT id, mod_ts,
+               ROW_NUMBER() OVER (ORDER BY mod_ts ASC) as row_order
+        FROM WMS_ALLOCATION
+        ORDER BY mod_ts ASC
         FETCH FIRST 10 ROWS ONLY
     """)
 
@@ -93,10 +93,10 @@ def check_incremental_order():
     print()
     print("📊 Estatísticas temporais:")
     cursor.execute("""
-        SELECT COUNT(*) as total, 
-               MIN(mod_ts) as oldest, 
-               MAX(mod_ts) as newest, 
-               COUNT(DISTINCT mod_ts) as unique_ts 
+        SELECT COUNT(*) as total,
+               MIN(mod_ts) as oldest,
+               MAX(mod_ts) as newest,
+               COUNT(DISTINCT mod_ts) as unique_ts
         FROM WMS_ALLOCATION
     """)
     result = cursor.fetchone()

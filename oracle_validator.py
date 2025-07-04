@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Oracle Database Validation Script
-Validates data integrity and connection for GrupoNOS Meltano Native project
+Validates data integrity and connection for GrupoNOS Meltano Native project.
 """
 
 import os
@@ -52,8 +52,8 @@ def validate_oracle():
             print("📊 Verificando tabelas...")
             # Check for existing tables
             cursor.execute("""
-                SELECT table_name FROM user_tables 
-                WHERE table_name LIKE '%ALLOCATION%' 
+                SELECT table_name FROM user_tables
+                WHERE table_name LIKE '%ALLOCATION%'
                 OR table_name LIKE '%ORDER%'
                 OR table_name LIKE 'TAP_%'
                 ORDER BY table_name

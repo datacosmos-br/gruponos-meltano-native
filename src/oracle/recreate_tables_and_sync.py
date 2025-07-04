@@ -25,8 +25,8 @@ def drop_all_wms_tables():
 
         # Listar todas as tabelas que podem ser do WMS
         cursor.execute("""
-            SELECT table_name 
-            FROM user_tables 
+            SELECT table_name
+            FROM user_tables
             WHERE table_name IN (
                 'WMS_ALLOCATION', 'WMS_ORDER_HDR', 'WMS_ORDER_DTL',
                 'ALLOCATION', 'ORDER_HDR', 'ORDER_DTL'
@@ -71,8 +71,8 @@ def list_current_tables():
 
         cursor.execute("""
             SELECT table_name, num_rows
-            FROM user_tables 
-            WHERE table_name LIKE '%ALLOCATION%' 
+            FROM user_tables
+            WHERE table_name LIKE '%ALLOCATION%'
                OR table_name LIKE '%ORDER%'
             ORDER BY table_name
         """)
@@ -103,7 +103,7 @@ def check_table_structure(table_name):
         # Verificar colunas
         cursor.execute(f"""
             SELECT column_name, data_type, data_length
-            FROM user_tab_columns 
+            FROM user_tab_columns
             WHERE table_name = '{table_name}'
             ORDER BY column_id
         """)
@@ -213,10 +213,10 @@ def analyze_results():
 
         found_tables = {}
 
-        for table_name, entity in tables_to_check:
+        for table_name, _entity in tables_to_check:
             cursor.execute(f"""
                 SELECT COUNT(*) as cnt
-                FROM user_tables 
+                FROM user_tables
                 WHERE table_name = '{table_name}'
             """)
 

@@ -1,0 +1,18 @@
+{
+  "base_url": "https://a29.wms.ocs.oraclecloud.com/raizen",
+  "username": "USER_WMS_INTEGRA",
+  "password": "jmCyS7BK94YvhS@",
+  "entities": [
+    "allocation",
+    "order_hdr",
+    "order_dtl"
+  ],
+  "page_size": 1250,
+  "force_full_table": true,
+  "ordering": "-id",
+  "filter_mode": "id_recovery",
+  "timeout": 3600,
+  "request_timeout": 3600,
+  "batch_size_rows": 100,
+  "max_sync_duration": 10800
+}

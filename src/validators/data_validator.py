@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Professional Data Validator for Oracle WMS Integration
-Handles type conversion and validation issues found in production
+Handles type conversion and validation issues found in production.
 """
 
 import re
@@ -23,11 +23,11 @@ class DataValidator:
 
     def validate_and_convert_record(self, record: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
         """Validate and convert a record according to schema.
-        
+
         Args:
             record: Input record to validate
             schema: JSON schema for validation
-            
+
         Returns:
             Converted and validated record
         """
@@ -63,7 +63,7 @@ class DataValidator:
             expected_type = next((t for t in expected_type if t != "null"), "string")
 
         try:
-            if expected_type == "number" or expected_type == "integer":
+            if expected_type in ("number", "integer"):
                 return self._convert_to_number(value, expected_type, field_name)
             if expected_type == "boolean":
                 return self._convert_to_boolean(value, field_name)
@@ -75,14 +75,15 @@ class DataValidator:
         except Exception as e:
             self.conversion_stats["validation_errors"] += 1
             if self.strict_mode:
-                raise ValueError(f"Failed to convert field '{field_name}': {e}")
+                msg = f"Failed to convert field '{field_name}': {e}"
+                raise ValueError(msg)
             # Log warning and return original value
             print(f"⚠️  Warning: Could not convert {field_name}={value} to {expected_type}: {e}")
             return value
 
     def _convert_to_number(self, value: Any, expected_type: str, field_name: str) -> int | float | None:
         """Convert value to number, handling string numbers."""
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return value
 
         if isinstance(value, str):
@@ -102,7 +103,8 @@ class DataValidator:
                             self.conversion_stats["strings_converted_to_numbers"] += 1
                             return int(float_val)
                         if self.strict_mode:
-                            raise ValueError(f"Cannot convert decimal {cleaned_value} to integer")
+                            msg = f"Cannot convert decimal {cleaned_value} to integer"
+                            raise ValueError(msg)
                         return int(float_val)  # Truncate in non-strict mode
                     self.conversion_stats["strings_converted_to_numbers"] += 1
                     return int(cleaned_value)
@@ -112,7 +114,8 @@ class DataValidator:
 
             except ValueError:
                 if self.strict_mode:
-                    raise ValueError(f"Cannot convert '{value}' to {expected_type}")
+                    msg = f"Cannot convert '{value}' to {expected_type}"
+                    raise ValueError(msg)
                 # Return 0 as fallback in non-strict mode
                 return 0
 
@@ -123,7 +126,8 @@ class DataValidator:
             return float(value)
         except (ValueError, TypeError):
             if self.strict_mode:
-                raise ValueError(f"Cannot convert {type(value)} '{value}' to {expected_type}")
+                msg = f"Cannot convert {type(value)} '{value}' to {expected_type}"
+                raise ValueError(msg)
             return 0
 
     def _convert_to_boolean(self, value: Any, field_name: str) -> bool:
@@ -138,19 +142,21 @@ class DataValidator:
             if lower_val in ("false", "f", "no", "n", "0", "off"):
                 return False
             if self.strict_mode:
-                raise ValueError(f"Cannot convert string '{value}' to boolean")
+                msg = f"Cannot convert string '{value}' to boolean"
+                raise ValueError(msg)
             return bool(value)  # Fallback to truthiness
 
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return bool(value)
 
         if self.strict_mode:
-            raise ValueError(f"Cannot convert {type(value)} '{value}' to boolean")
+            msg = f"Cannot convert {type(value)} '{value}' to boolean"
+            raise ValueError(msg)
         return bool(value)
 
     def _convert_to_date(self, value: Any, date_format: str, field_name: str) -> str | None:
         """Convert value to standardized date format."""
-        if isinstance(value, (datetime, date)):
+        if isinstance(value, datetime | date):
             self.conversion_stats["dates_normalized"] += 1
             return value.isoformat()
 
@@ -169,7 +175,8 @@ class DataValidator:
                     return value.strip()
 
             if self.strict_mode:
-                raise ValueError(f"Cannot parse date '{value}'")
+                msg = f"Cannot parse date '{value}'"
+                raise ValueError(msg)
             return value  # Return as-is if can't parse
 
         return str(value) if value is not None else None

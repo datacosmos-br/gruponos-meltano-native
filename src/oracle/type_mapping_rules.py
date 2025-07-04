@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Oracle Type Mapping Rules - Módulo Compartilhado
-Regras centralizadas para conversão de tipos WMS → Oracle DDL
+Regras centralizadas para conversão de tipos WMS → Oracle DDL.
 
 Este módulo é usado por:
-- table_creator.py (criação manual de tabelas)  
+- table_creator.py (criação manual de tabelas)
 - flext-target-oracle (criação automática pelo Singer)
 
 Garante consistência total entre os dois métodos de criação.
@@ -71,20 +71,20 @@ def convert_metadata_type_to_oracle(
     metadata_type: str | None = None,
     column_name: str = "",
     max_length: int | None = None,
-    sample_value: any = None,
+    sample_value: any | None = None,
 ) -> str:
     """Converter tipo WMS metadata para Oracle DDL usando padrão metadata-first.
-    
+
     Esta é a função principal usada por ambos:
     - table_creator.py
     - flext-target-oracle
-    
+
     Args:
         metadata_type: Tipo WMS metadata
         column_name: Nome do campo para pattern matching
         max_length: Comprimento máximo para campos string
         sample_value: Valor de amostra para inferência de tipo
-        
+
     Returns:
         String de tipo Oracle DDL (ex: 'VARCHAR2(255 CHAR)', 'NUMBER')
     """
@@ -113,11 +113,11 @@ def convert_metadata_type_to_oracle(
 
 def convert_field_pattern_to_oracle(column_name: str, max_length: int | None = None) -> str | None:
     """Converter nome de campo para tipo Oracle usando regras de padrão.
-    
+
     Args:
         column_name: Nome do campo
         max_length: Comprimento máximo para campos string
-        
+
     Returns:
         Tipo Oracle ou None se nenhum padrão corresponder
     """
@@ -152,13 +152,13 @@ def convert_field_pattern_to_oracle(column_name: str, max_length: int | None = N
 
 def convert_singer_schema_to_oracle(column_name: str, column_schema: dict) -> str:
     """Converter schema Singer para tipo Oracle.
-    
+
     Usado pelo flext-target-oracle para tipos descobertos via Singer.
-    
+
     Args:
         column_name: Nome da coluna
         column_schema: Schema Singer da coluna
-        
+
     Returns:
         Tipo Oracle DDL
     """
@@ -173,7 +173,7 @@ def convert_singer_schema_to_oracle(column_name: str, column_schema: dict) -> st
         # Lidar com tipos nullable como ["string", "null"]
         schema_type = next((t for t in schema_type if t != "null"), "string")
 
-    if schema_type == "integer" or schema_type == "number":
+    if schema_type in ("integer", "number"):
         return "NUMBER"
     if schema_type == "boolean":
         return "NUMBER(1,0)"
@@ -195,7 +195,7 @@ def _infer_oracle_from_sample(sample_value: any) -> str:
     """Inferir tipo Oracle de valor de amostra."""
     if isinstance(sample_value, bool):
         return "NUMBER(1,0)"
-    if isinstance(sample_value, (int, float)):
+    if isinstance(sample_value, int | float):
         return "NUMBER"
     if isinstance(sample_value, str):
         if _looks_like_date(sample_value):
@@ -214,21 +214,18 @@ def _looks_like_date(value: str) -> bool:
         r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}",  # ISO datetime
     ]
 
-    for pattern in date_patterns:
-        if re.match(pattern, value):
-            return True
-    return False
+    return any(re.match(pattern, value) for pattern in date_patterns)
 
 
 def oracle_ddl_from_singer_schema(singer_schema: dict, column_name: str = "") -> str:
     """Converter schema Singer de volta para tipo Oracle DDL.
-    
+
     Útil para criação de tabela a partir de schemas Singer descobertos.
-    
+
     Args:
         singer_schema: Schema Singer da coluna
         column_name: Nome da coluna
-        
+
     Returns:
         Tipo Oracle DDL
     """
