@@ -11,36 +11,62 @@ plugins:
     namespace: tap_oracle_wms
     executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
     config:
+      # Core connection settings (only required fields)
       base_url: $TAP_ORACLE_WMS_BASE_URL
       username: $TAP_ORACLE_WMS_USERNAME
       password: $TAP_ORACLE_WMS_PASSWORD
-      entities: ["allocation", "order_hdr", "order_dtl"]
-      page_size: 100
-      force_full_table: true
-      ordering: "-id"
-      filter_mode: "id_recovery"
-      timeout: 3600
-      request_timeout: 3600
-      batch_size_rows: 100
-      max_sync_duration: 10800
       
+      # Schema discovery: API metadata only (hard-coded in tap)
+      
+      # Entity and data selection
+      entities: ["allocation", "order_hdr", "order_dtl"]
+      force_full_table: true
+      
+      # SINGER SDK standard settings
+      ordering: "-id"
+      replication_key: "id"
+      
+      # Performance via environment variables only - NO hardcoded values
+      page_size: $WMS_PAGE_SIZE
+      
+      # Legacy settings (kept for backward compatibility)
+      timeout: 3600
+      
+    # ALL OTHER CONFIGURATIONS NOW COME FROM CONFIGMAPPER:
+    # 1. WMS_PROFILE_NAME=gruponos (company-specific profile)
+    # 2. Individual WMS_* environment variables 
+    # 3. ConfigMapper defaults (sensible fallbacks)
+    settings:
+      WMS_PROFILE_NAME: $WMS_PROFILE_NAME
+
   - name: tap-oracle-wms-incremental
     namespace: tap_oracle_wms
     executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
     config:
+      # Core connection settings (only required fields)
       base_url: $TAP_ORACLE_WMS_BASE_URL
       username: $TAP_ORACLE_WMS_USERNAME
       password: $TAP_ORACLE_WMS_PASSWORD
+      
+      # Schema discovery: API metadata only (hard-coded in tap)
+      
+      # Entity and data selection
       entities: ["allocation", "order_hdr", "order_dtl"]
-      page_size: 100
       force_full_table: false
+      
+      # SINGER SDK standard settings
       ordering: "mod_ts"
-      filter_mode: "incremental"
-      lookback_minutes: 30
-      incremental_overlap_minutes: 30
+      replication_key: "mod_ts"
+      
+      # Performance via environment variables only - NO hardcoded values
+      page_size: $WMS_PAGE_SIZE
+      
+      # Legacy settings (kept for backward compatibility)
       timeout: 2700
-      request_timeout: 2700
-      max_sync_duration: 5400
+      
+    # Configuration comes from ConfigMapper system
+    settings:
+      WMS_PROFILE_NAME: $WMS_PROFILE_NAME
 
   # Individual entity extractors for parallel processing
   - name: tap-oracle-wms-allocation-full
@@ -158,3 +184,30 @@ jobs:
       - tap-oracle-wms-order-dtl-incremental target-oracle-incremental
 
 schedules: []
+
+# =============================================================================
+# CONFIGMAPPER SYSTEM USAGE:
+# =============================================================================
+# This meltano.yml now uses the ConfigMapper system which means:
+# 
+# 1. NO MORE HARDCODED VALUES in meltano.yml
+# 2. Configurations come from (in order of precedence):
+#    a) Individual WMS_* environment variables (.env file)
+#    b) WMS_PROFILE_NAME profile (config/profiles/gruponos.json)
+#    c) ConfigMapper defaults (sensible fallbacks)
+#
+# 3. Benefits:
+#    - Company-specific business rules via profiles
+#    - Environment-based overrides
+#    - Simplified meltano.yml maintenance
+#    - No more need to update meltano.yml for config changes
+#
+# 4. Required Environment Variables:
+#    - TAP_ORACLE_WMS_BASE_URL
+#    - TAP_ORACLE_WMS_USERNAME  
+#    - TAP_ORACLE_WMS_PASSWORD
+#    - WMS_PROFILE_NAME=gruponos
+#
+# 5. Optional Overrides (see .env.template):
+#    - WMS_API_VERSION, WMS_PAGE_SIZE, WMS_COMPANY_CODE, etc.
+# =============================================================================

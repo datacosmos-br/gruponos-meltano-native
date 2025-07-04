@@ -1,0 +1,153 @@
+# WMS Integration Configuration
+# Specific configuration for Oracle WMS integration using generic modules
+
+# Tap Configuration (using flext-tap-oracle-wms)
+tap_oracle_wms:
+  # Base Configuration
+  executable: ${TAP_EXECUTABLE:-/home/marlonsc/flext/.venv/bin/tap-oracle-wms}
+  
+  # Connection Settings
+  base_url: ${WMS_BASE_URL}
+  username: ${WMS_USERNAME}
+  password: ${WMS_PASSWORD}
+  
+  # Authentication
+  auth_type: ${WMS_AUTH_TYPE:-basic}
+  client_id: ${WMS_CLIENT_ID}
+  client_secret: ${WMS_CLIENT_SECRET}
+  oauth_url: ${WMS_OAUTH_URL}
+  
+  # API Configuration
+  api_version: ${WMS_API_VERSION:-v10}
+  api_endpoint_prefix: ${WMS_API_PREFIX:-wms/lgfapi}
+  facility_code: ${WMS_FACILITY_CODE}
+  
+  # Entity Configuration
+  entities: ${WMS_ENTITIES:-allocation,order_hdr,order_dtl}
+  exclude_entities: ${WMS_EXCLUDE_ENTITIES}
+  entity_filter: ${WMS_ENTITY_FILTER}
+  
+  # Performance Settings
+  page_size: ${WMS_PAGE_SIZE:-1000}
+  request_timeout: ${WMS_REQUEST_TIMEOUT:-300}
+  max_parallel_pages: ${WMS_MAX_PARALLEL_PAGES:-5}
+  batch_size_rows: ${WMS_BATCH_SIZE:-1000}
+  
+  # Sync Configuration
+  force_full_table: ${WMS_FORCE_FULL_TABLE:-false}
+  incremental_overlap_minutes: ${WMS_INCREMENTAL_OVERLAP:-30}
+  lookback_window: ${WMS_LOOKBACK_WINDOW:-0}
+  start_date: ${WMS_START_DATE}
+  
+  # Schema Configuration
+  flattening_enabled: ${WMS_FLATTENING_ENABLED:-true}
+  flattening_max_depth: ${WMS_FLATTENING_MAX_DEPTH:-3}
+  infer_schema_from_samples: ${WMS_INFER_SCHEMA:-true}
+  sample_size: ${WMS_SAMPLE_SIZE:-5}
+  
+  # Cache Configuration
+  cache_enabled: ${WMS_CACHE_ENABLED:-true}
+  cache_ttl: ${WMS_CACHE_TTL:-3600}
+  cache_directory: ${WMS_CACHE_DIR:-./cache}
+
+# Target Configuration (using flext-target-oracle)
+target_oracle:
+  # Base Configuration
+  executable: ${TARGET_EXECUTABLE:-/home/marlonsc/flext/.venv/bin/flext-target-oracle}
+  
+  # Connection Settings
+  host: ${TARGET_ORACLE_HOST}
+  port: ${TARGET_ORACLE_PORT:-1521}
+  service_name: ${TARGET_ORACLE_SERVICE_NAME}
+  username: ${TARGET_ORACLE_USERNAME}
+  password: ${TARGET_ORACLE_PASSWORD}
+  protocol: ${TARGET_ORACLE_PROTOCOL:-tcp}
+  
+  # Schema Configuration
+  default_target_schema: ${TARGET_ORACLE_SCHEMA}
+  table_prefix: ${TARGET_TABLE_PREFIX:-WMS_}
+  table_suffix: ${TARGET_TABLE_SUFFIX}
+  
+  # Performance Settings
+  batch_size_rows: ${TARGET_BATCH_SIZE:-5000}
+  pool_size: ${TARGET_POOL_SIZE:-10}
+  max_overflow: ${TARGET_MAX_OVERFLOW:-20}
+  parallel_threads: ${TARGET_PARALLEL_THREADS:-4}
+  
+  # Load Configuration
+  load_method: ${TARGET_LOAD_METHOD:-append-only}
+  add_record_metadata: ${TARGET_ADD_METADATA:-false}
+  validate_records: ${TARGET_VALIDATE_RECORDS:-true}
+  
+  # Oracle-Specific Features
+  use_bulk_operations: ${TARGET_USE_BULK_OPS:-true}
+  use_merge_statements: ${TARGET_USE_MERGE:-true}
+  use_direct_path: ${TARGET_USE_DIRECT_PATH:-false}
+  enable_compression: ${TARGET_ENABLE_COMPRESSION:-false}
+  enable_partitioning: ${TARGET_ENABLE_PARTITIONING:-false}
+  
+  # Historical Versioning
+  enable_historical_versioning: ${TARGET_ENABLE_HISTORY:-false}
+  historical_versioning_column: ${TARGET_HISTORY_COLUMN:-mod_ts}
+  
+  # Type Configuration
+  enable_smart_typing: ${TARGET_SMART_TYPING:-true}
+  enable_column_patterns: ${TARGET_COLUMN_PATTERNS:-true}
+  varchar_max_length: ${TARGET_VARCHAR_MAX:-4000}
+  varchar_default_length: ${TARGET_VARCHAR_DEFAULT:-255}
+
+# Entity-Specific Configurations
+entities:
+  allocation:
+    # Tap settings
+    replication_method: ${ALLOCATION_REPLICATION_METHOD:-INCREMENTAL}
+    replication_key: ${ALLOCATION_REPLICATION_KEY:-last_updated}
+    primary_keys: ${ALLOCATION_PRIMARY_KEYS:-allocation_id}
+    
+    # Target settings
+    target_table_name: ${ALLOCATION_TABLE_NAME:-WMS_ALLOCATION}
+    indexes: ${ALLOCATION_INDEXES:-allocation_id,order_id,item_id,location_id}
+    
+  order_hdr:
+    # Tap settings
+    replication_method: ${ORDER_HDR_REPLICATION_METHOD:-INCREMENTAL}
+    replication_key: ${ORDER_HDR_REPLICATION_KEY:-order_date}
+    primary_keys: ${ORDER_HDR_PRIMARY_KEYS:-order_id}
+    
+    # Target settings
+    target_table_name: ${ORDER_HDR_TABLE_NAME:-WMS_ORDER_HDR}
+    indexes: ${ORDER_HDR_INDEXES:-order_id,customer_id,order_date}
+    
+  order_dtl:
+    # Tap settings
+    replication_method: ${ORDER_DTL_REPLICATION_METHOD:-INCREMENTAL}
+    replication_key: ${ORDER_DTL_REPLICATION_KEY:-mod_ts}
+    primary_keys: ${ORDER_DTL_PRIMARY_KEYS:-order_id,line_number}
+    
+    # Target settings
+    target_table_name: ${ORDER_DTL_TABLE_NAME:-WMS_ORDER_DTL}
+    indexes: ${ORDER_DTL_INDEXES:-order_id,item_id}
+
+# Schedule Configuration
+schedules:
+  full_sync:
+    interval: ${FULL_SYNC_INTERVAL:-weekly}
+    day_of_week: ${FULL_SYNC_DAY:-0}
+    hour: ${FULL_SYNC_HOUR:-2}
+    
+  incremental_sync:
+    interval: ${INCREMENTAL_SYNC_INTERVAL:-hourly}
+    frequency: ${INCREMENTAL_SYNC_FREQUENCY:-2}
+    
+  entity_specific:
+    allocation:
+      cron: ${ALLOCATION_CRON:-0 */2 * * *}
+      enabled: ${ALLOCATION_SYNC_ENABLED:-true}
+      
+    order_hdr:
+      cron: ${ORDER_HDR_CRON:-0 2 * * *}
+      enabled: ${ORDER_HDR_SYNC_ENABLED:-true}
+      
+    order_dtl:
+      cron: ${ORDER_DTL_CRON:-0 2 * * *}
+      enabled: ${ORDER_DTL_SYNC_ENABLED:-true}

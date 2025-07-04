@@ -25,6 +25,9 @@ STATE_DIR := $(PROJECT_DIR)/state
 # Configuração de ambiente padronizada
 ENV_CMD = cd $(PROJECT_DIR) && source $(VENV_ACTIVATE) && set -a && source $(ENV_FILE) && set +a
 
+# Comando para sourcing critical settings
+CRITICAL_SETTINGS = source $(PROJECT_DIR)/config/critical_settings.sh
+
 # Timestamps para logs
 TIMESTAMP := $(shell date '+%Y%m%d_%H%M%S')
 LOG_TIMESTAMP := $(shell date '+%Y-%m-%d %H:%M:%S')
@@ -63,6 +66,7 @@ help:
 	@echo "  make fix-errors       # Corrigir erros encontrados"
 	@echo "  make health-check     # Verificação completa de saúde"
 	@echo "  make validate-data    # Validar tipos de dados"
+	@echo "  make validate-integration # Validar integração com módulos genéricos"
 	@echo ""
 	@echo "🧹 MANUTENÇÃO:"
 	@echo "  make clean-logs          # Limpar logs antigos"
@@ -167,14 +171,21 @@ full-sync:
 		echo "$(LOG_TIMESTAMP) - INÍCIO: Sincronização Full" > $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
 		echo "$(LOG_TIMESTAMP) - CONFIG: Testando ambiente..." >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
 		if $(ENV_CMD) && echo "Ambiente OK" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
-			echo "$(LOG_TIMESTAMP) - EXEC: Executando meltano run..." >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
-			if $(ENV_CMD) && timeout 3600 meltano run full-sync-job >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
-				echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização full concluída" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
-				echo "FULL_SYNC_SUCCESS" > $(STATE_DIR)/last_full_sync.state; \
+			echo "$(LOG_TIMESTAMP) - CRITICAL: Verificando configurações críticas..." >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+			if $(ENV_CMD) && $(CRITICAL_SETTINGS) >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
+				echo "$(LOG_TIMESTAMP) - EXEC: Executando meltano run..." >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+				if $(ENV_CMD) && $(CRITICAL_SETTINGS) && timeout 3600 meltano run full-sync-job >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log 2>&1; then \
+					echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização full concluída" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+					echo "FULL_SYNC_SUCCESS" > $(STATE_DIR)/last_full_sync.state; \
+				else \
+					echo "$(LOG_TIMESTAMP) - ERRO: Sincronização full falhou" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+					cp $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/full_sync_error_$(TIMESTAMP).log; \
+					echo "FULL_SYNC_ERROR" > $(STATE_DIR)/last_full_sync.state; \
+				fi; \
 			else \
-				echo "$(LOG_TIMESTAMP) - ERRO: Sincronização full falhou" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
-				cp $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/full_sync_error_$(TIMESTAMP).log; \
-				echo "FULL_SYNC_ERROR" > $(STATE_DIR)/last_full_sync.state; \
+				echo "$(LOG_TIMESTAMP) - ERRO CRÍTICO: Configurações críticas inválidas - ABORTANDO!" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
+				cp $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/critical_config_error_$(TIMESTAMP).log; \
+				echo "CRITICAL_CONFIG_ERROR" > $(STATE_DIR)/last_full_sync.state; \
 			fi; \
 		else \
 			echo "$(LOG_TIMESTAMP) - ERRO: Ambiente inválido" >> $(SYNC_LOG_DIR)/full_sync_$(TIMESTAMP).log; \
@@ -202,14 +213,21 @@ full-sync-debug:
 			export TAP_ORACLE_WMS_DEBUG=true; \
 			export TARGET_ORACLE_DEBUG=true; \
 			export SINGER_SDK_LOG_LEVEL=DEBUG; \
-			echo "$(LOG_TIMESTAMP) - EXEC: Executando meltano run com debug..." >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
-			if $(ENV_CMD) && timeout 3600 meltano --log-level=debug run full-sync-job >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log 2>&1; then \
-				echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização full concluída" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
-				echo "FULL_SYNC_SUCCESS" > $(STATE_DIR)/last_full_sync.state; \
+			echo "$(LOG_TIMESTAMP) - CRITICAL: Verificando configurações críticas..." >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+			if $(ENV_CMD) && $(CRITICAL_SETTINGS) >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log 2>&1; then \
+				echo "$(LOG_TIMESTAMP) - EXEC: Executando meltano run com debug..." >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+				if $(ENV_CMD) && $(CRITICAL_SETTINGS) && timeout 3600 meltano --log-level=debug run full-sync-job >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log 2>&1; then \
+					echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização full concluída" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+					echo "FULL_SYNC_SUCCESS" > $(STATE_DIR)/last_full_sync.state; \
+				else \
+					echo "$(LOG_TIMESTAMP) - ERRO: Sincronização full falhou" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+					cp $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log $(ERROR_LOG_DIR)/full_sync_error_$(TIMESTAMP).log; \
+					echo "FULL_SYNC_ERROR" > $(STATE_DIR)/last_full_sync.state; \
+				fi; \
 			else \
-				echo "$(LOG_TIMESTAMP) - ERRO: Sincronização full falhou" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
-				cp $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log $(ERROR_LOG_DIR)/full_sync_error_$(TIMESTAMP).log; \
-				echo "FULL_SYNC_ERROR" > $(STATE_DIR)/last_full_sync.state; \
+				echo "$(LOG_TIMESTAMP) - ERRO CRÍTICO: Configurações críticas inválidas - ABORTANDO!" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
+				cp $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log $(ERROR_LOG_DIR)/critical_config_error_$(TIMESTAMP).log; \
+				echo "CRITICAL_CONFIG_ERROR" > $(STATE_DIR)/last_full_sync.state; \
 			fi; \
 		else \
 			echo "$(LOG_TIMESTAMP) - ERRO: Ambiente inválido" >> $(SYNC_LOG_DIR)/full_sync_debug_$(TIMESTAMP).log; \
@@ -230,13 +248,20 @@ incremental-sync:
 	@echo "📝 Logs: $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log"
 	@nohup bash -c ' \
 		echo "$(LOG_TIMESTAMP) - INÍCIO: Sincronização Incremental" > $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
-		if $(ENV_CMD) && timeout 1800 meltano run incremental-sync-job >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log 2>&1; then \
-			echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização incremental concluída" >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
-			echo "INCREMENTAL_SYNC_SUCCESS" > $(STATE_DIR)/last_incremental_sync.state; \
+		echo "$(LOG_TIMESTAMP) - CRITICAL: Verificando configurações críticas..." >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
+		if $(ENV_CMD) && $(CRITICAL_SETTINGS) >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log 2>&1; then \
+			if $(ENV_CMD) && $(CRITICAL_SETTINGS) && timeout 1800 meltano run incremental-sync-job >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log 2>&1; then \
+				echo "$(LOG_TIMESTAMP) - SUCESSO: Sincronização incremental concluída" >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
+				echo "INCREMENTAL_SYNC_SUCCESS" > $(STATE_DIR)/last_incremental_sync.state; \
+			else \
+				echo "$(LOG_TIMESTAMP) - ERRO: Sincronização incremental falhou" >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
+				cp $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/incremental_sync_error_$(TIMESTAMP).log; \
+				echo "INCREMENTAL_SYNC_ERROR" > $(STATE_DIR)/last_incremental_sync.state; \
+			fi; \
 		else \
-			echo "$(LOG_TIMESTAMP) - ERRO: Sincronização incremental falhou" >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
-			cp $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/incremental_sync_error_$(TIMESTAMP).log; \
-			echo "INCREMENTAL_SYNC_ERROR" > $(STATE_DIR)/last_incremental_sync.state; \
+			echo "$(LOG_TIMESTAMP) - ERRO CRÍTICO: Configurações críticas inválidas - ABORTANDO!" >> $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log; \
+			cp $(SYNC_LOG_DIR)/incremental_sync_$(TIMESTAMP).log $(ERROR_LOG_DIR)/critical_config_error_$(TIMESTAMP).log; \
+			echo "CRITICAL_CONFIG_ERROR" > $(STATE_DIR)/last_incremental_sync.state; \
 		fi; \
 		rm -f $(PID_DIR)/incremental_sync.pid; \
 	' & echo $$! > $(PID_DIR)/incremental_sync.pid
@@ -285,6 +310,17 @@ validate-oracle:
 	@echo "🔍 VALIDANDO DADOS NO ORACLE..."
 	@mkdir -p $(VALIDATION_LOG_DIR)
 	@$(ENV_CMD) && python3 src/oracle/validate_sync.py
+
+validate-integration:
+	@echo "🔍 VALIDANDO INTEGRAÇÃO COM MÓDULOS GENÉRICOS..."
+	@echo "📋 Este comando verifica:"
+	@echo "  1. Variáveis críticas de ambiente"
+	@echo "  2. Instalação dos módulos genéricos"
+	@echo "  3. Configuração do meltano.yml"
+	@echo "  4. Schema discovery usando apenas metadata"
+	@echo "  5. Scripts de configuração crítica"
+	@echo ""
+	@$(ENV_CMD) && $(CRITICAL_SETTINGS) && python3 scripts/validate_integration.py
 
 # ============================================================================
 # ANÁLISE E CORREÇÃO DE FALHAS
@@ -575,12 +611,15 @@ configure-overwrite-mode:
 
 discover:
 	@echo "🔍 DESCOBRINDO ENTIDADES..."
-	@$(ENV_CMD) && meltano invoke tap-oracle-wms --discover
+	@echo "🚨 Verificando configurações críticas de schema discovery..."
+	@$(ENV_CMD) && $(CRITICAL_SETTINGS) && meltano invoke tap-oracle-wms --discover
 
 test-connections:
 	@echo "🔗 TESTANDO CONEXÕES..."
+	@echo "🚨 Verificando configurações críticas..."
+	@$(ENV_CMD) && $(CRITICAL_SETTINGS) || (echo "❌ Configurações críticas inválidas!" && exit 1)
 	@echo "📡 Testando TAP Oracle WMS..."
-	@$(ENV_CMD) && meltano invoke tap-oracle-wms --test-connection || echo "❌ TAP falhou"
+	@$(ENV_CMD) && $(CRITICAL_SETTINGS) && meltano invoke tap-oracle-wms --test-connection || echo "❌ TAP falhou"
 	@echo "🎯 Testando TARGET Oracle..."
 	@$(ENV_CMD) && timeout 30 meltano invoke target-oracle --test-connection || echo "❌ TARGET falhou"
 
@@ -612,9 +651,11 @@ clean:
 # Descobrir e salvar schemas WMS
 discover-schemas:
 	@echo "🔍 DESCOBRINDO SCHEMAS WMS..."
+	@echo "🚨 Verificando configurações críticas de schema discovery..."
+	@$(ENV_CMD) && $(CRITICAL_SETTINGS) || (echo "❌ Configurações críticas inválidas!" && exit 1)
 	@echo "📋 Este comando irá:"
 	@echo "  1. Conectar na API WMS"
-	@echo "  2. Descobrir schemas reais de todas as entidades"
+	@echo "  2. Descobrir schemas reais de todas as entidades (APENAS VIA METADATA)"
 	@echo "  3. Salvar em sql/wms_schemas.json"
 	@echo ""
-	@$(ENV_CMD) && python3 src/oracle/discover_and_save_schemas.py
+	@$(ENV_CMD) && $(CRITICAL_SETTINGS) && python3 src/oracle/discover_and_save_schemas.py

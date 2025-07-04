@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Professional Alert Manager for GrupoNOS Meltano Native
+"""Professional Alert Manager for Meltano Integration
 Monitors system health and sends alerts based on configurable thresholds.
 """
 
@@ -36,8 +36,8 @@ class AlertConfig:
     webhook_enabled: bool = True
     slack_enabled: bool = False
 
-    # Contact information
-    alert_email: str = "ops-team@gruponos.com"
+    # Contact information (loaded from environment)
+    alert_email: str = ""
     webhook_url: str = ""
     slack_webhook: str = ""
 

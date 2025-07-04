@@ -1,0 +1,120 @@
+# Project Configuration
+# This file contains project-specific settings that can be customized per deployment
+
+project:
+  name: "${PROJECT_NAME:gruponos-meltano-native}"
+  company: "${COMPANY_NAME:GrupoNOS}"
+  description: "Meltano native data pipeline for Oracle WMS integration"
+  
+  # Alert Configuration
+  alerts:
+    email: "${ALERT_EMAIL:ops-team@company.com}"
+    slack_webhook: "${SLACK_WEBHOOK_URL}"
+    webhook_url: "${ALERT_WEBHOOK_URL}"
+    
+  # Team Configuration
+  team:
+    name: "${TEAM_NAME:Data Team}"
+    contact: "${TEAM_CONTACT:data-team@company.com}"
+    
+  # Environment Prefixes
+  environments:
+    dev:
+      prefix: "${DEV_PREFIX:dev}"
+      description: "Development environment"
+    staging:
+      prefix: "${STAGING_PREFIX:stg}"
+      description: "Staging environment"
+    prod:
+      prefix: "${PROD_PREFIX:prod}"
+      description: "Production environment"
+
+# Database Configuration Templates
+databases:
+  wms_source:
+    host_pattern: "${WMS_HOST_PATTERN:wms-{env}-oracle.{domain}}"
+    sid_pattern: "${WMS_SID_PATTERN:WMS{ENV}}"
+    username_pattern: "${WMS_USERNAME_PATTERN:wms_reader_{env}}"
+    domain: "${COMPANY_DOMAIN:company.local}"
+    
+  analytics_target:
+    host_pattern: "${TARGET_HOST_PATTERN:analytics-{env}-oracle.{domain}}"
+    service_pattern: "${TARGET_SERVICE_PATTERN:ANA{ENV}}"
+    schema_pattern: "${TARGET_SCHEMA_PATTERN:WMS_SYNC_{ENV}}"
+    username_pattern: "${TARGET_USERNAME_PATTERN:wms_sync_{env}}"
+    domain: "${COMPANY_DOMAIN:company.local}"
+
+# Entity Configuration
+entities:
+  # Core entities to sync
+  core:
+    - allocation
+    - order_hdr
+    - order_dtl
+    
+  # Additional entities (optional)
+  extended:
+    - item
+    - location
+    - inventory
+    - shipment
+    
+  # Table prefix for target
+  table_prefix: "${TABLE_PREFIX:WMS_}"
+  
+# Schedule Configuration
+schedules:
+  allocation:
+    cron: "${ALLOCATION_SCHEDULE:0 */2 * * *}"
+    description: "Allocation sync schedule"
+    
+  orders:
+    cron: "${ORDERS_SCHEDULE:0 2 * * *}"
+    description: "Orders sync schedule"
+    
+  master_data:
+    cron: "${MASTER_DATA_SCHEDULE:0 6 * * 0}"
+    description: "Master data sync schedule"
+    
+  data_quality:
+    cron: "${DATA_QUALITY_SCHEDULE:0 */4 * * *}"
+    description: "Data quality check schedule"
+
+# Performance Configuration
+performance:
+  batch_sizes:
+    dev:
+      extract: 1000
+      load: 5000
+    staging:
+      extract: 2000
+      load: 7000
+    prod:
+      extract: 5000
+      load: 10000
+      
+  threads:
+    dev: 4
+    staging: 6
+    prod: 8
+    
+  timeouts:
+    connection: "${CONNECTION_TIMEOUT:60}"
+    query: "${QUERY_TIMEOUT:300}"
+    sync: "${SYNC_TIMEOUT:3600}"
+
+# Business Rules
+business_rules:
+  valid_statuses:
+    allocation: "${VALID_ALLOCATION_STATUSES:ALLOCATED,RESERVED,PICKED,SHIPPED}"
+    order: "${VALID_ORDER_STATUSES:NEW,CONFIRMED,IN_PROGRESS,COMPLETED,CANCELLED}"
+    
+  freshness_thresholds:
+    allocation_hours: "${ALLOCATION_FRESHNESS_HOURS:2}"
+    order_hours: "${ORDER_FRESHNESS_HOURS:24}"
+    master_data_days: "${MASTER_DATA_FRESHNESS_DAYS:7}"
+    
+  quality_thresholds:
+    min_fulfillment_rate: "${MIN_FULFILLMENT_RATE_PCT:85}"
+    min_quality_score: "${MIN_DATA_QUALITY_SCORE_PCT:90}"
+    max_error_rate: "${MAX_ERROR_RATE_PCT:5}"
