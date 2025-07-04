@@ -60,7 +60,7 @@ def discover_schemas() -> bool:
         schema_file = "sql/wms_schemas.json"
         os.makedirs("sql", exist_ok=True)
 
-        with open(schema_file, "w") as f:
+        with open(schema_file, "w", encoding="utf-8") as f:
             json.dump(schemas, f, indent=2)
 
         print(f"\n✅ Schemas saved to {schema_file}")
@@ -71,6 +71,7 @@ def discover_schemas() -> bool:
     except Exception as e:
         print(f"❌ Error discovering schemas: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = discover_schemas()

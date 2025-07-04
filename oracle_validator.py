@@ -46,7 +46,7 @@ def validate_oracle():
 
         cursor = conn.cursor()
 
-        with open(log_file, "w") as f:
+        with open(log_file, "w", encoding="utf-8") as f:
             f.write(f"{datetime.now()} - INÍCIO: Validação Oracle\n")
 
             print("📊 Verificando tabelas...")
@@ -110,12 +110,13 @@ def validate_oracle():
     except Exception as e:
         error_msg = f"{datetime.now()} - ERRO: {e!s}"
         try:
-            with open(log_file, "a") as f:
+            with open(log_file, "a", encoding="utf-8") as f:
                 f.write(error_msg + "\n")
         except:
             pass
         print(f"❌ Erro na validação Oracle: {e!s}")
         return False
+
 
 if __name__ == "__main__":
     success = validate_oracle()

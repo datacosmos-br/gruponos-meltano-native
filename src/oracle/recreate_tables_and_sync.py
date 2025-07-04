@@ -148,7 +148,7 @@ def run_full_sync():
     print("   ⏳ Aguarde o sync completar...")
 
     # Executar o sync
-    with open(log_file, "w") as log:
+    with open(log_file, "w", encoding="utf-8") as log:
         process = subprocess.Popen(
             ["make", "full-sync-debug"],
             stdout=subprocess.PIPE,
@@ -175,7 +175,7 @@ def run_full_sync():
     print(f"\n   ⏱️ Sync completado em {duration:.1f} segundos")
 
     # Verificar se houve erros
-    with open(log_file) as log:
+    with open(log_file, encoding="utf-8") as log:
         content = log.read()
         if "ERROR" in content or "FAILED" in content:
             print("   ⚠️ ATENÇÃO: Erros encontrados no log!")

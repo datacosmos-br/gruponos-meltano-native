@@ -3,6 +3,7 @@
 Verifica se tanto table_creator.py quanto flext-target-oracle usam o módulo compartilhado.
 """
 
+
 def test_table_creator_import():
     """Test se table_creator.py importa do módulo compartilhado."""
     print("🔍 TESTANDO IMPORT DO TABLE_CREATOR.PY")
@@ -43,6 +44,7 @@ def test_table_creator_import():
         print(f"❌ Erro no import: {e}")
         return False
 
+
 def test_target_oracle_import():
     """Test se flext-target-oracle consegue usar o módulo compartilhado."""
     print("\n🔍 TESTANDO IMPORT DO FLEXT-TARGET-ORACLE")
@@ -75,6 +77,7 @@ def test_target_oracle_import():
     except Exception as e:
         print(f"❌ Erro no import target oracle: {e}")
         return False
+
 
 def test_consistency():
     """Test consistência entre table_creator e target oracle."""
@@ -132,13 +135,14 @@ def test_consistency():
         print(f"❌ Erro no teste de consistência: {e}")
         return False
 
+
 def test_makefile_commands():
     """Test se Makefile tem os novos comandos."""
     print("\n🔍 TESTANDO COMANDOS DO MAKEFILE")
     print("=" * 40)
 
     try:
-        with open("/home/marlonsc/flext/gruponos-meltano-native/Makefile") as f:
+        with open("/home/marlonsc/flext/gruponos-meltano-native/Makefile", encoding="utf-8") as f:
             makefile_content = f.read()
 
         required_commands = [
@@ -161,6 +165,7 @@ def test_makefile_commands():
     except Exception as e:
         print(f"❌ Erro ao ler Makefile: {e}")
         return False
+
 
 if __name__ == "__main__":
     print("🚀 TESTE DE REFATORAÇÃO - MÓDULO COMPARTILHADO")

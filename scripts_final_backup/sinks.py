@@ -467,7 +467,7 @@ class OracleSink(SQLSink):
         if prop_type == "boolean":
             return oracle.VARCHAR2(10)  # Store as TRUE/FALSE
 
-        if prop_type in ("object", "array"):
+        if prop_type in {"object", "array"}:
             return oracle.CLOB  # Store as JSON
 
         # Default to VARCHAR2
@@ -705,13 +705,13 @@ class OracleSink(SQLSink):
             # Convert value based on type and format
             if prop_type == "boolean":
                 prepared[oracle_key] = "TRUE" if value else "FALSE"
-            elif isinstance(value, str) and value.upper() in ("TRUE", "FALSE"):
+            elif isinstance(value, str) and value.upper() in {"TRUE", "FALSE"}:
                 # Handle boolean strings specifically for Oracle NUMBER fields
                 prepared[oracle_key] = 1 if value.upper() == "TRUE" else 0
-            elif prop_type in ("object", "array"):
+            elif prop_type in {"object", "array"}:
                 prepared[oracle_key] = json.dumps(value)
             elif prop_type == "string":
-                if prop_format in ("date-time", "date", "time"):
+                if prop_format in {"date-time", "date", "time"}:
                     # Handle date/time strings with Oracle-compatible conversion
                     try:
                         if isinstance(value, str):
@@ -737,7 +737,7 @@ class OracleSink(SQLSink):
                     # Regular string handling
                     max_length = self.config.get("max_varchar_length", 4000)
                     prepared[oracle_key] = str(value)[:max_length]
-            elif prop_type in ("integer", "number") and isinstance(value, int | float):
+            elif prop_type in {"integer", "number"} and isinstance(value, int | float):
                 prepared[oracle_key] = value
             else:
                 # Convert to string as fallback

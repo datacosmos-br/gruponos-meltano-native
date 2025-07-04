@@ -5,7 +5,7 @@ import re
 import sys
 
 # Read the current streams.py file
-with open("/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/streams.py") as f:
+with open("/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/streams.py", encoding="utf-8") as f:
     content = f.read()
 
 # Find the parse_response method and inject ULTRA logging
@@ -127,7 +127,7 @@ pattern = r"def parse_response\(self, response: requests\.Response\) -> Iterable
 new_content = re.sub(pattern, new_parse_response, content, flags=re.DOTALL)
 
 # Write the modified content back
-with open("/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/streams.py", "w") as f:
+with open("/home/marlonsc/flext/flext-tap-oracle-wms/src/tap_oracle_wms/streams.py", "w", encoding="utf-8") as f:
     f.write(new_content)
 
 print("✅ ULTRA DEBUG INJECTED - parse_response method now has maximum logging")

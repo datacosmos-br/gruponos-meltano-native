@@ -89,7 +89,7 @@ class AlertManager:
                 )
 
             # Read log file
-            with open(sync_log_path) as f:
+            with open(sync_log_path, encoding="utf-8") as f:
                 log_content = f.read()
 
             # Check for error patterns
@@ -98,10 +98,7 @@ class AlertManager:
                 "Connection refused", "Timeout", "Certificate verification failed",
             ]
 
-            errors_found = []
-            for indicator in error_indicators:
-                if indicator in log_content:
-                    errors_found.append(indicator)
+            errors_found = [indicator for indicator in error_indicators if indicator in log_content]
 
             if errors_found:
                 return Alert(
@@ -348,7 +345,7 @@ class AlertManager:
             "metrics": alert.metrics,
         }
 
-        with open(log_file, "a") as f:
+        with open(log_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(alert_data) + "\n")
 
     def _send_webhook(self, alert: Alert) -> bool:

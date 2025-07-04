@@ -63,11 +63,11 @@ class DataValidator:
             expected_type = next((t for t in expected_type if t != "null"), "string")
 
         try:
-            if expected_type in ("number", "integer"):
+            if expected_type in {"number", "integer"}:
                 return self._convert_to_number(value, expected_type, field_name)
             if expected_type == "boolean":
                 return self._convert_to_boolean(value, field_name)
-            if expected_type == "string" and field_schema.get("format") in ["date", "date-time"]:
+            if expected_type == "string" and field_schema.get("format") in {"date", "date-time"}:
                 date_format = field_schema.get("format") or "date-time"
                 return self._convert_to_date(value, date_format, field_name)
             return str(value) if value is not None else None
@@ -137,9 +137,9 @@ class DataValidator:
 
         if isinstance(value, str):
             lower_val = value.lower().strip()
-            if lower_val in ("true", "t", "yes", "y", "1", "on"):
+            if lower_val in {"true", "t", "yes", "y", "1", "on"}:
                 return True
-            if lower_val in ("false", "f", "no", "n", "0", "off"):
+            if lower_val in {"false", "f", "no", "n", "0", "off"}:
                 return False
             if self.strict_mode:
                 msg = f"Cannot convert string '{value}' to boolean"

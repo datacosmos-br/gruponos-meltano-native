@@ -7,6 +7,7 @@ import sys
 # Add the src path
 sys.path.insert(0, "/home/marlonsc/flext/gruponos-meltano-native/src")
 
+
 def test_schema_discovery_approaches():
     """Test the different schema discovery approaches."""
     from oracle.table_creator import OracleTableCreator
@@ -46,6 +47,7 @@ def test_schema_discovery_approaches():
         print(f"❌ Schema discovery failed: {e}")
         return False, {}
 
+
 def test_direct_tap_discovery():
     """Test direct tap discovery specifically."""
     from oracle.table_creator import OracleTableCreator
@@ -71,6 +73,7 @@ def test_direct_tap_discovery():
         print(f"❌ Direct tap discovery failed: {e}")
         return False, {}
 
+
 def main():
     """Main test function."""
     print("🚀 Schema Discovery Fix Validation")
@@ -88,7 +91,7 @@ def main():
 
     if success1:
         schema_count1 = len(schemas1)
-        max_props1 = max([len(s.get("properties", {})) for s in schemas1.values()]) if schemas1 else 0
+        max_props1 = max(len(s.get("properties", {})) for s in schemas1.values()) if schemas1 else 0
         quality1 = "🟢 REAL WMS SCHEMAS" if max_props1 > 10 else "🟡 FALLBACK SCHEMAS"
         print(f"✅ Main discovery: {schema_count1} schemas {quality1}")
     else:
@@ -96,7 +99,7 @@ def main():
 
     if success2:
         schema_count2 = len(schemas2)
-        max_props2 = max([len(s.get("properties", {})) for s in schemas2.values()]) if schemas2 else 0
+        max_props2 = max(len(s.get("properties", {})) for s in schemas2.values()) if schemas2 else 0
         quality2 = "🟢 REAL WMS SCHEMAS" if max_props2 > 10 else "🟡 FALLBACK SCHEMAS"
         print(f"✅ Direct discovery: {schema_count2} schemas {quality2}")
     else:
@@ -124,6 +127,7 @@ def main():
     print("  ✅ Attempts direct tap call if meltano fails")
     print("  ✅ Provides clear error messages and guidance")
     print("  ✅ Only uses fallback schemas as absolute last resort")
+
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Test simples para verificar conversão de tipos unificada."""
 
+
 def test_table_creator_rules():
     """Test direto das regras de conversão."""
     print("🔍 TESTANDO REGRAS DE CONVERSÃO DE TIPOS")
@@ -70,14 +71,14 @@ def test_table_creator_rules():
             # Handle nullable types like ["string", "null"]
             schema_type = next((t for t in schema_type if t != "null"), "string")
 
-        if schema_type in ("integer", "number"):
+        if schema_type in {"integer", "number"}:
             return "NUMBER"
         if schema_type == "boolean":
             return "NUMBER(1,0)"
         if schema_type == "string":
             # Check for date-time format
             format_type = column_schema.get("format")
-            if format_type in ["date-time", "date", "time"]:
+            if format_type in {"date-time", "date", "time"}:
                 return "TIMESTAMP(6)"
 
             # Use max length if available
@@ -133,6 +134,7 @@ def test_table_creator_rules():
         return True
     print("❌ ALGUNS TESTES FALHARAM - Verificar implementação")
     return False
+
 
 def test_ddl_generation():
     """Test DDL generation structure."""
@@ -199,6 +201,7 @@ CREATE TABLE "{schema_name}"."{table_name}"
         print(f"{status} {desc}")
 
     return all_valid
+
 
 if __name__ == "__main__":
     print("🚀 TESTE DE UNIFICAÇÃO DAS REGRAS DE CRIAÇÃO DE TABELAS")

@@ -173,14 +173,14 @@ def convert_singer_schema_to_oracle(column_name: str, column_schema: dict) -> st
         # Lidar com tipos nullable como ["string", "null"]
         schema_type = next((t for t in schema_type if t != "null"), "string")
 
-    if schema_type in ("integer", "number"):
+    if schema_type in {"integer", "number"}:
         return "NUMBER"
     if schema_type == "boolean":
         return "NUMBER(1,0)"
     if schema_type == "string":
         # Verificar formato date-time
         format_type = column_schema.get("format")
-        if format_type in ["date-time", "date", "time"]:
+        if format_type in {"date-time", "date", "time"}:
             return "TIMESTAMP(6)"
 
         # Usar max length se disponível

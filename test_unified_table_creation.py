@@ -114,6 +114,7 @@ def test_unified_table_creation():
         traceback.print_exc()
         return False
 
+
 def compare_with_table_creator():
     """Compare com as regras do table_creator.py original."""
     print("\n🔍 COMPARANDO COM TABLE_CREATOR.PY ORIGINAL")
@@ -175,6 +176,7 @@ def compare_with_table_creator():
 
         match = "✅" if target_type == creator_type else "❌"
         print(f"{field_name:20} {target_type:20} {creator_type:20} {match}")
+
 
 if __name__ == "__main__":
     success = test_unified_table_creation()

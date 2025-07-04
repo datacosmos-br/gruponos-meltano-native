@@ -93,18 +93,13 @@ class OracleTableCreator:
                 index_columns.append(primary_key_field.upper())
 
         # 2. Add all other fields (sorted, excluding URLs and complex nested objects)
-        other_fields = []
-        for prop_name in sorted(properties.keys()):
-            if (
-                prop_name != primary_key_field
+        other_fields = [prop_name for prop_name in sorted(properties.keys()) if prop_name != primary_key_field
                 and not prop_name.upper().endswith("_URL")
                 and prop_name.upper() != "URL"
                 and not prop_name.upper().endswith("_ID_ID")
                 and not prop_name.upper().endswith("_ID_KEY")
                 and not prop_name.upper().endswith("_ID_URL")
-                and prop_name.upper() not in ["TK_DATE", "CREATE_USER", "CREATE_TS", "MOD_USER", "MOD_TS"]
-            ):
-                other_fields.append(prop_name)
+                and prop_name.upper() not in {"TK_DATE", "CREATE_USER", "CREATE_TS", "MOD_USER", "MOD_TS"}]
 
         for prop_name in other_fields:
             column_def = self._generate_wms_column_definition(
@@ -198,7 +193,7 @@ class OracleTableCreator:
 
         # Determine nullability - only ID, MOD_TS and TK_DATE are NOT NULL
         nullable = ""
-        if column_name.upper() in ["ID", "MOD_TS", "TK_DATE"]:
+        if column_name.upper() in {"ID", "MOD_TS", "TK_DATE"}:
             nullable = " NOT NULL ENABLE"
 
         # Add collation for string types
@@ -260,16 +255,16 @@ class OracleTableCreator:
             json_type = next((t for t in json_type if t != "null"), "string")
 
         # Map to Oracle types following WMS pattern
-        if json_type in ("integer", "number"):
+        if json_type in {"integer", "number"}:
             return "NUMBER"
         if json_type == "boolean":
             return "NUMBER"  # Oracle boolean as NUMBER
         if json_type == "string":
-            if json_format in ["date-time", "date", "time"]:
+            if json_format in {"date-time", "date", "time"}:
                 return "TIMESTAMP (6)"
             # Use VARCHAR2 with 255 CHAR as standard for WMS fields
             return "VARCHAR2(255 CHAR)"
-        if json_type in ["object", "array"]:
+        if json_type in {"object", "array"}:
             return "CLOB"
         return "VARCHAR2(4000 CHAR)"
 
@@ -313,7 +308,7 @@ class OracleTableCreator:
         if os.path.exists(schema_file):
             print(f"📄 Using saved schemas from {schema_file}")
             try:
-                with open(schema_file) as f:
+                with open(schema_file, encoding="utf-8") as f:
                     schemas = json.load(f)
 
                 for entity, schema in schemas.items():
@@ -430,7 +425,7 @@ class OracleTableCreator:
 
             # Write temporary config file
 
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
                 json.dump(config, f)
                 config_file = f.name
 
@@ -507,13 +502,13 @@ class OracleTableCreator:
         """Convert Oracle column type to JSON schema with original type tracking."""
         schema: dict[str, Any] = {}
 
-        if data_type in ["NUMBER"]:
+        if data_type == "NUMBER":
             if precision and scale and scale > 0:
                 schema = {"type": ["number", "null"] if nullable else ["number"]}
             else:
                 schema = {"type": ["integer", "null"] if nullable else ["integer"]}
             schema["oracle_type"] = "NUMBER"  # Keep original Oracle type
-        elif data_type in ["VARCHAR2", "CHAR", "CLOB"]:
+        elif data_type in {"VARCHAR2", "CHAR", "CLOB"}:
             schema = {"type": ["string", "null"] if nullable else ["string"]}
             if length and data_type == "VARCHAR2":
                 schema["maxLength"] = length
@@ -522,7 +517,7 @@ class OracleTableCreator:
                 if data_type == "VARCHAR2" and length
                 else data_type
             )
-        elif data_type in ["DATE", "TIMESTAMP"]:
+        elif data_type in {"DATE", "TIMESTAMP"}:
             schema = {
                 "type": ["string", "null"] if nullable else ["string"],
                 "format": "date-time",
@@ -652,7 +647,7 @@ def main() -> int:
         os.makedirs("sql/ddl", exist_ok=True)
         for entity, ddl in ddl_statements.items():
             ddl_file = f"sql/ddl/{entity}_table.sql"
-            with open(ddl_file, "w") as f:
+            with open(ddl_file, "w", encoding="utf-8") as f:
                 f.write(ddl)
             print(f"📄 DDL saved to: {ddl_file}")
 

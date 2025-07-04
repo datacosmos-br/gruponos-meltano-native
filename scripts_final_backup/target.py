@@ -303,7 +303,7 @@ class TargetOracle(Target):
             # Define key properties based on stream
             # ESPECIFICAÇÃO NOVA: PK = pk do schema + mod_ts (não mais TK_DATE)
             key_properties = []
-            if stream_name in ("allocation", "order_hdr", "order_dtl"):
+            if stream_name in {"allocation", "order_hdr", "order_dtl"}:
                 key_properties = ["id"]  # Primary key from WMS
                 # MOD_TS será automaticamente adicionado como parte da PK no sink
 
