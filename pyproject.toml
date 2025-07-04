@@ -1,0 +1,268 @@
+[project]
+name = "gruponos-meltano-native"
+version = "1.0.0"
+description = "GrupoNOS 100% Meltano Native WMS Data Pipeline - Production Ready Enterprise Integration"
+authors = [
+    { name = "GrupoNOS Team", email = "dev@gruponos.com" }
+]
+readme = "README.md"
+license = { text = "Proprietary" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3.13",
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+]
+keywords = [
+    "meltano",
+    "oracle",
+    "wms",
+    "singer",
+    "etl",
+    "gruponos",
+    "enterprise",
+]
+requires-python = ">=3.13"
+dynamic = ["dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/datacosmos-br/gruponos-meltano-native"
+Repository = "https://github.com/datacosmos-br/gruponos-meltano-native"
+
+[tool.poetry]
+packages = [
+    { include = "src", from = "." },
+    { include = "transform", from = "." },
+    { include = "config", from = "." },
+]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+# Meltano Native Core
+meltano = "^3.4.0"
+dbt-core = "^1.8.0"
+dbt-oracle = "^1.8.0"
+# FLEXT Enterprise Modules
+flext-tap-oracle-wms = { path = "../flext-tap-oracle-wms", develop = true }
+flext-target-oracle = { path = "../flext-target-oracle", develop = true }
+flext-core = { path = "../flext-core", develop = true }
+flext-observability = { path = "../flext-observability", develop = true }
+# Production Dependencies
+structlog = "^24.1.0"
+prometheus-client = "^0.20.0"
+psutil = "^6.0.0"
+oracledb = "^2.3.0"
+sqlalchemy = "^2.0.35"
+pydantic = "^2.9.0"
+typing-extensions = "^4.12.0"
+# Data Quality and Validation
+great-expectations = "^1.1.0"
+pandera = "^0.21.0"
+
+[tool.poetry.group.dev.dependencies]
+# Testing Framework
+pytest = "^8.3.0"
+pytest-cov = "^6.0.0"
+pytest-mock = "^3.14.0"
+pytest-xdist = "^3.6.0"
+pytest-timeout = "^2.3.1"
+pytest-asyncio = "^0.24.0"
+pytest-randomly = "^3.15.0"
+# Code Quality (Maximum Strictness)
+ruff = "^0.8.0"
+mypy = "^1.13.0"
+bandit = { extras = ["toml"], version = "^1.7.10" }
+safety = "^3.2.0"
+vulture = "^2.11"
+radon = "^6.0.1"
+# Performance and Monitoring
+py-spy = "^0.3.14"
+memory-profiler = "^0.61.0"
+line-profiler = "^4.1.0"
+# Documentation
+sphinx = "^8.1.0"
+sphinx-rtd-theme = "^3.0.0"
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.5.0"
+# Development Tools
+pre-commit = "^4.0.0"
+commitizen = "^3.29.0"
+twine = "^5.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # Docstring and annotations (strict enforcement)
+    "D203",
+    "D213",   # Conflicting docstring rules
+    "ANN401", # Any type allowed for configuration
+    # Meltano-specific patterns
+    "S603",
+    "S607",   # Subprocess usage in Meltano scripts
+    "BLE001", # Broad exception catching for pipeline resilience
+    "TRY301", # Abstract raises in dbt macros
+    "G004",   # f-strings in logging for structured logs
+    # Production data pipeline patterns
+    "C901",
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915", # Complex logic allowed in transformations
+    "PERF203", # Try-except in loops for data processing
+    "ARG002",  # Unused arguments in pipeline callbacks
+    "FBT001",
+    "FBT002",
+    "FBT003",  # Boolean flags in Meltano configuration
+    # dbt and SQL specific
+    "ERA001", # Commented code in SQL templates
+    "T201",   # Print statements in debug scripts
+]
+
+[tool.mypy]
+python_version = "3.13"
+# Maximum Strictness Configuration
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_optional = true
+strict_equality = true
+no_implicit_reexport = true
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_decorators = true
+# Plugin Support
+plugins = ["pydantic.mypy"]
+# Paths
+files = ["src", "config", "tests"]
+exclude = ["transform/dbt_packages/", "logs/", "output_files/"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-type-checking]
+strict = true
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 88
+
+[tool.ruff.lint.pylint]
+max-args = 10
+max-branches = 15
+max-returns = 8
+max-statements = 60
+
+[tool.vulture]
+min_confidence = 100
+paths = ["src", "config"]
+exclude = ["tests/", "transform/", "logs/", "output_files/", ".meltano/"]
+ignore_decorators = ["@click.command", "@meltano.job", "@dbt.macro"]
+ignore_names = ["_*", "test_*", "*_test"]
+make_whitelist = true
+sort_by_size = true
+verbose = true
+
+[tool.radon]
+exclude = [
+    "tests/*",
+    "*/tests/*",
+    "transform/dbt_packages/*",
+    "logs/*",
+    ".meltano/*",
+]
+ignore = ["F401"] # Unused imports in __init__.py
+total_average = true
+show_complexity = true
+average = true
+order = "SCORE"
+min = "B" # Minimum acceptable complexity
+max = "D" # Maximum before warning
+
+[tool.bandit]
+skips = [
+    "B101",
+    "B601",
+] # Skip assert_used and shell injection for Meltano scripts
+exclude_dirs = ["tests", "transform/dbt_packages", "logs", ".meltano"]
+
+[tool.bandit.assert_used]
+skips = ["*test*.py", "*_test.py", "test_*.py"]
+
+[tool.coverage.run]
+source = ["src", "config"]
+omit = [
+    "tests/*",
+    "transform/*",
+    "logs/*",
+    "output_files/*",
+    ".meltano/*",
+    "*/site-packages/*",
+]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+fail_under = 85
+precision = 2
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov=config",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=85",
+]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "oracle: marks tests that require Oracle connection",
+    "meltano: marks tests for Meltano pipeline functionality",
+]
+filterwarnings = ["ignore::UserWarning", "ignore::DeprecationWarning"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "1.0.0"
+tag_format = "v$major.$minor.$patch"
+version_files = ["pyproject.toml:version"]

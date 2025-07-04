@@ -1,0 +1,409 @@
+# ============================================================================
+# GRUPONOS MELTANO NATIVE - COMPREHENSIVE .gitignore
+# Enterprise-grade Meltano project with FLEXT integration exclusions
+# ============================================================================
+
+# ============================================================================
+# PYTHON & DEVELOPMENT ENVIRONMENT
+# ============================================================================
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments (maintain FLEXT workspace pattern)
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ============================================================================
+# MELTANO NATIVE PROJECT STRUCTURE
+# ============================================================================
+
+# Meltano generated files and directories
+.meltano/
+.meltano-*
+meltano.db
+meltano-*.db
+
+# Meltano state and run artifacts
+**/.meltano/run/
+**/.meltano/logs/
+**/.meltano/transformers/
+**/.meltano/extractors/
+**/.meltano/loaders/
+**/.meltano/run_test/
+
+# Meltano plugin installations
+plugins/
+
+# ============================================================================
+# DBT TRANSFORMATIONS
+# ============================================================================
+
+# dbt artifacts
+transform/target/
+transform/dbt_packages/
+transform/dbt_modules/
+transform/logs/
+transform/manifest.json
+transform/catalog.json
+transform/run_results.json
+transform/sources.json
+transform/compilation.json
+transform/graph.gpickle
+
+# dbt profile secrets
+transform/profiles/profiles.yml
+!transform/profiles/profiles_template.yml
+
+# ============================================================================
+# DATA PIPELINE OUTPUTS AND LOGS
+# ============================================================================
+
+# Pipeline output files
+output_files/
+logs/
+state/
+*.jsonl
+*.json.gz
+*.parquet
+*.csv.gz
+
+# Singer state files
+*.state.json
+state.json
+*_state.json
+
+# Singer catalog files (when generated)
+catalog.json
+*.catalog.json
+
+# ============================================================================
+# ORACLE DATABASE INTEGRATION
+# ============================================================================
+
+# Oracle client files
+wallet/
+*.wallet
+instantclient/
+*.ora
+tnsnames.ora
+sqlnet.ora
+cwallet.sso
+ewallet.p12
+
+# Oracle connection logs
+oracle_connection.log
+oracle_trace_*.log
+sqlnet.log
+
+# Database dumps and exports
+*.dmp
+*.exp
+*.log.sql
+
+# ============================================================================
+# MONITORING AND OBSERVABILITY
+# ============================================================================
+
+# Metrics and monitoring data
+metrics/
+monitoring/
+prometheus/
+grafana/
+*.prom
+*.metrics
+
+# Performance profiling
+profile/
+*.prof
+*.svg
+memory_usage.png
+*.mprofile
+
+# Health check outputs
+health_*.json
+status_*.json
+
+# ============================================================================
+# TESTING AND QUALITY ASSURANCE
+# ============================================================================
+
+# Test artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Test data
+test_data/
+test_output/
+test_*.json
+test_*.jsonl
+
+# Quality tools cache
+.mypy_cache/
+.ruff_cache/
+.bandit/
+radon_reports/
+
+# Security scanning
+.bandit
+bandit-report.*
+safety-report.*
+
+# ============================================================================
+# SECRETS AND SENSITIVE DATA
+# ============================================================================
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.template
+*.secret
+*.key
+*.pem
+*.p12
+*.jks
+
+# Database connection strings
+connection_string.txt
+database_url.txt
+
+# API keys and tokens
+api_keys.json
+tokens.json
+*.token
+
+# SSL certificates
+*.crt
+*.key
+ssl/
+certs/
+
+# ============================================================================
+# TEMPORARY AND CACHE FILES
+# ============================================================================
+
+# Temporary directories
+tmp/
+temp/
+cache/
+.cache/
+.tmp/
+
+# PID files
+*.pid
+pids/
+
+# Lock files
+*.lock
+.lock
+*.lockfile
+
+# Backup files
+*.bak
+*.backup
+*~
+*.orig
+
+# ============================================================================
+# DOCUMENTATION AND REPORTS
+# ============================================================================
+
+# Generated documentation
+docs/build/
+docs/_build/
+site/
+_site/
+
+# Reports and analysis
+reports/
+analysis/
+*.report
+*.analysis
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# ============================================================================
+# FLEXT ENTERPRISE INTEGRATION
+# ============================================================================
+
+# FLEXT module specific exclusions
+flext_cache/
+flext_logs/
+flext_state/
+.flext/
+
+# Enterprise monitoring
+enterprise_metrics/
+audit_logs/
+compliance_reports/
+
+# Integration test artifacts
+integration_test_data/
+integration_logs/
+mock_data/
+
+# ============================================================================
+# DEPLOYMENT AND PRODUCTION
+# ============================================================================
+
+# Docker artifacts
+.dockerignore
+Dockerfile.local
+docker-compose.override.yml
+*.tar.gz
+
+# Kubernetes configs with secrets
+k8s-secrets.yaml
+*.secret.yaml
+
+# Deployment artifacts
+deployment/
+releases/
+*.zip
+*.tar
+
+# ============================================================================
+# DEVELOPMENT UTILITIES
+# ============================================================================
+
+# Makefile outputs
+make_output.log
+build.log
+
+# Development scripts
+dev_scripts/
+local_scripts/
+
+# Personal notes and TODO files
+TODO.md
+NOTES.md
+personal/
+
+# ============================================================================
+# PROJECT SPECIFIC EXCLUSIONS
+# ============================================================================
+
+# GrupoNOS specific data
+gruponos_data/
+wms_exports/
+oic_data/
+
+# Allocation and order data
+allocation_*.jsonl
+order_*.jsonl
+inventory_*.jsonl
+
+# Business data exports
+final_*.jsonl
+production_*.jsonl
+incremental_*.jsonl
+
+# Sync control files
+sync_control.db
+buffer.db
+*.buffer
+
+# Legacy data files
+legacy_data/
+migration_data/
+backup_*/
+
+# ============================================================================
+# IMPORTANT: ALWAYS INCLUDE THESE PATTERNS
+# ============================================================================
+
+# Version control directories
+.git/
+.svn/
+.hg/
+.bzr/
+
+# Node.js (if any frontend components)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archive files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# ============================================================================
+# EXCEPTIONS - ALWAYS INCLUDE THESE FILES
+# ============================================================================
+
+# Important: Use ! to force include critical files
+!.env.example
+!.env.template
+!meltano.yml
+!pyproject.toml
+!Makefile
+!README.md
+!CLAUDE.md
+!CLAUDE.local.md
+!transform/profiles/profiles_template.yml
+!config/
+!src/

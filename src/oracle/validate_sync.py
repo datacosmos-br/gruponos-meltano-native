@@ -1,17 +1,25 @@
-#!/usr/bin/env python3
 """Validate data in Oracle tables after sync."""
 
-import os
-from datetime import datetime
+from __future__ import annotations
 
-from connection_manager import create_connection_manager_from_env
+import logging
+from datetime import datetime, timezone
+
+from src.oracle.connection_manager import create_connection_manager_from_env
+
+# Setup logger
+log = logging.getLogger(__name__)
 
 
-def validate_sync():
-    """Validate sync results in Oracle tables."""
-    print("🔍 VALIDANDO DADOS NO ORACLE...")
-    print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("-" * 60)
+def validate_sync() -> bool:
+    """Validate sync results in Oracle tables.
+
+    Returns:
+        True if validation successful and data found, False otherwise
+    """
+    log.info("🔍 VALIDANDO DADOS NO ORACLE...")
+    log.info("📅 %s", datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"))
+    log.info("-" * 60)
 
     # Create connection
     manager = create_connection_manager_from_env()
@@ -27,95 +35,130 @@ def validate_sync():
             ("WMS_ORDER_DTL", "order_dtl"),
             ("ALLOCATION", "allocation"),
             ("ORDER_HDR", "order_hdr"),
-            ("ORDER_DTL", "order_dtl")
+            ("ORDER_DTL", "order_dtl"),
         ]
 
         total_records = 0
 
         for table_name, entity_name in tables:
-            print(f"\n📊 Tabela: {table_name} ({entity_name})")
+            log.info("\n📊 Tabela: %s (%s)", table_name, entity_name)
 
-            # Count records
-            cursor.execute(f'SELECT COUNT(*) FROM "OIC"."{table_name}"')
-            count = cursor.fetchone()[0]
-            total_records += count
-            print(f"   Total de registros: {count:,}")
+            try:
+                # Count records (table names cannot be parameterized in Oracle)
+                # Validate table name for safety
+                if not table_name.replace("_", "").isalnum():
+                    log.error("Invalid table name: %s", table_name)
+                    continue
+                cursor.execute(
+                    f'SELECT COUNT(*) FROM "OIC"."{table_name}"',  # noqa: S608
+                )
+                count = cursor.fetchone()[0]
+                total_records += count
+                log.info("   Total de registros: %s", f"{count:,}")
 
-            if count > 0:
-                # Get date range
-                cursor.execute(f"""
-                    SELECT
-                        MIN("MOD_TS") as min_date,
-                        MAX("MOD_TS") as max_date,
-                        COUNT(DISTINCT "ID") as unique_ids
-                    FROM "OIC"."{table_name}"
-                """)
-                min_date, max_date, unique_ids = cursor.fetchone()
+                if count > 0:
+                    # Get date range (table names cannot be parameterized)
+                    cursor.execute(
+                        f'SELECT '  # noqa: S608
+                        f'MIN("MOD_TS") as min_date, '
+                        f'MAX("MOD_TS") as max_date, '
+                        f'COUNT(DISTINCT "ID") as unique_ids '
+                        f'FROM "OIC"."{table_name}"',
+                    )
+                    min_date, max_date, unique_ids = cursor.fetchone()
 
-                print(f"   Data mais antiga: {min_date}")
-                print(f"   Data mais recente: {max_date}")
-                print(f"   IDs únicos: {unique_ids:,}")
+                    log.info("   Data mais antiga: %s", min_date)
+                    log.info("   Data mais recente: %s", max_date)
+                    log.info("   IDs únicos: %s", f"{unique_ids:,}")
 
-                # Check for duplicates
-                cursor.execute(f"""
-                    SELECT "ID", COUNT(*) as cnt
-                    FROM "OIC"."{table_name}"
-                    GROUP BY "ID"
-                    HAVING COUNT(*) > 1
-                """)
-                duplicates = cursor.fetchall()
+                    # Check for duplicates (table names cannot be parameterized)
+                    cursor.execute(
+                        f'SELECT "ID", COUNT(*) as cnt '  # noqa: S608
+                        f'FROM "OIC"."{table_name}" '
+                        f'GROUP BY "ID" '
+                        f'HAVING COUNT(*) > 1',
+                    )
+                    duplicates = cursor.fetchall()
 
-                if duplicates:
-                    print(f"   ⚠️  Duplicatas encontradas: {len(duplicates)} IDs")
-                    for dup_id, dup_count in duplicates[:5]:  # Show first 5
-                        print(f"      ID {dup_id}: {dup_count} registros")
+                    if duplicates:
+                        log.warning(
+                            "   ⚠️  Duplicatas encontradas: %d IDs", len(duplicates),
+                        )
+                        for dup_id, dup_count in duplicates[:5]:  # Show first 5
+                            log.warning(
+                                "      ID %s: %d registros", dup_id, dup_count,
+                            )
+                    else:
+                        log.info("   ✅ Nenhuma duplicata encontrada")
+
+                    # Sample data (table names cannot be parameterized)
+                    cursor.execute(
+                        f'SELECT * '  # noqa: S608
+                        f'FROM "OIC"."{table_name}" '
+                        f'WHERE ROWNUM <= 3 '
+                        f'ORDER BY "MOD_TS" DESC',
+                    )
+
+                    columns = [desc[0] for desc in cursor.description]
+                    log.info("   📋 Amostra (primeiras 3 linhas):")
+                    log.info("      Colunas: %d", len(columns))
+
+                    # Check for _set fields
+                    set_fields = [col for col in columns if col.endswith("_SET")]
+                    if set_fields:
+                        log.info(
+                            "   🔍 Campos _SET encontrados: %s",
+                            ", ".join(set_fields),
+                        )
+
+                        # Check max length of _set fields
+                        for field in set_fields:
+                            # Validate field name for safety
+                            if not field.replace("_", "").isalnum():
+                                log.error("Invalid field name: %s", field)
+                                continue
+                            cursor.execute(
+                                f'SELECT MAX(LENGTH("{field}")) as max_len '  # noqa: S608
+                                f'FROM "OIC"."{table_name}" '
+                                f'WHERE "{field}" IS NOT NULL',
+                            )
+                            result = cursor.fetchone()
+                            max_len = result[0] if result else None
+                            if max_len:
+                                log.info(
+                                    "      %s: tamanho máximo = %d caracteres",
+                                    field,
+                                    max_len,
+                                )
                 else:
-                    print("   ✅ Nenhuma duplicata encontrada")
+                    log.warning("   ⚠️  Tabela vazia")
 
-                # Sample data
-                cursor.execute(f"""
-                    SELECT *
-                    FROM "OIC"."{table_name}"
-                    WHERE ROWNUM <= 3
-                    ORDER BY "MOD_TS" DESC
-                """)
+            except Exception as table_error:
+                log.exception(
+                    "   ❌ Erro ao validar tabela %s: %s", table_name, table_error,
+                )
+                continue
 
-                columns = [desc[0] for desc in cursor.description]
-                print("   📋 Amostra (primeiras 3 linhas):")
-                print(f"      Colunas: {len(columns)}")
-
-                # Check for _set fields
-                set_fields = [col for col in columns if col.endswith("_SET")]
-                if set_fields:
-                    print(f"   🔍 Campos _SET encontrados: {', '.join(set_fields)}")
-
-                    # Check max length of _set fields
-                    for field in set_fields:
-                        cursor.execute(f"""
-                            SELECT MAX(LENGTH("{field}")) as max_len
-                            FROM "OIC"."{table_name}"
-                            WHERE "{field}" IS NOT NULL
-                        """)
-                        max_len = cursor.fetchone()[0]
-                        if max_len:
-                            print(f"      {field}: tamanho máximo = {max_len} caracteres")
-            else:
-                print("   ⚠️  Tabela vazia")
-
-        print("\n" + "=" * 60)
-        print("📊 RESUMO GERAL:")
-        print(f"   Total de registros em todas as tabelas: {total_records:,}")
-        print(f"   Status: {'✅ SUCESSO' if total_records > 0 else '❌ FALHA - Nenhum dado sincronizado'}")
+        log.info("\n%s", "=" * 60)
+        log.info("📊 RESUMO GERAL:")
+        log.info("   Total de registros em todas as tabelas: %s", f"{total_records:,}")
+        status = (
+            "✅ SUCESSO" if total_records > 0 else "❌ FALHA - Nenhum dado sincronizado"
+        )
+        log.info("   Status: %s", status)
 
         cursor.close()
         conn.close()
 
     except Exception as e:
-        print(f"\n❌ Erro ao validar: {e}")
+        log.exception("\n❌ Erro ao validar: %s", e)
         return False
-
-    return total_records > 0
+    else:
+        return total_records > 0
 
 
 if __name__ == "__main__":
-    validate_sync()
+    import sys
+
+    success = validate_sync()
+    sys.exit(0 if success else 1)

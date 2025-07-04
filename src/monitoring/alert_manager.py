@@ -1,16 +1,21 @@
-#!/usr/bin/env python3
-"""Professional Alert Manager for Meltano Integration
+"""Professional Alert Manager for Meltano Integration.
+
 Monitors system health and sends alerts based on configurable thresholds.
 """
+from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import psutil
 import requests
+
+from src.oracle.connection_manager import create_connection_manager_from_env
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AlertConfig:
     """Configuration for alert thresholds and notifications."""
+
     # Sync monitoring
     max_sync_duration_minutes: int = 60
     max_error_rate_percent: float = 5.0
@@ -32,9 +38,9 @@ class AlertConfig:
     max_cpu_usage_percent: float = 85.0
 
     # Notification settings
-    email_enabled: bool = False
-    webhook_enabled: bool = True
-    slack_enabled: bool = False
+    email_enabled: bool | None = None
+    webhook_enabled: bool | None = None
+    slack_enabled: bool | None = None
 
     # Contact information (loaded from environment)
     alert_email: str = ""
@@ -45,24 +51,26 @@ class AlertConfig:
 @dataclass
 class Alert:
     """Represents a system alert."""
+
     severity: str  # CRITICAL, HIGH, MEDIUM, LOW
     title: str
     message: str
     component: str
     timestamp: datetime
     metrics: dict[str, Any]
-    resolved: bool = False
+    resolved: bool | None = None
 
 
 class AlertManager:
     """Professional alert manager with multiple notification channels."""
 
-    def __init__(self, config: AlertConfig):
+    def __init__(self, config: AlertConfig) -> None:
+        """Initialize alert manager with configuration."""
         """Initialize alert manager with configuration."""
         self.config = config
         self.active_alerts: dict[str, Alert] = {}
         self.alert_history: list[Alert] = []
-        self.last_health_check = datetime.now()
+        self.last_health_check = datetime.now(UTC)
 
         # Create logs directory
         self.log_dir = Path("logs/alerts")
@@ -76,6 +84,10 @@ class AlertManager:
 
         Returns:
             Alert if issues detected, None otherwise
+
+        Args:
+                sync_log_path: Parameter description.
+
         """
         try:
             if not Path(sync_log_path).exists():
@@ -84,29 +96,38 @@ class AlertManager:
                     title="Sync Log Missing",
                     message=f"Sync log file not found: {sync_log_path}",
                     component="sync_monitor",
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                     metrics={"log_path": sync_log_path},
                 )
 
             # Read log file
-            with open(sync_log_path, encoding="utf-8") as f:
+            with Path(sync_log_path).open(encoding="utf-8") as f:
                 log_content = f.read()
 
             # Check for error patterns
             error_indicators = [
-                "ERRO:", "ERROR:", "Failed", "Exception", "Traceback",
-                "Connection refused", "Timeout", "Certificate verification failed",
+                "ERRO:",
+                "ERROR:",
+                "Failed",
+                "Exception",
+                "Traceback",
+                "Connection refused",
+                "Timeout",
+                "Certificate verification failed",
             ]
 
-            errors_found = [indicator for indicator in error_indicators if indicator in log_content]
+            errors_found = [
+                indicator for indicator in error_indicators if indicator in log_content
+            ]
 
             if errors_found:
                 return Alert(
                     severity="HIGH",
                     title="Sync Process Errors Detected",
-                    message=f"Found error indicators in sync log: {', '.join(errors_found)}",
+                    message=f"Found error indicators in sync log: {
+                        ', '.join(errors_found)}",
                     component="sync_process",
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                     metrics={
                         "log_path": sync_log_path,
                         "errors_found": errors_found,
@@ -117,21 +138,21 @@ class AlertManager:
             # Check sync duration
             start_time = self._extract_start_time(log_content)
             if start_time:
-                duration_minutes = (datetime.now() - start_time).total_seconds() / 60
+                duration_minutes = (datetime.now(UTC) - start_time).total_seconds() / 60
                 if duration_minutes > self.config.max_sync_duration_minutes:
                     return Alert(
                         severity="MEDIUM",
                         title="Sync Duration Exceeded",
-                        message=f"Sync running for {duration_minutes:.1f} minutes (threshold: {self.config.max_sync_duration_minutes})",
+                        message=f"Sync running for {
+                            duration_minutes:.1f} minutes (threshold: {
+                            self.config.max_sync_duration_minutes})",
                         component="sync_performance",
-                        timestamp=datetime.now(),
+                        timestamp=datetime.now(UTC),
                         metrics={
                             "duration_minutes": duration_minutes,
                             "threshold_minutes": self.config.max_sync_duration_minutes,
                         },
                     )
-
-            return None
 
         except Exception as e:
             return Alert(
@@ -139,19 +160,20 @@ class AlertManager:
                 title="Health Check Failed",
                 message=f"Could not check sync health: {e!s}",
                 component="health_monitor",
-                timestamp=datetime.now(),
+                timestamp=datetime.now(UTC),
                 metrics={"error": str(e)},
             )
+        else:
+            return None
 
     def check_oracle_connection(self) -> Alert | None:
         """Test Oracle database connectivity.
 
         Returns:
             Alert if connection issues detected
+
         """
         try:
-            from src.oracle.connection_manager import create_connection_manager_from_env
-
             manager = create_connection_manager_from_env()
             result = manager.test_connection()
 
@@ -159,24 +181,27 @@ class AlertManager:
                 return Alert(
                     severity="CRITICAL",
                     title="Oracle Connection Failed",
-                    message=f"Cannot connect to Oracle database: {result['error']}",
+                    message=f"Cannot connect to Oracle database: {
+                        result['error']}",
                     component="oracle_connection",
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                     metrics=result,
                 )
 
             # Check connection time
-            if result["connection_time_ms"] > (self.config.max_connection_time_seconds * 1000):
+            if result["connection_time_ms"] > (
+                self.config.max_connection_time_seconds * 1000
+            ):
                 return Alert(
                     severity="MEDIUM",
                     title="Oracle Connection Slow",
-                    message=f"Oracle connection took {result['connection_time_ms']:.0f}ms (threshold: {self.config.max_connection_time_seconds * 1000:.0f}ms)",
+                    message=f"Oracle connection took {
+                        result['connection_time_ms']:.0f}ms (threshold: {
+                        self.config.max_connection_time_seconds * 1000:.0f}ms)",
                     component="oracle_performance",
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                     metrics=result,
                 )
-
-            return None
 
         except Exception as e:
             return Alert(
@@ -184,64 +209,74 @@ class AlertManager:
                 title="Oracle Connection Test Failed",
                 message=f"Could not test Oracle connection: {e!s}",
                 component="oracle_monitor",
-                timestamp=datetime.now(),
+                timestamp=datetime.now(UTC),
                 metrics={"error": str(e)},
             )
+        else:
+            return None
 
     def check_system_resources(self) -> list[Alert]:
         """Monitor system resource usage.
 
         Returns:
             List of alerts for resource issues
+
         """
         alerts = []
 
         try:
-            import psutil
-
             # Check memory usage
             memory = psutil.virtual_memory()
             if memory.percent > self.config.max_memory_usage_percent:
-                alerts.append(Alert(
-                    severity="HIGH",
-                    title="High Memory Usage",
-                    message=f"Memory usage at {memory.percent:.1f}% (threshold: {self.config.max_memory_usage_percent}%)",
-                    component="system_memory",
-                    timestamp=datetime.now(),
-                    metrics={
-                        "memory_percent": memory.percent,
-                        "memory_available_gb": memory.available / (1024**3),
-                        "memory_total_gb": memory.total / (1024**3),
-                    },
-                ))
+                alerts.append(
+                    Alert(
+                        severity="HIGH",
+                        title="High Memory Usage",
+                        message=f"Memory usage at {
+                        memory.percent:.1f}% (threshold: {
+                        self.config.max_memory_usage_percent}%)",
+                        component="system_memory",
+                        timestamp=datetime.now(UTC),
+                        metrics={
+                            "memory_percent": memory.percent,
+                            "memory_available_gb": memory.available / (1024**3),
+                            "memory_total_gb": memory.total / (1024**3),
+                        },
+                    ),
+                )
 
             # Check CPU usage
             cpu_percent = psutil.cpu_percent(interval=1)
             if cpu_percent > self.config.max_cpu_usage_percent:
-                alerts.append(Alert(
-                    severity="MEDIUM",
-                    title="High CPU Usage",
-                    message=f"CPU usage at {cpu_percent:.1f}% (threshold: {self.config.max_cpu_usage_percent}%)",
-                    component="system_cpu",
-                    timestamp=datetime.now(),
-                    metrics={
-                        "cpu_percent": cpu_percent,
-                        "cpu_count": psutil.cpu_count(),
-                    },
-                ))
+                alerts.append(
+                    Alert(
+                        severity="MEDIUM",
+                        title="High CPU Usage",
+                        message=f"CPU usage at {
+                        cpu_percent:.1f}% (threshold: {
+                        self.config.max_cpu_usage_percent}%)",
+                        component="system_cpu",
+                        timestamp=datetime.now(UTC),
+                        metrics={
+                            "cpu_percent": cpu_percent,
+                            "cpu_count": psutil.cpu_count(),
+                        },
+                    ),
+                )
 
-        except ImportError:
-            # psutil not available - skip system monitoring
-            logger.warning("psutil not available for system monitoring")
         except Exception as e:
-            alerts.append(Alert(
-                severity="LOW",
-                title="System Monitoring Failed",
-                message=f"Could not check system resources: {e!s}",
-                component="system_monitor",
-                timestamp=datetime.now(),
-                metrics={"error": str(e)},
-            ))
+            # psutil not available or other error - skip system monitoring
+            logger.warning("System monitoring failed: %s", e)
+            alerts.append(
+                Alert(
+                    severity="LOW",
+                    title="System Monitoring Failed",
+                    message=f"Could not check system resources: {e!s}",
+                    component="system_monitor",
+                    timestamp=datetime.now(UTC),
+                    metrics={"error": str(e)},
+                ),
+            )
 
         return alerts
 
@@ -253,6 +288,10 @@ class AlertManager:
 
         Returns:
             True if alert sent successfully
+
+        Args:
+                alert: Parameter description.
+
         """
         sent = False
 
@@ -278,6 +317,7 @@ class AlertManager:
 
         Returns:
             List of active alerts
+
         """
         alerts = []
 
@@ -311,10 +351,11 @@ class AlertManager:
                 # Update existing alert
                 self.active_alerts[alert_key] = alert
 
-        self.last_health_check = datetime.now()
+        self.last_health_check = datetime.now(UTC)
         return alerts
 
     def _extract_start_time(self, log_content: str) -> datetime | None:
+        """Extract start time from log content."""
         """Extract start time from log content."""
         lines = log_content.split("\n")
         for line in lines:
@@ -323,18 +364,22 @@ class AlertManager:
                 # This is a simplified parser - could be enhanced
                 try:
                     # Look for ISO timestamp pattern
-                    import re
                     timestamp_pattern = r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
                     match = re.search(timestamp_pattern, line)
                     if match:
-                        return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
-                except:
-                    pass
+                        return datetime.strptime(
+                            match.group(1), "%Y-%m-%d %H:%M:%S",
+                        ).replace(
+                            tzinfo=UTC,
+                        )
+                except Exception as e:
+                    # Unable to parse timestamp
+                    logger.debug("Failed to parse timestamp: %s", e)
         return None
 
     def _log_alert(self, alert: Alert) -> None:
         """Log alert to file."""
-        log_file = self.log_dir / f"alerts_{datetime.now().strftime('%Y%m%d')}.log"
+        log_file = self.log_dir / f"alerts_{datetime.now(UTC).strftime('%Y%m%d')}.log"
 
         alert_data = {
             "timestamp": alert.timestamp.isoformat(),
@@ -345,11 +390,12 @@ class AlertManager:
             "metrics": alert.metrics,
         }
 
-        with open(log_file, "a", encoding="utf-8") as f:
+        with Path(log_file).open("a", encoding="utf-8") as f:
             f.write(json.dumps(alert_data) + "\n")
 
     def _send_webhook(self, alert: Alert) -> bool:
         """Send alert via webhook."""
+        http_success_code = 200
         try:
             payload = {
                 "alert": asdict(alert),
@@ -361,14 +407,15 @@ class AlertManager:
                 json=payload,
                 timeout=10,
             )
-
-            return response.status_code == 200
-
-        except Exception as e:
-            logger.exception(f"Failed to send webhook alert: {e}")
+        except Exception:
+            # Webhook failed
+            logger.exception("Failed to send webhook alert")
             return False
+        else:
+            return response.status_code == http_success_code
 
     def _send_email(self, alert: Alert) -> bool:
+        """Send alert via email."""
         """Send alert via email."""
         # Email implementation would go here
         # For now, just log that we would send email
@@ -376,6 +423,7 @@ class AlertManager:
         return True
 
     def _send_slack(self, alert: Alert) -> bool:
+        """Send alert via Slack."""
         """Send alert via Slack."""
         # Slack implementation would go here
         # For now, just log that we would send Slack message
@@ -391,9 +439,10 @@ def create_alert_manager() -> AlertManager:
 
 if __name__ == "__main__":
     # Test the alert manager
+    logger = logging.getLogger(__name__)
     manager = create_alert_manager()
     alerts = manager.run_health_check()
 
-    print(f"Health check completed. Found {len(alerts)} alerts:")
+    logger.error("Health check completed. Found %d alerts:", len(alerts))
     for alert in alerts:
-        print(f"  [{alert.severity}] {alert.title}: {alert.message}")
+        logger.error("  [%s] %s: %s", alert.severity, alert.title, alert.message)

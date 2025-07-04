@@ -9,6 +9,7 @@
 ## 🎯 Quick Start
 
 ### 1. First Time Setup
+
 ```bash
 # Test connection
 ./scripts/meltano_commands.sh test
@@ -21,6 +22,7 @@
 ```
 
 ### 2. Start Production Operations
+
 ```bash
 # Start incremental sync (every minute)
 ./scripts/meltano_commands.sh start-schedules
@@ -37,6 +39,7 @@
 ## 📋 Command Reference
 
 ### Full Sync (Run Once)
+
 | Command | Description | When to Use |
 |---------|-------------|-------------|
 | `./scripts/meltano_commands.sh full-allocation` | Full sync allocation only | Initial load or data recovery |
@@ -45,6 +48,7 @@
 | `./scripts/meltano_commands.sh full-all` | Full sync all entities | Complete system initialization |
 
 ### Incremental Sync (Production)
+
 | Command | Description | Frequency |
 |---------|-------------|-----------|
 | `./scripts/meltano_commands.sh start-schedules` | Start all schedules | Once during deployment |
@@ -54,6 +58,7 @@
 | `./scripts/meltano_commands.sh run-order-dtl` | Manual order_dtl sync | Troubleshooting |
 
 ### Monitoring & Status
+
 | Command | Description | Purpose |
 |---------|-------------|---------|
 | `./scripts/meltano_commands.sh status` | Show sync status | Daily operations |
@@ -65,12 +70,14 @@
 ## 🎵 Meltano Native Architecture
 
 ### State Management
+
 - **Native Meltano State**: `.meltano/run/*/state.json`
 - **Automatic Bookmarking**: Based on `mod_ts` field
 - **Resume Capability**: Automatic resume from last successful point
 - **No Custom Code**: 100% Meltano built-in functionality
 
 ### Schedule Configuration
+
 ```yaml
 # Incremental sync every minute for each entity
 allocation_incremental_sync: "* * * * *"
@@ -79,6 +86,7 @@ order_dtl_incremental_sync:  "* * * * *"
 ```
 
 ### Entity Configuration
+
 | Entity | Replication Method | Replication Key | Frequency |
 |--------|-------------------|-----------------|-----------|
 | allocation | INCREMENTAL | mod_ts | Every minute |
@@ -90,6 +98,7 @@ order_dtl_incremental_sync:  "* * * * *"
 ## 🔧 Environment Configuration
 
 ### Required Environment Variables
+
 ```bash
 # WMS Source
 WMS_BASE_URL=https://a29.wms.ocs.oraclecloud.com/raizen
@@ -110,6 +119,7 @@ DATABASE__PROTOCOL=tcps
 ```
 
 ### Performance Tuning
+
 ```bash
 # Processing Configuration
 PROCESSING_DB_BATCH_SIZE=1000
@@ -127,11 +137,13 @@ WMS Oracle API → tap-oracle-wms → Meltano State → target-oracle → Oracle
 ```
 
 ### Entity Details
+
 1. **allocation**: Warehouse allocation records (high volume)
 2. **order_hdr**: Order headers (medium volume)
 3. **order_dtl**: Order details (high volume)
 
 ### Data Validation
+
 - **Source Validation**: Automatic schema validation by tap
 - **Target Validation**: Oracle constraint validation
 - **State Validation**: Meltano built-in bookmark validation
@@ -142,12 +154,14 @@ WMS Oracle API → tap-oracle-wms → Meltano State → target-oracle → Oracle
 ## 🚨 Monitoring & Alerting
 
 ### Health Checks (Every 5 minutes)
+
 - ✅ Schedule status
 - ✅ Recent run validation  
 - ✅ Data freshness checks
 - ✅ Disk space monitoring
 
 ### Alert Conditions
+
 | Condition | Severity | Action |
 |-----------|----------|---------|
 | Schedule not running | HIGH | Auto-restart + notification |
@@ -156,6 +170,7 @@ WMS Oracle API → tap-oracle-wms → Meltano State → target-oracle → Oracle
 | Connection failure | HIGH | Immediate response |
 
 ### Log Locations
+
 ```bash
 # Meltano logs
 .meltano/logs/
@@ -174,6 +189,7 @@ logs/alerts.log
 ### Common Issues
 
 #### 1. Schedule Not Running
+
 ```bash
 # Check status
 ./scripts/meltano_commands.sh status
@@ -184,6 +200,7 @@ logs/alerts.log
 ```
 
 #### 2. Connection Issues
+
 ```bash
 # Test connection
 ./scripts/meltano_commands.sh test
@@ -193,6 +210,7 @@ env | grep -E "WMS_|DATABASE__"
 ```
 
 #### 3. State Issues
+
 ```bash
 # Check state files
 ls -la .meltano/run/*/state.json
@@ -202,6 +220,7 @@ meltano state clear
 ```
 
 #### 4. Data Quality Issues
+
 ```bash
 # Manual sync test
 ./scripts/meltano_commands.sh run-allocation
@@ -218,6 +237,7 @@ conn.close()
 ### Emergency Procedures
 
 #### System Recovery
+
 1. Stop all schedules
 2. Verify Oracle connectivity
 3. Run manual test sync
@@ -225,6 +245,7 @@ conn.close()
 5. Monitor for 30 minutes
 
 #### Data Recovery
+
 1. Identify last good state
 2. Reset state if needed
 3. Run targeted full sync
@@ -236,12 +257,14 @@ conn.close()
 ## 🎯 Performance Metrics
 
 ### Expected Performance
+
 - **Extraction Rate**: 1000+ records/second
 - **Load Rate**: 5000+ records/second  
 - **Schedule Delay**: < 60 seconds
 - **Data Freshness**: < 2 minutes
 
 ### Capacity Planning
+
 - **Daily Volume**: Estimate 100K+ records
 - **Peak Hours**: Monitor 8AM-6PM
 - **Storage Growth**: ~1GB/month per entity
@@ -252,6 +275,7 @@ conn.close()
 ## 🏆 Production Checklist
 
 ### Pre-Production
+
 - [ ] Environment variables configured
 - [ ] Connection tests successful
 - [ ] Full sync completed
@@ -260,6 +284,7 @@ conn.close()
 - [ ] Documentation reviewed
 
 ### Go-Live
+
 - [ ] Schedules started
 - [ ] Initial validation complete
 - [ ] Monitoring active
@@ -267,6 +292,7 @@ conn.close()
 - [ ] Runbook accessible
 
 ### Post Go-Live (First 24 hours)
+
 - [ ] Schedule stability confirmed
 - [ ] Data quality validated
 - [ ] Performance metrics within range

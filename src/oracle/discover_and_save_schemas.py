@@ -1,46 +1,53 @@
-#!/usr/bin/env python3
 """Discover and save WMS schemas to JSON file for table creation.
+
 This prevents fallback schemas from being used.
 """
 
+from __future__ import annotations
+
 import json
+import logging
 import os
 import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+from tap_oracle_wms.tap import TapOracleWMS
 
 # Add tap path to Python path
 sys.path.insert(0, "/home/marlonsc/flext/flext-tap-oracle-wms/src")
 
-from tap_oracle_wms.tap import TapOracleWMS
+# Setup logger
+log = logging.getLogger(__name__)
 
 
 def discover_schemas() -> bool:
     """Discover schemas from WMS API and save to file."""
     # Load environment variables
-    from dotenv import load_dotenv
     load_dotenv()
 
     # Create tap configuration
-    config = {
+    config: dict[str, object] = {
         "base_url": os.environ.get("TAP_ORACLE_WMS_BASE_URL"),
         "username": os.environ.get("TAP_ORACLE_WMS_USERNAME"),
         "password": os.environ.get("TAP_ORACLE_WMS_PASSWORD"),
         "entities": ["allocation", "order_hdr", "order_dtl"],
         "force_full_table": True,
-        "page_size": 1000,
+        "page_size": int(os.getenv("WMS_PAGE_SIZE", "100")),
     }
 
     # Check if credentials are available
     if not all([config["base_url"], config["username"], config["password"]]):
-        print("❌ Missing WMS credentials!")
-        print("Required environment variables:")
-        print("  - TAP_ORACLE_WMS_BASE_URL")
-        print("  - TAP_ORACLE_WMS_USERNAME")
-        print("  - TAP_ORACLE_WMS_PASSWORD")
+        log.error("❌ Missing WMS credentials!")
+        log.error("Required environment variables:")
+        log.error("  - TAP_ORACLE_WMS_BASE_URL")
+        log.error("  - TAP_ORACLE_WMS_USERNAME")
+        log.error("  - TAP_ORACLE_WMS_PASSWORD")
         return False
 
-    print("🔍 Discovering schemas from WMS API...")
-    print(f"   URL: {config['base_url']}")
-    print(f"   User: {config['username']}")
+    log.info("🔍 Discovering schemas from WMS API...")
+    log.info("   URL: %s", config["base_url"])
+    log.info("   User: %s", config["username"])
 
     try:
         # Create tap instance
@@ -51,26 +58,34 @@ def discover_schemas() -> bool:
         schemas = {}
 
         for stream in catalog:
-            schema = stream.schema if hasattr(stream.schema, "to_dict") else stream.schema
+            schema = stream.schema
             schemas[stream.tap_stream_id] = schema
-            prop_count = len(schema.get("properties", {})) if isinstance(schema, dict) else len(schema.properties)
-            print(f"✅ Discovered {stream.tap_stream_id}: {prop_count} properties")
+            prop_count = (
+                len(schema.get("properties", {}))
+                if isinstance(schema, dict)
+                else len(schema.properties)
+            )
+            log.info(
+                "✅ Discovered %s: %d properties", stream.tap_stream_id, prop_count,
+            )
 
         # Save schemas to file
         schema_file = "sql/wms_schemas.json"
-        os.makedirs("sql", exist_ok=True)
+        Path("sql").mkdir(exist_ok=True)
 
-        with open(schema_file, "w", encoding="utf-8") as f:
+        with Path(schema_file).open("w", encoding="utf-8") as f:
             json.dump(schemas, f, indent=2)
 
-        print(f"\n✅ Schemas saved to {schema_file}")
-        print("   Use this file with table_creator.py to ensure correct DDL generation")
-
-        return True
+        log.info("\n✅ Schemas saved to %s", schema_file)
+        log.info(
+            "   Use this file with table_creator.py to ensure correct DDL generation",
+        )
 
     except Exception as e:
-        print(f"❌ Error discovering schemas: {e}")
+        log.exception("❌ Error discovering schemas: %s", e)
         return False
+    else:
+        return True
 
 
 if __name__ == "__main__":

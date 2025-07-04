@@ -16,27 +16,21 @@ plugins:
       username: $TAP_ORACLE_WMS_USERNAME
       password: $TAP_ORACLE_WMS_PASSWORD
       
-      # Schema discovery: API metadata only (hard-coded in tap)
+      # 🚨 SINGER SDK COMPLIANCE: Meltano project defines ALL replication logic
+      # TAP is generic Oracle WMS extractor - no business rules
       
-      # Entity and data selection
+      # Entity selection (TAP provides data, Meltano chooses entities)
       entities: ["allocation", "order_hdr", "order_dtl"]
-      force_full_table: true
       
-      # SINGER SDK standard settings
-      ordering: "-id"
-      replication_key: "id"
+      # 🎯 MELTANO REPLICATION BUSINESS RULES: Full table sync
+      replication_method: "FULL_TABLE"
+      replication_key: "id"  # MELTANO define - TAP não decide
       
-      # Performance via environment variables only - NO hardcoded values
+      # Performance settings via environment variables
       page_size: $WMS_PAGE_SIZE
+      request_timeout: $TAP_ORACLE_WMS_REQUEST_TIMEOUT
       
-      # Legacy settings (kept for backward compatibility)
-      timeout: 3600
-      
-    # ALL OTHER CONFIGURATIONS NOW COME FROM CONFIGMAPPER:
-    # 1. WMS_PROFILE_NAME=gruponos (company-specific profile)
-    # 2. Individual WMS_* environment variables 
-    # 3. ConfigMapper defaults (sensible fallbacks)
-    settings:
+      # Profile configuration 
       WMS_PROFILE_NAME: $WMS_PROFILE_NAME
 
   - name: tap-oracle-wms-incremental
@@ -48,24 +42,21 @@ plugins:
       username: $TAP_ORACLE_WMS_USERNAME
       password: $TAP_ORACLE_WMS_PASSWORD
       
-      # Schema discovery: API metadata only (hard-coded in tap)
+      # 🚨 SINGER SDK COMPLIANCE: Meltano project defines ALL replication logic
+      # TAP is generic Oracle WMS extractor - no business rules
       
-      # Entity and data selection
+      # Entity selection (TAP provides data, Meltano chooses entities)
       entities: ["allocation", "order_hdr", "order_dtl"]
-      force_full_table: false
       
-      # SINGER SDK standard settings
-      ordering: "mod_ts"
-      replication_key: "mod_ts"
+      # 🎯 MELTANO REPLICATION BUSINESS RULES: Incremental sync
+      replication_method: "INCREMENTAL"
+      replication_key: "mod_ts"  # MELTANO define - TAP não decide
       
-      # Performance via environment variables only - NO hardcoded values
+      # Performance settings via environment variables
       page_size: $WMS_PAGE_SIZE
+      request_timeout: $TAP_ORACLE_WMS_REQUEST_TIMEOUT
       
-      # Legacy settings (kept for backward compatibility)
-      timeout: 2700
-      
-    # Configuration comes from ConfigMapper system
-    settings:
+      # Profile configuration
       WMS_PROFILE_NAME: $WMS_PROFILE_NAME
 
   # Individual entity extractors for parallel processing
@@ -105,16 +96,16 @@ plugins:
     executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
     config:
       host: $FLEXT_TARGET_ORACLE_HOST
-      port: $FLEXT_TARGET_ORACLE_PORT
+      port: 1522
       service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
       username: $FLEXT_TARGET_ORACLE_USERNAME
       password: $FLEXT_TARGET_ORACLE_PASSWORD
       protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
       ssl_server_dn_match: false
-      batch_size_rows: $FLEXT_TARGET_ORACLE_BATCH_SIZE
-      pool_size: 2
-      max_overflow: 5
-      parallel_threads: 1
+      batch_size_rows: 500
+      pool_size: 10
+      max_overflow: 15
+      parallel_threads: 10
       add_record_metadata: false
       validate_records: false
       load_method: append-only
@@ -130,15 +121,16 @@ plugins:
     executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
     config:
       host: $FLEXT_TARGET_ORACLE_HOST
-      port: $FLEXT_TARGET_ORACLE_PORT
+      port: 1522
       service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
       username: $FLEXT_TARGET_ORACLE_USERNAME
       password: $FLEXT_TARGET_ORACLE_PASSWORD
       protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
       ssl_server_dn_match: false
-      batch_size_rows: $FLEXT_TARGET_ORACLE_BATCH_SIZE_INCREMENTAL
-      pool_size: 8
-      parallel_threads: 2
+      batch_size_rows: 500
+      pool_size: 10
+      max_overflow: 15
+      parallel_threads: 10
       add_record_metadata: false
       validate_records: false
       load_method: append-only

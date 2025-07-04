@@ -1,5 +1,0 @@
-Need help fixing this problem? Visit http://melta.no/ for troubleshooting steps, or to
-join our friendly Slack community.
-
-`meltano run` must be run inside a Meltano project.
-Use `meltano init <project_directory>` to create one.

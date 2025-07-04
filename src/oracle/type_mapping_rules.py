@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""Oracle Type Mapping Rules - Módulo Compartilhado
+"""Oracle Type Mapping Rules - Módulo Compartilhado.
+
 Regras centralizadas para conversão de tipos WMS → Oracle DDL.
 
 Este módulo é usado por:
@@ -8,6 +8,11 @@ Este módulo é usado por:
 
 Garante consistência total entre os dois métodos de criação.
 """
+
+from __future__ import annotations
+
+import re
+from typing import Any
 
 # Oracle DDL Type Mappings
 WMS_METADATA_TO_ORACLE = {
@@ -48,21 +53,51 @@ FIELD_PATTERN_RULES = {
     "id_patterns": ["*_id", "id"],
     "key_patterns": ["*_key"],
     "qty_patterns": [
-        "*_qty", "*_quantity", "*_count", "*_amount",
-        "alloc_qty", "ord_qty", "packed_qty", "ordered_uom_qty", "orig_ord_qty"
+        "*_qty",
+        "*_quantity",
+        "*_count",
+        "*_amount",
+        "alloc_qty",
+        "ord_qty",
+        "packed_qty",
+        "ordered_uom_qty",
+        "orig_ord_qty",
     ],
     "price_patterns": [
-        "*_price", "*_cost", "*_rate", "*_percent",
-        "cost", "sale_price", "unit_declared_value", "orig_sale_price"
+        "*_price",
+        "*_cost",
+        "*_rate",
+        "*_percent",
+        "cost",
+        "sale_price",
+        "unit_declared_value",
+        "orig_sale_price",
     ],
-    "weight_patterns": ["*_weight", "*_volume", "*_length", "*_width", "*_height"],
-    "date_patterns": ["*_date", "*_time", "*_ts", "*_timestamp", "cust_date_*"],
+    "weight_patterns": [
+        "*_weight",
+        "*_volume",
+        "*_length",
+        "*_width",
+        "*_height",
+    ],
+    "date_patterns": [
+        "*_date",
+        "*_time",
+        "*_ts",
+        "*_timestamp",
+        "cust_date_*",
+    ],
     "flag_patterns": ["*_flg", "*_flag", "*_enabled", "*_active"],
     "desc_patterns": ["*_desc", "*_description", "*_note", "*_comment"],
     "code_patterns": ["*_code", "*_status", "*_type"],
     "name_patterns": ["*_name", "*_title"],
     "addr_patterns": ["*_addr", "*_address"],
-    "decimal_patterns": ["cust_decimal_*", "cust_number_*", "voucher_amount", "total_orig_ord_qty"],
+    "decimal_patterns": [
+        "cust_decimal_*",
+        "cust_number_*",
+        "voucher_amount",
+        "total_orig_ord_qty",
+    ],
     "set_patterns": ["*_set"],  # IMPORTANTE: Sempre VARCHAR2(4000 CHAR)
 }
 
@@ -71,7 +106,7 @@ def convert_metadata_type_to_oracle(
     metadata_type: str | None = None,
     column_name: str = "",
     max_length: int | None = None,
-    sample_value: any | None = None,
+    sample_value: Any | None = None,
 ) -> str:
     """Converter tipo WMS metadata para Oracle DDL usando padrão metadata-first.
 
@@ -99,9 +134,9 @@ def convert_metadata_type_to_oracle(
         return oracle_type
 
     # Prioridade 2: Padrões de nome de campo
-    oracle_type = convert_field_pattern_to_oracle(column_name, max_length)
-    if oracle_type:
-        return oracle_type
+    oracle_type_pattern = convert_field_pattern_to_oracle(column_name, max_length)
+    if oracle_type_pattern:
+        return oracle_type_pattern
 
     # Prioridade 3: Inferência de valor de amostra (último recurso)
     if sample_value is not None:
@@ -111,7 +146,10 @@ def convert_metadata_type_to_oracle(
     return "VARCHAR2(255 CHAR)"
 
 
-def convert_field_pattern_to_oracle(column_name: str, max_length: int | None = None) -> str | None:
+def convert_field_pattern_to_oracle(
+    column_name: str,
+    max_length: int | None = None,
+) -> str | None:
     """Converter nome de campo para tipo Oracle usando regras de padrão.
 
     Args:
@@ -128,8 +166,12 @@ def convert_field_pattern_to_oracle(column_name: str, max_length: int | None = N
             # Lidar com padrões wildcard
             if "*" in pattern:
                 pattern_clean = pattern.replace("*", "")
-                if (pattern.startswith("*_") and column_lower.endswith(pattern_clean)) or \
-                   (pattern.endswith("_*") and column_lower.startswith(pattern_clean)):
+                if (
+                    pattern.startswith("*_")
+                    and column_lower.endswith(pattern_clean)
+                ) or (
+                    pattern.endswith("_*") and column_lower.startswith(pattern_clean)
+                ):
                     oracle_type = FIELD_PATTERNS_TO_ORACLE[pattern_key]
                     # Forçar 4000 CHAR para campos _set independentemente de max_length
                     if pattern_key == "set_patterns":
@@ -150,7 +192,9 @@ def convert_field_pattern_to_oracle(column_name: str, max_length: int | None = N
     return None
 
 
-def convert_singer_schema_to_oracle(column_name: str, column_schema: dict) -> str:
+def convert_singer_schema_to_oracle(
+    column_name: str, column_schema: dict[str, Any],
+) -> str:
     """Converter schema Singer para tipo Oracle.
 
     Usado pelo flext-target-oracle para tipos descobertos via Singer.
@@ -191,7 +235,7 @@ def convert_singer_schema_to_oracle(column_name: str, column_schema: dict) -> st
     return "VARCHAR2(255 CHAR)"
 
 
-def _infer_oracle_from_sample(sample_value: any) -> str:
+def _infer_oracle_from_sample(sample_value: Any) -> str:
     """Inferir tipo Oracle de valor de amostra."""
     if isinstance(sample_value, bool):
         return "NUMBER(1,0)"
@@ -207,7 +251,6 @@ def _infer_oracle_from_sample(sample_value: any) -> str:
 
 def _looks_like_date(value: str) -> bool:
     """Verificar se string parece uma data."""
-    import re
     date_patterns = [
         r"\d{4}-\d{2}-\d{2}",  # YYYY-MM-DD
         r"\d{2}/\d{2}/\d{4}",  # MM/DD/YYYY
@@ -217,7 +260,9 @@ def _looks_like_date(value: str) -> bool:
     return any(re.match(pattern, value) for pattern in date_patterns)
 
 
-def oracle_ddl_from_singer_schema(singer_schema: dict, column_name: str = "") -> str:
+def oracle_ddl_from_singer_schema(
+    singer_schema: dict[str, Any], column_name: str = "",
+) -> str:
     """Converter schema Singer de volta para tipo Oracle DDL.
 
     Útil para criação de tabela a partir de schemas Singer descobertos.

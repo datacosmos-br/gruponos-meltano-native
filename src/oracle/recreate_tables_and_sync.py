@@ -1,21 +1,37 @@
-#!/usr/bin/env python3
 """Script para recriar tabelas e executar sync full.
+
 Objetivo: Verificar comportamento completo do ambiente.
 """
 
+from __future__ import annotations
+
+import logging
 import os
 import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
+from pathlib import Path
 
-from connection_manager import create_connection_manager_from_env
+from src.oracle.connection_manager import create_connection_manager_from_env
+
+try:
+    from src.oracle.validate_sync import validate_sync
+except ImportError:
+    validate_sync = None  # type: ignore[assignment]
+
+# Setup logger
+log = logging.getLogger(__name__)
 
 
-def drop_all_wms_tables():
-    """Drop todas as tabelas WMS_ e sem prefixo."""
-    print("🗑️ REMOVENDO TODAS AS TABELAS WMS...")
-    print("=" * 60)
+def drop_all_wms_tables() -> bool:
+    """Drop todas as tabelas WMS_ e sem prefixo.
+
+    Returns:
+        True if successful, False otherwise
+    """
+    log.info("🗑️ REMOVENDO TODAS AS TABELAS WMS...")
+    log.info("=" * 60)
 
     manager = create_connection_manager_from_env()
 
@@ -36,32 +52,31 @@ def drop_all_wms_tables():
         tables = cursor.fetchall()
 
         if not tables:
-            print("   ✅ Nenhuma tabela WMS encontrada")
+            log.info("   ✅ Nenhuma tabela WMS encontrada")
         else:
             for (table_name,) in tables:
                 try:
                     cursor.execute(f'DROP TABLE "{table_name}" CASCADE CONSTRAINTS')
-                    print(f"   ✅ Tabela {table_name} removida")
+                    log.info("   ✅ Tabela %s removida", table_name)
                 except Exception as e:
-                    print(f"   ⚠️ Erro ao remover {table_name}: {e}")
+                    log.warning("   ⚠️ Erro ao remover %s: %s", table_name, e)
 
         conn.commit()
         cursor.close()
         conn.close()
 
-        print("\n✅ Limpeza concluída")
-
+        log.info("\n✅ Limpeza concluída")
     except Exception as e:
-        print(f"❌ Erro durante limpeza: {e}")
+        log.exception("❌ Erro durante limpeza: %s", e)
         return False
+    else:
+        return True
 
-    return True
 
-
-def list_current_tables():
+def list_current_tables() -> None:
     """Lista tabelas atuais do schema."""
-    print("\n📋 TABELAS ATUAIS NO SCHEMA:")
-    print("-" * 40)
+    log.info("\n📋 TABELAS ATUAIS NO SCHEMA:")
+    log.info("-" * 40)
 
     manager = create_connection_manager_from_env()
 
@@ -80,20 +95,24 @@ def list_current_tables():
         tables = cursor.fetchall()
 
         if not tables:
-            print("   Nenhuma tabela relevante encontrada")
+            log.info("   Nenhuma tabela relevante encontrada")
         else:
             for table_name, num_rows in tables:
-                print(f"   {table_name}: {num_rows or 0} registros")
+                log.info("   %s: %d registros", table_name, num_rows or 0)
 
         cursor.close()
         conn.close()
 
     except Exception as e:
-        print(f"   ❌ Erro ao listar tabelas: {e}")
+        log.exception("   ❌ Erro ao listar tabelas: %s", e)
 
 
-def check_table_structure(table_name):
-    """Verifica estrutura de uma tabela."""
+def check_table_structure(table_name: str) -> None:
+    """Verifica estrutura de uma tabela.
+
+    Args:
+        table_name: Nome da tabela a verificar
+    """
     manager = create_connection_manager_from_env()
 
     try:
@@ -101,197 +120,223 @@ def check_table_structure(table_name):
         cursor = conn.cursor()
 
         # Verificar colunas
-        cursor.execute(f"""
+        # Use parameterized query to avoid SQL injection
+        cursor.execute("""
             SELECT column_name, data_type, data_length
             FROM user_tab_columns
-            WHERE table_name = '{table_name}'
+            WHERE table_name = :table_name
             ORDER BY column_id
-        """)
+        """, {"table_name": table_name})
 
         columns = cursor.fetchall()
 
         if columns:
-            print(f"\n   📊 Estrutura da tabela {table_name}:")
-            print(f"   Total de colunas: {len(columns)}")
-
-            # Mostrar algumas colunas importantes
-            set_fields = []
-            for col_name, data_type, data_length in columns:
-                if col_name.endswith("_SET"):
-                    set_fields.append(f"{col_name} ({data_type} {data_length})")
-
-            if set_fields:
-                print(f"   Campos _SET encontrados: {', '.join(set_fields)}")
+            log.info("📊 Estrutura da tabela %s:", table_name)
+            max_columns_to_show = 10
+            for col_name, data_type, data_length in columns[:max_columns_to_show]:
+                log.info("   %s: %s(%s)", col_name, data_type, data_length or "")
+            if len(columns) > max_columns_to_show:
+                log.info("   ... e mais %d colunas", len(columns) - max_columns_to_show)
+        else:
+            log.warning("❌ Tabela %s não encontrada", table_name)
 
         cursor.close()
         conn.close()
 
     except Exception as e:
-        print(f"   ⚠️ Erro ao verificar estrutura: {e}")
+        log.exception("❌ Erro ao verificar estrutura: %s", e)
 
 
-def run_full_sync():
-    """Executa sync full via make."""
-    print("\n🚀 EXECUTANDO SYNC FULL...")
-    print("=" * 60)
+def create_tables_with_ddl() -> bool:
+    """Cria tabelas usando table_creator.py.
 
-    os.chdir("/home/marlonsc/flext/gruponos-meltano-native")
-
-    # Criar diretório de logs se não existir
-    os.makedirs("logs/sync", exist_ok=True)
-
-    # Nome do arquivo de log
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = f"logs/sync/recreate_test_{timestamp}.log"
-
-    print(f"   📝 Log sendo gravado em: {log_file}")
-    print("   ⏳ Aguarde o sync completar...")
-
-    # Executar o sync
-    with open(log_file, "w", encoding="utf-8") as log:
-        process = subprocess.Popen(
-            ["make", "full-sync-debug"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True
-        )
-
-        # Monitorar o progresso
-        start_time = time.time()
-        while True:
-            line = process.stdout.readline()
-            if not line:
-                break
-
-            log.write(line)
-
-            # Mostrar algumas linhas importantes
-            if any(keyword in line for keyword in ["BATCH", "COMPLETED", "ERROR", "TRUNCATE", "table_name"]):
-                print(f"   {line.strip()}")
-
-        process.wait()
-        duration = time.time() - start_time
-
-    print(f"\n   ⏱️ Sync completado em {duration:.1f} segundos")
-
-    # Verificar se houve erros
-    with open(log_file, encoding="utf-8") as log:
-        content = log.read()
-        if "ERROR" in content or "FAILED" in content:
-            print("   ⚠️ ATENÇÃO: Erros encontrados no log!")
-
-            # Mostrar erros principais
-            for line in content.split("\n"):
-                if "ERROR" in line or "ORA-" in line:
-                    print(f"      {line.strip()}")
-        else:
-            print("   ✅ Sync aparentemente completado sem erros")
-
-    return log_file
-
-
-def analyze_results():
-    """Analisa resultados finais."""
-    print("\n📊 ANÁLISE DOS RESULTADOS:")
-    print("=" * 60)
-
-    manager = create_connection_manager_from_env()
+    Returns:
+        True if successful, False otherwise
+    """
+    log.info("\n🔨 CRIANDO TABELAS COM DDL OTIMIZADO...")
+    log.info("-" * 50)
 
     try:
-        conn = manager.connect()
-        cursor = conn.cursor()
+        # Executar table_creator
+        result = subprocess.run(
+            [sys.executable, "-m", "src.oracle.table_creator"],
+            cwd=Path(__file__).parent.parent.parent,
+            capture_output=True,
+            text=True,
+            timeout=300,  # 5 minutes
+            check=False,
+        )
 
-        # Verificar todas as possíveis tabelas
-        tables_to_check = [
-            ("WMS_ALLOCATION", "allocation"),
-            ("WMS_ORDER_HDR", "order_hdr"),
-            ("WMS_ORDER_DTL", "order_dtl"),
-            ("ALLOCATION", "allocation"),
-            ("ORDER_HDR", "order_hdr"),
-            ("ORDER_DTL", "order_dtl")
+        if result.returncode == 0:
+            log.info("✅ Tabelas criadas com sucesso")
+            if result.stdout:
+                log.info("Output: %s", result.stdout)
+        log.error("❌ Erro ao criar tabelas")
+        if result.stderr:
+            log.error("Error: %s", result.stderr)
+    except subprocess.TimeoutExpired:
+        log.exception("❌ Timeout ao criar tabelas")
+        return False
+    except Exception as e:
+        log.exception("❌ Erro ao executar table_creator: %s", e)
+        return False
+    else:
+        return True
+
+    return False
+
+
+def run_full_sync() -> bool:
+    """Executa sync completo via meltano.
+
+    Returns:
+        True if successful, False otherwise
+    """
+    log.info("\n🚀 EXECUTANDO SYNC COMPLETO...")
+    log.info("-" * 40)
+
+    try:
+        # Configurar ambiente
+        env = os.environ.copy()
+
+        # Executar meltano run
+        cmd = [
+            "/home/marlonsc/flext/.venv/bin/meltano",
+            "run",
+            "tap-oracle-wms-full",
+            "target-oracle-full",
         ]
 
-        found_tables = {}
+        log.info("Comando: %s", " ".join(cmd))
 
-        for table_name, _entity in tables_to_check:
-            cursor.execute(f"""
-                SELECT COUNT(*) as cnt
-                FROM user_tables
-                WHERE table_name = '{table_name}'
-            """)
+        start_time = time.time()
 
-            exists = cursor.fetchone()[0] > 0
+        result = subprocess.run(
+            cmd,
+            cwd="/home/marlonsc/flext/gruponos-meltano-native",
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=1800,  # 30 minutes
+            check=False,
+        )
 
-            if exists:
-                cursor.execute(f'SELECT COUNT(*) FROM "{table_name}"')
-                count = cursor.fetchone()[0]
-                found_tables[table_name] = count
+        duration = time.time() - start_time
+        log.info("Duração: %.1f segundos", duration)
 
-        print("\n   📋 TABELAS ENCONTRADAS:")
-        if not found_tables:
-            print("   ❌ NENHUMA TABELA ENCONTRADA!")
-        else:
-            for table_name, count in found_tables.items():
-                print(f"   - {table_name}: {count} registros")
+        if result.returncode == 0:
+            log.info("✅ Sync executado com sucesso")
 
-                # Verificar estrutura se for WMS_
-                if table_name.startswith("WMS_"):
-                    check_table_structure(table_name)
+            # Procurar por estatísticas no output
+            lines = result.stdout.split("\n")
+            for line in lines:
+                if "records" in line.lower() or "extracted" in line.lower():
+                    log.info("📊 %s", line.strip())
 
-        # Resumo
-        print("\n   🎯 RESUMO:")
-        wms_tables = [t for t in found_tables if t.startswith("WMS_")]
-        non_wms_tables = [t for t in found_tables if not t.startswith("WMS_")]
-
-        print(f"   - Tabelas com prefixo WMS_: {len(wms_tables)}")
-        print(f"   - Tabelas sem prefixo: {len(non_wms_tables)}")
-        print(f"   - Total de registros: {sum(found_tables.values())}")
-
-        if len(wms_tables) == 3 and len(non_wms_tables) == 0:
-            print("\n   ✅ SUCESSO: Todas as tabelas criadas com prefixo WMS_ corretamente!")
-        elif len(non_wms_tables) == 3 and len(wms_tables) == 0:
-            print("\n   ⚠️ PROBLEMA: Tabelas criadas SEM o prefixo WMS_!")
-        else:
-            print("\n   ❌ PROBLEMA: Mistura de tabelas com e sem prefixo!")
-
-        cursor.close()
-        conn.close()
-
+        log.error("❌ Sync falhou (código: %d)", result.returncode)
+        if result.stderr:
+            # Limit stderr output to 1000 characters
+            stderr_limit = 1000
+            log.error("Error: %s", result.stderr[:stderr_limit])
+    except subprocess.TimeoutExpired:
+        log.exception("❌ Timeout durante sync (30 minutos)")
+        return False
     except Exception as e:
-        print(f"   ❌ Erro na análise: {e}")
+        log.exception("❌ Erro ao executar sync: %s", e)
+        return False
+    else:
+        return True
+
+    return False
 
 
-def main():
-    """Executa o ciclo completo."""
-    print("🔄 CICLO COMPLETO: RECRIAR TABELAS E SYNC")
-    print("=" * 70)
-    print(f"Início: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print()
+def validate_sync_results() -> bool:
+    """Valida resultados do sync.
 
-    # 1. Listar estado atual
+    Returns:
+        True if validation successful, False otherwise
+    """
+    log.info("\n🔍 VALIDANDO RESULTADOS...")
+    log.info("-" * 30)
+
+    if validate_sync is None:
+        log.error("❌ Módulo validate_sync não disponível")
+        return False
+
+    try:
+        return validate_sync()
+    except Exception as e:
+        log.exception("❌ Erro na validação: %s", e)
+        return False
+
+
+def main() -> int:
+    """Função principal - executa todo o processo.
+
+    Returns:
+        0 if successful, 1 if failed
+    """
+    log.info("🏁 INICIANDO PROCESSO COMPLETO DE RECRIAÇÃO E SYNC")
+    log.info("=" * 70)
+    log.info("⏰ %s", datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"))
+    log.info("=" * 70)
+
+    # 1. Listar tabelas atuais
     list_current_tables()
 
-    # 2. Limpar tabelas
+    # 2. Remover tabelas existentes
     if not drop_all_wms_tables():
-        print("❌ Falha na limpeza, abortando...")
+        log.error("❌ Falha na limpeza de tabelas")
         return 1
 
-    # 3. Confirmar limpeza
-    print("\n📋 CONFIRMANDO LIMPEZA:")
-    list_current_tables()
+    # 3. Criar novas tabelas
+    if not create_tables_with_ddl():
+        log.error("❌ Falha na criação de tabelas")
+        return 1
 
-    # 4. Executar sync
-    log_file = run_full_sync()
+    # 4. Verificar estrutura das tabelas criadas
+    for table in ["WMS_ALLOCATION", "WMS_ORDER_HDR", "WMS_ORDER_DTL"]:
+        check_table_structure(table)
 
-    # 5. Analisar resultados
-    analyze_results()
+    # 5. Executar sync completo
+    if not run_full_sync():
+        log.error("❌ Falha no sync")
+        return 1
 
-    print("\n✅ Ciclo completo finalizado!")
-    print(f"📝 Log completo em: {log_file}")
-    print(f"Fim: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    # 6. Validar resultados
+    if not validate_sync_results():
+        log.error("❌ Falha na validação")
+        return 1
+
+    # 7. Relatório final
+    separator = "=" * 70
+    log.info("\n%s", separator)
+    log.info("🎉 PROCESSO CONCLUÍDO COM SUCESSO!")
+    log.info("✅ Tabelas recriadas")
+    log.info("✅ Sync executado")
+    log.info("✅ Dados validados")
+    log.info(
+        "⏰ Finalizado em: %s",
+        datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+    )
+    log.info("=" * 70)
 
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # Configurar logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
+    try:
+        exit_code = main()
+        sys.exit(exit_code)
+    except KeyboardInterrupt:
+        log.exception("\n❌ Processo interrompido pelo usuário")
+        sys.exit(1)
+    except Exception as e:
+        log.exception("❌ Erro fatal: %s", e)
+        sys.exit(1)

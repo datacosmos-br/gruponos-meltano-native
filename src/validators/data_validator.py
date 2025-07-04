@@ -1,17 +1,23 @@
-#!/usr/bin/env python3
-"""Professional Data Validator for Oracle WMS Integration
+"""Professional Data Validator for Oracle WMS Integration.
+
 Handles type conversion and validation issues found in production.
 """
 
+from __future__ import annotations
+
+import logging
 import re
 from datetime import date, datetime
 from typing import Any
+
+# Setup logger
+log = logging.getLogger(__name__)
 
 
 class DataValidator:
     """Professional data validator with Oracle-specific type handling."""
 
-    def __init__(self, strict_mode: bool = False):
+    def __init__(self, *, strict_mode: bool = False) -> None:
         """Initialize validator with configurable strictness."""
         self.strict_mode = strict_mode
         self.conversion_stats = {
@@ -21,7 +27,11 @@ class DataValidator:
             "validation_errors": 0,
         }
 
-    def validate_and_convert_record(self, record: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
+    def validate_and_convert_record(
+        self,
+        record: dict[str, Any],
+        schema: dict[str, Any],
+    ) -> dict[str, Any]:
         """Validate and convert a record according to schema.
 
         Args:
@@ -30,6 +40,7 @@ class DataValidator:
 
         Returns:
             Converted and validated record
+
         """
         if not schema.get("properties"):
             return record
@@ -40,7 +51,9 @@ class DataValidator:
             if field_name in schema["properties"]:
                 field_schema = schema["properties"][field_name]
                 converted_record[field_name] = self._convert_field(
-                    field_value, field_schema, field_name,
+                    field_value,
+                    field_schema,
+                    field_name,
                 )
             else:
                 # Pass through unknown fields
@@ -48,7 +61,12 @@ class DataValidator:
 
         return converted_record
 
-    def _convert_field(self, value: Any, field_schema: dict[str, Any], field_name: str) -> Any:
+    def _convert_field(
+        self,
+        value: Any,
+        field_schema: dict[str, Any],
+        field_name: str,
+    ) -> Any:
         """Convert field value according to schema definition."""
         if value is None or value == "":
             self.conversion_stats["nulls_handled"] += 1
@@ -67,21 +85,35 @@ class DataValidator:
                 return self._convert_to_number(value, expected_type, field_name)
             if expected_type == "boolean":
                 return self._convert_to_boolean(value, field_name)
-            if expected_type == "string" and field_schema.get("format") in {"date", "date-time"}:
+            if expected_type == "string" and field_schema.get("format") in {
+                "date",
+                "date-time",
+            }:
                 date_format = field_schema.get("format") or "date-time"
                 return self._convert_to_date(value, date_format, field_name)
             return str(value) if value is not None else None
 
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             self.conversion_stats["validation_errors"] += 1
             if self.strict_mode:
                 msg = f"Failed to convert field '{field_name}': {e}"
-                raise ValueError(msg)
+                raise ValueError(msg) from e
             # Log warning and return original value
-            print(f"⚠️  Warning: Could not convert {field_name}={value} to {expected_type}: {e}")
+            log.exception(
+                "⚠️  Warning: Could not convert %s=%s to %s: %s",
+                field_name,
+                value,
+                expected_type,
+                e,
+            )
             return value
 
-    def _convert_to_number(self, value: Any, expected_type: str, field_name: str) -> int | float | None:
+    def _convert_to_number(
+        self,
+        value: Any,
+        expected_type: str,
+        field_name: str,
+    ) -> int | float | None:
         """Convert value to number, handling string numbers."""
         if isinstance(value, int | float):
             return value
@@ -108,14 +140,13 @@ class DataValidator:
                         return int(float_val)  # Truncate in non-strict mode
                     self.conversion_stats["strings_converted_to_numbers"] += 1
                     return int(cleaned_value)
-                # number (float)
                 self.conversion_stats["strings_converted_to_numbers"] += 1
                 return float(cleaned_value)
 
-            except ValueError:
+            except (ValueError, TypeError) as e:
                 if self.strict_mode:
                     msg = f"Cannot convert '{value}' to {expected_type}"
-                    raise ValueError(msg)
+                    raise ValueError(msg) from e
                 # Return 0 as fallback in non-strict mode
                 return 0
 
@@ -124,10 +155,10 @@ class DataValidator:
             if expected_type == "integer":
                 return int(value)
             return float(value)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
             if self.strict_mode:
                 msg = f"Cannot convert {type(value)} '{value}' to {expected_type}"
-                raise ValueError(msg)
+                raise ValueError(msg) from e
             return 0
 
     def _convert_to_boolean(self, value: Any, field_name: str) -> bool:
@@ -143,7 +174,7 @@ class DataValidator:
                 return False
             if self.strict_mode:
                 msg = f"Cannot convert string '{value}' to boolean"
-                raise ValueError(msg)
+                raise ValueError(msg) from None
             return bool(value)  # Fallback to truthiness
 
         if isinstance(value, int | float):
@@ -151,10 +182,15 @@ class DataValidator:
 
         if self.strict_mode:
             msg = f"Cannot convert {type(value)} '{value}' to boolean"
-            raise ValueError(msg)
+            raise ValueError(msg) from None
         return bool(value)
 
-    def _convert_to_date(self, value: Any, date_format: str, field_name: str) -> str | None:
+    def _convert_to_date(
+        self,
+        value: Any,
+        date_format: str,
+        field_name: str,
+    ) -> str | None:
         """Convert value to standardized date format."""
         if isinstance(value, datetime | date):
             self.conversion_stats["dates_normalized"] += 1
@@ -164,9 +200,10 @@ class DataValidator:
             # Try parsing common date formats
             date_patterns = [
                 r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}",  # ISO datetime
-                r"\d{4}-\d{2}-\d{2}",                     # ISO date
-                r"\d{2}/\d{2}/\d{4}",                     # US format
-                r"\d{2}-\d{2}-\d{4}",                     # US format with dashes
+                r"\d{4}-\d{2}-\d{2}",  # ISO date
+                r"\d{2}/\d{2}/\d{4}",  # US format
+                # US format with dashes
+                r"\d{2}-\d{2}-\d{4}",
             ]
 
             for pattern in date_patterns:
@@ -176,7 +213,7 @@ class DataValidator:
 
             if self.strict_mode:
                 msg = f"Cannot parse date '{value}'"
-                raise ValueError(msg)
+                raise ValueError(msg) from None
             return value  # Return as-is if can't parse
 
         return str(value) if value is not None else None
@@ -220,5 +257,5 @@ if __name__ == "__main__":
     }
 
     result = validator.validate_and_convert_record(test_record, test_schema)
-    print(f"Converted record: {result}")
-    print(f"Stats: {validator.get_conversion_stats()}")
+    log.info("Converted record: %s", result)
+    log.info("Stats: %s", validator.get_conversion_stats())
