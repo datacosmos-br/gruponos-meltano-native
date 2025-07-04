@@ -10,7 +10,7 @@ The `gruponos-meltano-native` project has been upgraded to use a flexible, envir
 ```python
 # In flext-tap-oracle-wms source code
 WMS_MAX_PAGE_SIZE = 1250
-WMS_DEFAULT_PAGE_SIZE = 1000
+WMS_DEFAULT_PAGE_SIZE = 100
 oauth_scope = "wms.read"
 timeout = 120
 ```
@@ -19,7 +19,7 @@ timeout = 120
 ```bash
 # In .env file
 WMS_MAX_PAGE_SIZE=1250
-WMS_DEFAULT_PAGE_SIZE=1000
+WMS_DEFAULT_PAGE_SIZE=100
 WMS_OAUTH_SCOPE=wms.read
 WMS_REQUEST_TIMEOUT=120
 ```

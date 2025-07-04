@@ -105,23 +105,23 @@ plugins:
     executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
     config:
       host: $FLEXT_TARGET_ORACLE_HOST
-      port: 1522
+      port: $FLEXT_TARGET_ORACLE_PORT
       service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
       username: $FLEXT_TARGET_ORACLE_USERNAME
       password: $FLEXT_TARGET_ORACLE_PASSWORD
       protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
       ssl_server_dn_match: false
-      batch_size_rows: 1000
+      batch_size_rows: $FLEXT_TARGET_ORACLE_BATCH_SIZE
       pool_size: 2
       max_overflow: 5
       parallel_threads: 1
       add_record_metadata: false
       validate_records: false
       load_method: append-only
-      default_target_schema: OIC
+      default_target_schema: $FLEXT_TARGET_ORACLE_SCHEMA
       primary_key_required: true
       primary_key_includes_mod_ts: true
-      table_prefix: WMS_
+      table_prefix: $FLEXT_TARGET_ORACLE_TABLE_PREFIX
       debug_type_mapping: false
       use_null_pool: true
 
@@ -130,24 +130,24 @@ plugins:
     executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
     config:
       host: $FLEXT_TARGET_ORACLE_HOST
-      port: 1522
+      port: $FLEXT_TARGET_ORACLE_PORT
       service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
       username: $FLEXT_TARGET_ORACLE_USERNAME
       password: $FLEXT_TARGET_ORACLE_PASSWORD
       protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
       ssl_server_dn_match: false
-      batch_size_rows: 5000
+      batch_size_rows: $FLEXT_TARGET_ORACLE_BATCH_SIZE_INCREMENTAL
       pool_size: 8
       parallel_threads: 2
       add_record_metadata: false
       validate_records: false
       load_method: append-only
-      default_target_schema: OIC
+      default_target_schema: $FLEXT_TARGET_ORACLE_SCHEMA
       primary_key_required: true
       primary_key_includes_mod_ts: true
       enable_historical_versioning: true
       historical_versioning_column: mod_ts
-      table_prefix: WMS_
+      table_prefix: $FLEXT_TARGET_ORACLE_TABLE_PREFIX
 
 jobs:
   - name: full-sync-job

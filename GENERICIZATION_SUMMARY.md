@@ -4,15 +4,6 @@
 
 This document summarizes the complete transformation of gruponos-meltano-native to use generic flext-tap-oracle-wms and flext-target-oracle modules, removing all hardcoded values and enforcing critical schema discovery rules.
 
-## Critical Schema Discovery Enforcement
-
-### 🚨 NON-NEGOTIABLE RULES
-
-1. **TAP_ORACLE_WMS_USE_METADATA_ONLY=true** - MUST always be true
-2. **TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE=0** - MUST always be 0
-
-These settings ensure schema discovery uses ONLY API metadata, NEVER samples. Any attempt to change these values will cause immediate abort.
-
 ### Enforcement Mechanisms
 
 1. **Environment Variables**: Set in `.env.example` with clear warnings
@@ -97,6 +88,7 @@ config/
 ### 5. Removed Hardcoded References
 
 All references to gruponos-specific values have been genericized:
+
 - Company name → `${COMPANY_NAME}`
 - Project name → `${PROJECT_NAME}`
 - Business rules → Profile-based configuration
@@ -110,6 +102,7 @@ make validate-integration
 ```
 
 This checks:
+
 1. ✅ Critical environment variables
 2. ✅ Generic module installation
 3. ✅ Configuration profiles
@@ -139,7 +132,7 @@ export WMS_PROFILE_NAME=gruponos
 Override default settings via environment:
 
 ```bash
-export WMS_PAGE_SIZE=1000        # Higher throughput
+export WMS_PAGE_SIZE=100         # Standard page size
 export WMS_REQUEST_TIMEOUT=0     # No timeout
 export WMS_MAX_RETRIES=10        # More resilient
 ```
@@ -155,9 +148,8 @@ export WMS_MAX_RETRIES=10        # More resilient
 ## Critical Notes
 
 1. **NEVER** change `TAP_ORACLE_WMS_USE_METADATA_ONLY` from `true`
-2. **NEVER** change `TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE` from `0`
-3. **ALWAYS** run `make validate-integration` after configuration changes
-4. **USE** environment variables for all customization
+2. **ALWAYS** run `make validate-integration` after configuration changes
+3. **USE** environment variables for all customization
 
 ## Migration Guide
 

@@ -95,7 +95,7 @@ order_dtl_incremental_sync:  "* * * * *"
 WMS_BASE_URL=https://a29.wms.ocs.oraclecloud.com/raizen
 WMS_USERNAME=USER_WMS_INTEGRA
 WMS_PASSWORD=jmCyS7BK94YvhS@
-WMS_PAGE_SIZE=1000
+WMS_PAGE_SIZE=100
 WMS_TIMEOUT=7200
 WMS_ENABLE_INCREMENTAL=true
 
