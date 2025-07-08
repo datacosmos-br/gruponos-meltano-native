@@ -1,0 +1,302 @@
+{
+  // ===== FLEXT CURSOR IDE CONFIGURATION TEMPLATE =====
+  // Enterprise-grade settings for Python 3.13 development
+  // Optimized for FLEXT ecosystem with all quality tools
+
+  // ===== PYTHON CONFIGURATION =====
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "python.linting.enabled": true,
+  "python.linting.lintOnSave": true,
+  "python.formatting.provider": "black",
+  "python.formatting.blackPath": ".venv/bin/black",
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.linting.mypyEnabled": true,
+  "python.linting.mypyPath": ".venv/bin/mypy",
+  "python.linting.banditEnabled": true,
+  "python.linting.banditPath": ".venv/bin/bandit",
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.callArgumentNames": true,
+  "python.analysis.inlayHints.pytestParameters": true,
+
+  // ===== RUFF INTEGRATION =====
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.format.enable": true,
+  "ruff.organizeImports": true,
+  "ruff.fixAll": true,
+  "ruff.showSyntaxErrors": true,
+  "ruff.interpreter": [".venv/bin/python"],
+  "ruff.importStrategy": "fromEnvironment",
+
+  // ===== MYPY INTEGRATION =====
+  "mypy-type-checker.enable": true,
+  "mypy-type-checker.interpreter": [".venv/bin/python"],
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "mypy-type-checker.reportingScope": "workspace",
+  "mypy-type-checker.preferDaemon": true,
+
+  // ===== BLACK FORMATTING =====
+  "black-formatter.enable": true,
+  "black-formatter.interpreter": [".venv/bin/python"],
+  "black-formatter.importStrategy": "fromEnvironment",
+
+  // ===== ISORT INTEGRATION =====
+  "isort.enable": true,
+  "isort.interpreter": [".venv/bin/python"],
+  "isort.importStrategy": "fromEnvironment",
+  "isort.check": true,
+
+  // ===== EDITOR BEHAVIOR =====
+  "editor.formatOnSave": true,
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll.ruff": "explicit",
+    "source.fixAll.black-formatter": "explicit",
+    "source.fixAll.isort": "explicit"
+  },
+  "editor.defaultFormatter": "ms-python.black-formatter",
+  "editor.rulers": [88, 120],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.trimAutoWhitespace": true,
+  "editor.renderWhitespace": "boundary",
+  "editor.wordWrap": "bounded",
+  "editor.wordWrapColumn": 88,
+  "editor.showFoldingControls": "mouseover",
+  "editor.foldingStrategy": "indentation",
+  "editor.minimap.enabled": true,
+  "editor.minimap.maxColumn": 88,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.guides.indentation": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": true,
+    "strings": true
+  },
+
+  // ===== PYTHON-SPECIFIC EDITOR =====
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll.ruff": "explicit"
+    },
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.rulers": [88]
+  },
+
+  // ===== JSON/YAML CONFIGURATION =====
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.autoIndent": "advanced"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+
+  // ===== MARKDOWN CONFIGURATION =====
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.wordWrap": "bounded",
+    "editor.wordWrapColumn": 120,
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+
+  // ===== TESTING CONFIGURATION =====
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests",
+    "--verbose",
+    "--tb=short",
+    "--strict-markers",
+    "--strict-config"
+  ],
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  "python.testing.promptToConfigure": false,
+
+  // ===== WORKSPACE BEHAVIOR =====
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.venv/**": true,
+    "**/venv/**": true,
+    "**/__pycache__/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.ruff_cache/**": true,
+    "**/htmlcov/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.eggs/**": true,
+    "**/*.egg-info/**": true,
+    "**/reports/**": true,
+    "**/logs/**": true,
+    "**/.coverage*": true,
+    "**/coverage.xml": true,
+    "**/junit.xml": true
+  },
+
+  // ===== SEARCH CONFIGURATION =====
+  "search.exclude": {
+    "**/.git": true,
+    "**/.venv": true,
+    "**/venv": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/htmlcov": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.eggs": true,
+    "**/*.egg-info": true,
+    "**/node_modules": true,
+    "**/reports": true,
+    "**/logs": true,
+    "**/.coverage*": true,
+    "**/coverage.xml": true,
+    "**/junit.xml": true,
+    "**/*.lock": true
+  },
+
+  // ===== TERMINAL CONFIGURATION =====
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}/src:${env:PYTHONPATH}",
+    "FLEXT_DEV": "true"
+  },
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}/src:${env:PYTHONPATH}",
+    "FLEXT_DEV": "true"
+  },
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}/src;${env:PYTHONPATH}",
+    "FLEXT_DEV": "true"
+  },
+
+  // ===== GIT CONFIGURATION =====
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+  "git.autofetchPeriod": 180,
+  "git.confirmSync": false,
+  "git.enableCommitSigning": false,
+  "git.defaultCloneDirectory": "~/workspace",
+  "git.openRepositoryInParentFolders": "always",
+
+  // ===== EXTENSION RECOMMENDATIONS =====
+  "extensions.ignoreRecommendations": false,
+
+  // ===== INTELLISENSE CONFIGURATION =====
+  "editor.suggest.insertMode": "replace",
+  "editor.suggest.showStatusBar": true,
+  "editor.suggest.preview": true,
+  "editor.parameterHints.enabled": true,
+  "editor.hover.enabled": true,
+  "editor.hover.delay": 300,
+
+  // ===== PROBLEM MATCHER =====
+  "problems.decorations.enabled": true,
+  "problems.showCurrentInStatus": true,
+
+  // ===== WORKSPACE TRUST =====
+  "security.workspace.trust.enabled": true,
+  "security.workspace.trust.startupPrompt": "once",
+  "security.workspace.trust.banner": "always",
+
+  // ===== FLEXT SPECIFIC =====
+  "flext.development.mode": true,
+  "flext.quality.strictMode": true,
+  "flext.testing.autoRun": true,
+  "flext.formatting.enforceStandards": true,
+
+  // ===== PERFORMANCE OPTIMIZATION =====
+  "editor.semanticHighlighting.enabled": true,
+  "editor.occurrencesHighlight": true,
+  "editor.selectionHighlight": true,
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.settings.enableNaturalLanguageSearch": false,
+
+  // ===== CURSOR AI INTEGRATION =====
+  "cursor.ai.enabled": true,
+  "cursor.ai.model": "claude-3.5-sonnet",
+  "cursor.ai.codeCompletion": true,
+  "cursor.ai.chatEnabled": true,
+  "cursor.ai.composerEnabled": true,
+  "cursor.ai.contextAware": true,
+  "cursor.ai.respectGitignore": true,
+  "cursor.ai.includePatterns": [
+    "src/**/*.py",
+    "tests/**/*.py",
+    "*.md",
+    "*.toml",
+    "*.yaml",
+    "*.yml",
+    "Makefile",
+    "pyproject.toml"
+  ],
+  "cursor.ai.excludePatterns": [
+    "**/.venv/**",
+    "**/venv/**",
+    "**/__pycache__/**",
+    "**/.pytest_cache/**",
+    "**/.mypy_cache/**",
+    "**/.ruff_cache/**",
+    "**/htmlcov/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.eggs/**",
+    "**/*.egg-info/**",
+    "**/reports/**",
+    "**/logs/**",
+    "**/.coverage*",
+    "**/coverage.xml",
+    "**/junit.xml",
+    "**/*.lock"
+  ]
+} 

@@ -101,7 +101,7 @@ order_dtl_incremental_sync:  "* * * * *"
 
 ```bash
 # WMS Source
-WMS_BASE_URL=https://a29.wms.ocs.oraclecloud.com/raizen
+WMS_BASE_URL=https://ta29.wms.ocs.oraclecloud.com/raizen_test
 WMS_USERNAME=USER_WMS_INTEGRA
 WMS_PASSWORD=jmCyS7BK94YvhS@
 WMS_PAGE_SIZE=100
@@ -109,9 +109,9 @@ WMS_TIMEOUT=7200
 WMS_ENABLE_INCREMENTAL=true
 
 # Oracle Target
-DATABASE__HOST=10.93.10.114
+DATABASE__HOST=10.93.10.166
 DATABASE__PORT=1522
-DATABASE__SERVICE_NAME=gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com
+DATABASE__SERVICE_NAME=gbe8f3f2dbbc562_gndwdbdev01_low.adb.oraclecloud.com
 DATABASE__USERNAME=oic
 DATABASE__PASSWORD="aehaz232dfNuupah_#"
 DATABASE__SCHEMA=oic

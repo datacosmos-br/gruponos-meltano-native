@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from datetime import UTC
+from datetime import datetime
 import logging
-from datetime import UTC, datetime
 
 from src.oracle.connection_manager import create_connection_manager_from_env
 
@@ -59,7 +60,7 @@ def validate_sync() -> bool:
                 if count > 0:
                     # Get date range (table names cannot be parameterized)
                     cursor.execute(
-                        f'SELECT '  # noqa: S608
+                        f"SELECT "  # noqa: S608
                         f'MIN("MOD_TS") as min_date, '
                         f'MAX("MOD_TS") as max_date, '
                         f'COUNT(DISTINCT "ID") as unique_ids '
@@ -76,26 +77,29 @@ def validate_sync() -> bool:
                         f'SELECT "ID", COUNT(*) as cnt '  # noqa: S608
                         f'FROM "OIC"."{table_name}" '
                         f'GROUP BY "ID" '
-                        f'HAVING COUNT(*) > 1',
+                        f"HAVING COUNT(*) > 1",
                     )
                     duplicates = cursor.fetchall()
 
                     if duplicates:
                         log.warning(
-                            "   ⚠️  Duplicatas encontradas: %d IDs", len(duplicates),
+                            "   ⚠️  Duplicatas encontradas: %d IDs",
+                            len(duplicates),
                         )
                         for dup_id, dup_count in duplicates[:5]:  # Show first 5
                             log.warning(
-                                "      ID %s: %d registros", dup_id, dup_count,
+                                "      ID %s: %d registros",
+                                dup_id,
+                                dup_count,
                             )
                     else:
                         log.info("   ✅ Nenhuma duplicata encontrada")
 
                     # Sample data (table names cannot be parameterized)
                     cursor.execute(
-                        f'SELECT * '  # noqa: S608
+                        f"SELECT * "  # noqa: S608
                         f'FROM "OIC"."{table_name}" '
-                        f'WHERE ROWNUM <= 3 '
+                        f"WHERE ROWNUM <= 3 "
                         f'ORDER BY "MOD_TS" DESC',
                     )
 
@@ -135,7 +139,8 @@ def validate_sync() -> bool:
 
             except Exception:
                 log.exception(
-                    "   ❌ Erro ao validar tabela %s", table_name,
+                    "   ❌ Erro ao validar tabela %s",
+                    table_name,
                 )
                 continue
 

@@ -2,14 +2,17 @@
 
 Monitors system health and sends alerts based on configurable thresholds.
 """
+
 from __future__ import annotations
 
+from dataclasses import asdict
+from dataclasses import dataclass
+from datetime import UTC
+from datetime import datetime
 import json
 import logging
-import re
-from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
 from pathlib import Path
+import re
 from typing import Any
 
 import psutil
@@ -368,7 +371,8 @@ class AlertManager:
                     match = re.search(timestamp_pattern, line)
                     if match:
                         return datetime.strptime(
-                            match.group(1), "%Y-%m-%d %H:%M:%S",
+                            match.group(1),
+                            "%Y-%m-%d %H:%M:%S",
                         ).replace(
                             tzinfo=UTC,
                         )

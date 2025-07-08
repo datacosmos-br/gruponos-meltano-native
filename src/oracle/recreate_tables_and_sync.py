@@ -5,13 +5,14 @@ Objetivo: Verificar comportamento completo do ambiente.
 
 from __future__ import annotations
 
+from datetime import UTC
+from datetime import datetime
 import logging
 import os
+from pathlib import Path
 import subprocess
 import sys
 import time
-from datetime import UTC, datetime
-from pathlib import Path
 
 from src.oracle.connection_manager import create_connection_manager_from_env
 
@@ -40,14 +41,16 @@ def drop_all_wms_tables() -> bool:
         cursor = conn.cursor()
 
         # Listar todas as tabelas que podem ser do WMS
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT table_name
             FROM user_tables
             WHERE table_name IN (
                 'WMS_ALLOCATION', 'WMS_ORDER_HDR', 'WMS_ORDER_DTL',
                 'ALLOCATION', 'ORDER_HDR', 'ORDER_DTL'
             )
-        """)
+        """
+        )
 
         tables = cursor.fetchall()
 
@@ -84,13 +87,15 @@ def list_current_tables() -> None:
         conn = manager.connect()
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT table_name, num_rows
             FROM user_tables
             WHERE table_name LIKE '%ALLOCATION%'
                OR table_name LIKE '%ORDER%'
             ORDER BY table_name
-        """)
+        """
+        )
 
         tables = cursor.fetchall()
 
@@ -121,12 +126,15 @@ def check_table_structure(table_name: str) -> None:
 
         # Verificar colunas
         # Use parameterized query to avoid SQL injection
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT column_name, data_type, data_length
             FROM user_tab_columns
             WHERE table_name = :table_name
             ORDER BY column_id
-        """, {"table_name": table_name})
+        """,
+            {"table_name": table_name},
+        )
 
         columns = cursor.fetchall()
 

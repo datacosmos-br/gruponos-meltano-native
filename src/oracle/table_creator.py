@@ -9,14 +9,15 @@ REFATORADO: Agora usa type_mapping_rules.py como módulo compartilhado
 from __future__ import annotations
 
 import contextlib
+from datetime import UTC
+from datetime import datetime
 import json
 import logging
 import os
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
-from datetime import UTC, datetime
-from pathlib import Path
 from typing import Any
 
 from src.oracle.connection_manager import create_connection_manager_from_env
@@ -43,7 +44,9 @@ class OracleTableCreator:
         }
 
     def generate_ddl_from_schema(
-        self, stream_name: str, schema: dict[str, Any],
+        self,
+        stream_name: str,
+        schema: dict[str, Any],
     ) -> str:
         """Generate optimized Oracle DDL following WMS enterprise rules.
 
@@ -197,7 +200,9 @@ class OracleTableCreator:
         return "\n".join(ddl_lines)
 
     def _generate_wms_column_definition(
-        self, column_name: str, column_schema: dict[str, Any],
+        self,
+        column_name: str,
+        column_schema: dict[str, Any],
     ) -> str:
         """Generate Oracle column definition following WMS enterprise rules."""
         col_name = f'"{column_name.upper()}"'
@@ -216,7 +221,9 @@ class OracleTableCreator:
         return f"{col_name} {col_type}{collation}{nullable}"
 
     def _map_to_wms_oracle_type(
-        self, column_name: str, schema: dict[str, Any],
+        self,
+        column_name: str,
+        schema: dict[str, Any],
     ) -> str:
         """Map Singer schema to Oracle type using metadata-first pattern."""
         # Extract metadata if available from Singer schema
@@ -236,7 +243,9 @@ class OracleTableCreator:
         )
 
     def _generate_column_definition(
-        self, column_name: str, column_schema: dict[str, Any],
+        self,
+        column_name: str,
+        column_schema: dict[str, Any],
     ) -> str:
         """Generate Oracle column definition from JSON schema."""
         col_name = f'"{column_name.upper()}"'
@@ -283,7 +292,8 @@ class OracleTableCreator:
         return "VARCHAR2(4000 CHAR)"
 
     def discover_and_create_tables(
-        self, entities: list[str] | None = None,
+        self,
+        entities: list[str] | None = None,
     ) -> dict[str, str]:
         """Discover schemas and create optimized tables.
 
@@ -364,7 +374,8 @@ class OracleTableCreator:
 
             if missing_vars:
                 log.error(
-                    "❌ Missing required environment variables: %s", missing_vars,
+                    "❌ Missing required environment variables: %s",
+                    missing_vars,
                 )
                 log.info("💡 Configure these in your .env file or environment")
                 log.info("🔄 Attempting direct tap discovery instead...")
@@ -456,7 +467,10 @@ class OracleTableCreator:
 
             # Write temporary config file
             with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".json", delete=False, encoding="utf-8",
+                mode="w",
+                suffix=".json",
+                delete=False,
+                encoding="utf-8",
             ) as f:
                 json.dump(config, f)
                 config_file = f.name

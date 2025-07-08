@@ -1,0 +1,14 @@
+Requirement already satisfied: jsonschema in /home/marlonsc/flext/.venv/lib/python3.13/site-packages (2.6.0)
+Collecting jsonschema
+  Using cached jsonschema-4.24.0-py3-none-any.whl.metadata (7.8 kB)
+Requirement already satisfied: attrs>=22.2.0 in /home/marlonsc/flext/.venv/lib/python3.13/site-packages (from jsonschema) (25.3.0)
+Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /home/marlonsc/flext/.venv/lib/python3.13/site-packages (from jsonschema) (2025.4.1)
+Requirement already satisfied: referencing>=0.28.4 in /home/marlonsc/flext/.venv/lib/python3.13/site-packages (from jsonschema) (0.36.2)
+Requirement already satisfied: rpds-py>=0.7.1 in /home/marlonsc/flext/.venv/lib/python3.13/site-packages (from jsonschema) (0.26.0)
+Using cached jsonschema-4.24.0-py3-none-any.whl (88 kB)
+Installing collected packages: jsonschema
+  Attempting uninstall: jsonschema
+    Found existing installation: jsonschema 2.6.0
+    Uninstalling jsonschema-2.6.0:
+      Successfully uninstalled jsonschema-2.6.0
+Successfully installed jsonschema-4.24.0

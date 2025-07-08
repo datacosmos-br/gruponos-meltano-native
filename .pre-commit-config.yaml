@@ -1,0 +1,211 @@
+# ===== FLEXT PRE-COMMIT CONFIGURATION TEMPLATE =====
+# ===================================================
+# Enterprise-grade pre-commit hooks with zero tolerance for code quality issues
+# All tool configurations centralized in pyproject.toml for single source of truth
+# Based on FLEXT_STANDARDS with Python 3.13 + bleeding-edge tools
+
+default_language_version:
+  python: python3.13
+
+repos:
+  # ===== BASIC FILE CHECKS (STRICT) =====
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=500']  # Strict file size limit
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: debug-statements
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+      - id: check-ast
+      - id: check-docstring-first
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: ['--branch', 'main', '--branch', 'master']
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+
+  # ===== BLACK FORMATTING (STRICT) =====
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3.13
+        args: ['--line-length=88', '--target-version=py313']
+
+  # ===== ISORT IMPORT ORGANIZATION =====
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--profile', 'black', '--line-length=88']
+
+  # ===== RUFF COMPREHENSIVE LINTING (ALL RULES) =====
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [
+          '--fix',
+          '--exit-non-zero-on-fix',
+          '--line-length=88',
+          '--target-version=py313',
+          '--select=ALL',
+          '--preview',
+          '--ignore=COM812,ISC001,D203,D213,TD003,FIX002,ERA001,PLR0912,PLR0913,PLR0915,PLR2004,C901,BLE001,TRY003,EM101,EM102',
+        ]
+      - id: ruff-format
+        args: ['--line-length=88']
+
+  # ===== MYPY STRICT TYPE CHECKING =====
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          [
+            types-python-dateutil,
+            types-requests,
+            types-setuptools,
+            pydantic>=2.11.0,
+            pydantic-settings,
+            structlog,
+            click,
+            cryptography,
+            orjson,
+            rich,
+            ldap3,
+            python-ldap,
+            ldif3,
+            prefect,
+            fire,
+          ]
+        args: [
+          '--strict',
+          '--warn-unreachable',
+          '--warn-unused-ignores',
+          '--no-implicit-reexport',
+          '--ignore-missing-imports',
+          '--show-error-codes',
+          '--show-column-numbers',
+          '--pretty',
+          '--disallow-untyped-calls',
+          '--disallow-untyped-defs',
+          '--disallow-incomplete-defs',
+          '--check-untyped-defs',
+          '--disallow-untyped-decorators',
+          '--no-implicit-optional',
+          '--warn-redundant-casts',
+          '--warn-unused-configs',
+          '--warn-return-any',
+          '--strict-equality',
+          '--strict-concatenate',
+        ]
+        exclude: '^(tests/|docs/|build/|dist/|examples/|scripts/)'
+
+  # ===== BANDIT SECURITY CHECKS =====
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.3
+    hooks:
+      - id: bandit
+        args: ['-r', 'src/', '--severity-level=low', '--confidence-level=low']
+        exclude: tests/
+
+  # ===== POETRY DEPENDENCY MANAGEMENT =====
+  - repo: https://github.com/python-poetry/poetry
+    rev: 1.8.4
+    hooks:
+      - id: poetry-check
+      - id: poetry-lock
+        args: [--no-update]
+
+  # ===== CODESPELL SPELLING CHECK =====
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        args: [
+          '--skip=*.json,*.lock,*.toml,*.yaml,*.yml,poetry.lock',
+          '--ignore-words-list=algar,oud,oid,ldap,ou,dn,cn,aci,acl,orclaci,attributetypes,objectclasses,flext',
+        ]
+
+  # ===== SAFETY VULNERABILITY CHECK =====
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.3
+    hooks:
+      - id: python-safety-dependencies-check
+        files: pyproject.toml
+
+  # ===== VALIDATE PYPROJECT.TOML =====
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.16
+    hooks:
+      - id: validate-pyproject
+
+  # ===== PYTHON SPECIFIC CHECKS =====
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+      - id: python-check-blanket-type-ignore
+      - id: python-no-eval
+      - id: python-no-log-warn
+      - id: python-use-type-annotations
+
+  # ===== DOCUMENTATION CHECKS =====
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args: ['--convention=google']
+        files: ^src/
+
+  # ===== PYTHON UPGRADE =====
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.1
+    hooks:
+      - id: pyupgrade
+        args: [--py313-plus]
+
+  # ===== AUTOFLUKE CLEANUP =====
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.3.1
+    hooks:
+      - id: autoflake
+        args: [
+          '--remove-all-unused-imports',
+          '--remove-unused-variables',
+          '--in-place',
+          '--recursive',
+        ]
+
+# ===== CI SETTINGS =====
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
+
+# ===== STRICT MODE =====
+fail_fast: true

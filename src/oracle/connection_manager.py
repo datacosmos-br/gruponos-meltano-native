@@ -6,10 +6,10 @@ Handles SSL/TCPS connections with proper error handling and fallbacks.
 from __future__ import annotations
 
 import contextlib
+from dataclasses import dataclass
 import logging
 import os
 import time
-from dataclasses import dataclass
 from typing import Any
 
 import oracledb
@@ -140,7 +140,8 @@ class OracleConnectionManager:
         default_oracle_port = 1522
         fallback_oracle_port = 1521
         fallback_port = (
-            fallback_oracle_port if self.config.port == default_oracle_port
+            fallback_oracle_port
+            if self.config.port == default_oracle_port
             else self.config.port
         )
 

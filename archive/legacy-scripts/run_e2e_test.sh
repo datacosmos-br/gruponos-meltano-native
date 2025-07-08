@@ -9,7 +9,7 @@ echo "======================================================="
 # Config for small test
 cat > e2e_config.json << 'EOF'
 {
-  "base_url": "https://a29.wms.ocs.oraclecloud.com/raizen",
+  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
   "username": "USER_WMS_INTEGRA",
   "password": "jmCyS7BK94YvhS@",
   "page_size": 100,

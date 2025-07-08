@@ -8,8 +8,8 @@ from __future__ import annotations
 import json
 import logging
 import os
-import sys
 from pathlib import Path
+import sys
 
 from dotenv import load_dotenv
 from tap_oracle_wms.tap import TapOracleWMS
@@ -66,7 +66,9 @@ def discover_schemas() -> bool:
                 else len(schema.properties)
             )
             log.info(
-                "✅ Discovered %s: %d properties", stream.tap_stream_id, prop_count,
+                "✅ Discovered %s: %d properties",
+                stream.tap_stream_id,
+                prop_count,
             )
 
         # Save schemas to file

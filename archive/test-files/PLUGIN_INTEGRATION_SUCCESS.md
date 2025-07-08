@@ -45,7 +45,7 @@ Singer SDK: v0.47.4
 ### **TAP FUNCIONANDO**:
 ```
 [info] tap-oracle-wms v0.1.0, Meltano SDK v0.47.4
-[info] HTTP Request: GET https://a29.wms.ocs.oraclecloud.com/raizen/wms/lgfapi/v10/entity/ "HTTP/1.1 200 OK"
+[info] HTTP Request: GET https://ta29.wms.ocs.oraclecloud.com/raizen_test/wms/lgfapi/v10/entity/ "HTTP/1.1 200 OK"
 [info] Discovered 311 entities
 [info] Discovered 1 entities from WMS API
 [info] Discovered stream: allocation with 24 properties

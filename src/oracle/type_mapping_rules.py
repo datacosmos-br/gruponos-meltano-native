@@ -167,8 +167,7 @@ def convert_field_pattern_to_oracle(
             if "*" in pattern:
                 pattern_clean = pattern.replace("*", "")
                 if (
-                    pattern.startswith("*_")
-                    and column_lower.endswith(pattern_clean)
+                    pattern.startswith("*_") and column_lower.endswith(pattern_clean)
                 ) or (
                     pattern.endswith("_*") and column_lower.startswith(pattern_clean)
                 ):
@@ -193,7 +192,8 @@ def convert_field_pattern_to_oracle(
 
 
 def convert_singer_schema_to_oracle(
-    column_name: str, column_schema: dict[str, Any],
+    column_name: str,
+    column_schema: dict[str, Any],
 ) -> str:
     """Converter schema Singer para tipo Oracle.
 
@@ -261,7 +261,8 @@ def _looks_like_date(value: str) -> bool:
 
 
 def oracle_ddl_from_singer_schema(
-    singer_schema: dict[str, Any], column_name: str = "",
+    singer_schema: dict[str, Any],
+    column_name: str = "",
 ) -> str:
     """Converter schema Singer de volta para tipo Oracle DDL.
 

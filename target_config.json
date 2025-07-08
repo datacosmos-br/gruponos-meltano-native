@@ -1,0 +1,16 @@
+{
+    "host": "${FLEXT_TARGET_ORACLE_HOST}",
+    "port": ${FLEXT_TARGET_ORACLE_PORT},
+    "service_name": "${FLEXT_TARGET_ORACLE_SERVICE_NAME}",
+    "username": "${FLEXT_TARGET_ORACLE_USERNAME}",
+    "password": "${FLEXT_TARGET_ORACLE_PASSWORD}",
+    "protocol": "${FLEXT_TARGET_ORACLE_PROTOCOL}",
+    "ssl_server_dn_match": ${FLEXT_TARGET_ORACLE_SSL_SERVER_DN_MATCH},
+    "batch_size": ${FLEXT_TARGET_ORACLE_BATCH_SIZE},
+    "pool_size": ${FLEXT_TARGET_ORACLE_POOL_SIZE},
+    "validate_records": true,
+    "add_record_metadata": ${FLEXT_TARGET_ORACLE_ADD_RECORD_METADATA},
+    "load_method": "append-only",
+    "schema": "${FLEXT_TARGET_ORACLE_SCHEMA}",
+    "table_prefix": "${FLEXT_TARGET_ORACLE_TABLE_PREFIX}"
+}
