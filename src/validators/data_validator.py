@@ -100,11 +100,10 @@ class DataValidator:
                 raise ValueError(msg) from e
             # Log warning and return original value
             log.exception(
-                "⚠️  Warning: Could not convert %s=%s to %s: %s",
+                "⚠️  Warning: Could not convert %s=%s to %s",
                 field_name,
                 value,
                 expected_type,
-                e,
             )
             return value
 

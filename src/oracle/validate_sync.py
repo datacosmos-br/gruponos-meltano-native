@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from src.oracle.connection_manager import create_connection_manager_from_env
 
@@ -18,7 +18,7 @@ def validate_sync() -> bool:
         True if validation successful and data found, False otherwise
     """
     log.info("🔍 VALIDANDO DADOS NO ORACLE...")
-    log.info("📅 %s", datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"))
+    log.info("📅 %s", datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"))
     log.info("-" * 60)
 
     # Create connection
@@ -133,9 +133,9 @@ def validate_sync() -> bool:
                 else:
                     log.warning("   ⚠️  Tabela vazia")
 
-            except Exception as table_error:
+            except Exception:
                 log.exception(
-                    "   ❌ Erro ao validar tabela %s: %s", table_name, table_error,
+                    "   ❌ Erro ao validar tabela %s", table_name,
                 )
                 continue
 
@@ -150,8 +150,8 @@ def validate_sync() -> bool:
         cursor.close()
         conn.close()
 
-    except Exception as e:
-        log.exception("\n❌ Erro ao validar: %s", e)
+    except Exception:
+        log.exception("\n❌ Erro ao validar")
         return False
     else:
         return total_records > 0

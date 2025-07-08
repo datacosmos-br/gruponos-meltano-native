@@ -10,7 +10,7 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from src.oracle.connection_manager import create_connection_manager_from_env
@@ -66,8 +66,8 @@ def drop_all_wms_tables() -> bool:
         conn.close()
 
         log.info("\n✅ Limpeza concluída")
-    except Exception as e:
-        log.exception("❌ Erro durante limpeza: %s", e)
+    except Exception:
+        log.exception("❌ Erro durante limpeza")
         return False
     else:
         return True
@@ -103,8 +103,8 @@ def list_current_tables() -> None:
         cursor.close()
         conn.close()
 
-    except Exception as e:
-        log.exception("   ❌ Erro ao listar tabelas: %s", e)
+    except Exception:
+        log.exception("   ❌ Erro ao listar tabelas")
 
 
 def check_table_structure(table_name: str) -> None:
@@ -143,8 +143,8 @@ def check_table_structure(table_name: str) -> None:
         cursor.close()
         conn.close()
 
-    except Exception as e:
-        log.exception("❌ Erro ao verificar estrutura: %s", e)
+    except Exception:
+        log.exception("❌ Erro ao verificar estrutura")
 
 
 def create_tables_with_ddl() -> bool:
@@ -177,8 +177,8 @@ def create_tables_with_ddl() -> bool:
     except subprocess.TimeoutExpired:
         log.exception("❌ Timeout ao criar tabelas")
         return False
-    except Exception as e:
-        log.exception("❌ Erro ao executar table_creator: %s", e)
+    except Exception:
+        log.exception("❌ Erro ao executar table_creator")
         return False
     else:
         return True
@@ -241,8 +241,8 @@ def run_full_sync() -> bool:
     except subprocess.TimeoutExpired:
         log.exception("❌ Timeout durante sync (30 minutos)")
         return False
-    except Exception as e:
-        log.exception("❌ Erro ao executar sync: %s", e)
+    except Exception:
+        log.exception("❌ Erro ao executar sync")
         return False
     else:
         return True
@@ -265,8 +265,8 @@ def validate_sync_results() -> bool:
 
     try:
         return validate_sync()
-    except Exception as e:
-        log.exception("❌ Erro na validação: %s", e)
+    except Exception:
+        log.exception("❌ Erro na validação")
         return False
 
 
@@ -278,7 +278,7 @@ def main() -> int:
     """
     log.info("🏁 INICIANDO PROCESSO COMPLETO DE RECRIAÇÃO E SYNC")
     log.info("=" * 70)
-    log.info("⏰ %s", datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"))
+    log.info("⏰ %s", datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC"))
     log.info("=" * 70)
 
     # 1. Listar tabelas atuais
@@ -317,7 +317,7 @@ def main() -> int:
     log.info("✅ Dados validados")
     log.info(
         "⏰ Finalizado em: %s",
-        datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC"),
     )
     log.info("=" * 70)
 
@@ -337,6 +337,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         log.exception("\n❌ Processo interrompido pelo usuário")
         sys.exit(1)
-    except Exception as e:
-        log.exception("❌ Erro fatal: %s", e)
+    except Exception:
+        log.exception("❌ Erro fatal")
         sys.exit(1)

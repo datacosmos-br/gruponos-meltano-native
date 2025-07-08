@@ -80,7 +80,7 @@ def check_generic_modules() -> bool:
             else:
                 log.error(f"❌ {package}: Not found or error")
                 return False
-        except Exception as e:
+        except Exception:
             log.exception("❌ %s", package)
             return False
 
@@ -120,7 +120,7 @@ def check_configuration_profiles() -> bool:
             "⚠️  Could not import ConfigProfileManager - module may not be in path",
         )
         return True  # Not a critical error
-    except Exception as e:
+    except Exception:
         log.exception("❌ Error loading profile")
         return False
     else:
@@ -167,7 +167,7 @@ def validate_meltano_config() -> bool:
             log.error("❌ target-oracle-full: Not found")
             return False
 
-    except Exception as e:
+    except Exception:
         log.exception("❌ Error validating meltano.yml")
         return False
     else:
@@ -223,7 +223,7 @@ def test_schema_discovery() -> bool:
     except subprocess.TimeoutExpired:
         log.exception("⚠️  Discovery timed out (may be normal for large APIs)")
         return True
-    except Exception as e:
+    except Exception:
         log.exception("❌ Error during discovery")
         return False
 
@@ -247,8 +247,8 @@ def check_critical_settings_script() -> bool:
         try:
             Path(script_path).chmod(0o755)
             log.error("   ✅ Made script executable")
-        except Exception as e:
-            log.exception("   ❌ Could not make executable: %s", e)
+        except Exception:
+            log.exception("   ❌ Could not make executable")
             return False
 
     # Test the script
@@ -287,8 +287,8 @@ def check_critical_settings_script() -> bool:
             log.error(f"   {result.stdout}")
             return False
 
-    except Exception as e:
-        log.exception("❌ Error running critical settings script: %s", e)
+    except Exception:
+        log.exception("❌ Error running critical settings script")
         return False
 
     return True
@@ -314,8 +314,8 @@ def main() -> int:
         try:
             result = check_func()
             results.append((name, result))
-        except Exception as e:
-            log.exception("\n❌ Error during %s: %s", name, str(e))
+        except Exception:
+            log.exception("\n❌ Error during %s", name)
             results.append((name, False))
 
     # Summary

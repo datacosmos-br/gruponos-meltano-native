@@ -421,7 +421,7 @@ class OracleTableCreator:
             msg = "Schema discovery timed out - check WMS API connectivity"
             raise RuntimeError(msg) from timeout_err
         except Exception as e:
-            log.exception("❌ Error in schema discovery: %s", e)
+            log.exception("❌ Error in schema discovery")
             msg = f"Schema discovery failed: {e}"
             raise RuntimeError(msg) from e
         else:
@@ -516,7 +516,7 @@ class OracleTableCreator:
             msg = "Direct tap discovery timed out"
             raise RuntimeError(msg) from timeout_err
         except Exception as e:
-            log.exception("❌ Error in direct schema discovery: %s", e)
+            log.exception("❌ Error in direct schema discovery")
             msg = f"Direct schema discovery failed: {e}"
             raise RuntimeError(msg) from e
 
@@ -659,8 +659,8 @@ class OracleTableCreator:
 
             log.info("✅ All DDL statements executed successfully")
 
-        except Exception as e:
-            log.exception("❌ Error executing DDL: %s", e)
+        except Exception:
+            log.exception("❌ Error executing DDL")
             return False
         else:
             return True
@@ -706,8 +706,8 @@ def main() -> int:
 
         log.error("\n❌ DDL execution failed")
 
-    except Exception as e:
-        log.exception("❌ Error: %s", e)
+    except Exception:
+        log.exception("❌ Error")
         return 1
     else:
         return 1

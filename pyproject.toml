@@ -24,9 +24,8 @@ keywords = [
     "gruponos",
     "enterprise",
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dynamic = ["dependencies"]
-
 [project.urls]
 Homepage = "https://github.com/datacosmos-br/gruponos-meltano-native"
 Repository = "https://github.com/datacosmos-br/gruponos-meltano-native"
@@ -35,11 +34,11 @@ Repository = "https://github.com/datacosmos-br/gruponos-meltano-native"
 packages = [
     { include = "src", from = "." },
     { include = "transform", from = "." },
-    { include = "config", from = "." },
+    { include = "config", from = "." }
 ]
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = ">=3.13,<3.14"
 # Meltano Native Core
 meltano = "^3.4.0"
 dbt-core = "^1.8.0"
@@ -51,14 +50,14 @@ flext-core = { path = "../flext-core", develop = true }
 flext-observability = { path = "../flext-observability", develop = true }
 # Production Dependencies
 structlog = "^24.1.0"
-prometheus-client = "^0.20.0"
+prometheus-client = ">=0.21.0"
 psutil = "^6.0.0"
 oracledb = "^2.3.0"
 sqlalchemy = "^2.0.35"
 pydantic = "^2.9.0"
 typing-extensions = "^4.12.0"
 # Data Quality and Validation
-great-expectations = "^1.1.0"
+# great-expectations = "^1.1.0"  # Disabled: not compatible with Python 3.13
 pandera = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -154,7 +153,6 @@ plugins = ["pydantic.mypy"]
 # Paths
 files = ["src", "config", "tests"]
 exclude = ["transform/dbt_packages/", "logs/", "output_files/"]
-
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
@@ -210,10 +208,8 @@ skips = [
     "B601",
 ] # Skip assert_used and shell injection for Meltano scripts
 exclude_dirs = ["tests", "transform/dbt_packages", "logs", ".meltano"]
-
 [tool.bandit.assert_used]
 skips = ["*test*.py", "*_test.py", "test_*.py"]
-
 [tool.coverage.run]
 source = ["src", "config"]
 omit = [
@@ -260,7 +256,6 @@ markers = [
     "meltano: marks tests for Meltano pipeline functionality",
 ]
 filterwarnings = ["ignore::UserWarning", "ignore::DeprecationWarning"]
-
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "1.0.0"

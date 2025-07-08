@@ -81,8 +81,8 @@ def discover_schemas() -> bool:
             "   Use this file with table_creator.py to ensure correct DDL generation",
         )
 
-    except Exception as e:
-        log.exception("❌ Error discovering schemas: %s", e)
+    except Exception:
+        log.exception("❌ Error discovering schemas")
         return False
     else:
         return True
