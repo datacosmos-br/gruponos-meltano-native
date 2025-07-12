@@ -62,14 +62,16 @@ def main() -> None:
             logger.info("Checking OIC schema for tables with data...")
 
             # Get all tables in OIC schema
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT table_name
                 FROM user_tables
                 WHERE table_name LIKE '%ALLOCATION%'
                    OR table_name LIKE '%ORDER%'
                    OR table_name LIKE 'TEST_%'
                 ORDER BY table_name
-            """)
+            """
+            )
 
             tables = cursor.fetchall()
             logger.info(f"Found {len(tables)} relevant tables")
@@ -92,16 +94,20 @@ def main() -> None:
                             logger.info(f"    Row {i}: {row}")
 
                         # Check for Singer metadata
-                        cursor.execute(f"""
+                        cursor.execute(
+                            f"""
                             SELECT column_name
                             FROM user_tab_columns
                             WHERE table_name = '{table_name}'
                               AND column_name LIKE '_SDC_%'
                             ORDER BY column_name
-                        """)
+                        """
+                        )
                         sdc_columns = cursor.fetchall()
                         if sdc_columns:
-                            logger.info(f"  Singer columns: {[col[0] for col in sdc_columns]}")
+                            logger.info(
+                                f"  Singer columns: {[col[0] for col in sdc_columns]}"
+                            )
 
                 except Exception as e:
                     logger.warning(f"  Error checking table {table_name}: {e}")

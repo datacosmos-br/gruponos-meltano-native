@@ -46,7 +46,9 @@ for stream_id in selected_streams:
             "stream": stream_id,
             "schema": stream.schema,
             "key_properties": stream.primary_keys or ["id"],
-            "bookmark_properties": [stream.replication_key] if stream.replication_key else [],
+            "bookmark_properties": (
+                [stream.replication_key] if stream.replication_key else []
+            ),
         }
 
         # Get records (limited to 10 per entity for testing)
@@ -62,7 +64,9 @@ for stream_id in selected_streams:
                 "type": "RECORD",
                 "stream": stream_id,
                 "record": record,
-                "time_extracted": record.get("_sdc_extracted_at", datetime.utcnow().isoformat() + "Z"),
+                "time_extracted": record.get(
+                    "_sdc_extracted_at", datetime.utcnow().isoformat() + "Z"
+                ),
             }
 
         # Output STATE message
@@ -71,7 +75,11 @@ for stream_id in selected_streams:
             "value": {
                 "bookmarks": {
                     stream_id: {
-                        "replication_key_value": records[-1].get(stream.replication_key) if records and stream.replication_key else None,
+                        "replication_key_value": (
+                            records[-1].get(stream.replication_key)
+                            if records and stream.replication_key
+                            else None
+                        ),
                     },
                 },
             },

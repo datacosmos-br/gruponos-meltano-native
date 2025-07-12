@@ -20,7 +20,15 @@ output_dir.mkdir(exist_ok=True)
 
 # First, test tap only
 print("\n1️⃣ Testing tap-oracle-wms-full...")
-cmd = ["meltano", "invoke", "tap-oracle-wms-full", "--config", "config.json", "--state", "state.json"]
+cmd = [
+    "meltano",
+    "invoke",
+    "tap-oracle-wms-full",
+    "--config",
+    "config.json",
+    "--state",
+    "state.json",
+]
 
 print(f"Running: {' '.join(cmd)}")
 result = subprocess.run(cmd, check=False, capture_output=True, text=True)
@@ -38,8 +46,16 @@ with open(output_dir / "tap_output.jsonl", "w", encoding="utf-8") as f:
 print(f"✅ Tap output saved to {output_dir}/tap_output.jsonl")
 
 # Count records
-record_count = sum(1 for line in result.stdout.splitlines() if line.strip().startswith('{"type":"RECORD"'))
-schema_count = sum(1 for line in result.stdout.splitlines() if line.strip().startswith('{"type":"SCHEMA"'))
+record_count = sum(
+    1
+    for line in result.stdout.splitlines()
+    if line.strip().startswith('{"type":"RECORD"')
+)
+schema_count = sum(
+    1
+    for line in result.stdout.splitlines()
+    if line.strip().startswith('{"type":"SCHEMA"')
+)
 
 print("\n📊 Results:")
 print(f"  - Schemas: {schema_count}")

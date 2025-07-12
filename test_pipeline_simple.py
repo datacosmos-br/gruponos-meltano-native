@@ -100,7 +100,8 @@ with open("test_messages.jsonl", encoding="utf-8") as input_file:
     env_cmd = "export $(grep -v '^#' .env | xargs) && python -m flext_target_oracle"
     result = subprocess.run(
         env_cmd,
-        check=False, shell=True,
+        check=False,
+        shell=True,
         stdin=input_file,
         capture_output=True,
         text=True,

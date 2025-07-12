@@ -38,7 +38,10 @@ async def test_target_direct() -> None:
         config["wallet_location"] = os.getenv("ORACLE_WALLET_LOCATION")
         config["wallet_password"] = os.getenv("ORACLE_WALLET_PASSWORD")
 
-    logger.info("Testing target with config: %s", {k: v for k, v in config.items() if k != "password"})
+    logger.info(
+        "Testing target with config: %s",
+        {k: v for k, v in config.items() if k != "password"},
+    )
 
     try:
         target_config = TargetConfig(**config)

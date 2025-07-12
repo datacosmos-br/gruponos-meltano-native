@@ -60,7 +60,9 @@ try:
     # Show streams
     print("\n📊 Available Streams:")
     for stream in streams:
-        print(f"  - {stream.name} ({len(stream.schema.get('properties', {}))} properties)")
+        print(
+            f"  - {stream.name} ({len(stream.schema.get('properties', {}))} properties)"
+        )
 
     # Create catalog
     catalog = {
@@ -94,6 +96,7 @@ try:
 except Exception as e:
     print(f"\n❌ Discovery failed: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)
 

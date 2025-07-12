@@ -80,7 +80,11 @@ messages = [
     },
     {
         "type": "STATE",
-        "value": {"bookmarks": {"test_table": {"replication_key_value": "2025-07-11T00:00:00Z"}}},
+        "value": {
+            "bookmarks": {
+                "test_table": {"replication_key_value": "2025-07-11T00:00:00Z"}
+            }
+        },
     },
 ]
 

@@ -161,8 +161,12 @@ def main() -> int:
         return 1
 
     # Test both implementations
-    original_success = test_connection_manager(OriginalManager, "Original Connection Manager")
-    enhanced_success = test_connection_manager(EnhancedManager, "Enhanced Connection Manager (FLEXT)")
+    original_success = test_connection_manager(
+        OriginalManager, "Original Connection Manager"
+    )
+    enhanced_success = test_connection_manager(
+        EnhancedManager, "Enhanced Connection Manager (FLEXT)"
+    )
 
     # Test failure handling
     simulate_connection_failure()
@@ -171,8 +175,12 @@ def main() -> int:
     logger.info(f"\n{'=' * 60}")
     logger.info("SUMMARY")
     logger.info(f"{'=' * 60}")
-    logger.info(f"Original Manager: {'✅ SUCCESS' if original_success else '❌ FAILED'}")
-    logger.info(f"Enhanced Manager: {'✅ SUCCESS' if enhanced_success else '❌ FAILED'}")
+    logger.info(
+        f"Original Manager: {'✅ SUCCESS' if original_success else '❌ FAILED'}"
+    )
+    logger.info(
+        f"Enhanced Manager: {'✅ SUCCESS' if enhanced_success else '❌ FAILED'}"
+    )
 
     if enhanced_success:
         logger.info("\n✅ Enhanced manager with FLEXT-DB-Oracle is working correctly!")

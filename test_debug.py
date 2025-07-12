@@ -54,7 +54,8 @@ with open("test_debug.jsonl", encoding="utf-8") as input_file:
     env_cmd = "export $(grep -v '^#' .env | xargs) && FLEXT_LOG_LEVEL=DEBUG python -m flext_target_oracle.target 2>&1"
     result = subprocess.run(
         env_cmd,
-        check=False, shell=True,
+        check=False,
+        shell=True,
         stdin=input_file,
         capture_output=True,
         text=True,
@@ -63,7 +64,12 @@ with open("test_debug.jsonl", encoding="utf-8") as input_file:
     print("\nOutput:")
     # Show only relevant debug lines
     for line in result.stdout.split("\n"):
-        if "SQL:" in line or "Existing columns:" in line or "First record keys:" in line or "ERROR" in line:
+        if (
+            "SQL:" in line
+            or "Existing columns:" in line
+            or "First record keys:" in line
+            or "ERROR" in line
+        ):
             print(line)
 
     print("\nReturn code:", result.returncode)

@@ -9,7 +9,9 @@ from datetime import UTC, datetime
 
 # Configuration for tap
 tap_config = {
-    "base_url": os.getenv("TAP_ORACLE_WMS_BASE_URL", "https://a29.wms.ocs.oraclecloud.com/raizen"),
+    "base_url": os.getenv(
+        "TAP_ORACLE_WMS_BASE_URL", "https://a29.wms.ocs.oraclecloud.com/raizen"
+    ),
     "username": os.getenv("TAP_ORACLE_WMS_USERNAME", "USER_WMS_INTEGRA"),
     "password": os.getenv("TAP_ORACLE_WMS_PASSWORD", "jmCyS7BK94YvhS@"),
     "entities": ["allocation"],
@@ -31,7 +33,9 @@ target_config = {
     "password": os.getenv("DATABASE__PASSWORD", "aehaz232dfNuupah_#"),
     "host": os.getenv("DATABASE__HOST", "10.93.10.114"),
     "port": int(os.getenv("DATABASE__PORT", "1522")),
-    "service_name": os.getenv("DATABASE__SERVICE_NAME", "gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com"),
+    "service_name": os.getenv(
+        "DATABASE__SERVICE_NAME", "gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com"
+    ),
     "protocol": os.getenv("DATABASE__PROTOCOL", "tcps"),
     "default_target_schema": os.getenv("DATABASE__SCHEMA", "oic"),
     "table_prefix": "TEST_",
@@ -43,13 +47,19 @@ with open("target_config_test.json", "w", encoding="utf-8") as f:
 
 # Run tap and pipe to target
 tap_cmd = [
-    sys.executable, "-m", "flext_tap_oracle_wms",
-    "--config", "tap_config_test.json",
+    sys.executable,
+    "-m",
+    "flext_tap_oracle_wms",
+    "--config",
+    "tap_config_test.json",
 ]
 
 target_cmd = [
-    sys.executable, "-m", "flext_target_oracle",
-    "--config", "target_config_test.json",
+    sys.executable,
+    "-m",
+    "flext_target_oracle",
+    "--config",
+    "target_config_test.json",
 ]
 
 print("\n📊 Running pipeline...")

@@ -42,18 +42,22 @@ def main() -> None:
         with connection.cursor() as cursor:
             logger.info("\nChecking TEST_ORDER_HDR table structure...")
             try:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT column_name, data_type, data_length, nullable
                     FROM user_tab_columns
                     WHERE table_name = 'TEST_ORDER_HDR'
                     ORDER BY column_id
-                """)
+                """
+                )
                 columns = cursor.fetchall()
 
                 if columns:
                     logger.info("Table TEST_ORDER_HDR structure:")
                     for col in columns:
-                        logger.info(f"  {col[0]}: {col[1]}({col[2]}) {'NULL' if col[3] == 'Y' else 'NOT NULL'}")
+                        logger.info(
+                            f"  {col[0]}: {col[1]}({col[2]}) {'NULL' if col[3] == 'Y' else 'NOT NULL'}"
+                        )
 
                     # Check for potentially problematic columns
                     number_columns = [col[0] for col in columns if col[1] == "NUMBER"]

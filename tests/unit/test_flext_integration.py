@@ -169,8 +169,11 @@ class TestAlertManagerIntegration:
         # Verify module uses flext logging (by checking imports in the module)
         import monitoring.alert_manager as am_module
         from monitoring.alert_manager import AlertManager
+
         assert hasattr(am_module, "get_logger")
-        assert not hasattr(am_module, "logging")  # Standard logging should not be imported
+        assert not hasattr(
+            am_module, "logging"
+        )  # Standard logging should not be imported
 
 
 if __name__ == "__main__":

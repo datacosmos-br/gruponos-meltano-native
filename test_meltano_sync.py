@@ -12,7 +12,8 @@ def run_command(cmd, env=None) -> bool:
     print(f"\n🔧 Running: {' '.join(cmd)}")
     result = subprocess.run(
         cmd,
-        check=False, capture_output=True,
+        check=False,
+        capture_output=True,
         text=True,
         env=env or os.environ.copy(),
     )
@@ -68,7 +69,8 @@ def test_tap_installation() -> bool:
     # Check if tap is available
     result = subprocess.run(
         ["which", "tap-oracle-wms"],
-        check=False, capture_output=True,
+        check=False,
+        capture_output=True,
         text=True,
     )
 
@@ -89,7 +91,8 @@ def test_target_installation() -> bool:
     # Check if target is available
     result = subprocess.run(
         ["which", "flext-target-oracle"],
-        check=False, capture_output=True,
+        check=False,
+        capture_output=True,
         text=True,
     )
 
@@ -141,6 +144,7 @@ def main() -> None:
     if env_file.exists():
         print(f"📄 Loading environment from {env_file}")
         from dotenv import load_dotenv
+
         load_dotenv()
     else:
         print("⚠️  No .env file found, using system environment")

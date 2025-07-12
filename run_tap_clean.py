@@ -30,8 +30,11 @@ with open(config_file, "w", encoding="utf-8") as f:
 
 # Run tap with stderr redirected
 cmd = [
-    sys.executable, "-m", "flext_tap_oracle_wms.tap",
-    "--config", config_file,
+    sys.executable,
+    "-m",
+    "flext_tap_oracle_wms.tap",
+    "--config",
+    config_file,
 ]
 
 # Execute tap and capture only stdout (JSON messages)

@@ -42,13 +42,19 @@ print(f"Entities: {', '.join(tap_config['entities'])}")
 
 # Run tap and pipe to target
 tap_cmd = [
-    sys.executable, "-m", "flext_tap_oracle_wms.tap",
-    "--config", "tap_config_multi.json",
+    sys.executable,
+    "-m",
+    "flext_tap_oracle_wms.tap",
+    "--config",
+    "tap_config_multi.json",
 ]
 
 target_cmd = [
-    sys.executable, "-m", "flext_target_oracle",
-    "--config", "target_config_multi.json",
+    sys.executable,
+    "-m",
+    "flext_target_oracle",
+    "--config",
+    "target_config_multi.json",
 ]
 
 print("\n📊 Running pipeline...")
@@ -89,7 +95,9 @@ if target_process.returncode == 0:
     # Show final statistics
     lines = target_stdout.decode().split("\n")
     for line in lines:
-        if any(x in line for x in ["Target completed", "Total records", "Success rate"]):
+        if any(
+            x in line for x in ["Target completed", "Total records", "Success rate"]
+        ):
             print(line)
 
     print("\n🎉 Multi-entity pipeline completed successfully!")

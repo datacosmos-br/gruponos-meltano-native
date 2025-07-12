@@ -62,12 +62,14 @@ def main() -> None:
         # Drop existing TEST_ tables
         with connection.cursor() as cursor:
             logger.info("Checking for existing TEST_ tables...")
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT table_name
                 FROM user_tables
                 WHERE table_name LIKE 'TEST_%'
                 ORDER BY table_name
-            """)
+            """
+            )
 
             tables = [row[0] for row in cursor]
 
@@ -84,11 +86,13 @@ def main() -> None:
                 logger.info("No existing TEST_ tables found")
 
             # Verify cleanup
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT COUNT(*)
                 FROM user_tables
                 WHERE table_name LIKE 'TEST_%'
-            """)
+            """
+            )
             count = cursor.fetchone()[0]
             logger.info(f"Remaining TEST_ tables: {count}")
 

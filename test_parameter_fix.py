@@ -37,7 +37,9 @@ def test_parameter_mapping() -> None:
 
         # Check if they differ (which would indicate a problem with lstrip)
         if old_param != new_param:
-            logger.warning("    MISMATCH! Old lstrip approach differs from new approach")
+            logger.warning(
+                "    MISMATCH! Old lstrip approach differs from new approach"
+            )
 
     # Test SQL placeholder generation
     logger.info("\nTesting SQL placeholder generation:")
@@ -47,7 +49,13 @@ def test_parameter_mapping() -> None:
         param_name = col_lower.removeprefix("_")
 
         # Timestamp columns get special treatment
-        timestamp_columns = ["_sdc_extracted_at", "_sdc_batched_at", "create_ts", "mod_ts", "picked_ts"]
+        timestamp_columns = [
+            "_sdc_extracted_at",
+            "_sdc_batched_at",
+            "create_ts",
+            "mod_ts",
+            "picked_ts",
+        ]
 
         if col_lower in timestamp_columns:
             placeholder = f"TO_TIMESTAMP(:{param_name}, 'YYYY-MM-DD\"T\"HH24:MI:SS.FF')"

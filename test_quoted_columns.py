@@ -67,7 +67,8 @@ def main() -> None:
             except:
                 pass  # Table doesn't exist
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE TEST_QUOTED (
                     "ID" VARCHAR2(100),
                     "STATUS_ID" NUMBER,
@@ -77,7 +78,8 @@ def main() -> None:
                     "_SDC_SEQUENCE" NUMBER,
                     "_SDC_BATCHED_AT" TIMESTAMP
                 )
-            """)
+            """
+            )
             connection.commit()
             logger.info("Table created!")
 

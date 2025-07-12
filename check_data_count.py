@@ -51,12 +51,14 @@ def main() -> None:
 
         # Get all TEST_ tables
         with connection.cursor() as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT table_name
                 FROM user_tables
                 WHERE table_name LIKE 'TEST_%'
                 ORDER BY table_name
-            """)
+            """
+            )
 
             tables = [row[0] for row in cursor]
             if not tables:
@@ -65,7 +67,9 @@ def main() -> None:
 
             logger.info(f"Found {len(tables)} TEST_ tables:")
             logger.info("-" * 60)
-            logger.info(f"{'Table Name':<30} {'Record Count':<15} {'Latest Record':<15}")
+            logger.info(
+                f"{'Table Name':<30} {'Record Count':<15} {'Latest Record':<15}"
+            )
             logger.info("-" * 60)
 
             for table_name in tables:
@@ -77,7 +81,9 @@ def main() -> None:
                     # Get latest record timestamp if exists
                     latest = "N/A"
                     try:
-                        cursor.execute(f"SELECT MAX(_SDC_EXTRACTED_AT) FROM {table_name}")
+                        cursor.execute(
+                            f"SELECT MAX(_SDC_EXTRACTED_AT) FROM {table_name}"
+                        )
                         latest_ts = cursor.fetchone()[0]
                         if latest_ts:
                             latest = latest_ts.strftime("%H:%M:%S")

@@ -37,7 +37,8 @@ messages = [
 ]
 
 # Add 10 allocation records
-messages.extend({
+messages.extend(
+    {
         "type": "RECORD",
         "stream": "allocation",
         "record": {
@@ -52,7 +53,9 @@ messages.extend({
             "_sdc_extracted_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         },
         "time_extracted": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-    } for i in range(1001, 1011))
+    }
+    for i in range(1001, 1011)
+)
 
 # Write messages to temp file
 with open("test_comprehensive.jsonl", "w", encoding="utf-8") as f:
@@ -65,7 +68,8 @@ with open("test_comprehensive.jsonl", encoding="utf-8") as input_file:
     env_cmd = "export $(grep -v '^#' .env | xargs) && python -m flext_target_oracle.target 2>&1"
     result = subprocess.run(
         env_cmd,
-        check=False, shell=True,
+        check=False,
+        shell=True,
         stdin=input_file,
         capture_output=True,
         text=True,
@@ -73,7 +77,16 @@ with open("test_comprehensive.jsonl", encoding="utf-8") as input_file:
 
     print("\n=== SUMMARY ===")
     for line in result.stdout.split("\n"):
-        if any(x in line for x in ["Total records:", "Successful:", "Failed:", "Success rate:", "Batch loaded"]):
+        if any(
+            x in line
+            for x in [
+                "Total records:",
+                "Successful:",
+                "Failed:",
+                "Success rate:",
+                "Batch loaded",
+            ]
+        ):
             print(line)
 
     print("\nReturn code:", result.returncode)

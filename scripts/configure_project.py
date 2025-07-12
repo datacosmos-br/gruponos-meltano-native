@@ -19,11 +19,11 @@ log = logging.getLogger(__name__)
 
 
 def load_project_config() -> dict[str, Any]:
-        config_path = Path(__file__).parent.parent / "config" / "project.yml"
+    config_path = Path(__file__).parent.parent / "config" / "project.yml"
     if config_path.exists():
-            with Path(config_path).open(encoding="utf-8") as f:
+        with Path(config_path).open(encoding="utf-8") as f:
             data = yaml.safe_load(f)
-            return data if isinstance(data, dict) else {}:
+            return data if isinstance(data, dict) else {}
     return {}
 
 
