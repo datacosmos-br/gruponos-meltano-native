@@ -5,11 +5,11 @@ Objetivo: Verificar comportamento completo do ambiente.
 
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 import sys
 import time
-import logging
 from datetime import UTC, datetime, time
 from pathlib import Path
 

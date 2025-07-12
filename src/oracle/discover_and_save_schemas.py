@@ -23,11 +23,12 @@ log = get_logger(__name__)
 
 
 def discover_schemas() -> bool:
-            # Load environment variables
+    # Load environment variables
     load_dotenv()
 
     # Create tap configuration
-    config: dict[str, object] = {"base_url": os.environ.get("TAP_ORACLE_WMS_BASE_URL"),
+    config: dict[str, object] = {
+        "base_url": os.environ.get("TAP_ORACLE_WMS_BASE_URL"),
         "username": os.environ.get("TAP_ORACLE_WMS_USERNAME"),
         "password": os.environ.get("TAP_ORACLE_WMS_PASSWORD"),
         "entities": ["allocation", "order_hdr", "order_dtl"],
@@ -64,7 +65,8 @@ def discover_schemas() -> bool:
                 if isinstance(schema, dict)
                 else len(schema.properties)
             )
-            log.info("✅ Discovered %s: %d properties",
+            log.info(
+                "✅ Discovered %s: %d properties",
                 stream.tap_stream_id,
                 prop_count,
             )
@@ -77,7 +79,9 @@ def discover_schemas() -> bool:
             json.dump(schemas, f, indent=2)
 
         log.info("\n✅ Schemas saved to %s", schema_file)
-        log.info("   Use this file with table_creator.py to ensure correct DDL generation")
+        log.info(
+            "   Use this file with table_creator.py to ensure correct DDL generation"
+        )
 
         return True
     except Exception:

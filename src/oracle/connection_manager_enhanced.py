@@ -176,7 +176,9 @@ class OracleConnectionManager:
 
         return self._connection.fetch_one(sql, parameters)
 
-    def fetch_all(self, sql: str, parameters: dict[str, Any] | None = None) -> list[Any]:
+    def fetch_all(
+        self, sql: str, parameters: dict[str, Any] | None = None
+    ) -> list[Any]:
         """Fetch all rows from SQL query.
 
         Args:

@@ -143,7 +143,7 @@ class TestGrupoNOSOrchestrator:
     # These tests assume a full orchestrator implementation that doesn't exist yet
     # The current orchestrator is a minimal implementation for basic testing
     # TODO: Re-enable these tests when full orchestrator is implemented
-    
+
     def test_orchestrator_skipped(self) -> None:
         """Skip orchestrator tests until full implementation."""
         pytest.skip("Full orchestrator implementation not available yet")

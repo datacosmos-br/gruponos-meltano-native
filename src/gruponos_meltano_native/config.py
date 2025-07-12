@@ -18,15 +18,23 @@ class OracleConnectionConfig(BaseConfig):
     service_name: str = Field(..., description="Oracle service name")
     username: str = Field(..., description="Oracle username")
     password: str = Field(..., description="Oracle password", repr=False)
-    protocol: str = Field("tcps", pattern="^(tcp|tcps)$", description="Connection protocol")
+    protocol: str = Field(
+        "tcps", pattern="^(tcp|tcps)$", description="Connection protocol"
+    )
     ssl_server_dn_match: bool = Field(False, description="Verify SSL server DN")
-    connection_timeout: int = Field(60, ge=1, description="Connection timeout in seconds")
+    connection_timeout: int = Field(
+        60, ge=1, description="Connection timeout in seconds"
+    )
     retry_attempts: int = Field(3, ge=1, description="Number of retry attempts")
     retry_delay: int = Field(5, ge=1, description="Delay between retries in seconds")
 
     # Performance settings
-    batch_size: int = Field(1000, ge=100, le=10000, description="Batch size for operations")
-    connection_pool_size: int = Field(5, ge=1, le=20, description="Connection pool size")
+    batch_size: int = Field(
+        1000, ge=100, le=10000, description="Batch size for operations"
+    )
+    connection_pool_size: int = Field(
+        5, ge=1, le=20, description="Connection pool size"
+    )
 
 
 class WMSSourceConfig(BaseConfig):
@@ -43,7 +51,9 @@ class WMSSourceConfig(BaseConfig):
 
     # Extraction settings
     start_date: str | None = Field(None, description="Start date for incremental sync")
-    lookback_days: int = Field(7, ge=1, description="Lookback days for incremental sync")
+    lookback_days: int = Field(
+        7, ge=1, description="Lookback days for incremental sync"
+    )
 
     @field_validator("api_base_url", "api_username", "api_password")
     @classmethod
@@ -63,7 +73,9 @@ class TargetOracleConfig(BaseConfig):
 
     # Target specific settings
     schema: str = Field(..., description="Target schema name")
-    truncate_before_load: bool = Field(False, description="Truncate tables before loading")
+    truncate_before_load: bool = Field(
+        False, description="Truncate tables before loading"
+    )
     analyze_after_load: bool = Field(True, description="Analyze tables after loading")
     create_indexes: bool = Field(True, description="Create indexes after loading")
 
@@ -77,15 +89,21 @@ class AlertConfig(BaseConfig):
 
     # Sync monitoring
     max_sync_duration_minutes: int = Field(60, ge=1, description="Max sync duration")
-    max_error_rate_percent: float = Field(5.0, ge=0, le=100, description="Max error rate %")
+    max_error_rate_percent: float = Field(
+        5.0, ge=0, le=100, description="Max error rate %"
+    )
     min_records_threshold: int = Field(100, ge=0, description="Min records threshold")
 
     # Connection monitoring
-    max_connection_time_seconds: float = Field(30.0, ge=1, description="Max connection time")
+    max_connection_time_seconds: float = Field(
+        30.0, ge=1, description="Max connection time"
+    )
     max_connection_failures: int = Field(3, ge=1, description="Max connection failures")
 
     # System monitoring
-    max_memory_usage_percent: float = Field(80.0, ge=0, le=100, description="Max memory %")
+    max_memory_usage_percent: float = Field(
+        80.0, ge=0, le=100, description="Max memory %"
+    )
     max_cpu_usage_percent: float = Field(85.0, ge=0, le=100, description="Max CPU %")
 
     # Notification settings
@@ -101,8 +119,12 @@ class MeltanoConfig(BaseConfig):
     """Meltano-specific configuration."""
 
     project_id: str = Field(..., description="Meltano project ID")
-    environment: str = Field("dev", pattern="^(dev|staging|prod)$", description="Environment")
-    state_backend: str = Field("file", pattern="^(file|s3|gcs|azure)$", description="State backend")
+    environment: str = Field(
+        "dev", pattern="^(dev|staging|prod)$", description="Environment"
+    )
+    state_backend: str = Field(
+        "file", pattern="^(file|s3|gcs|azure)$", description="State backend"
+    )
     state_backend_uri: str | None = Field(None, description="State backend URI")
 
     # Logging
@@ -156,25 +178,42 @@ class GrupoNOSConfig(BaseSettings):
             # WMS Source Oracle
             "GRUPONOS__WMS_SOURCE__ORACLE__HOST": os.getenv("TAP_ORACLE_WMS_HOST"),
             "GRUPONOS__WMS_SOURCE__ORACLE__PORT": os.getenv("TAP_ORACLE_WMS_PORT"),
-            "GRUPONOS__WMS_SOURCE__ORACLE__SERVICE_NAME": os.getenv("TAP_ORACLE_WMS_SERVICE_NAME"),
-            "GRUPONOS__WMS_SOURCE__ORACLE__USERNAME": os.getenv("TAP_ORACLE_WMS_USERNAME"),
-            "GRUPONOS__WMS_SOURCE__ORACLE__PASSWORD": os.getenv("TAP_ORACLE_WMS_PASSWORD"),
-            "GRUPONOS__WMS_SOURCE__ORACLE__BATCH_SIZE": os.getenv("TAP_ORACLE_WMS_BATCH_SIZE"),
-
+            "GRUPONOS__WMS_SOURCE__ORACLE__SERVICE_NAME": os.getenv(
+                "TAP_ORACLE_WMS_SERVICE_NAME"
+            ),
+            "GRUPONOS__WMS_SOURCE__ORACLE__USERNAME": os.getenv(
+                "TAP_ORACLE_WMS_USERNAME"
+            ),
+            "GRUPONOS__WMS_SOURCE__ORACLE__PASSWORD": os.getenv(
+                "TAP_ORACLE_WMS_PASSWORD"
+            ),
+            "GRUPONOS__WMS_SOURCE__ORACLE__BATCH_SIZE": os.getenv(
+                "TAP_ORACLE_WMS_BATCH_SIZE"
+            ),
             # Target Oracle
-            "GRUPONOS__TARGET_ORACLE__ORACLE__HOST": os.getenv("FLEXT_TARGET_ORACLE_HOST"),
-            "GRUPONOS__TARGET_ORACLE__ORACLE__PORT": os.getenv("FLEXT_TARGET_ORACLE_PORT"),
-            "GRUPONOS__TARGET_ORACLE__ORACLE__SERVICE_NAME": os.getenv("FLEXT_TARGET_ORACLE_SERVICE_NAME"),
-            "GRUPONOS__TARGET_ORACLE__ORACLE__USERNAME": os.getenv("FLEXT_TARGET_ORACLE_USERNAME"),
-            "GRUPONOS__TARGET_ORACLE__ORACLE__PASSWORD": os.getenv("FLEXT_TARGET_ORACLE_PASSWORD"),
-            "GRUPONOS__TARGET_ORACLE__ORACLE__PROTOCOL": os.getenv("FLEXT_TARGET_ORACLE_PROTOCOL"),
+            "GRUPONOS__TARGET_ORACLE__ORACLE__HOST": os.getenv(
+                "FLEXT_TARGET_ORACLE_HOST"
+            ),
+            "GRUPONOS__TARGET_ORACLE__ORACLE__PORT": os.getenv(
+                "FLEXT_TARGET_ORACLE_PORT"
+            ),
+            "GRUPONOS__TARGET_ORACLE__ORACLE__SERVICE_NAME": os.getenv(
+                "FLEXT_TARGET_ORACLE_SERVICE_NAME"
+            ),
+            "GRUPONOS__TARGET_ORACLE__ORACLE__USERNAME": os.getenv(
+                "FLEXT_TARGET_ORACLE_USERNAME"
+            ),
+            "GRUPONOS__TARGET_ORACLE__ORACLE__PASSWORD": os.getenv(
+                "FLEXT_TARGET_ORACLE_PASSWORD"
+            ),
+            "GRUPONOS__TARGET_ORACLE__ORACLE__PROTOCOL": os.getenv(
+                "FLEXT_TARGET_ORACLE_PROTOCOL"
+            ),
             "GRUPONOS__TARGET_ORACLE__SCHEMA": os.getenv("FLEXT_TARGET_ORACLE_SCHEMA"),
-
             # Meltano
             "GRUPONOS__MELTANO__PROJECT_ID": os.getenv("MELTANO_PROJECT_ID"),
             "GRUPONOS__MELTANO__ENVIRONMENT": os.getenv("MELTANO_ENVIRONMENT"),
             "GRUPONOS__MELTANO__LOG_LEVEL": os.getenv("MELTANO_LOG_LEVEL"),
-
             # Global
             "GRUPONOS__DEBUG_MODE": os.getenv("DEBUG"),
             "GRUPONOS__DRY_RUN": os.getenv("DRY_RUN"),
@@ -201,7 +240,6 @@ class GrupoNOSConfig(BaseSettings):
             "TAP_ORACLE_WMS_USERNAME": self.wms_source.oracle.username,
             "TAP_ORACLE_WMS_PASSWORD": self.wms_source.oracle.password,
             "TAP_ORACLE_WMS_BATCH_SIZE": str(self.wms_source.oracle.batch_size),
-
             # Target Oracle
             "FLEXT_TARGET_ORACLE_HOST": self.target_oracle.oracle.host,
             "FLEXT_TARGET_ORACLE_PORT": str(self.target_oracle.oracle.port),
@@ -210,12 +248,10 @@ class GrupoNOSConfig(BaseSettings):
             "FLEXT_TARGET_ORACLE_PASSWORD": self.target_oracle.oracle.password,
             "FLEXT_TARGET_ORACLE_PROTOCOL": self.target_oracle.oracle.protocol,
             "FLEXT_TARGET_ORACLE_SCHEMA": self.target_oracle.schema,
-
             # Meltano
             "MELTANO_PROJECT_ID": self.meltano.project_id,
             "MELTANO_ENVIRONMENT": self.meltano.environment,
             "MELTANO_LOG_LEVEL": self.meltano.log_level,
-
             # Global
             "DEBUG": "true" if self.debug_mode else "false",
             "DRY_RUN": "true" if self.dry_run else "false",

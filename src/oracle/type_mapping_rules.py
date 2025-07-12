@@ -14,7 +14,8 @@ import re
 from typing import Any
 
 # Oracle DDL Type Mappings
-WMS_METADATA_TO_ORACLE = {"pk": "NUMBER",
+WMS_METADATA_TO_ORACLE = {
+    "pk": "NUMBER",
     "varchar": "VARCHAR2(255 CHAR)",
     "char": "CHAR(10)",
     "number": "NUMBER",
@@ -30,7 +31,8 @@ WMS_METADATA_TO_ORACLE = {"pk": "NUMBER",
 }
 
 # Field Name Patterns to Oracle Types
-FIELD_PATTERNS_TO_ORACLE = {"id_patterns": "NUMBER",
+FIELD_PATTERNS_TO_ORACLE = {
+    "id_patterns": "NUMBER",
     "key_patterns": "VARCHAR2(255 CHAR)",
     "qty_patterns": "NUMBER",
     "price_patterns": "NUMBER",
@@ -46,9 +48,11 @@ FIELD_PATTERNS_TO_ORACLE = {"id_patterns": "NUMBER",
 }
 
 # Pattern matching rules
-FIELD_PATTERN_RULES = {"id_patterns": ["*_id", "id"],
+FIELD_PATTERN_RULES = {
+    "id_patterns": ["*_id", "id"],
     "key_patterns": ["*_key"],
-    "qty_patterns": ["*_qty",
+    "qty_patterns": [
+        "*_qty",
         "*_quantity",
         "*_count",
         "*_amount",
@@ -58,7 +62,8 @@ FIELD_PATTERN_RULES = {"id_patterns": ["*_id", "id"],
         "ordered_uom_qty",
         "orig_ord_qty",
     ],
-    "price_patterns": ["*_price",
+    "price_patterns": [
+        "*_price",
         "*_cost",
         "*_rate",
         "*_percent",
@@ -67,13 +72,15 @@ FIELD_PATTERN_RULES = {"id_patterns": ["*_id", "id"],
         "unit_declared_value",
         "orig_sale_price",
     ],
-    "weight_patterns": ["*_weight",
+    "weight_patterns": [
+        "*_weight",
         "*_volume",
         "*_length",
         "*_width",
         "*_height",
     ],
-    "date_patterns": ["*_date",
+    "date_patterns": [
+        "*_date",
         "*_time",
         "*_ts",
         "*_timestamp",
@@ -84,7 +91,8 @@ FIELD_PATTERN_RULES = {"id_patterns": ["*_id", "id"],
     "code_patterns": ["*_code", "*_status", "*_type"],
     "name_patterns": ["*_name", "*_title"],
     "addr_patterns": ["*_addr", "*_address"],
-    "decimal_patterns": ["cust_decimal_*",
+    "decimal_patterns": [
+        "cust_decimal_*",
         "cust_number_*",
         "voucher_amount",
         "total_orig_ord_qty",
@@ -93,7 +101,12 @@ FIELD_PATTERN_RULES = {"id_patterns": ["*_id", "id"],
 }
 
 
-def convert_metadata_type_to_oracle(metadata_type: str | None = None, column_name: str = "", max_length: int | None = None, sample_value: Any | None = None) -> str:
+def convert_metadata_type_to_oracle(
+    metadata_type: str | None = None,
+    column_name: str = "",
+    max_length: int | None = None,
+    sample_value: Any | None = None,
+) -> str:
     # Prioridade 1: Tipos WMS metadata
     if metadata_type and metadata_type.lower() in WMS_METADATA_TO_ORACLE:
         oracle_type = WMS_METADATA_TO_ORACLE[metadata_type.lower()]
@@ -117,7 +130,9 @@ def convert_metadata_type_to_oracle(metadata_type: str | None = None, column_nam
     return "VARCHAR2(255 CHAR)"
 
 
-def convert_field_pattern_to_oracle(column_name: str, max_length: int | None = None) -> str | None:
+def convert_field_pattern_to_oracle(
+    column_name: str, max_length: int | None = None
+) -> str | None:
     column_lower = column_name.lower()
 
     for pattern_key, patterns in FIELD_PATTERN_RULES.items():
@@ -150,7 +165,9 @@ def convert_field_pattern_to_oracle(column_name: str, max_length: int | None = N
     return None
 
 
-def convert_singer_schema_to_oracle(column_name: str, column_schema: dict[str, Any]) -> str:
+def convert_singer_schema_to_oracle(
+    column_name: str, column_schema: dict[str, Any]
+) -> str:
     # Prioridade 1: Padrões de nome de campo (mesma lógica do table_creator)
     oracle_type = convert_field_pattern_to_oracle(column_name)
     if oracle_type:
@@ -203,7 +220,9 @@ def _looks_like_date(value: str) -> bool:
     return any(re.match(pattern, value) for pattern in date_patterns)
 
 
-def oracle_ddl_from_singer_schema(singer_schema: dict[str, Any], column_name: str = "") -> str:
+def oracle_ddl_from_singer_schema(
+    singer_schema: dict[str, Any], column_name: str = ""
+) -> str:
     # Extrair metadata se disponível
     metadata_type = None
     if "x-wms-metadata" in singer_schema:

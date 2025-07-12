@@ -138,13 +138,15 @@ class OracleConnectionManager:
 
             conn.close()
 
-            result.update({
-                "success": True,
-                "protocol_used": self.config.protocol,
-                "oracle_version": oracle_version,
-                "current_user": current_user,
-                "connection_time_ms": round(connection_time, 2),
-            })
+            result.update(
+                {
+                    "success": True,
+                    "protocol_used": self.config.protocol,
+                    "oracle_version": oracle_version,
+                    "current_user": current_user,
+                    "connection_time_ms": round(connection_time, 2),
+                }
+            )
 
         except Exception as e:
             result["error"] = str(e)

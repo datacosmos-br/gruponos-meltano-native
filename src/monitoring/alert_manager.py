@@ -150,7 +150,7 @@ class AlertManager:
                 timestamp=datetime.now(UTC),
                 metrics={"error": str(e)},
             )
-        
+
         return None
 
     def check_oracle_connection(self) -> Alert | None:
@@ -191,7 +191,7 @@ class AlertManager:
                 timestamp=datetime.now(UTC),
                 metrics={"error": str(e)},
             )
-        
+
         return None
 
     def check_system_resources(self) -> list[Alert]:

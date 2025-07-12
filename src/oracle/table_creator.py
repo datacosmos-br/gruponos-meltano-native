@@ -42,25 +42,23 @@ class OracleTableCreator:
             "number": "NUMBER",
             "float": "BINARY_DOUBLE",
             "decimal": "NUMBER(18,4)",
-
             # String types
             "string": "VARCHAR2(4000)",
             "text": "CLOB",
-
             # Date/time types
             "date-time": "TIMESTAMP WITH TIME ZONE",
             "date": "DATE",
             "time": "TIMESTAMP",
-
             # Boolean
             "boolean": "NUMBER(1) CHECK (VALUE IN (0,1))",
-
             # JSON/Object
             "object": "CLOB CHECK (VALUE IS JSON)",
             "array": "CLOB CHECK (VALUE IS JSON ARRAY)",
         }
 
-    def create_table_from_schema(self, table_name: str, singer_schema: dict[str, Any]) -> str:
+    def create_table_from_schema(
+        self, table_name: str, singer_schema: dict[str, Any]
+    ) -> str:
         """Create Oracle table DDL from Singer schema."""
         if "properties" not in singer_schema:
             msg = f"Invalid Singer schema for table {table_name}"
@@ -75,7 +73,9 @@ class OracleTableCreator:
 
         # Process each column
         for column_name, column_schema in singer_schema["properties"].items():
-            column_ddl = self._create_column_ddl(column_name, column_schema, column_name in primary_keys)
+            column_ddl = self._create_column_ddl(
+                column_name, column_schema, column_name in primary_keys
+            )
             columns.append(column_ddl)
 
         # Build complete DDL
@@ -84,7 +84,9 @@ class OracleTableCreator:
         logger.info(f"Generated DDL for table {table_name}")
         return ddl
 
-    def _create_column_ddl(self, column_name: str, column_schema: dict[str, Any], is_primary_key: bool) -> str:
+    def _create_column_ddl(
+        self, column_name: str, column_schema: dict[str, Any], is_primary_key: bool
+    ) -> str:
         """Create column DDL from Singer schema property."""
         # Handle multiple types (e.g., ["string", "null"])
         column_types = column_schema.get("type", ["string"])
@@ -115,7 +117,9 @@ class OracleTableCreator:
 
         # Add default value if specified
         if "default" in column_schema:
-            default_value = self._format_default_value(column_schema["default"], main_type)
+            default_value = self._format_default_value(
+                column_schema["default"], main_type
+            )
             column_ddl += f" DEFAULT {default_value}"
 
         return column_ddl
@@ -142,7 +146,9 @@ class OracleTableCreator:
             return f"TIMESTAMP '{default_value}'"
         return str(default_value)
 
-    def _build_create_table_ddl(self, table_name: str, columns: list[str], primary_keys: list[str]) -> str:
+    def _build_create_table_ddl(
+        self, table_name: str, columns: list[str], primary_keys: list[str]
+    ) -> str:
         """Build complete CREATE TABLE DDL statement."""
         ddl_lines = [
             f"CREATE TABLE {self.schema}.{table_name.upper()} (",
@@ -157,45 +163,51 @@ class OracleTableCreator:
         # Add primary key constraint if specified
         if primary_keys:
             pk_columns = ", ".join(pk.upper() for pk in primary_keys)
-            ddl_lines.append(f"  ,CONSTRAINT PK_{table_name.upper()} PRIMARY KEY ({pk_columns})")
+            ddl_lines.append(
+                f"  ,CONSTRAINT PK_{table_name.upper()} PRIMARY KEY ({pk_columns})"
+            )
 
-        ddl_lines.extend([
-            ")",
-            "TABLESPACE USERS",
-            "PCTFREE 10",
-            "PCTUSED 40",
-            "INITRANS 1",
-            "MAXTRANS 255",
-            "STORAGE (",
-            "  INITIAL 64K",
-            "  NEXT 1M",
-            "  MINEXTENTS 1",
-            "  MAXEXTENTS UNLIMITED",
-            "  PCTINCREASE 0",
-            ")",
-            "LOGGING",
-            "NOCOMPRESS",
-            "NOCACHE",
-            "NOPARALLEL",
-            "MONITORING;",
-            "",
-            f"COMMENT ON TABLE {self.schema}.{table_name.upper()} IS 'WMS data synchronized via Singer tap';",
-            "",
-            "-- Add table statistics collection",
-            "BEGIN",
-            "  DBMS_STATS.GATHER_TABLE_STATS(",
-            f"    ownname => '{self.schema}',",
-            f"    tabname => '{table_name.upper()}',",
-            "    estimate_percent => DBMS_STATS.AUTO_SAMPLE_SIZE,",
-            "    method_opt => 'FOR ALL COLUMNS SIZE AUTO'",
-            "  );",
-            "END;",
-            "/",
-        ])
+        ddl_lines.extend(
+            [
+                ")",
+                "TABLESPACE USERS",
+                "PCTFREE 10",
+                "PCTUSED 40",
+                "INITRANS 1",
+                "MAXTRANS 255",
+                "STORAGE (",
+                "  INITIAL 64K",
+                "  NEXT 1M",
+                "  MINEXTENTS 1",
+                "  MAXEXTENTS UNLIMITED",
+                "  PCTINCREASE 0",
+                ")",
+                "LOGGING",
+                "NOCOMPRESS",
+                "NOCACHE",
+                "NOPARALLEL",
+                "MONITORING;",
+                "",
+                f"COMMENT ON TABLE {self.schema}.{table_name.upper()} IS 'WMS data synchronized via Singer tap';",
+                "",
+                "-- Add table statistics collection",
+                "BEGIN",
+                "  DBMS_STATS.GATHER_TABLE_STATS(",
+                f"    ownname => '{self.schema}',",
+                f"    tabname => '{table_name.upper()}',",
+                "    estimate_percent => DBMS_STATS.AUTO_SAMPLE_SIZE,",
+                "    method_opt => 'FOR ALL COLUMNS SIZE AUTO'",
+                "  );",
+                "END;",
+                "/",
+            ]
+        )
 
         return "\n".join(ddl_lines)
 
-    def create_indexes_for_table(self, table_name: str, singer_schema: dict[str, Any]) -> list[str]:
+    def create_indexes_for_table(
+        self, table_name: str, singer_schema: dict[str, Any]
+    ) -> list[str]:
         """Generate recommended indexes for WMS table based on schema."""
         indexes = []
 
@@ -223,7 +235,7 @@ class OracleTableCreator:
                 index_candidates.append((column_name, "LOOKUP"))
 
         # Generate index DDL
-        for (column_name, index_type) in index_candidates:
+        for column_name, index_type in index_candidates:
             index_name = f"IDX_{table_name.upper()}_{column_name.upper()}"
 
             if index_type == "DATE_RANGE":
@@ -254,16 +266,18 @@ class OracleTableCreator:
         """Execute DDL statements against Oracle database."""
         try:
             # Create SQL*Plus script
-            script_content = "\n".join([
-                "SET ECHO ON",
-                "SET FEEDBACK ON",
-                "SET TIMING ON",
-                "WHENEVER SQLERROR EXIT FAILURE",
-                "",
-                *ddl_statements,
-                "",
-                "EXIT SUCCESS;",
-            ])
+            script_content = "\n".join(
+                [
+                    "SET ECHO ON",
+                    "SET FEEDBACK ON",
+                    "SET TIMING ON",
+                    "WHENEVER SQLERROR EXIT FAILURE",
+                    "",
+                    *ddl_statements,
+                    "",
+                    "EXIT SUCCESS;",
+                ]
+            )
 
             # Write to temporary file
             script_path = Path("/tmp/oracle_ddl.sql")
@@ -276,7 +290,8 @@ class OracleTableCreator:
                 ["sqlplus", "-S", connection_string, "@/tmp/oracle_ddl.sql"],
                 capture_output=True,
                 text=True,
-                timeout=300, check=False,  # 5 minute timeout
+                timeout=300,
+                check=False,  # 5 minute timeout
             )
 
             if result.returncode == 0:
@@ -297,7 +312,9 @@ class OracleTableCreator:
             if script_path.exists():
                 script_path.unlink()
 
-    def generate_table_from_singer_catalog(self, catalog_path: Path, table_name: str) -> str:
+    def generate_table_from_singer_catalog(
+        self, catalog_path: Path, table_name: str
+    ) -> str:
         """Generate Oracle table DDL from Singer catalog file."""
         try:
             catalog_data = json.loads(catalog_path.read_text(encoding="utf-8"))
@@ -336,7 +353,9 @@ def main() -> None:
     parser.add_argument("--username", required=True, help="Oracle username")
     parser.add_argument("--password", help="Oracle password (or use env var)")
     parser.add_argument("--schema", help="Oracle schema (defaults to username)")
-    parser.add_argument("--execute", action="store_true", help="Execute DDL immediately")
+    parser.add_argument(
+        "--execute", action="store_true", help="Execute DDL immediately"
+    )
     parser.add_argument("--indexes", action="store_true", help="Generate indexes")
 
     args = parser.parse_args()
@@ -366,7 +385,9 @@ def main() -> None:
     # Generate indexes if requested
     if args.indexes:
         catalog_data = json.loads(catalog_path.read_text(encoding="utf-8"))
-        stream = next(s for s in catalog_data["streams"] if s["tap_stream_id"] == args.table)
+        stream = next(
+            s for s in catalog_data["streams"] if s["tap_stream_id"] == args.table
+        )
         indexes = creator.create_indexes_for_table(args.table, stream["schema"])
 
         for _index_ddl in indexes:

@@ -26,7 +26,7 @@ class TestBasicIntegration:
             username="test_user",
             password="test_pass",
         )
-        
+
         assert oracle_config.host == "localhost"
         assert oracle_config.port == 1521
         assert oracle_config.service_name == "TEST"
@@ -39,11 +39,11 @@ class TestBasicIntegration:
             username="user",
             password="pass",
         )
-        
+
         wms_config = WMSSourceConfig(
             oracle=oracle_config,
         )
-        
+
         assert wms_config.oracle.host == "wms.local"
         assert wms_config.api_enabled is False  # default value
 
@@ -57,32 +57,32 @@ class TestBasicIntegration:
             username="user",
             password="pass",
         )
-        
+
         oracle_target = OracleConnectionConfig(
             host="target.local",
             service_name="TARGET",
             username="user",
             password="pass",
         )
-        
+
         wms_source = WMSSourceConfig(oracle=oracle_source)
         target_oracle = TargetOracleConfig(oracle=oracle_target, schema="TEST_SCHEMA")
-        
+
         # Add required Meltano config
         meltano_config = MeltanoConfig(
             project_id="test-project",
             environment="dev",
         )
-        
+
         config = GrupoNOSConfig(
             wms_source=wms_source,
             target_oracle=target_oracle,
             meltano=meltano_config,
         )
-        
+
         # Create orchestrator
         orchestrator = GrupoNOSMeltanoOrchestrator(config)
-        
+
         # Test validation
         result = await orchestrator.validate_configuration()
         assert result.is_success
@@ -98,31 +98,31 @@ class TestBasicIntegration:
             username="user",
             password="pass",
         )
-        
+
         oracle_target = OracleConnectionConfig(
             host="target.local",
             service_name="TARGET",
             username="user",
             password="pass",
         )
-        
+
         wms_source = WMSSourceConfig(oracle=oracle_source)
         target_oracle = TargetOracleConfig(oracle=oracle_target, schema="TEST_SCHEMA")
-        
+
         # Add required Meltano config
         meltano_config = MeltanoConfig(
             project_id="test-project",
             environment="dev",
         )
-        
+
         config = GrupoNOSConfig(
             wms_source=wms_source,
             target_oracle=target_oracle,
             meltano=meltano_config,
         )
-        
+
         orchestrator = GrupoNOSMeltanoOrchestrator(config)
-        
+
         # Run pipeline
         result = await orchestrator.run_pipeline("test_pipeline")
         assert result.is_success
@@ -136,7 +136,7 @@ class TestBasicIntegration:
         assert success_result.is_success
         assert success_result.value == "test_value"
         assert success_result.error is None
-        
+
         # Test failure
         failure_result = ServiceResult.failure("test_error")
         assert not failure_result.is_success

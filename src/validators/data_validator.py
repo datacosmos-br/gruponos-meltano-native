@@ -29,7 +29,9 @@ class DataValidator:
         }
 
     def validate_and_convert_record(
-        self, record: dict[str, Any], schema: dict[str, Any],
+        self,
+        record: dict[str, Any],
+        schema: dict[str, Any],
     ) -> dict[str, Any]:
         """Validate and convert a record according to schema."""
         if not schema.get("properties"):
@@ -52,7 +54,10 @@ class DataValidator:
         return converted_record
 
     def _convert_field(
-        self, value: Any, field_schema: dict[str, Any], field_name: str,
+        self,
+        value: Any,
+        field_schema: dict[str, Any],
+        field_name: str,
     ) -> Any:
         """Convert a single field according to its schema."""
         if value is None or value == "":
@@ -87,7 +92,10 @@ class DataValidator:
             raise ValueError(msg) from e
 
     def _convert_to_number(
-        self, value: Any, expected_type: str, field_name: str,
+        self,
+        value: Any,
+        expected_type: str,
+        field_name: str,
     ) -> int | float | None:
         """Convert value to number (int or float)."""
         if isinstance(value, (int, float)):
@@ -155,7 +163,10 @@ class DataValidator:
         raise ValueError(msg)
 
     def _convert_to_date(
-        self, value: Any, date_format: str, field_name: str,
+        self,
+        value: Any,
+        date_format: str,
+        field_name: str,
     ) -> str | None:
         """Convert value to date string."""
         if isinstance(value, (datetime, date)):
