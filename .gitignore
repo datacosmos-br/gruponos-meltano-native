@@ -229,10 +229,41 @@ radon_reports/
 bandit-report.*
 safety-report.*
 
-# ============================================================================
-# SECRETS AND SENSITIVE DATA
-# ============================================================================
+# === AI DEVELOPMENT FILES ===
+# Must keep CLAUDE.md in project but not in git
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.github/copilot*
+*_REPORT.md
+*_ANALYSIS.md
+*_VALIDATION.md
 
+# === PROJECT SPECIFIC ===
+# Performance logs
+performance_*.log
+benchmark_*.json
+pipeline_*.log
+
+# Archive directory
+archive/
+
+# Backup files
+*.backup
+*.bak
+.dev_deps_backup_*
+
+# Old requirements.txt (using pyproject.toml)
+requirements.txt
+requirements-*.txt
+
+# Reports directory
+reports/
+
+# === SECRETS AND SENSITIVE DATA ===
 # Environment variables and secrets
 .env
 .env.*
@@ -247,6 +278,26 @@ safety-report.*
 # Database connection strings
 connection_string.txt
 database_url.txt
+
+# GrupoNOS configs
+gruponos_credentials.json
+config/gruponos_*.json
+config/production_*.json
+
+# Integration data
+integration_data/
+sync_state/
+pipeline_state/
+
+# === ENTERPRISE SPECIFIC ===
+# Production data (NEVER commit)
+production_data/
+prod_exports/
+real_data/
+
+# Sensitive configs
+production.conf
+secrets.json
 
 # API keys and tokens
 api_keys.json
