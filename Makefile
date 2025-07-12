@@ -197,7 +197,7 @@ _docs-check: ## Internal: Check documentation build
 # ===== DEVELOPMENT TOOLS =====
 lint: ## $(MICROSCOPE) Run linting (development mode)
 	@echo "$(BLUE)$(MICROSCOPE) Running comprehensive linting...$(NC)"
-	@$(RUFF) check . --output-format=verbose
+	@$(RUFF) check . --output-format=full
 	@$(PYLINT) src/$(PACKAGE_NAME) --output-format=colorized || true
 	@$(VULTURE) src/$(PACKAGE_NAME) --min-confidence=80 || true
 
@@ -416,4 +416,129 @@ prepare-config: ## Prepare configurations from .env file
 	@python scripts/prepare_config.py
 	@echo "$(GREEN)$(CHECK) Configurations prepared$(NC)"
 
-.PHONY: prepare-config
+# ===== MELTANO PIPELINE COMMANDS =====
+meltano-install: ## $(PACKAGE) Install Meltano plugins
+	@echo "$(BLUE)$(PACKAGE) Installing Meltano plugins...$(NC)"
+	@meltano install
+	@echo "$(GREEN)$(CHECK) Meltano plugins installed$(NC)"
+
+meltano-discover: ## $(MICROSCOPE) Discover available streams
+	@echo "$(BLUE)$(MICROSCOPE) Discovering available streams...$(NC)"
+	@meltano invoke tap-oracle-wms --discover
+	@echo "$(GREEN)$(CHECK) Stream discovery completed$(NC)"
+
+sync-test: prepare-config ## $(FIRE) Test sync with mock data
+	@echo "$(BLUE)$(FIRE) Testing sync with mock data...$(NC)"
+	@python scripts/test_meltano_sync.py --test-type mock
+	@echo "$(GREEN)$(CHECK) Mock sync test completed$(NC)"
+
+sync-incremental: prepare-config ## $(LIGHTNING) Run incremental sync for all entities
+	@echo "$(BLUE)$(LIGHTNING) Running incremental sync...$(NC)"
+	@python scripts/test_meltano_sync.py --test-type incremental
+	@echo "$(GREEN)$(CHECK) Incremental sync completed$(NC)"
+
+sync-full: prepare-config ## $(FIRE) Run full table sync for order_dtl
+	@echo "$(BLUE)$(FIRE) Running full table sync for order_dtl...$(NC)"
+	@python scripts/test_meltano_sync.py --test-type full
+	@echo "$(GREEN)$(CHECK) Full table sync completed$(NC)"
+
+sync-all: prepare-config ## $(ROCKET) Run complete pipeline sync (incremental + full)
+	@echo "$(BOLD)$(BLUE)$(ROCKET) Running complete pipeline sync...$(NC)"
+	@echo "$(BLUE)=========================================$(NC)"
+	@python scripts/test_meltano_sync.py --test-type all
+	@echo "$(BOLD)$(GREEN)$(TROPHY) Complete pipeline sync finished!$(NC)"
+
+verify-tables: ## $(MICROSCOPE) Verify Oracle tables and data
+	@echo "$(BLUE)$(MICROSCOPE) Verifying Oracle tables and data...$(NC)"
+	@python -c "\
+import oracledb, os; \
+from dotenv import load_dotenv; \
+load_dotenv('.env'); \
+dsn = '(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=10.93.10.166))(connect_data=(service_name=gbe8f3f2dbbc562_gndwdbdev01_low.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))'; \
+username = os.getenv('FLEXT_TARGET_ORACLE_USERNAME'); \
+password = os.getenv('FLEXT_TARGET_ORACLE_PASSWORD'); \
+with oracledb.connect(user=username, password=password, dsn=dsn) as conn: \
+    with conn.cursor() as cursor: \
+        print('📊 VERIFICAÇÃO DE TABELAS WMS:'); \
+        cursor.execute(\"SELECT table_name, num_rows FROM user_tables WHERE table_name LIKE 'WMS_%' ORDER BY table_name\"); \
+        for table_name, num_rows in cursor.fetchall(): \
+            print(f'  ✅ {table_name}: {num_rows or 0} registros'); \
+        print('\\n🔍 Schema atual:', end=' '); \
+        cursor.execute('SELECT USER FROM DUAL'); \
+        print(cursor.fetchone()[0]); \
+	"
+	@echo "$(GREEN)$(CHECK) Table verification completed$(NC)"
+
+test-connectivity: ## $(SHIELD) Test WMS API connectivity
+	@echo "$(BLUE)$(SHIELD) Testing WMS API connectivity...$(NC)"
+	@python -c "\
+import requests, os; \
+from dotenv import load_dotenv; \
+load_dotenv('.env'); \
+base_url = os.getenv('TAP_ORACLE_WMS_BASE_URL'); \
+username = os.getenv('TAP_ORACLE_WMS_USERNAME'); \
+password = os.getenv('TAP_ORACLE_WMS_PASSWORD'); \
+try: \
+    response = requests.get(f'{base_url}/api/health', auth=(username, password), timeout=10); \
+    print(f'✅ WMS API: {response.status_code}'); \
+except Exception as e: \
+    print(f'❌ WMS API: {e}'); \
+    print('$(YELLOW)$(WARNING) Using mock data for testing$(NC)'); \
+	"
+
+pipeline-status: verify-tables ## $(MICROSCOPE) Show complete pipeline status
+	@echo "$(BOLD)$(BLUE)$(MICROSCOPE) PIPELINE STATUS REPORT$(NC)"
+	@echo "$(BLUE)==============================$(NC)"
+	@$(MAKE) --no-print-directory test-connectivity
+	@$(MAKE) --no-print-directory verify-tables
+	@echo "$(GREEN)$(CHECK) Pipeline status check completed$(NC)"
+
+# ===== QUICK PIPELINE COMMANDS =====
+quick-sync: sync-test verify-tables ## $(LIGHTNING) Quick sync test with verification
+	@echo "$(BOLD)$(GREEN)$(LIGHTNING) Quick sync test completed!$(NC)"
+
+full-pipeline-test: ## $(TROPHY) Complete pipeline test (connectivity + sync + verification)
+	@echo "$(BOLD)$(BLUE)$(TROPHY) COMPLETE PIPELINE TEST$(NC)"
+	@echo "$(BLUE)================================$(NC)"
+	@python scripts/test_meltano_sync.py --test-type all
+	@echo "$(BOLD)$(GREEN)$(TROPHY) Complete pipeline test finished!$(NC)"
+
+.PHONY: prepare-config meltano-install meltano-discover sync-test sync-incremental sync-full sync-all verify-tables test-connectivity pipeline-status quick-sync full-pipeline-test
+
+# ===== FLEXT INTEGRATION COMMANDS =====
+FLEXT_PYTHON := $(PYTHON) scripts/run_with_flext.py
+
+flext-full-sync: prepare-config ## $(ROCKET) Run full sync with FLEXT orchestration
+	@echo "$(BOLD)$(BLUE)$(ROCKET) Running full sync with FLEXT...$(NC)"
+	@$(FLEXT_PYTHON) full-sync
+	@echo "$(GREEN)$(CHECK) FLEXT full sync completed$(NC)"
+
+flext-incremental-sync: prepare-config ## $(LIGHTNING) Run incremental sync with FLEXT
+	@echo "$(BOLD)$(BLUE)$(LIGHTNING) Running incremental sync with FLEXT...$(NC)"
+	@$(FLEXT_PYTHON) incremental-sync
+	@echo "$(GREEN)$(CHECK) FLEXT incremental sync completed$(NC)"
+
+flext-transform: prepare-config ## $(SPARKLES) Run dbt transformations with FLEXT
+	@echo "$(BOLD)$(BLUE)$(SPARKLES) Running dbt transformations with FLEXT...$(NC)"
+	@$(FLEXT_PYTHON) transform
+	@echo "$(GREEN)$(CHECK) FLEXT transformations completed$(NC)"
+
+flext-validate: ## $(SHIELD) Validate project with FLEXT
+	@echo "$(BOLD)$(BLUE)$(SHIELD) Validating project with FLEXT...$(NC)"
+	@$(FLEXT_PYTHON) validate
+	@echo "$(GREEN)$(CHECK) FLEXT validation completed$(NC)"
+
+flext-health: ## $(MICROSCOPE) Run health check with FLEXT monitoring
+	@echo "$(BOLD)$(BLUE)$(MICROSCOPE) Running FLEXT health check...$(NC)"
+	@$(FLEXT_PYTHON) health-check
+	@echo "$(GREEN)$(CHECK) FLEXT health check completed$(NC)"
+
+flext-config: ## $(GEAR) Show current FLEXT configuration
+	@echo "$(BOLD)$(BLUE)$(GEAR) Current FLEXT configuration:$(NC)"
+	@$(FLEXT_PYTHON) show-config
+
+flext-pipeline: flext-validate flext-incremental-sync flext-transform ## $(TROPHY) Run complete pipeline with FLEXT
+	@echo "$(BOLD)$(GREEN)$(TROPHY) FLEXT pipeline completed successfully!$(NC)"
+
+# Include standardized build system
+include Makefile.build

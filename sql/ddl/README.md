@@ -1,28 +1,32 @@
 # Oracle DDL Files for WMS Tables
 
 ## Overview
+
 These DDL files are generated from real WMS API schema discovery to ensure correct Oracle data types.
 
 ## Tables
 
 ### WMS_ALLOCATION
+
 - **Columns**: 31
 - **Primary Key**: ID, MOD_TS (composite for historical versioning)
 - **Key columns**: All quantity fields are NUMBER type
 
-### WMS_ORDER_HDR  
+### WMS_ORDER_HDR
+
 - **Columns**: 130
 - **Primary Key**: ID, MOD_TS (composite for historical versioning)
 - **Key columns**: All date fields are TIMESTAMP(6), all amount fields are NUMBER
 
 ### WMS_ORDER_DTL
+
 - **Columns**: 95
 - **Primary Key**: ID, MOD_TS (composite for historical versioning)
 - **Key columns**:
   - COST: NUMBER (not VARCHAR2)
-  - CUST_DATE_*: TIMESTAMP(6) (not VARCHAR2)
-  - CUST_DECIMAL_*: NUMBER (not VARCHAR2)
-  - CUST_NUMBER_*: NUMBER (not VARCHAR2)
+  - CUST*DATE*\*: TIMESTAMP(6) (not VARCHAR2)
+  - CUST*DECIMAL*\*: NUMBER (not VARCHAR2)
+  - CUST*NUMBER*\*: NUMBER (not VARCHAR2)
   - SALE_PRICE: NUMBER
   - VOUCHER_AMOUNT: NUMBER
 
@@ -31,11 +35,13 @@ These DDL files are generated from real WMS API schema discovery to ensure corre
 Schemas are discovered from WMS API and saved to `sql/wms_schemas.json`.
 
 To refresh schemas:
+
 ```bash
 make discover-schemas
 ```
 
 To recreate tables:
+
 ```bash
 make recreate-tables
 ```

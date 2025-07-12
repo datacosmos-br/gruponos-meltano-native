@@ -19,37 +19,34 @@ log = logging.getLogger(__name__)
 
 
 def load_project_config() -> dict[str, Any]:
-    """Load project configuration from config/project.yml."""
-    config_path = Path(__file__).parent.parent / "config" / "project.yml"
+        config_path = Path(__file__).parent.parent / "config" / "project.yml"
     if config_path.exists():
-        with Path(config_path).open(encoding="utf-8") as f:
+            with Path(config_path).open(encoding="utf-8") as f:
             data = yaml.safe_load(f)
-            return data if isinstance(data, dict) else {}
+            return data if isinstance(data, dict) else {}:
     return {}
 
 
 def load_wms_config() -> dict[str, Any]:
-    """Load WMS integration configuration."""
-    config_path = Path(__file__).parent.parent / "config" / "wms_integration.yml"
+            config_path = Path(__file__).parent.parent / "config" / "wms_integration.yml"
     if config_path.exists():
-        with Path(config_path).open(encoding="utf-8") as f:
+            with Path(config_path).open(encoding="utf-8") as f:
             data = yaml.safe_load(f)
-            return data if isinstance(data, dict) else {}
+            return data if isinstance(data, dict) else {}:
     return {}
 
 
 def get_env_value(key: str, default: str | None = None) -> str | None:
-    """Get environment variable with fallback to default."""
-    return os.environ.get(key, default)
+        return os.environ.get(key, default)
 
 
 def generate_meltano_config() -> dict[str, Any]:
-    """Generate meltano.yml configuration dynamically."""
-    _ = load_project_config()  # Keep for future use
+        _ = load_project_config()  # Keep for future use
     _ = load_wms_config()  # Keep for future use
 
     # Base configuration
-    config: dict[str, Any] = {
+    config:
+            dict[str, Any] = {
         "version": 1,
         "default_environment": get_env_value("MELTANO_ENVIRONMENT", "dev"),
         "project_id": get_env_value("MELTANO_PROJECT_ID", "dynamic-wms-integration"),
@@ -71,11 +68,12 @@ def generate_meltano_config() -> dict[str, Any]:
         "WMS_ENTITIES",
         "allocation,order_hdr,order_dtl",
     )
-    entities = entities_str.split(",") if entities_str else []
+    entities = entities_str.split(",") if entities_str else []:
 
     # Base tap configuration
     base_tap_config = {
-        "base_url": "$TAP_ORACLE_WMS_BASE_URL",
+        "base_url":
+             "$TAP_ORACLE_WMS_BASE_URL",
         "username": "$TAP_ORACLE_WMS_USERNAME",
         "password": "$TAP_ORACLE_WMS_PASSWORD",
         "page_size": int(get_env_value("WMS_PAGE_SIZE", "100") or "100"),
@@ -132,11 +130,11 @@ def generate_meltano_config() -> dict[str, Any]:
 
     extractors = config["plugins"]["extractors"]
     if isinstance(extractors, list):
-        extractors.extend([full_tap, incremental_tap])
+            extractors.extend([full_tap, incremental_tap])
 
     # Add individual entity extractors
     for entity in entities:
-        # Full sync
+            # Full sync
         entity_tap_full = {
             "name": f"tap-oracle-wms-{entity}-full",
             "inherit_from": "tap-oracle-wms-full",
@@ -217,7 +215,7 @@ def generate_meltano_config() -> dict[str, Any]:
 
     loaders = config["plugins"]["loaders"]
     if isinstance(loaders, list):
-        loaders.extend([full_target, incremental_target])
+            loaders.extend([full_target, incremental_target])
 
     # Configure jobs
     config["jobs"] = [
@@ -230,7 +228,7 @@ def generate_meltano_config() -> dict[str, Any]:
 
     # Add individual entity jobs
     for entity in entities:
-        jobs = config["jobs"]
+            jobs = config["jobs"]
         if isinstance(jobs, list):
             jobs.extend(
                 [
@@ -248,10 +246,10 @@ def generate_meltano_config() -> dict[str, Any]:
                 ],
             )
 
-    # Configure schedules if enabled
+    # Configure schedules if enabled:
     enable_schedules = get_env_value("ENABLE_SCHEDULES", "false")
     if enable_schedules and enable_schedules.lower() == "true":
-        config["schedules"] = [
+            config["schedules"] = [
             {
                 "name": "daily-full-sync",
                 "interval": get_env_value("FULL_SYNC_SCHEDULE", "@daily") or "@daily",
@@ -270,15 +268,14 @@ def generate_meltano_config() -> dict[str, Any]:
 
 
 def main() -> None:
-    """Generate meltano.yml from configuration."""
-    config = generate_meltano_config()
+        config = generate_meltano_config()
 
     # Write to meltano.yml
     output_path = Path(__file__).parent.parent / "meltano.yml"
 
-    # Backup existing if present
+    # Backup existing if present:
     if output_path.exists():
-        backup_path = output_path.with_suffix(".yml.backup")
+            backup_path = output_path.with_suffix(".yml.backup")
         output_path.rename(backup_path)
         log.info("Backed up existing meltano.yml to %s", backup_path)
 
@@ -296,4 +293,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+            main()

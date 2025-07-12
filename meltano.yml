@@ -1,9 +1,10 @@
 version: 1
 default_environment: dev
-project_id: gruponos-meltano-native
-
+project_id: 50037a15-62c9-40c7-89cd-a0f28d139a1e
 environments:
   - name: dev
+  - name: staging
+  - name: prod
 
 plugins:
   extractors:
@@ -11,135 +12,67 @@ plugins:
       namespace: tap_oracle_wms
       executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
       config:
-        # Core connection settings (only required fields)
         base_url: $TAP_ORACLE_WMS_BASE_URL
         username: $TAP_ORACLE_WMS_USERNAME
         password: $TAP_ORACLE_WMS_PASSWORD
-
-        # 🚨 SINGER SDK COMPLIANCE: Meltano project defines ALL replication logic
-        # TAP is generic Oracle WMS extractor - no business rules
-
-        # Entity selection (TAP provides data, Meltano chooses entities)
+        company_code: $TAP_ORACLE_WMS_COMPANY_CODE
+        facility_code: $TAP_ORACLE_WMS_FACILITY_CODE
         entities: ["allocation", "order_hdr", "order_dtl"]
-
-        # 🎯 MELTANO REPLICATION BUSINESS RULES: Full table sync
-        replication_method: "FULL_TABLE"
-        replication_key: "id" # MELTANO define - TAP não decide
-
-        # Performance settings via environment variables
-        page_size: $WMS_PAGE_SIZE
-        request_timeout: $TAP_ORACLE_WMS_REQUEST_TIMEOUT
-
-        # Profile configuration
-        WMS_PROFILE_NAME: $WMS_PROFILE_NAME
+        page_size: 500
+        force_full_table: true
+        ordering: "-id"
+        filter_mode: "id_recovery"
+        request_timeout: 600
 
     - name: tap-oracle-wms-incremental
       namespace: tap_oracle_wms
       executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
       config:
-        # Core connection settings (only required fields)
         base_url: $TAP_ORACLE_WMS_BASE_URL
         username: $TAP_ORACLE_WMS_USERNAME
         password: $TAP_ORACLE_WMS_PASSWORD
-
-        # 🚨 SINGER SDK COMPLIANCE: Meltano project defines ALL replication logic
-        # TAP is generic Oracle WMS extractor - no business rules
-
-        # Entity selection (TAP provides data, Meltano chooses entities)
+        company_code: $TAP_ORACLE_WMS_COMPANY_CODE
+        facility_code: $TAP_ORACLE_WMS_FACILITY_CODE
         entities: ["allocation", "order_hdr", "order_dtl"]
-
-        # 🎯 MELTANO REPLICATION BUSINESS RULES: Incremental sync
-        replication_method: "INCREMENTAL"
-        replication_key: "mod_ts" # MELTANO define - TAP não decide
-
-        # Performance settings via environment variables
-        page_size: $WMS_PAGE_SIZE
-        request_timeout: $TAP_ORACLE_WMS_REQUEST_TIMEOUT
-
-        # Profile configuration
-        WMS_PROFILE_NAME: $WMS_PROFILE_NAME
-
-    # Individual entity extractors for parallel processing
-    - name: tap-oracle-wms-allocation-full
-      inherit_from: tap-oracle-wms-full
-      config:
-        entities: ["allocation"]
-
-    - name: tap-oracle-wms-order-hdr-full
-      inherit_from: tap-oracle-wms-full
-      config:
-        entities: ["order_hdr"]
-
-    - name: tap-oracle-wms-order-dtl-full
-      inherit_from: tap-oracle-wms-full
-      config:
-        entities: ["order_dtl"]
-
-    - name: tap-oracle-wms-allocation-incremental
-      inherit_from: tap-oracle-wms-incremental
-      config:
-        entities: ["allocation"]
-
-    - name: tap-oracle-wms-order-hdr-incremental
-      inherit_from: tap-oracle-wms-incremental
-      config:
-        entities: ["order_hdr"]
-
-    - name: tap-oracle-wms-order-dtl-incremental
-      inherit_from: tap-oracle-wms-incremental
-      config:
-        entities: ["order_dtl"]
+        page_size: 1000
+        force_full_table: false
+        ordering: "mod_ts"
+        filter_mode: "incremental"
+        lookback_minutes: 5
+        enable_incremental: $TAP_ORACLE_WMS_ENABLE_INCREMENTAL
 
   loaders:
     - name: target-oracle-full
       namespace: target_oracle
-      executable: /home/marlonsc/flext/.venv/bin/flext_target_oracle
+      executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
       config:
         host: $FLEXT_TARGET_ORACLE_HOST
-        port: $FLEXT_TARGET_ORACLE_PORT
+        port: 1522
         service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
         username: $FLEXT_TARGET_ORACLE_USERNAME
         password: $FLEXT_TARGET_ORACLE_PASSWORD
         protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
-        ssl_server_dn_match: $FLEXT_TARGET_ORACLE_SSL_SERVER_DN_MATCH
-        batch_size_rows: 500
-        pool_size: 10
-        max_overflow: 15
-        parallel_threads: 10
-        add_record_metadata: $FLEXT_TARGET_ORACLE_ADD_RECORD_METADATA
-        validate_records: false
         load_method: append-only
-        default_target_schema: $FLEXT_TARGET_ORACLE_SCHEMA
-        primary_key_required: true
-        primary_key_includes_mod_ts: true
+        batch_size: 1000
+        max_parallelism: 5
         table_prefix: $FLEXT_TARGET_ORACLE_TABLE_PREFIX
-        debug_type_mapping: false
-        use_null_pool: true
+        default_target_schema: OIC
 
     - name: target-oracle-incremental
       namespace: target_oracle
-      executable: /home/marlonsc/flext/.venv/bin/flext_target_oracle
+      executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
       config:
         host: $FLEXT_TARGET_ORACLE_HOST
-        port: $FLEXT_TARGET_ORACLE_PORT
+        port: 1522
         service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
         username: $FLEXT_TARGET_ORACLE_USERNAME
         password: $FLEXT_TARGET_ORACLE_PASSWORD
         protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
-        ssl_server_dn_match: $FLEXT_TARGET_ORACLE_SSL_SERVER_DN_MATCH
-        batch_size_rows: $FLEXT_TARGET_ORACLE_BATCH_SIZE_INCREMENTAL
-        pool_size: $FLEXT_TARGET_ORACLE_POOL_SIZE
-        max_overflow: 2
-        parallel_threads: 1
-        add_record_metadata: $FLEXT_TARGET_ORACLE_ADD_RECORD_METADATA
-        validate_records: true
         load_method: append-only
-        default_target_schema: $FLEXT_TARGET_ORACLE_SCHEMA
+        batch_size: 1000
+        max_parallelism: 5
         table_prefix: $FLEXT_TARGET_ORACLE_TABLE_PREFIX
-        primary_key_required: true
-        primary_key_includes_mod_ts: true
-        enable_historical_versioning: true
-        historical_versioning_column: mod_ts
+        default_target_schema: OIC
 
 jobs:
   - name: full-sync-job
@@ -150,55 +83,4 @@ jobs:
     tasks:
       - tap-oracle-wms-incremental target-oracle-incremental
 
-  # Single entity sync jobs - configured via entity selection
-  - name: sync-allocation-full
-    tasks:
-      - tap-oracle-wms-allocation-full target-oracle-full
-
-  - name: sync-order-hdr-full
-    tasks:
-      - tap-oracle-wms-order-hdr-full target-oracle-full
-
-  - name: sync-order-dtl-full
-    tasks:
-      - tap-oracle-wms-order-dtl-full target-oracle-full
-
-  - name: sync-allocation-incremental
-    tasks:
-      - tap-oracle-wms-allocation-incremental target-oracle-incremental
-
-  - name: sync-order-hdr-incremental
-    tasks:
-      - tap-oracle-wms-order-hdr-incremental target-oracle-incremental
-
-  - name: sync-order-dtl-incremental
-    tasks:
-      - tap-oracle-wms-order-dtl-incremental target-oracle-incremental
-
 schedules: []
-# =============================================================================
-# CONFIGMAPPER SYSTEM USAGE:
-# =============================================================================
-# This meltano.yml now uses the ConfigMapper system which means:
-#
-# 1. NO MORE HARDCODED VALUES in meltano.yml
-# 2. Configurations come from (in order of precedence):
-#    a) Individual WMS_* environment variables (.env file)
-#    b) WMS_PROFILE_NAME profile (config/profiles/gruponos.json)
-#    c) ConfigMapper defaults (sensible fallbacks)
-#
-# 3. Benefits:
-#    - Company-specific business rules via profiles
-#    - Environment-based overrides
-#    - Simplified meltano.yml maintenance
-#    - No more need to update meltano.yml for config changes
-#
-# 4. Required Environment Variables:
-#    - TAP_ORACLE_WMS_BASE_URL
-#    - TAP_ORACLE_WMS_USERNAME
-#    - TAP_ORACLE_WMS_PASSWORD
-#    - WMS_PROFILE_NAME=gruponos
-#
-# 5. Optional Overrides (see .env.template):
-#    - WMS_API_VERSION, WMS_PAGE_SIZE, WMS_COMPANY_CODE, etc.
-# =============================================================================

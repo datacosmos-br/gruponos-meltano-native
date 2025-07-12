@@ -5,22 +5,22 @@ Monitors system health and sends alerts based on configurable thresholds.
 
 from __future__ import annotations
 
-from dataclasses import asdict
-from dataclasses import dataclass
-from datetime import UTC
-from datetime import datetime
 import json
-import logging
-from pathlib import Path
 import re
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 import psutil
 import requests
 
-from src.oracle.connection_manager import create_connection_manager_from_env
+from oracle.connection_manager import create_connection_manager_from_env
 
-logger = logging.getLogger(__name__)
+# Use FLEXT observability for structured logging
+from flext_observability.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -68,8 +68,6 @@ class AlertManager:
     """Professional alert manager with multiple notification channels."""
 
     def __init__(self, config: AlertConfig) -> None:
-        """Initialize alert manager with configuration."""
-        """Initialize alert manager with configuration."""
         self.config = config
         self.active_alerts: dict[str, Alert] = {}
         self.alert_history: list[Alert] = []
@@ -80,24 +78,13 @@ class AlertManager:
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
     def check_sync_health(self, sync_log_path: str) -> Alert | None:
-        """Monitor sync process health from log files.
-
-        Args:
-            sync_log_path: Path to sync log file
-
-        Returns:
-            Alert if issues detected, None otherwise
-
-        Args:
-                sync_log_path: Parameter description.
-
-        """
+        """Check sync process health from log file."""
         try:
             if not Path(sync_log_path).exists():
                 return Alert(
                     severity="HIGH",
                     title="Sync Log Missing",
-                    message=f"Sync log file not found: {sync_log_path}",
+                    message=f"Sync log file not found {sync_log_path}",
                     component="sync_monitor",
                     timestamp=datetime.now(UTC),
                     metrics={"log_path": sync_log_path},
@@ -127,8 +114,7 @@ class AlertManager:
                 return Alert(
                     severity="HIGH",
                     title="Sync Process Errors Detected",
-                    message=f"Found error indicators in sync log: {
-                        ', '.join(errors_found)}",
+                    message=f"Found error indicators in sync log: {', '.join(errors_found)}",
                     component="sync_process",
                     timestamp=datetime.now(UTC),
                     metrics={
@@ -146,9 +132,7 @@ class AlertManager:
                     return Alert(
                         severity="MEDIUM",
                         title="Sync Duration Exceeded",
-                        message=f"Sync running for {
-                            duration_minutes:.1f} minutes (threshold: {
-                            self.config.max_sync_duration_minutes})",
+                        message=f"Sync running for {duration_minutes:.1f} minutes (threshold: {self.config.max_sync_duration_minutes})",
                         component="sync_performance",
                         timestamp=datetime.now(UTC),
                         metrics={
@@ -166,16 +150,11 @@ class AlertManager:
                 timestamp=datetime.now(UTC),
                 metrics={"error": str(e)},
             )
-        else:
-            return None
+        
+        return None
 
     def check_oracle_connection(self) -> Alert | None:
-        """Test Oracle database connectivity.
-
-        Returns:
-            Alert if connection issues detected
-
-        """
+        """Check Oracle database connection health."""
         try:
             manager = create_connection_manager_from_env()
             result = manager.test_connection()
@@ -184,8 +163,7 @@ class AlertManager:
                 return Alert(
                     severity="CRITICAL",
                     title="Oracle Connection Failed",
-                    message=f"Cannot connect to Oracle database: {
-                        result['error']}",
+                    message=f"Cannot connect to Oracle database {result['error']}",
                     component="oracle_connection",
                     timestamp=datetime.now(UTC),
                     metrics=result,
@@ -198,9 +176,7 @@ class AlertManager:
                 return Alert(
                     severity="MEDIUM",
                     title="Oracle Connection Slow",
-                    message=f"Oracle connection took {
-                        result['connection_time_ms']:.0f}ms (threshold: {
-                        self.config.max_connection_time_seconds * 1000:.0f}ms)",
+                    message=f"Oracle connection took {result['connection_time_ms']:.0f}ms (threshold: {self.config.max_connection_time_seconds * 1000:.0f}ms)",
                     component="oracle_performance",
                     timestamp=datetime.now(UTC),
                     metrics=result,
@@ -215,16 +191,11 @@ class AlertManager:
                 timestamp=datetime.now(UTC),
                 metrics={"error": str(e)},
             )
-        else:
-            return None
+        
+        return None
 
     def check_system_resources(self) -> list[Alert]:
-        """Monitor system resource usage.
-
-        Returns:
-            List of alerts for resource issues
-
-        """
+        """Check system resource usage."""
         alerts = []
 
         try:
@@ -235,9 +206,7 @@ class AlertManager:
                     Alert(
                         severity="HIGH",
                         title="High Memory Usage",
-                        message=f"Memory usage at {
-                        memory.percent:.1f}% (threshold: {
-                        self.config.max_memory_usage_percent}%)",
+                        message=f"Memory usage at {memory.percent:.1f}% (threshold: {self.config.max_memory_usage_percent}%)",
                         component="system_memory",
                         timestamp=datetime.now(UTC),
                         metrics={
@@ -245,7 +214,7 @@ class AlertManager:
                             "memory_available_gb": memory.available / (1024**3),
                             "memory_total_gb": memory.total / (1024**3),
                         },
-                    ),
+                    )
                 )
 
             # Check CPU usage
@@ -255,16 +224,14 @@ class AlertManager:
                     Alert(
                         severity="MEDIUM",
                         title="High CPU Usage",
-                        message=f"CPU usage at {
-                        cpu_percent:.1f}% (threshold: {
-                        self.config.max_cpu_usage_percent}%)",
+                        message=f"CPU usage at {cpu_percent:.1f}% (threshold: {self.config.max_cpu_usage_percent}%)",
                         component="system_cpu",
                         timestamp=datetime.now(UTC),
                         metrics={
                             "cpu_percent": cpu_percent,
                             "cpu_count": psutil.cpu_count(),
                         },
-                    ),
+                    )
                 )
 
         except Exception as e:
@@ -278,24 +245,13 @@ class AlertManager:
                     component="system_monitor",
                     timestamp=datetime.now(UTC),
                     metrics={"error": str(e)},
-                ),
+                )
             )
 
         return alerts
 
     def send_alert(self, alert: Alert) -> bool:
-        """Send alert through configured notification channels.
-
-        Args:
-            alert: Alert to send
-
-        Returns:
-            True if alert sent successfully
-
-        Args:
-                alert: Parameter description.
-
-        """
+        """Send alert through configured channels."""
         sent = False
 
         # Log alert
@@ -316,12 +272,7 @@ class AlertManager:
         return sent
 
     def run_health_check(self) -> list[Alert]:
-        """Run comprehensive health check and return any alerts.
-
-        Returns:
-            List of active alerts
-
-        """
+        """Run complete health check."""
         alerts = []
 
         # Check sync processes
@@ -359,23 +310,18 @@ class AlertManager:
 
     def _extract_start_time(self, log_content: str) -> datetime | None:
         """Extract start time from log content."""
-        """Extract start time from log content."""
         lines = log_content.split("\n")
         for line in lines:
             if "INÍCIO:" in line or "Starting" in line:
                 # Try to extract timestamp from line
-                # This is a simplified parser - could be enhanced
                 try:
                     # Look for ISO timestamp pattern
                     timestamp_pattern = r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
                     match = re.search(timestamp_pattern, line)
                     if match:
                         return datetime.strptime(
-                            match.group(1),
-                            "%Y-%m-%d %H:%M:%S",
-                        ).replace(
-                            tzinfo=UTC,
-                        )
+                            match.group(1), "%Y-%m-%d %H:%M:%S"
+                        ).replace(tzinfo=UTC)
                 except Exception as e:
                     # Unable to parse timestamp
                     logger.debug("Failed to parse timestamp: %s", e)
@@ -420,14 +366,12 @@ class AlertManager:
 
     def _send_email(self, alert: Alert) -> bool:
         """Send alert via email."""
-        """Send alert via email."""
         # Email implementation would go here
         # For now, just log that we would send email
         logger.info(f"Would send email alert: {alert.title}")
         return True
 
     def _send_slack(self, alert: Alert) -> bool:
-        """Send alert via Slack."""
         """Send alert via Slack."""
         # Slack implementation would go here
         # For now, just log that we would send Slack message
@@ -436,17 +380,21 @@ class AlertManager:
 
 
 def create_alert_manager() -> AlertManager:
-    """Create alert manager with default configuration."""
+    """Create alert manager with default config."""
     config = AlertConfig()
     return AlertManager(config)
 
 
 if __name__ == "__main__":
     # Test the alert manager
-    logger = logging.getLogger(__name__)
+    from flext_observability.logging import setup_logging
+
+    # Setup FLEXT logging for testing
+    setup_logging()
+
     manager = create_alert_manager()
     alerts = manager.run_health_check()
 
-    logger.error("Health check completed. Found %d alerts:", len(alerts))
+    logger.info("Health check completed. Found %d alerts:", len(alerts))
     for alert in alerts:
-        logger.error("  [%s] %s: %s", alert.severity, alert.title, alert.message)
+        logger.info("  [%s] %s: %s", alert.severity, alert.title, alert.message)

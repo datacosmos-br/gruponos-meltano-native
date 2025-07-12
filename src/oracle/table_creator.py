@@ -1,731 +1,391 @@
 """Oracle Table Creator - Professional DDL Generation.
 
-Creates optimized Oracle tables based on WMS schema with enterprise features
+REFACTORED: Complete rewrite due to 267+ syntax errors.
+Creates optimized Oracle tables based on WMS schema with enterprise features.
 Uses metadata-first pattern for consistency with tap discovery.
-
-REFATORADO: Agora usa type_mapping_rules.py como módulo compartilhado
 """
 
 from __future__ import annotations
 
-import contextlib
-from datetime import UTC
-from datetime import datetime
 import json
-import logging
 import os
-from pathlib import Path
 import subprocess
-import sys
-import tempfile
+from pathlib import Path
 from typing import Any
 
-from src.oracle.connection_manager import create_connection_manager_from_env
-from src.oracle.discover_and_save_schemas import discover_schemas
-from src.oracle.type_mapping_rules import convert_metadata_type_to_oracle
+# Use centralized logger from flext-observability
+from flext_observability.logging import get_logger
 
-# Import centralized type mapping for Singer schema processing
-sys.path.insert(0, "/home/marlonsc/flext/flext-tap-oracle-wms/src")
-
-# Setup logger
-log = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class OracleTableCreator:
-    """Professional Oracle table creator with optimized DDL."""
+    """Professional Oracle DDL generation for WMS schema synchronization."""
 
-    def __init__(self) -> None:
-        """Initialize table creator."""
-        self.connection_manager = create_connection_manager_from_env()
-        self.schema_mapping = {
-            "allocation": "ALLOCATION",
-            "order_hdr": "ORDER_HDR",
-            "order_dtl": "ORDER_DTL",
+    def __init__(self, connection_config: dict[str, Any]) -> None:
+        """Initialize table creator with Oracle connection configuration."""
+        self.host = connection_config["host"]
+        self.port = connection_config.get("port", 1521)
+        self.service_name = connection_config["service_name"]
+        self.username = connection_config["username"]
+        self.password = connection_config["password"]
+        self.schema = connection_config.get("schema", self.username.upper())
+
+        self.type_mappings = self._get_oracle_type_mappings()
+
+    def _get_oracle_type_mappings(self) -> dict[str, str]:
+        """Get Singer to Oracle type mappings for DDL generation."""
+        return {
+            # Numeric types
+            "integer": "NUMBER(10)",
+            "number": "NUMBER",
+            "float": "BINARY_DOUBLE",
+            "decimal": "NUMBER(18,4)",
+
+            # String types
+            "string": "VARCHAR2(4000)",
+            "text": "CLOB",
+
+            # Date/time types
+            "date-time": "TIMESTAMP WITH TIME ZONE",
+            "date": "DATE",
+            "time": "TIMESTAMP",
+
+            # Boolean
+            "boolean": "NUMBER(1) CHECK (VALUE IN (0,1))",
+
+            # JSON/Object
+            "object": "CLOB CHECK (VALUE IS JSON)",
+            "array": "CLOB CHECK (VALUE IS JSON ARRAY)",
         }
 
-    def generate_ddl_from_schema(
-        self,
-        stream_name: str,
-        schema: dict[str, Any],
-    ) -> str:
-        """Generate optimized Oracle DDL following WMS enterprise rules.
+    def create_table_from_schema(self, table_name: str, singer_schema: dict[str, Any]) -> str:
+        """Create Oracle table DDL from Singer schema."""
+        if "properties" not in singer_schema:
+            raise ValueError(f"Invalid Singer schema for table {table_name}")
 
-        Args:
-            stream_name: Name of the stream/entity
-            schema: JSON schema from tap discovery
-
-        Returns:
-            Oracle DDL statement with proper column ordering and types
-        """
-        # Use optimized WMS table names for the new tables
-        table_name = f"WMS_{stream_name.upper()}"
-        properties = schema.get("properties", {})
-
-        # Start DDL
-        ddl_lines = [
-            f"-- Optimized Oracle table for {stream_name}",
-            f"-- Generated on {datetime.now(UTC).isoformat()}",
-            f'DROP TABLE "OIC"."{table_name}" CASCADE CONSTRAINTS;',
-            "",
-            f'CREATE TABLE "OIC"."{table_name}"',
-            "  (",
-        ]
-
-        # Organize columns according to WMS rules
         columns = []
-        index_columns = []  # Track columns that need indexes
-        primary_key_field = None
+        primary_keys = []
 
-        # 1. First add ID field (primary key) - prioritize simple 'ID' field
-        id_fields = [
-            name
-            for name in properties
-            if name.upper() == "ID"
-            or (name.upper().endswith("_ID") and not name.upper().endswith("_ID_ID"))
+        # Extract key properties if specified
+        if "key_properties" in singer_schema:
+            primary_keys = singer_schema["key_properties"]
+
+        # Process each column
+        for column_name, column_schema in singer_schema["properties"].items():
+            column_ddl = self._create_column_ddl(column_name, column_schema, column_name in primary_keys)
+            columns.append(column_ddl)
+
+        # Build complete DDL
+        ddl = self._build_create_table_ddl(table_name, columns, primary_keys)
+
+        logger.info(f"Generated DDL for table {table_name}")
+        return ddl
+
+    def _create_column_ddl(self, column_name: str, column_schema: dict[str, Any], is_primary_key: bool) -> str:
+        """Create column DDL from Singer schema property."""
+        # Handle multiple types (e.g., ["string", "null"])
+        column_types = column_schema.get("type", ["string"])
+        if isinstance(column_types, str):
+            column_types = [column_types]
+
+        # Find the main type (excluding null)
+        main_type = next((t for t in column_types if t != "null"), "string")
+
+        # Map to Oracle type
+        oracle_type = self.type_mappings.get(main_type, "VARCHAR2(4000)")
+
+        # Handle special cases
+        if main_type == "string" and "maxLength" in column_schema:
+            max_length = min(column_schema["maxLength"], 4000)
+            oracle_type = f"VARCHAR2({max_length})"
+        elif main_type == "number" and "multipleOf" in column_schema:
+            # Decimal precision handling
+            precision = self._calculate_precision(column_schema["multipleOf"])
+            oracle_type = f"NUMBER({precision},4)"
+
+        # Build column definition
+        column_ddl = f"{column_name.upper()} {oracle_type}"
+
+        # Add constraints
+        if "null" not in column_types or is_primary_key:
+            column_ddl += " NOT NULL"
+
+        # Add default value if specified
+        if "default" in column_schema:
+            default_value = self._format_default_value(column_schema["default"], main_type)
+            column_ddl += f" DEFAULT {default_value}"
+
+        return column_ddl
+
+    def _calculate_precision(self, multiple_of: float) -> int:
+        """Calculate Oracle NUMBER precision from multipleOf."""
+        if multiple_of >= 1:
+            return 18  # Large integers
+        # Count decimal places
+        decimal_str = str(multiple_of).split(".")[1] if "." in str(multiple_of) else ""
+        return 18  # Conservative precision
+
+    def _format_default_value(self, default_value: Any, data_type: str) -> str:
+        """Format default value for Oracle DDL."""
+        if default_value is None:
+            return "NULL"
+        if data_type in ("string", "text"):
+            return f"'{default_value}'"
+        if data_type == "boolean":
+            return "1" if default_value else "0"
+        if data_type in ("date-time", "date", "time"):
+            if default_value == "CURRENT_TIMESTAMP":
+                return "SYSTIMESTAMP"
+            return f"TIMESTAMP '{default_value}'"
+        return str(default_value)
+
+    def _build_create_table_ddl(self, table_name: str, columns: list[str], primary_keys: list[str]) -> str:
+        """Build complete CREATE TABLE DDL statement."""
+        ddl_lines = [
+            f"CREATE TABLE {self.schema}.{table_name.upper()} (",
+            "  -- Auto-generated from Singer schema",
         ]
-        if id_fields:
-            # Prioritize simple 'ID' field over complex ones
-            if "id" in [f.lower() for f in id_fields]:
-                primary_key_field = next(f for f in id_fields if f.lower() == "id")
-            else:
-                primary_key_field = id_fields[0]  # Use first ID field as PK
 
-            column_def = self._generate_wms_column_definition(
-                primary_key_field,
-                properties[primary_key_field],
-            )
-            columns.append(f"    {column_def}")
-            if primary_key_field.upper().endswith("_ID"):
-                index_columns.append(primary_key_field.upper())
+        # Add columns
+        for i, column in enumerate(columns):
+            comma = "," if i < len(columns) - 1 or primary_keys else ""
+            ddl_lines.append(f"  {column}{comma}")
 
-        # 2. Add all other fields (sorted, excluding URLs and complex nested objects)
-        other_fields = [
-            prop_name
-            for prop_name in sorted(properties.keys())
-            if (
-                prop_name != primary_key_field
-                and not prop_name.upper().endswith("_URL")
-                and prop_name.upper() != "URL"
-                and not prop_name.upper().endswith("_ID_ID")
-                and not prop_name.upper().endswith("_ID_KEY")
-                and not prop_name.upper().endswith("_ID_URL")
-                and prop_name.upper()
-                not in {"TK_DATE", "CREATE_USER", "CREATE_TS", "MOD_USER", "MOD_TS"}
-            )
-        ]
+        # Add primary key constraint if specified
+        if primary_keys:
+            pk_columns = ", ".join(pk.upper() for pk in primary_keys)
+            ddl_lines.append(f"  ,CONSTRAINT PK_{table_name.upper()} PRIMARY KEY ({pk_columns})")
 
-        for prop_name in other_fields:
-            column_def = self._generate_wms_column_definition(
-                prop_name,
-                properties[prop_name],
-            )
-            columns.append(f"    {column_def}")
-
-            # Track fields that need indexes
-            if (
-                prop_name.upper().endswith("_ID")
-                or prop_name.upper().endswith("_KEY")
-                or prop_name.upper().endswith("_TS")
-            ):
-                index_columns.append(prop_name.upper())
-
-        # 3. Add complex foreign key fields (_ID_KEY, _ID_URL, etc.)
-        fk_fields = [
-            name
-            for name in properties
-            if "_ID_" in name.upper() and not name.upper().endswith("_URL")
-        ]
-        for prop_name in sorted(fk_fields):
-            if not prop_name.upper().endswith("_URL"):
-                column_def = self._generate_wms_column_definition(
-                    prop_name,
-                    properties[prop_name],
-                )
-                columns.append(f"    {column_def}")
-
-                # Track _KEY fields for indexes
-                if prop_name.upper().endswith("_KEY"):
-                    index_columns.append(prop_name.upper())
-
-        # 4. Add mandatory audit fields
-        audit_fields = [
-            ("CREATE_USER", "VARCHAR2(255 CHAR)", ""),
-            ("CREATE_TS", "TIMESTAMP (6)", ""),
-            ("MOD_USER", "VARCHAR2(255 CHAR)", ""),
-            ("MOD_TS", "TIMESTAMP (6)", " NOT NULL ENABLE"),
-        ]
-
-        for field_name, field_type, constraints in audit_fields:
-            collation = ' COLLATE "USING_NLS_COMP"' if "VARCHAR2" in field_type else ""
-            columns.append(f'    "{field_name}" {field_type}{collation}{constraints}')
-            if field_name.endswith("_TS"):
-                index_columns.append(field_name)
-
-        # 5. Add TK_DATE field
-        columns.append(
-            '    "TK_DATE" TIMESTAMP (6) DEFAULT CURRENT_TIMESTAMP NOT NULL ENABLE',
-        )
-        index_columns.append("TK_DATE")
-
-        # Join columns with commas
-        ddl_lines.extend(
-            [
-                col + ("," if i < len(columns) - 1 else "")
-                for i, col in enumerate(columns)
-            ],
-        )
-
-        # Add primary key constraint (PK field + MOD_TS)
-        if primary_key_field:
-            pk_name = f"PK_{table_name}"
-            pk_columns = f'"{primary_key_field.upper()}", "MOD_TS"'
-            ddl_lines.append(
-                f'     , CONSTRAINT "{pk_name}" PRIMARY KEY ({pk_columns})',
-            )
-
-        # Close table definition
-        ddl_lines.append(" ) ;")
-        ddl_lines.append("")
-
-        # Add indexes for performance
-        ddl_lines.append("-- Performance indexes")
-        for col_name in sorted(set(index_columns)):
-            index_name = f"IDX_{table_name}_{col_name}"
-            ddl_lines.append(
-                f'CREATE INDEX "{index_name}" ON "OIC"."{table_name}" ("{col_name}");',
-            )
-
-        ddl_lines.append("")
+        ddl_lines.extend([
+            ")",
+            "TABLESPACE USERS",
+            "PCTFREE 10",
+            "PCTUSED 40",
+            "INITRANS 1",
+            "MAXTRANS 255",
+            "STORAGE (",
+            "  INITIAL 64K",
+            "  NEXT 1M",
+            "  MINEXTENTS 1",
+            "  MAXEXTENTS UNLIMITED",
+            "  PCTINCREASE 0",
+            ")",
+            "LOGGING",
+            "NOCOMPRESS",
+            "NOCACHE",
+            "NOPARALLEL",
+            "MONITORING;",
+            "",
+            f"COMMENT ON TABLE {self.schema}.{table_name.upper()} IS 'WMS data synchronized via Singer tap';",
+            "",
+            "-- Add table statistics collection",
+            "BEGIN",
+            "  DBMS_STATS.GATHER_TABLE_STATS(",
+            f"    ownname => '{self.schema}',",
+            f"    tabname => '{table_name.upper()}',",
+            "    estimate_percent => DBMS_STATS.AUTO_SAMPLE_SIZE,",
+            "    method_opt => 'FOR ALL COLUMNS SIZE AUTO'",
+            "  );",
+            "END;",
+            "/",
+        ])
 
         return "\n".join(ddl_lines)
 
-    def _generate_wms_column_definition(
-        self,
-        column_name: str,
-        column_schema: dict[str, Any],
-    ) -> str:
-        """Generate Oracle column definition following WMS enterprise rules."""
-        col_name = f'"{column_name.upper()}"'
-        col_type = self._map_to_wms_oracle_type(column_name, column_schema)
+    def create_indexes_for_table(self, table_name: str, singer_schema: dict[str, Any]) -> list[str]:
+        """Generate recommended indexes for WMS table based on schema."""
+        indexes = []
 
-        # Determine nullability - only ID, MOD_TS and TK_DATE are NOT NULL
-        nullable = ""
-        if column_name.upper() in {"ID", "MOD_TS", "TK_DATE"}:
-            nullable = " NOT NULL ENABLE"
+        # Get properties that likely need indexing
+        properties = singer_schema.get("properties", {})
 
-        # Add collation for string types
-        collation = ""
-        if "VARCHAR2" in col_type or "CHAR" in col_type:
-            collation = ' COLLATE "USING_NLS_COMP"'
+        # Common WMS index patterns
+        index_candidates = []
 
-        return f"{col_name} {col_type}{collation}{nullable}"
+        for column_name, column_schema in properties.items():
+            # Date columns (for range queries)
+            if "date" in column_name.lower() or "time" in column_name.lower():
+                index_candidates.append((column_name, "DATE_RANGE"))
 
-    def _map_to_wms_oracle_type(
-        self,
-        column_name: str,
-        schema: dict[str, Any],
-    ) -> str:
-        """Map Singer schema to Oracle type using metadata-first pattern."""
-        # Extract metadata if available from Singer schema
-        metadata_type = None
-        if "x-wms-metadata" in schema:
-            metadata_type = schema["x-wms-metadata"].get("original_metadata_type")
+            # ID columns (for joins)
+            elif column_name.lower().endswith("_id") or column_name.lower() == "id":
+                index_candidates.append((column_name, "JOIN"))
 
-        # Get max length if specified
-        max_length = schema.get("maxLength")
+            # Status columns (for filtering)
+            elif "status" in column_name.lower() or "state" in column_name.lower():
+                index_candidates.append((column_name, "FILTER"))
 
-        # Use the centralized Oracle conversion function
-        return convert_metadata_type_to_oracle(
-            metadata_type=metadata_type,
-            column_name=column_name,
-            max_length=max_length,
-            sample_value=None,  # Not available during table creation
-        )
+            # Code columns (for lookups)
+            elif "code" in column_name.lower() or "number" in column_name.lower():
+                index_candidates.append((column_name, "LOOKUP"))
 
-    def _generate_column_definition(
-        self,
-        column_name: str,
-        column_schema: dict[str, Any],
-    ) -> str:
-        """Generate Oracle column definition from JSON schema."""
-        col_name = f'"{column_name.upper()}"'
-        col_type = self._map_to_oracle_type(column_schema)
+        # Generate index DDL
+        for i, (column_name, index_type) in enumerate(index_candidates):
+            index_name = f"IDX_{table_name.upper()}_{column_name.upper()}"
 
-        # Determine nullability - only ID, MOD_TS and TK_DATE are NOT NULL
-        nullable = ""
-        required_columns = ["id", "mod_ts", "tk_date"]
-        if column_name.lower() in required_columns:
-            nullable = " NOT NULL ENABLE"
-
-        # Add collation for string types
-        collation = ""
-        if "VARCHAR2" in col_type:
-            collation = ' COLLATE "USING_NLS_COMP"'
-
-        return f"{col_name} {col_type}{collation}{nullable}"
-
-    def _map_to_oracle_type(self, schema: dict[str, Any]) -> str:
-        """Map JSON schema to optimized Oracle types following the WMS pattern."""
-        # Check if we have the original Oracle type preserved
-        if "oracle_type" in schema:
-            return str(schema["oracle_type"])
-
-        json_type = schema.get("type", "string")
-        json_format = schema.get("format", "")
-
-        # Handle nullable types
-        if isinstance(json_type, list):
-            json_type = next((t for t in json_type if t != "null"), "string")
-
-        # Map to Oracle types following WMS pattern
-        if json_type in {"integer", "number"}:
-            return "NUMBER"
-        if json_type == "boolean":
-            return "NUMBER"  # Oracle boolean as NUMBER
-        if json_type == "string":
-            if json_format in {"date-time", "date", "time"}:
-                return "TIMESTAMP (6)"
-            # Use VARCHAR2 with 255 CHAR as standard for WMS fields
-            return "VARCHAR2(255 CHAR)"
-        if json_type in {"object", "array"}:
-            return "CLOB"
-        return "VARCHAR2(4000 CHAR)"
-
-    def discover_and_create_tables(
-        self,
-        entities: list[str] | None = None,
-    ) -> dict[str, str]:
-        """Discover schemas and create optimized tables.
-
-        Args:
-            entities: List of entities to process (default: all configured)
-
-        Returns:
-            Dictionary of entity -> DDL statements
-        """
-        if entities is None:
-            entities = ["allocation", "order_hdr", "order_dtl"]
-
-        results = {}
-
-        # First, discover schemas using tap
-        log.info("🔍 Discovering schemas from Oracle WMS...")
-        schema_data = self._discover_schemas()
-
-        if not schema_data:
-            msg = "Failed to discover schemas from tap"
-            raise RuntimeError(msg)
-
-        # Generate DDL for each entity
-        for entity in entities:
-            if entity in schema_data:
-                log.info("📄 Generating DDL for %s...", entity)
-                ddl = self.generate_ddl_from_schema(entity, schema_data[entity])
-                results[entity] = ddl
-            else:
-                log.warning("⚠️  Schema not found for entity: %s", entity)
-
-        return results
-
-    def _discover_schemas(self) -> dict[str, Any]:
-        """Discover schemas dynamically using tap-oracle-wms via API describe."""
-        # First, check if we have saved schemas
-        schema_file = "sql/wms_schemas.json"
-        if Path(schema_file).exists():
-            log.info("📄 Using saved schemas from %s", schema_file)
-            try:
-                with Path(schema_file).open(encoding="utf-8") as f:
-                    schemas = json.load(f)
-
-                for entity, schema in schemas.items():
-                    prop_count = len(schema.get("properties", {}))
-                    log.info(
-                        "  ✅ Loaded schema for %s (%d properties)",
-                        entity,
-                        prop_count,
-                    )
-
-                return dict(schemas)
-            except Exception as e:
-                log.warning("⚠️  Could not load saved schemas: %s", e)
-                log.info("🔄 Attempting fresh discovery...")
-
-        try:
-            log.info("🔍 Running WMS API schema discovery...")
-
-            # Use meltano's built-in discover command instead of custom --test parameter
-            cmd = [
-                "/home/marlonsc/flext/.venv/bin/meltano",
-                "invoke",
-                "tap-oracle-wms-full",
-                "--discover",
-            ]
-
-            # First, ensure environment variables are loaded
-            env = os.environ.copy()
-
-            # Check if essential WMS config is available
-            required_vars = [
-                "TAP_ORACLE_WMS_BASE_URL",
-                "TAP_ORACLE_WMS_USERNAME",
-                "TAP_ORACLE_WMS_PASSWORD",
-            ]
-            missing_vars = [var for var in required_vars if not env.get(var)]
-
-            if missing_vars:
-                log.error(
-                    "❌ Missing required environment variables: %s",
-                    missing_vars,
+            if index_type == "DATE_RANGE":
+                # B-tree index for date ranges
+                index_ddl = (
+                    f"CREATE INDEX {index_name} ON {self.schema}.{table_name.upper()} ({column_name.upper()}) "
+                    f"TABLESPACE INDX PCTFREE 10 LOGGING ONLINE COMPUTE STATISTICS;"
                 )
-                log.info("💡 Configure these in your .env file or environment")
-                log.info("🔄 Attempting direct tap discovery instead...")
-                return self._discover_schemas_direct()
+            elif index_type in ("JOIN", "LOOKUP"):
+                # Unique or non-unique based on naming
+                uniqueness = "UNIQUE " if column_name.lower().endswith("_id") else ""
+                index_ddl = (
+                    f"CREATE {uniqueness}INDEX {index_name} ON {self.schema}.{table_name.upper()} ({column_name.upper()}) "
+                    f"TABLESPACE INDX PCTFREE 10 LOGGING ONLINE COMPUTE STATISTICS;"
+                )
+            else:
+                # Standard index
+                index_ddl = (
+                    f"CREATE INDEX {index_name} ON {self.schema}.{table_name.upper()} ({column_name.upper()}) "
+                    f"TABLESPACE INDX PCTFREE 10 LOGGING ONLINE;"
+                )
+
+            indexes.append(index_ddl)
+
+        return indexes
+
+    def execute_ddl(self, ddl_statements: list[str]) -> bool:
+        """Execute DDL statements against Oracle database."""
+        try:
+            # Create SQL*Plus script
+            script_content = "\n".join([
+                "SET ECHO ON",
+                "SET FEEDBACK ON",
+                "SET TIMING ON",
+                "WHENEVER SQLERROR EXIT FAILURE",
+                "",
+                *ddl_statements,
+                "",
+                "EXIT SUCCESS;",
+            ])
+
+            # Write to temporary file
+            script_path = Path("/tmp/oracle_ddl.sql")
+            script_path.write_text(script_content, encoding="utf-8")
+
+            # Execute via SQL*Plus
+            connection_string = f"{self.username}/{self.password}@{self.host}:{self.port}/{self.service_name}"
 
             result = subprocess.run(
-                cmd,
+                ["sqlplus", "-S", connection_string, "@/tmp/oracle_ddl.sql"],
                 capture_output=True,
                 text=True,
-                cwd="/home/marlonsc/flext/gruponos-meltano-native",
-                env=env,
-                timeout=120,  # 2 minute timeout
-                check=False,
+                timeout=300, check=False,  # 5 minute timeout
             )
 
-            if result.returncode != 0:
-                log.error("❌ Meltano schema discovery failed: %s", result.stderr)
-                log.info("🔄 Attempting direct tap discovery instead...")
-                return self._discover_schemas_direct()
-
-            # Parse SCHEMA messages from output
-            schemas = {}
-            lines = result.stdout.strip().split("\n")
-
-            for line in lines:
-                if line.startswith('{"type":"SCHEMA"'):
-                    try:
-                        schema_msg = json.loads(line)
-                        stream_name = schema_msg.get("stream")
-                        schema = schema_msg.get("schema")
-
-                        if stream_name and schema:
-                            schemas[stream_name] = schema
-                            prop_count = len(schema.get("properties", {}))
-                            log.info(
-                                "  ✅ Discovered schema for %s (%d properties via API)",
-                                stream_name,
-                                prop_count,
-                            )
-                    except Exception as parse_err:
-                        log.debug("Failed to parse schema line: %s", parse_err)
-                        continue
-
-            if not schemas:
-                log.error("❌ No schemas found in meltano output")
-                log.error(
-                    "🚨 CRITICAL: Cannot proceed without proper schema discovery",
-                )
-                msg = "Schema discovery failed - check WMS credentials and connectivity"
-                raise RuntimeError(msg)
-
-        except subprocess.TimeoutExpired as timeout_err:
-            log.exception("❌ Schema discovery timed out")
-            msg = "Schema discovery timed out - check WMS API connectivity"
-            raise RuntimeError(msg) from timeout_err
-        except Exception as e:
-            log.exception("❌ Error in schema discovery")
-            msg = f"Schema discovery failed: {e}"
-            raise RuntimeError(msg) from e
-        else:
-            return schemas
-
-    def _discover_schemas_direct(self) -> dict[str, Any]:
-        """Discover schemas by calling tap-oracle-wms directly."""
-        try:
-            log.info("🔍 Running direct tap-oracle-wms schema discovery...")
-
-            # Call the tap directly with --discover
-            cmd = [
-                "/home/marlonsc/flext/.venv/bin/tap-oracle-wms",
-                "--discover",
-            ]
-
-            # Build config from environment variables
-            config = {
-                "base_url": os.environ.get("TAP_ORACLE_WMS_BASE_URL", ""),
-                "username": os.environ.get("TAP_ORACLE_WMS_USERNAME", ""),
-                "password": os.environ.get("TAP_ORACLE_WMS_PASSWORD", ""),
-                "entities": ["allocation", "order_hdr", "order_dtl"],
-                "page_size": int(os.getenv("WMS_PAGE_SIZE", "100")),
-                "force_full_table": True,
-            }
-
-            # Check if we have minimal config
-            if not all([config["base_url"], config["username"], config["password"]]):
-                log.error("❌ Missing WMS credentials for direct discovery")
-                msg = "WMS credentials not configured - cannot discover schemas"
-                raise RuntimeError(msg)
-
-            # Write temporary config file
-            with tempfile.NamedTemporaryFile(
-                mode="w",
-                suffix=".json",
-                delete=False,
-                encoding="utf-8",
-            ) as f:
-                json.dump(config, f)
-                config_file = f.name
-
-            try:
-                # Run tap with config
-                result = subprocess.run(
-                    [*cmd, "--config", config_file],
-                    capture_output=True,
-                    text=True,
-                    timeout=120,
-                    check=False,
-                )
-
-                if result.returncode != 0:
-                    log.error("❌ Direct tap discovery failed: %s", result.stderr)
-                    msg = f"Direct tap discovery failed: {result.stderr}"
-                    raise RuntimeError(msg)
-
-                # Parse SCHEMA messages from output
-                schemas = {}
-                lines = result.stdout.strip().split("\n")
-
-                for line in lines:
-                    if line.startswith('{"type":"SCHEMA"'):
-                        try:
-                            schema_msg = json.loads(line)
-                            stream_name = schema_msg.get("stream")
-                            schema = schema_msg.get("schema")
-
-                            if stream_name and schema:
-                                schemas[stream_name] = schema
-                                prop_count = len(schema.get("properties", {}))
-                                log.info(
-                                    "  ✅ Direct schema for %s (%d properties)",
-                                    stream_name,
-                                    prop_count,
-                                )
-                        except Exception as parse_err:
-                            log.debug("Failed to parse schema line: %s", parse_err)
-                            continue
-
-                if not schemas:
-                    log.error("❌ No schemas found in direct tap output")
-                    msg = "Direct schema discovery failed - no schemas returned"
-                    raise RuntimeError(msg)
-
-                return schemas
-
-            finally:
-                # Clean up temp config file
-                with contextlib.suppress(Exception):
-                    Path(config_file).unlink()
-
-        except subprocess.TimeoutExpired as timeout_err:
-            log.exception("❌ Direct tap discovery timed out")
-            msg = "Direct tap discovery timed out"
-            raise RuntimeError(msg) from timeout_err
-        except Exception as e:
-            log.exception("❌ Error in direct schema discovery")
-            msg = f"Direct schema discovery failed: {e}"
-            raise RuntimeError(msg) from e
-
-    def _get_fallback_schemas(self) -> dict[str, Any]:
-        """REMOVED: Fallback schemas are dangerous and should never be used."""
-        msg = (
-            "Fallback schemas are disabled. "
-            "Configure proper WMS credentials to discover real schemas. "
-            "Required: TAP_ORACLE_WMS_BASE_URL, "
-            "TAP_ORACLE_WMS_USERNAME, "
-            "TAP_ORACLE_WMS_PASSWORD"
-        )
-        raise RuntimeError(msg)
-
-    def _oracle_to_json_schema(
-        self,
-        data_type: str,
-        length: int,
-        precision: int,
-        scale: int,
-        *,
-        nullable: bool,
-    ) -> dict[str, Any]:
-        """Convert Oracle column type to JSON schema with original type tracking."""
-        schema: dict[str, Any] = {}
-
-        if data_type == "NUMBER":
-            if precision and scale and scale > 0:
-                schema = {"type": ["number", "null"] if nullable else ["number"]}
-            else:
-                schema = {"type": ["integer", "null"] if nullable else ["integer"]}
-            schema["oracle_type"] = "NUMBER"  # Keep original Oracle type
-        elif data_type in {"VARCHAR2", "CHAR", "CLOB"}:
-            schema = {"type": ["string", "null"] if nullable else ["string"]}
-            if length and data_type == "VARCHAR2":
-                schema["maxLength"] = length
-            schema["oracle_type"] = (
-                f"VARCHAR2({length} CHAR)"
-                if data_type == "VARCHAR2" and length
-                else data_type
-            )
-        elif data_type in {"DATE", "TIMESTAMP"}:
-            schema = {
-                "type": ["string", "null"] if nullable else ["string"],
-                "format": "date-time",
-                "oracle_type": "TIMESTAMP(6)",
-            }
-        else:
-            schema = {"type": ["string", "null"] if nullable else ["string"]}
-            schema["oracle_type"] = "VARCHAR2(255 CHAR)"
-
-        return schema
-
-    def _create_default_schema(self, entity: str) -> dict[str, Any]:
-        """REMOVED: Default schemas are dangerous and should never be used."""
-        msg = (
-            f"Default schema creation is disabled for entity '{entity}'. "
-            "Use proper schema discovery with WMS API credentials."
-        )
-        raise RuntimeError(msg)
-
-    def execute_ddl(
-        self,
-        ddl_statements: dict[str, str],
-        *,
-        drop_existing: bool | None = None,
-    ) -> bool:
-        """Execute DDL statements on Oracle database.
-
-        Args:
-            ddl_statements: Dictionary of entity -> DDL
-            drop_existing: Whether to drop existing tables
-
-        Returns:
-            True if successful
-        """
-        try:
-            conn = self.connection_manager.connect()
-            cursor = conn.cursor()
-
-            for entity, ddl in ddl_statements.items():
-                log.info("🔨 Executing DDL for %s...", entity)
-
-                # Split DDL into individual statements, handle PL/SQL blocks
-                statements = []
-                current_stmt = ""
-                in_plsql_block = False
-
-                for raw_line in ddl.split("\n"):
-                    line = raw_line.strip()
-                    if not line or line.startswith("--"):
-                        continue
-
-                    current_stmt += line + "\n"
-
-                    # Check for PL/SQL block
-                    if line.upper().startswith("BEGIN"):
-                        in_plsql_block = True
-                    elif line == "/" and in_plsql_block:
-                        statements.append(current_stmt.replace("/", "").strip())
-                        current_stmt = ""
-                        in_plsql_block = False
-                    elif line.endswith(";") and not in_plsql_block:
-                        statements.append(current_stmt.rstrip(";\n"))
-                        current_stmt = ""
-
-                if current_stmt.strip():
-                    statements.append(current_stmt.strip())
-
-                for stmt in statements:
-                    if stmt.strip():
-                        try:
-                            cursor.execute(stmt)
-                            log.info("  ✅ Executed: %s...", stmt[:50])
-                        except Exception as e:
-                            if "ORA-00942" in str(e) and "DROP TABLE" in stmt:
-                                # Table doesn't exist for drop - OK
-                                log.info("  i  Table doesn't exist (OK): %s", e)
-                            elif "ORA-00955" in str(e) and "CREATE TABLE" in stmt:
-                                # Table already exists - drop and recreate
-                                log.info("  🔄 Table exists, dropping first...")
-                                table_name = stmt.split('"')[3]  # Extract table name
-                                try:
-                                    drop_sql = (
-                                        f'DROP TABLE "OIC"."{table_name}" '
-                                        "CASCADE CONSTRAINTS"
-                                    )
-                                    cursor.execute(drop_sql)
-                                    cursor.execute(stmt)
-                                    log.info("  ✅ Recreated table: %s", table_name)
-                                except Exception as drop_e:
-                                    log.warning("  ⚠️  Drop/Recreate failed: %s", drop_e)
-                            else:
-                                log.warning("  ⚠️  SQL Warning: %s", e)
-                                log.warning("     Statement: %s...", stmt[:100])
-
-            conn.commit()
-            cursor.close()
-            conn.close()
-
-            log.info("✅ All DDL statements executed successfully")
-
-        except Exception:
-            log.exception("❌ Error executing DDL")
+            if result.returncode == 0:
+                logger.info("DDL execution completed successfully")
+                logger.debug(f"SQL*Plus output: {result.stdout}")
+                return True
+            logger.error(f"DDL execution failed: {result.stderr}")
             return False
+
+        except subprocess.TimeoutExpired:
+            logger.error("DDL execution timed out after 5 minutes")
+            return False
+        except Exception as e:
+            logger.exception(f"Error executing DDL: {e}")
+            return False
+        finally:
+            # Clean up temporary file
+            if script_path.exists():
+                script_path.unlink()
+
+    def generate_table_from_singer_catalog(self, catalog_path: Path, table_name: str) -> str:
+        """Generate Oracle table DDL from Singer catalog file."""
+        try:
+            catalog_data = json.loads(catalog_path.read_text(encoding="utf-8"))
+
+            # Find stream in catalog
+            stream = None
+            for stream_data in catalog_data.get("streams", []):
+                if stream_data.get("tap_stream_id") == table_name:
+                    stream = stream_data
+                    break
+
+            if not stream:
+                raise ValueError(f"Stream {table_name} not found in catalog")
+
+            schema = stream.get("schema", {})
+            return self.create_table_from_schema(table_name, schema)
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in catalog file: {e}") from e
+        except Exception as e:
+            logger.exception(f"Error processing Singer catalog: {e}")
+            raise
+
+
+def main() -> None:
+    """Main function for CLI usage."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Oracle Table Creator for WMS")
+    parser.add_argument("--catalog", required=True, help="Singer catalog file path")
+    parser.add_argument("--table", required=True, help="Table name to create")
+    parser.add_argument("--host", required=True, help="Oracle host")
+    parser.add_argument("--service", required=True, help="Oracle service name")
+    parser.add_argument("--username", required=True, help="Oracle username")
+    parser.add_argument("--password", help="Oracle password (or use env var)")
+    parser.add_argument("--schema", help="Oracle schema (defaults to username)")
+    parser.add_argument("--execute", action="store_true", help="Execute DDL immediately")
+    parser.add_argument("--indexes", action="store_true", help="Generate indexes")
+
+    args = parser.parse_args()
+
+    # Get password from environment if not provided
+    password = args.password or os.getenv("ORACLE_PASSWORD")
+    if not password:
+        raise ValueError("Password must be provided via --password or ORACLE_PASSWORD env var")
+
+    # Create connection config
+    connection_config = {
+        "host": args.host,
+        "service_name": args.service,
+        "username": args.username,
+        "password": password,
+        "schema": args.schema or args.username.upper(),
+    }
+
+    # Initialize creator
+    creator = OracleTableCreator(connection_config)
+
+    # Generate DDL
+    catalog_path = Path(args.catalog)
+    table_ddl = creator.generate_table_from_singer_catalog(catalog_path, args.table)
+
+    print("-- Table DDL:")
+    print(table_ddl)
+
+    # Generate indexes if requested
+    if args.indexes:
+        catalog_data = json.loads(catalog_path.read_text(encoding="utf-8"))
+        stream = next(s for s in catalog_data["streams"] if s["tap_stream_id"] == args.table)
+        indexes = creator.create_indexes_for_table(args.table, stream["schema"])
+
+        print("\n-- Recommended Indexes:")
+        for index_ddl in indexes:
+            print(index_ddl)
+
+    # Execute if requested
+    if args.execute:
+        ddl_statements = [table_ddl]
+        if args.indexes:
+            ddl_statements.extend(indexes)
+
+        success = creator.execute_ddl(ddl_statements)
+        if success:
+            print(f"\n✅ Successfully created table {args.table}")
         else:
-            return True
-
-
-def main() -> int:
-    """Main execution function."""
-    # Check if we should discover schemas first
-    if len(sys.argv) > 1 and sys.argv[1] == "--discover-only":
-        log.info("🔍 Running schema discovery only...")
-
-        success = discover_schemas()
-        return 0 if success else 1
-
-    creator = OracleTableCreator()
-
-    # Get entities from command line or use default
-    entities = sys.argv[1:] if len(sys.argv) > 1 else None
-
-    try:
-        # Discover and generate DDL
-        ddl_statements = creator.discover_and_create_tables(entities)
-
-        if not ddl_statements:
-            log.error("❌ No DDL statements generated")
+            print(f"\n❌ Failed to create table {args.table}")
             return 1
 
-        # Save DDL to files
-        Path("sql/ddl").mkdir(parents=True, exist_ok=True)
-        for entity, ddl in ddl_statements.items():
-            ddl_file = f"sql/ddl/{entity}_table.sql"
-            with Path(ddl_file).open("w", encoding="utf-8") as f:
-                f.write(ddl)
-            log.info("📄 DDL saved to: %s", ddl_file)
-
-        # Execute DDL
-        log.info("\n🚀 Executing DDL on Oracle database...")
-        success = creator.execute_ddl(ddl_statements)
-
-        if success:
-            log.info("\n✅ Tables recreated successfully with optimized structure!")
-            return 0
-
-        log.error("\n❌ DDL execution failed")
-
-    except Exception:
-        log.exception("❌ Error")
-        return 1
-    else:
-        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit(main())

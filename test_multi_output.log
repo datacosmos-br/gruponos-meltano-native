@@ -1,0 +1,18 @@
+🧪 TESTING PIPELINE WITH MULTIPLE ENTITIES
+============================================================
+Entities: allocation, order_hdr, order_dtl
+
+📊 Running pipeline...
+Tap command: /home/marlonsc/flext/.venv/bin/python -m flext_tap_oracle_wms.tap --config tap_config_multi.json
+Target command: /home/marlonsc/flext/.venv/bin/python -m flext_target_oracle --config target_config_multi.json
+
+📊 PIPELINE RESULTS:
+Tap return code: None
+Target return code: 0
+
+✅ TARGET OUTPUT:
+2025-07-11 22:21:57,548 - flext_target_oracle.target - INFO - Target completed successfully:
+2025-07-11 22:21:57,548 - flext_target_oracle.target - INFO -   Total records: 9
+2025-07-11 22:21:57,548 - flext_target_oracle.target - INFO -   Success rate: 66.67%
+
+🎉 Multi-entity pipeline completed successfully!

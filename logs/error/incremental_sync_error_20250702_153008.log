@@ -1,7 +1,0 @@
-2025-07-02 15:30:08 - INÍCIO: Sincronização Incremental
-[2m2025-07-02T18:30:09.419901Z[0m [[32m[1minfo     [0m] [1mEnvironment 'dev' is active   [0m
-Usage: meltano job [OPTIONS] COMMAND [ARGS]...
-Try 'meltano job --help' for help.
-
-Error: No such command 'run'.
-2025-07-02 15:30:08 - ERRO: Sincronização incremental falhou

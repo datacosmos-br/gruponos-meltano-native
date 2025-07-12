@@ -1,2 +1,0 @@
-2025-07-02 10:01:03.996773 - ERRO: DPY-6005: cannot connect to database (CONNECTION_ID=wcL6Af48Yaza6qxlExvIyQ==).
-[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: IP address mismatch, certificate is not valid for '10.93.10.114'. (_ssl.c:1028)

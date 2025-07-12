@@ -2,7 +2,7 @@
 
 **Status**: 100% Production Ready  
 **Architecture**: 100% Meltano Native (No Custom Code)  
-**Last Updated**: 2025-07-01  
+**Last Updated**: 2025-07-01
 
 ---
 
@@ -40,30 +40,30 @@
 
 ### Full Sync (Run Once)
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
-| `./scripts/meltano_commands.sh full-allocation` | Full sync allocation only | Initial load or data recovery |
-| `./scripts/meltano_commands.sh full-order-hdr` | Full sync order_hdr only | Initial load or data recovery |
-| `./scripts/meltano_commands.sh full-order-dtl` | Full sync order_dtl only | Initial load or data recovery |
-| `./scripts/meltano_commands.sh full-all` | Full sync all entities | Complete system initialization |
+| Command                                         | Description               | When to Use                    |
+| ----------------------------------------------- | ------------------------- | ------------------------------ |
+| `./scripts/meltano_commands.sh full-allocation` | Full sync allocation only | Initial load or data recovery  |
+| `./scripts/meltano_commands.sh full-order-hdr`  | Full sync order_hdr only  | Initial load or data recovery  |
+| `./scripts/meltano_commands.sh full-order-dtl`  | Full sync order_dtl only  | Initial load or data recovery  |
+| `./scripts/meltano_commands.sh full-all`        | Full sync all entities    | Complete system initialization |
 
 ### Incremental Sync (Production)
 
-| Command | Description | Frequency |
-|---------|-------------|-----------|
-| `./scripts/meltano_commands.sh start-schedules` | Start all schedules | Once during deployment |
-| `./scripts/meltano_commands.sh stop-schedules` | Stop all schedules | Maintenance windows |
-| `./scripts/meltano_commands.sh run-allocation` | Manual allocation sync | Troubleshooting |
-| `./scripts/meltano_commands.sh run-order-hdr` | Manual order_hdr sync | Troubleshooting |
-| `./scripts/meltano_commands.sh run-order-dtl` | Manual order_dtl sync | Troubleshooting |
+| Command                                         | Description            | Frequency              |
+| ----------------------------------------------- | ---------------------- | ---------------------- |
+| `./scripts/meltano_commands.sh start-schedules` | Start all schedules    | Once during deployment |
+| `./scripts/meltano_commands.sh stop-schedules`  | Stop all schedules     | Maintenance windows    |
+| `./scripts/meltano_commands.sh run-allocation`  | Manual allocation sync | Troubleshooting        |
+| `./scripts/meltano_commands.sh run-order-hdr`   | Manual order_hdr sync  | Troubleshooting        |
+| `./scripts/meltano_commands.sh run-order-dtl`   | Manual order_dtl sync  | Troubleshooting        |
 
 ### Monitoring & Status
 
-| Command | Description | Purpose |
-|---------|-------------|---------|
-| `./scripts/meltano_commands.sh status` | Show sync status | Daily operations |
-| `./scripts/monitoring.sh health-check` | Complete health check | Diagnostics |
-| `./scripts/meltano_commands.sh logs` | Show recent logs | Troubleshooting |
+| Command                                | Description           | Purpose          |
+| -------------------------------------- | --------------------- | ---------------- |
+| `./scripts/meltano_commands.sh status` | Show sync status      | Daily operations |
+| `./scripts/monitoring.sh health-check` | Complete health check | Diagnostics      |
+| `./scripts/meltano_commands.sh logs`   | Show recent logs      | Troubleshooting  |
 
 ---
 
@@ -81,17 +81,17 @@
 ```yaml
 # Incremental sync every minute for each entity
 allocation_incremental_sync: "* * * * *"
-order_hdr_incremental_sync:  "* * * * *"
-order_dtl_incremental_sync:  "* * * * *"
+order_hdr_incremental_sync: "* * * * *"
+order_dtl_incremental_sync: "* * * * *"
 ```
 
 ### Entity Configuration
 
-| Entity | Replication Method | Replication Key | Frequency |
-|--------|-------------------|-----------------|-----------|
-| allocation | INCREMENTAL | mod_ts | Every minute |
-| order_hdr | INCREMENTAL | mod_ts | Every minute |
-| order_dtl | INCREMENTAL | mod_ts | Every minute |
+| Entity     | Replication Method | Replication Key | Frequency    |
+| ---------- | ------------------ | --------------- | ------------ |
+| allocation | INCREMENTAL        | mod_ts          | Every minute |
+| order_hdr  | INCREMENTAL        | mod_ts          | Every minute |
+| order_dtl  | INCREMENTAL        | mod_ts          | Every minute |
 
 ---
 
@@ -156,18 +156,18 @@ WMS Oracle API → tap-oracle-wms → Meltano State → target-oracle → Oracle
 ### Health Checks (Every 5 minutes)
 
 - ✅ Schedule status
-- ✅ Recent run validation  
+- ✅ Recent run validation
 - ✅ Data freshness checks
 - ✅ Disk space monitoring
 
 ### Alert Conditions
 
-| Condition | Severity | Action |
-|-----------|----------|---------|
-| Schedule not running | HIGH | Auto-restart + notification |
-| Data > 2 hours old | MEDIUM | Investigation required |
-| Disk usage > 80% | MEDIUM | Cleanup required |
-| Connection failure | HIGH | Immediate response |
+| Condition            | Severity | Action                      |
+| -------------------- | -------- | --------------------------- |
+| Schedule not running | HIGH     | Auto-restart + notification |
+| Data > 2 hours old   | MEDIUM   | Investigation required      |
+| Disk usage > 80%     | MEDIUM   | Cleanup required            |
+| Connection failure   | HIGH     | Immediate response          |
 
 ### Log Locations
 
@@ -175,7 +175,7 @@ WMS Oracle API → tap-oracle-wms → Meltano State → target-oracle → Oracle
 # Meltano logs
 .meltano/logs/
 
-# Monitoring logs  
+# Monitoring logs
 logs/monitoring.log
 
 # Alert history
@@ -259,7 +259,7 @@ conn.close()
 ### Expected Performance
 
 - **Extraction Rate**: 1000+ records/second
-- **Load Rate**: 5000+ records/second  
+- **Load Rate**: 5000+ records/second
 - **Schedule Delay**: < 60 seconds
 - **Data Freshness**: < 2 minutes
 
@@ -304,7 +304,7 @@ conn.close()
 ## 📞 Support Contacts
 
 - **Technical Lead**: DevOps Team
-- **Business Owner**: GrupoNOS Data Team  
+- **Business Owner**: GrupoNOS Data Team
 - **Emergency**: On-call rotation
 - **Documentation**: This guide + Meltano docs
 

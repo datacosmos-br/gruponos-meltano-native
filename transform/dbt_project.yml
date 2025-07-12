@@ -1,9 +1,9 @@
-name: 'oracle_wms_transforms'
-version: '1.0.0'
+name: "oracle_wms_transforms"
+version: "1.0.0"
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'oracle_wms'
+profile: "oracle_wms"
 
 # These configurations specify where dbt should look for different types of files.
 model-paths: ["models"]
@@ -26,30 +26,30 @@ models:
       +materialized: view
       +docs:
         node_color: "#FFE4B5"
-    
+
     # Intermediate models - business logic transformations
     intermediate:
       +materialized: view
       +docs:
         node_color: "#E6E6FA"
-    
+
     # Marts - final business-ready data models
     marts:
       +materialized: table
       +post-hook: "{{ oracle_analyze_table() }}"
       +docs:
         node_color: "#98FB98"
-      
+
       # Core business entities
       core:
         +materialized: table
         +post-hook: "{{ oracle_analyze_table() }}"
-      
+
       # Warehouse operations
       warehouse:
         +materialized: table
         +post-hook: "{{ oracle_analyze_table() }}"
-      
+
       # Inventory management
       inventory:
         +materialized: table
@@ -62,7 +62,7 @@ snapshots:
     +strategy: timestamp
     +updated_at: updated_at
 
-# Seed configurations  
+# Seed configurations
 seeds:
   oracle_wms_transforms:
     +schema: reference_data
@@ -77,22 +77,23 @@ tests:
 # Variable configurations
 vars:
   # dbt-date settings
-  'dbt-date:time_zone': 'America/Sao_Paulo'
-  
+  "dbt-date:time_zone": "America/Sao_Paulo"
+
   # WMS-specific configurations
-  wms_schema: 'WMS_SYNC'
-  staging_schema: 'WMS_STAGING' 
-  mart_schema: 'WMS_MART'
-  
+  wms_schema: "WMS_SYNC"
+  staging_schema: "WMS_STAGING"
+  mart_schema: "WMS_MART"
+
   # Data quality thresholds
   allocation_freshness_hours: 2
   order_freshness_hours: 24
   master_data_freshness_days: 7
-  
+
   # Business rules
-  valid_allocation_statuses: ['ALLOCATED', 'RESERVED', 'PICKED', 'SHIPPED']
-  valid_order_statuses: ['NEW', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
-  
+  valid_allocation_statuses: ["ALLOCATED", "RESERVED", "PICKED", "SHIPPED"]
+  valid_order_statuses:
+    ["NEW", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]
+
   # Performance settings
   batch_size: 10000
   parallel_dbt_threads: 4
@@ -105,4 +106,4 @@ docs:
 # Dispatch settings for cross-database compatibility
 dispatch:
   - macro_namespace: dbt_utils
-    search_order: ['oracle_wms_transforms', 'dbt_utils']
+    search_order: ["oracle_wms_transforms", "dbt_utils"]

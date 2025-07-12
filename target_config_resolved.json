@@ -1,16 +1,11 @@
 {
-    "host": "10.93.10.166",
-    "port": 1521,
-    "service_name": "gbe8f3f2dbbc562_gndwdbdev01_low.adb.oraclecloud.com",
-    "username": "oic",
-    "password": "aehazdsdfNuupah_#",
-    "protocol": "tcps",
-    "ssl_server_dn_match": false,
-    "batch_size": 100,
-    "pool_size": 1,
-    "validate_records": true,
-    "add_record_metadata": false,
-    "load_method": "append-only",
-    "schema": "oic",
-    "table_prefix": "WMS_"
+  "username": "your_oracle_username",
+  "password": "your_oracle_password",
+  "host": "your-oracle-host",
+  "port": 1521,
+  "service_name": "your_service_name",
+  "protocol": "TCP",
+  "batch_size": 500,
+  "pool_size": 1,
+  "load_method": "append-only"
 }

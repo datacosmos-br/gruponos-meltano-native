@@ -6,15 +6,15 @@ Handles SSL/TCPS connections with proper error handling and fallbacks.
 from __future__ import annotations
 
 import contextlib
-from dataclasses import dataclass
-import logging
 import os
 import time
+from dataclasses import dataclass
 from typing import Any
 
 import oracledb
+import structlog
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @dataclass
@@ -22,10 +22,10 @@ class OracleConnectionConfig:
     """Configuration for Oracle database connections."""
 
     host: str
-    port: int
-    service_name: str
-    username: str
-    password: str
+    port: int = 1522
+    service_name: str = ""
+    username: str = ""
+    password: str = ""
     protocol: str = "tcps"
     ssl_server_dn_match: bool = False
     connection_timeout: int = 60
@@ -35,29 +35,17 @@ class OracleConnectionConfig:
 
 class OracleConnectionManager:
     """Professional Oracle connection manager with SSL handling."""
-
     def __init__(self, config: OracleConnectionConfig) -> None:
-        """Initialize connection manager with configuration."""
         self.config = config
         self._connection = None
         self._connection_attempts = 0
-
     def connect(self) -> oracledb.Connection:
-        """Establish Oracle connection with professional error handling.
-
-        Returns:
-            Active Oracle connection
-
-        Raises:
-            ConnectionError: If connection cannot be established
-
-        """
         for attempt in range(1, self.config.retry_attempts + 1):
             try:
                 logger.info(
-                    "Attempting Oracle connection (attempt %d/%d)",
-                    attempt,
-                    self.config.retry_attempts,
+                    "Attempting Oracle connection",
+                    attempt=attempt,
+                    max_attempts=self.config.retry_attempts,
                 )
 
                 if self.config.protocol.lower() == "tcps":
@@ -65,7 +53,11 @@ class OracleConnectionManager:
                 return self._connect_tcp()
 
             except Exception as e:
-                logger.warning("Connection attempt %d failed: %s", attempt, e)
+                logger.warning(
+                    "Connection attempt failed",
+                    attempt=attempt,
+                    error=str(e),
+                )
 
                 if attempt == self.config.retry_attempts:
                     # Last attempt - try fallback
@@ -78,7 +70,7 @@ class OracleConnectionManager:
                             msg = (
                                 f"Could not establish Oracle connection after "
                                 f"{self.config.retry_attempts} attempts. "
-                                f"Last error: {e}, Fallback error: {fallback_error}"
+                                f"Last error {e}, Fallback error: {fallback_error}"
                             )
                             raise ConnectionError(msg) from e
                     else:
@@ -96,7 +88,6 @@ class OracleConnectionManager:
         raise ConnectionError(msg) from None
 
     def _connect_tcps(self) -> oracledb.Connection:
-        """Connect using TCPS (SSL) protocol."""
         dsn = (
             f"(DESCRIPTION="
             f"(ADDRESS=(PROTOCOL=TCPS)(HOST={self.config.host})"
@@ -105,7 +96,7 @@ class OracleConnectionManager:
             f")"
         )
 
-        logger.debug("Connecting with TCPS DSN: %s", dsn)
+        logger.debug("Connecting with TCPS DSN", dsn=dsn)
 
         connection_params = {
             "user": self.config.username,
@@ -114,14 +105,13 @@ class OracleConnectionManager:
             "ssl_server_dn_match": self.config.ssl_server_dn_match,
         }
 
-        # Add timeout if supported
+        # Add timeout if supported:
         with contextlib.suppress(Exception):
             connection_params["tcp_connect_timeout"] = self.config.connection_timeout
 
         return oracledb.connect(**connection_params)  # type: ignore[no-any-return]
 
     def _connect_tcp(self) -> oracledb.Connection:
-        """Connect using standard TCP protocol."""
         logger.debug("Connecting with standard TCP")
 
         return oracledb.connect(  # type: ignore[no-any-return]
@@ -133,7 +123,6 @@ class OracleConnectionManager:
         )
 
     def _connect_tcp_fallback(self) -> oracledb.Connection:
-        """Fallback TCP connection when TCPS fails."""
         logger.info("Using TCP fallback connection")
 
         # Try with modified port (common fallback)
@@ -160,12 +149,6 @@ class OracleConnectionManager:
         )
 
     def test_connection(self) -> dict[str, Any]:
-        """Test Oracle connection and return diagnostic information.
-
-        Returns:
-            Dictionary with connection test results
-
-        """
         result: dict[str, Any] = {
             "success": False,
             "protocol_used": None,
@@ -192,15 +175,13 @@ class OracleConnectionManager:
 
             conn.close()
 
-            result.update(
-                {
-                    "success": True,
-                    "protocol_used": self.config.protocol,
-                    "oracle_version": oracle_version,
-                    "current_user": current_user,
-                    "connection_time_ms": round(connection_time, 2),
-                },
-            )
+            result.update({
+                "success": True,
+                "protocol_used": self.config.protocol,
+                "oracle_version": oracle_version,
+                "current_user": current_user,
+                "connection_time_ms": round(connection_time, 2),
+            })
 
         except Exception as e:
             result["error"] = str(e)
@@ -257,4 +238,4 @@ if __name__ == "__main__":
     logger.info("Oracle Connection Test Results:")
     logger.info("=" * 40)
     for key, value in result.items():
-        logger.info("%s: %s", key, value)
+        logger.info(f"{key}: {value}")

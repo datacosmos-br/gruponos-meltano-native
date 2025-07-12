@@ -1,22 +1,23 @@
+
+from typing import Generic
+
 #!/usr/bin/env python3
 """Validate Integration - Ensure generic modules work with gruponos-meltano-native.
 
 This script validates:
-1. Critical environment variables are set correctly
+    1. Critical environment variables are set correctly
 2. Generic modules are accessible
 3. Configuration profiles work
-4. Schema discovery uses only metadata
-5. Meltano configuration is valid
-"""
+4. Schema discovery uses only metadata  5. Meltano configuration is valid  """
 
 from __future__ import annotations
 
 import json
 import logging
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any
 
 import yaml
@@ -29,19 +30,17 @@ PROJECT_ROOT = Path(__file__).parent.parent
 
 
 def check_critical_environment() -> bool:
-    """Check critical environment variables."""
-    log.error("🔍 Checking critical environment variables...")
+        log.error("🔍 Checking critical environment variables...")
 
     # Define critical environment variables and their expected values
-    critical_vars = {
-        "MELTANO_ENVIRONMENT": "dev",  # or staging/prod
+    critical_vars = {"MELTANO_ENVIRONMENT": "dev",  # or staging/prod
         "FLEXT_TARGET_ORACLE_HOST": os.getenv("FLEXT_TARGET_ORACLE_HOST", "localhost"),
         "FLEXT_TARGET_ORACLE_PORT": "1521",
     }
 
     all_valid = True
     for var, expected in critical_vars.items():
-        actual = os.getenv(var, "")
+            actual = os.getenv(var, "")
         if actual != expected:
             log.error(f"❌ {var} = '{actual}' (expected: '{expected}')")
             all_valid = False
@@ -49,7 +48,7 @@ def check_critical_environment() -> bool:
             log.error(f"✅ {var} = '{actual}'")
 
     if not all_valid:
-        log.error("\n🚨 CRITICAL ERROR: Environment variables are not set correctly!")
+            log.error("\n🚨 CRITICAL ERROR: Environment variables are not set correctly!")
         log.error("   Schema discovery MUST use only metadata, NEVER samples!")
         sys.exit(1)
 
@@ -57,18 +56,14 @@ def check_critical_environment() -> bool:
 
 
 def check_generic_modules() -> bool:
-    """Check if generic modules are installed and accessible."""
-    log.error("\n🔍 Checking generic module installation...")
+        log.error("\n🔍 Checking generic module installation...")
 
-    modules_to_check = [
-        ("tap-oracle-wms", "flext-tap-oracle-wms"),
+    modules_to_check = [("tap-oracle-wms", "flext-tap-oracle-wms"),
         ("flext-target-oracle", "flext-target-oracle"),
     ]
 
     for cmd, package in modules_to_check:
-        try:
-            result = subprocess.run(
-                [cmd, "--version"],
+            result = subprocess.run([cmd, "--version"],
                 capture_output=True,
                 shell=False,
                 text=True,
@@ -76,38 +71,35 @@ def check_generic_modules() -> bool:
                 check=False,
             )
             if result.returncode == 0:
-                log.error(f"✅ {package}: {result.stdout.strip()}")
+            log.error(f"✅ {package}: {result.stdout.strip()}")
             else:
-                log.error(f"❌ {package}: Not found or error")
+            log.error(f"❌ {package}: Not found or error")
                 return False
         except Exception:
-            log.exception("❌ %s", package)
+        log.exception("❌ %s", package)
             return False
 
     return True
 
 
 def check_configuration_profiles() -> bool:
-    """Check if configuration profiles are working."""
-    log.error("\n🔍 Checking configuration profiles...")
+        log.error("\n🔍 Checking configuration profiles...")
 
     profile_name = os.getenv("WMS_PROFILE_NAME", "")
     if not profile_name:
-        log.error("⚠️  No WMS_PROFILE_NAME set - using defaults")
+            log.error("⚠️  No WMS_PROFILE_NAME set - using defaults")
         return True
 
     log.error(f"📋 Profile: {profile_name}")
 
     # Try to load the profile
     try:
-        # Import ConfigMapper to test profile loading
+            # Import ConfigMapper to test profile loading
         # Using mock instead
         class ConfigProfileManager:
             """Mock configuration profile manager."""
-
-            def load_profile(self, name: str) -> Any:
-                """Load a configuration profile by name."""
-                return None
+    def load_profile(self, name str) -> Any:
+        return None
 
         manager = ConfigProfileManager()
         profile = manager.load_profile(profile_name)
@@ -116,28 +108,26 @@ def check_configuration_profiles() -> bool:
         log.error(f"   Environment: {profile.environment}")
         log.error(f"   Entities: {len(profile.get_enabled_entities())}")
     except ImportError:
-        log.exception(
-            "⚠️  Could not import ConfigProfileManager - module may not be in path",
+        log.exception("⚠️  Could not import ConfigProfileManager - module may not be in path",
         )
         return True  # Not a critical error
     except Exception:
         log.exception("❌ Error loading profile")
         return False
     else:
-        return True
+            return True
 
 
 def validate_meltano_config() -> bool:
-    """Validate meltano.yml configuration."""
-    log.error("\n🔍 Validating meltano.yml configuration...")
+        log.error("\n🔍 Validating meltano.yml configuration...")
 
     meltano_yml = PROJECT_ROOT / "meltano.yml"
     if not meltano_yml.exists():
-        log.error("❌ meltano.yml not found!")
+            log.error("❌ meltano.yml not found!")
         return False
 
     try:
-        with Path(meltano_yml).open(encoding="utf-8") as f:
+            with Path(meltano_yml).open(encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
         # Check for required extractors
@@ -147,14 +137,14 @@ def validate_meltano_config() -> bool:
         required_taps = ["tap-oracle-wms-full", "tap-oracle-wms-incremental"]
         for tap in required_taps:
             if tap in tap_names:
-                log.error(f"✅ {tap}: Found")
+            log.error(f"✅ {tap}: Found")
 
                 # Check critical settings
-                tap_config = next(e for e in extractors if e["name"] == tap)
+                tap_config = next(e for e in extractors if e["name"] == tap):
                 tap_config.get("config", {})
 
             else:
-                log.error(f"❌ {tap}: Not found")
+            log.error(f"❌ {tap}: Not found")
                 return False
 
         # Check loaders
@@ -171,18 +161,15 @@ def validate_meltano_config() -> bool:
         log.exception("❌ Error validating meltano.yml")
         return False
     else:
-        return True
+            return True
 
 
 def test_schema_discovery() -> bool:
-    """Test that schema discovery works with metadata only."""
-    log.error("\n🔍 Testing schema discovery (metadata only)")
+        log.error("\n🔍 Testing schema discovery (metadata only)")
 
     try:
-        # Run discovery command
-        result = subprocess.run(
-            [
-                "/home/marlonsc/flext/.venv/bin/meltano",
+            # Run discovery command
+        result = subprocess.run(["/home/marlonsc/flext/.venv/bin/meltano",
                 "invoke",
                 "tap-oracle-wms",
                 "--discover",
@@ -196,7 +183,7 @@ def test_schema_discovery() -> bool:
         )
 
         if result.returncode != 0:
-            log.error(f"❌ Discovery failed: {result.stderr}")
+            log.error(f"❌ Discovery failed {result.stderr}")
             return False
 
         # Parse catalog
@@ -206,15 +193,16 @@ def test_schema_discovery() -> bool:
 
             if streams:
                 log.error(f"✅ Discovered {len(streams)} streams")
-                for stream in streams[:3]:  # Show first 3
+                for stream in streams[3]:
+            # Show first 3
                     stream_name = stream.get("stream", "")
                     properties = stream.get("schema", {}).get("properties", {})
                     log.error(f"   📊 {stream_name}: {len(properties)} properties")
             else:
-                log.error("⚠️  No streams discovered")
+            log.error("⚠️  No streams discovered")
 
         except Exception:
-            log.exception("⚠️  Could not parse discovery output as JSON")
+        log.exception("⚠️  Could not parse discovery output as JSON")
             # Still return True as discovery ran without error
             return True
         else:
@@ -229,49 +217,46 @@ def test_schema_discovery() -> bool:
 
 
 def check_critical_settings_script() -> bool:
-    """Ensure critical_settings.sh exists and is executable."""
-    log.error("\n🔍 Checking critical settings enforcement script...")
+        log.error("\n🔍 Checking critical settings enforcement script...")
 
     script_path = PROJECT_ROOT / "config" / "critical_settings.sh"
 
     if not script_path.exists():
-        log.error(f"❌ {script_path} not found!")
+            log.error(f"❌ {script_path} not found!")
         return False
 
-    # Check if executable
+    # Check if executable:
     if os.access(script_path, os.X_OK):
-        log.error(f"✅ {script_path} exists and is executable")
+            log.error(f"✅ {script_path} exists and is executable")
     else:
-        log.error(f"⚠️  {script_path} exists but is not executable")
+            log.error(f"⚠️  {script_path} exists but is not executable")
         # Try to make it executable
         try:
             Path(script_path).chmod(0o755)
             log.error("   ✅ Made script executable")
         except Exception:
-            log.exception("   ❌ Could not make executable")
+        log.exception("   ❌ Could not make executable")
             return False
 
     # Test the script
-    try:
-        # Validate script path is within project directory and is the expected
+    try
+    # Validate script path is within project directory and is the expected:
         # file
-        if not script_path.is_file() or not script_path.resolve().is_relative_to(
-            PROJECT_ROOT.resolve(),
+        if not script_path.is_file() or not script_path.resolve().is_relative_to(PROJECT_ROOT.resolve(),:
         ):
             log.error(f"❌ Script path validation failed: {script_path}")
             return False
 
         # Additional validation: ensure script path is safe
         script_path_str = str(script_path.resolve())
-        if (
+        if (:
             not script_path_str.endswith("critical_settings.sh")
             or ".." in script_path_str
         ):
             log.error(f"❌ Script path security validation failed: {script_path}")
             return False
 
-        result = subprocess.run(
-            [script_path_str],
+        result = subprocess.run([script_path_str],
             capture_output=True,
             shell=False,
             text=True,
@@ -295,13 +280,11 @@ def check_critical_settings_script() -> bool:
 
 
 def main() -> int:
-    """Run all validation checks."""
-    log.error("=" * 60)
+        log.error("=" * 60)
     log.error("GRUPONOS MELTANO NATIVE - INTEGRATION VALIDATION")
     log.error("=" * 60)
 
-    checks = [
-        ("Critical Environment Variables", check_critical_environment),
+    checks = [("Critical Environment Variables", check_critical_environment),
         ("Generic Module Installation", check_generic_modules),
         ("Configuration Profiles", check_configuration_profiles),
         ("Meltano Configuration", validate_meltano_config),
@@ -311,11 +294,10 @@ def main() -> int:
 
     results = []
     for name, check_func in checks:
-        try:
             result = check_func()
             results.append((name, result))
         except Exception:
-            log.exception("\n❌ Error during %s", name)
+        log.exception("\n❌ Error during %s", name)
             results.append((name, False))
 
     # Summary
@@ -325,17 +307,17 @@ def main() -> int:
 
     all_passed = True
     for name, result in results:
-        status = "✅ PASSED" if result else "❌ FAILED"
-        log.error(f"{status}: {name}")
+            status = "✅ PASSED" if result else "❌ FAILED":
+        log.error(f"{status}:
+            {name}")
         if not result:
             all_passed = False
 
     log.error("\n%s", "=" * 60)
 
     if all_passed:
-        log.error("🎉 ALL VALIDATIONS PASSED!")
-        log.error(
-            "✅ Generic modules are properly integrated with gruponos-meltano-native",
+            log.error("🎉 ALL VALIDATIONS PASSED!")
+        log.error("✅ Generic modules are properly integrated with gruponos-meltano-native",
         )
         log.error("✅ Schema discovery will use ONLY metadata (never samples)")
         log.error("✅ Configuration is fully dynamic (no hardcoded values)")
@@ -347,4 +329,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+            sys.exit(main())

@@ -1,144 +1,146 @@
 #!/usr/bin/env python3
-"""
-Script to prepare configuration files with environment variable substitution.
-This ensures all configurations come from the .env file.
+"""Prepara configurações do Meltano substituindo variáveis de ambiente.
+
+Centraliza todas as configurações em um lugar usando arquivos .env.
 """
 
+import argparse
 import json
 import os
-import re
+import sys
 from pathlib import Path
-from typing import Any, Dict
+
+from dotenv import load_dotenv
 
 
-def load_env_file(env_path: str) -> Dict[str, str]:
-    """Load environment variables from .env file."""
-    env_vars: Dict[str, str] = {}
-    if not os.path.exists(env_path):
-        print(f"Warning: .env file not found at {env_path}")
-        return env_vars
-    
-    with open(env_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                # Remove quotes if present
-                value = value.strip('"\'')
-                env_vars[key] = value
-    
-    return env_vars
+def substitute_env_vars(config_dict: dict, env_vars: dict) -> dict:
+    """Substitui variáveis de ambiente na configuração."""
+    result = {}
 
-
-def substitute_env_vars(config_str: str, env_vars: Dict[str, str]) -> str:
-    """Substitute ${VAR_NAME} patterns with actual environment variable values."""
-    def replace_var(match: re.Match[str]) -> str:
-        var_name = match.group(1)
-        # Try environment first, then .env file
-        value = os.environ.get(var_name) or env_vars.get(var_name)
-        if value is None:
-            print(f"Warning: Environment variable {var_name} not found")
-            return match.group(0)  # Return original if not found
-        
-        # Handle boolean values
-        if value.lower() in ('true', 'false'):
-            return value.lower()
-        # Handle integer values
-        elif value.isdigit():
-            return value
-        # Handle float values
-        elif value.replace('.', '', 1).isdigit():
-            return value
+    for key, value in config_dict.items():
+        if isinstance(value, dict):
+            result[key] = substitute_env_vars(value, env_vars)
+        elif isinstance(value, str) and value.startswith("${") and value.endswith("}"):
+            # Formato ${VAR_NAME}
+            var_name = value[2:-1]
+            result[key] = env_vars.get(var_name, value)
+        elif isinstance(value, str) and value.startswith("$"):
+            # Formato $VAR_NAME
+            var_name = value[1:]
+            result[key] = env_vars.get(var_name, value)
         else:
-            # Return string value without quotes (they're already in template)
-            return value
-    
-    # Replace ${VAR_NAME} patterns
-    return re.sub(r'\$\{([^}]+)\}', replace_var, config_str)
+            result[key] = value
+
+    return result
 
 
-def prepare_target_config() -> bool:
-    """Prepare target configuration with environment variable substitution."""
-    project_root = Path(__file__).parent.parent
-    env_file = project_root / ".env"
-    config_template = project_root / "target_config.json"
-    config_output = project_root / "target_config_resolved.json"
-    
-    # Load environment variables
-    env_vars = load_env_file(str(env_file))
-    
-    # Read template
-    with open(config_template, 'r', encoding='utf-8') as f:
-        template_content = f.read()
-    
-    # Substitute variables
-    resolved_content = substitute_env_vars(template_content, env_vars)
-    
-    # Write resolved configuration
-    with open(config_output, 'w', encoding='utf-8') as f:
-        f.write(resolved_content)
-    
-    print(f"✅ Target configuration prepared: {config_output}")
-    
-    # Validate JSON
-    try:
-        with open(config_output, 'r', encoding='utf-8') as f:
-            json.load(f)
-        print("✅ Configuration JSON is valid")
-    except json.JSONDecodeError as e:
-        print(f"❌ Invalid JSON in configuration: {e}")
-        return False
-    
-    return True
+def prepare_target_config(env_file: str = ".env") -> None:
+    """Prepara configuração do target Oracle."""
+    # Carrega variáveis de ambiente
+    load_dotenv(env_file)
+    env_vars = dict(os.environ)
 
+    # Lê template de configuração do arquivo
+    template_file = Path("target_config.json")
+    if template_file.exists():
+        with open(template_file, encoding="utf-8") as f:
+            target_config_template = json.load(f)
+    else:
+        # Fallback para template básico se arquivo não existir
+        target_config_template = {
+            "username": "${FLEXT_TARGET_ORACLE_USERNAME}",
+            "password": "${FLEXT_TARGET_ORACLE_PASSWORD}",
+            "host": "${FLEXT_TARGET_ORACLE_HOST}",
+            "port": "${FLEXT_TARGET_ORACLE_PORT}",
+            "service_name": "${FLEXT_TARGET_ORACLE_SERVICE_NAME}",
+            "protocol": "${FLEXT_TARGET_ORACLE_PROTOCOL}",
+            "batch_size": "${FLEXT_TARGET_ORACLE_BATCH_SIZE}",
+            "pool_size": "${FLEXT_TARGET_ORACLE_POOL_SIZE}",
+            "load_method": "append-only",
+        }
 
-def verify_env_variables() -> bool:
-    """Verify that all required environment variables are set."""
-    required_vars = [
-        'FLEXT_TARGET_ORACLE_HOST',
-        'FLEXT_TARGET_ORACLE_PORT',
-        'FLEXT_TARGET_ORACLE_SERVICE_NAME',
-        'FLEXT_TARGET_ORACLE_USERNAME',
-        'FLEXT_TARGET_ORACLE_PASSWORD',
-        'FLEXT_TARGET_ORACLE_PROTOCOL',
-        'TAP_ORACLE_WMS_BASE_URL',
-        'TAP_ORACLE_WMS_USERNAME',
-        'TAP_ORACLE_WMS_PASSWORD',
-        'WMS_PROFILE_NAME'
-    ]
-    
-    project_root = Path(__file__).parent.parent
-    env_file = project_root / ".env"
-    env_vars = load_env_file(str(env_file))
-    
-    missing_vars = []
-    for var in required_vars:
-        if var not in env_vars and var not in os.environ:
-            missing_vars.append(var)
-    
-    if missing_vars:
-        print(f"❌ Missing required environment variables: {missing_vars}")
-        return False
-    
-    print("✅ All required environment variables are set")
-    return True
+    # Substitui variáveis
+    resolved_config = substitute_env_vars(target_config_template, env_vars)
+
+    # Gerar DSN para Autonomous Database se temos host/port/service_name
+    if (
+        "host" in resolved_config
+        and "port" in resolved_config
+        and "service_name" in resolved_config
+    ):
+        host = resolved_config["host"]
+        port = resolved_config["port"]
+        service_name = resolved_config["service_name"]
+        protocol = resolved_config.get("protocol", "tcps")
+
+        if protocol == "tcps":
+            autonomous_dsn = f"""(description=
+        (retry_count=20)
+        (retry_delay=3)
+        (address=(protocol=tcps)(port={port})(host={host}))
+        (connect_data=(service_name={service_name}))
+        (security=(ssl_server_dn_match=no))
+    )"""
+            resolved_config["dsn"] = autonomous_dsn
+            # Remove campos individuais quando usando DSN
+            for key in ["host", "port", "service_name", "protocol"]:
+                resolved_config.pop(key, None)
+
+    # Implementa lógica padrão do Oracle: schema = username quando não especificado
+    if "schema" not in resolved_config or not resolved_config.get("schema"):
+        username = resolved_config.get("username")
+        if username:
+            pass
+            # Não adicionamos o campo schema - deixamos o target Oracle usar o padrão
+
+    # Converte tipos conforme necessário
+    for field, default_value in [("port", 1521), ("batch_size", 500), ("pool_size", 1)]:
+        if field in resolved_config:
+            try:
+                resolved_config[field] = int(resolved_config[field])
+            except (ValueError, TypeError):
+                resolved_config[field] = default_value
+
+    # Converte booleanos
+    for field in ["ssl_server_dn_match", "add_record_metadata", "validate_records"]:
+        if field in resolved_config:
+            value = resolved_config[field]
+            if isinstance(value, str):
+                resolved_config[field] = value.lower() in {"true", "1", "yes", "on"}
+
+    # Salva configuração resolvida
+    output_file = Path("target_config_resolved.json")
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(resolved_config, f, indent=2)
+
+    # Mostra resumo
+    print(f"✅ Configuração preparada: {output_file}")
+    print(f"   Username: {resolved_config.get('username', 'N/A')}")
+    if "dsn" in resolved_config:
+        print("   Usando DSN para Oracle Autonomous Database")
+    else:
+        print(f"   Host: {resolved_config.get('host', 'N/A')}")
 
 
 def main() -> int:
-    """Main function to prepare all configurations."""
-    print("🔧 Preparing configurations from .env file...")
-    
-    # Verify environment variables
-    if not verify_env_variables():
+    """Função principal."""
+    parser = argparse.ArgumentParser(description="Prepara configurações do Meltano")
+    parser.add_argument(
+        "--env-file",
+        default=".env",
+        help="Arquivo de variáveis de ambiente (padrão: .env)",
+    )
+
+    args = parser.parse_args()
+
+    try:
+        prepare_target_config(args.env_file)
+    except Exception as e:
+        print(f"❌ Erro ao preparar configuração: {e}")
         return 1
-    
-    # Prepare target configuration
-    if not prepare_target_config():
-        return 1
-    
-    print("✅ All configurations prepared successfully!")
+
     return 0
 
 
 if __name__ == "__main__":
-    exit(main()) 
+    sys.exit(main())

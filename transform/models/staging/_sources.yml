@@ -5,7 +5,7 @@ sources:
     description: Raw WMS data extracted from Oracle WMS system
     database: "{{ env_var('TARGET_ORACLE_HOST') }}"
     schema: "{{ var('wms_schema') }}"
-    
+
     tables:
       - name: allocation
         description: Inventory allocation records from WMS
@@ -47,15 +47,15 @@ sources:
             description: Allocation creation date
             tests:
               - not_null
-        
+
         freshness:
-          warn_after: 
+          warn_after:
             count: "{{ var('allocation_freshness_hours') }}"
             period: hour
           error_after:
             count: "{{ var('allocation_freshness_hours') * 2 }}"
             period: hour
-        
+
         loaded_at_field: _sdc_batched_at
 
       - name: order_hdr
@@ -90,15 +90,15 @@ sources:
             description: Last update timestamp
             tests:
               - not_null
-        
+
         freshness:
-          warn_after: 
+          warn_after:
             count: "{{ var('order_freshness_hours') }}"
             period: hour
           error_after:
             count: "{{ var('order_freshness_hours') * 2 }}"
             period: hour
-        
+
         loaded_at_field: _sdc_batched_at
 
       - name: order_dtl
@@ -138,7 +138,7 @@ sources:
               - not_null
               - dbt_utils.accepted_range:
                   min_value: 0
-        
+
         loaded_at_field: _sdc_batched_at
 
       - name: item_master
@@ -173,16 +173,16 @@ sources:
             tests:
               - not_null
               - accepted_values:
-                  values: ['Y', 'N']
-        
+                  values: ["Y", "N"]
+
         freshness:
-          warn_after: 
+          warn_after:
             count: "{{ var('master_data_freshness_days') }}"
             period: day
           error_after:
             count: "{{ var('master_data_freshness_days') * 2 }}"
             period: day
-        
+
         loaded_at_field: _sdc_batched_at
 
       - name: location
@@ -214,14 +214,14 @@ sources:
             tests:
               - not_null
               - accepted_values:
-                  values: ['Y', 'N']
-        
+                  values: ["Y", "N"]
+
         freshness:
-          warn_after: 
+          warn_after:
             count: "{{ var('master_data_freshness_days') }}"
             period: day
           error_after:
             count: "{{ var('master_data_freshness_days') * 2 }}"
             period: day
-        
+
         loaded_at_field: _sdc_batched_at

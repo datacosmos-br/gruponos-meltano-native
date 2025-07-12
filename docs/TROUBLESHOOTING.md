@@ -5,8 +5,10 @@
 ### 1. Data Validation Errors
 
 #### Problem: `'540' is not of type 'number'`
+
 **Cause**: Oracle WMS API returns numeric fields as strings  
-**Solution**: 
+**Solution**:
+
 ```bash
 # Option 1: Disable strict validation (recommended for development)
 # In meltano.yml, set: validate_records: false
@@ -16,8 +18,10 @@ python3 src/validators/data_validator.py
 ```
 
 #### Problem: Schema validation failures
+
 **Cause**: Data types don't match schema expectations  
 **Solution**:
+
 ```bash
 # Check conversion stats
 make validate-data
@@ -30,8 +34,10 @@ make incremental-sync
 ### 2. Oracle Connection Issues
 
 #### Problem: SSL Certificate verification failed
+
 **Error**: `certificate verify failed: IP address mismatch`  
 **Solution**:
+
 ```bash
 # Test connection with diagnostic info
 python3 src/oracle/connection_manager.py
@@ -44,8 +50,10 @@ export FLEXT_TARGET_ORACLE_SSL_DN_MATCH=false
 ```
 
 #### Problem: Connection timeouts
+
 **Cause**: Network latency or Oracle load  
 **Solution**:
+
 ```bash
 # Increase timeout values
 export FLEXT_TARGET_ORACLE_TIMEOUT=120
@@ -58,8 +66,10 @@ export FLEXT_TARGET_ORACLE_PROTOCOL=tcp
 ### 3. Sync Process Issues
 
 #### Problem: Sync process hangs
+
 **Symptoms**: Process shows as running but no progress  
 **Solution**:
+
 ```bash
 # Check process status
 make status
@@ -73,8 +83,10 @@ make incremental-sync
 ```
 
 #### Problem: Background sync fails silently
+
 **Cause**: Process exits without proper logging  
 **Solution**:
+
 ```bash
 # Check error logs
 make logs
@@ -91,8 +103,10 @@ meltano run tap-oracle-wms target-oracle
 ### 4. Performance Issues
 
 #### Problem: Slow data extraction
+
 **Cause**: Large result sets or network latency  
 **Solution**:
+
 ```bash
 # Reduce batch size for testing
 # In meltano.yml:
@@ -107,8 +121,10 @@ meltano run tap-oracle-wms target-oracle
 ```
 
 #### Problem: Oracle table locks
+
 **Cause**: Long-running transactions  
 **Solution**:
+
 ```sql
 -- Check for locks (as DBA)
 SELECT * FROM v$locked_object;
@@ -120,8 +136,10 @@ ALTER SYSTEM KILL SESSION 'sid,serial#';
 ### 5. Environment Issues
 
 #### Problem: Virtual environment not found
+
 **Error**: `venv: MISSING` in status  
 **Solution**:
+
 ```bash
 # Check path
 ls -la /home/marlonsc/flext/.venv/bin/activate
@@ -134,8 +152,10 @@ pip install -r gruponos-meltano-native/requirements.txt
 ```
 
 #### Problem: Environment variables not loaded
+
 **Cause**: .env file not sourced correctly  
 **Solution**:
+
 ```bash
 # Test environment
 make env
@@ -150,6 +170,7 @@ env | grep FLEXT_TARGET_ORACLE
 ## Emergency Procedures
 
 ### Complete System Reset
+
 ```bash
 # Stop all processes
 make stop-sync
@@ -171,6 +192,7 @@ make incremental-sync
 ```
 
 ### Health Check
+
 ```bash
 # Comprehensive system check
 make health-check
@@ -182,16 +204,19 @@ make monitor
 ## Log Analysis
 
 ### Understanding Log Patterns
+
 - **INFO**: Normal operation messages
 - **WARNING**: Non-fatal issues (connection retries, type conversions)
 - **ERROR**: Failed operations that stop processing
 
 ### Key Log Locations
+
 - Sync logs: `logs/sync/`
 - Error logs: `logs/error/`
 - Validation logs: `logs/validation/`
 
 ### Emergency Contacts
+
 - **Database Issues**: Contact Oracle DBA team
 - **Network Issues**: Contact infrastructure team
 - **Application Issues**: Check this troubleshooting guide first

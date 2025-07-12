@@ -5,21 +5,21 @@ Handles type conversion and validation issues found in production.
 
 from __future__ import annotations
 
-from datetime import date
-from datetime import datetime
-import logging
 import re
+from datetime import date, datetime
 from typing import Any
 
+# Use centralized logger from flext-observability
+from flext_observability.logging import get_logger
+
 # Setup logger
-log = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 
 class DataValidator:
     """Professional data validator with Oracle-specific type handling."""
 
     def __init__(self, *, strict_mode: bool = False) -> None:
-        """Initialize validator with configurable strictness."""
         self.strict_mode = strict_mode
         self.conversion_stats = {
             "strings_converted_to_numbers": 0,
@@ -29,20 +29,9 @@ class DataValidator:
         }
 
     def validate_and_convert_record(
-        self,
-        record: dict[str, Any],
-        schema: dict[str, Any],
+        self, record: dict[str, Any], schema: dict[str, Any]
     ) -> dict[str, Any]:
-        """Validate and convert a record according to schema.
-
-        Args:
-            record: Input record to validate
-            schema: JSON schema for validation
-
-        Returns:
-            Converted and validated record
-
-        """
+        """Validate and convert a record according to schema."""
         if not schema.get("properties"):
             return record
 
@@ -63,12 +52,9 @@ class DataValidator:
         return converted_record
 
     def _convert_field(
-        self,
-        value: Any,
-        field_schema: dict[str, Any],
-        field_name: str,
+        self, value: Any, field_schema: dict[str, Any], field_name: str
     ) -> Any:
-        """Convert field value according to schema definition."""
+        """Convert a single field according to its schema."""
         if value is None or value == "":
             self.conversion_stats["nulls_handled"] += 1
             return None
@@ -109,13 +95,10 @@ class DataValidator:
             return value
 
     def _convert_to_number(
-        self,
-        value: Any,
-        expected_type: str,
-        field_name: str,
+        self, value: Any, expected_type: str, field_name: str
     ) -> int | float | None:
-        """Convert value to number, handling string numbers."""
-        if isinstance(value, int | float):
+        """Convert value to number (int or float)."""
+        if isinstance(value, (int, float)):
             return value
 
         if isinstance(value, str):
@@ -174,25 +157,22 @@ class DataValidator:
                 return False
             if self.strict_mode:
                 msg = f"Cannot convert string '{value}' to boolean"
-                raise ValueError(msg) from None
+                raise ValueError(msg)
             return bool(value)  # Fallback to truthiness
 
-        if isinstance(value, int | float):
+        if isinstance(value, (int, float)):
             return bool(value)
 
         if self.strict_mode:
             msg = f"Cannot convert {type(value)} '{value}' to boolean"
-            raise ValueError(msg) from None
+            raise ValueError(msg)
         return bool(value)
 
     def _convert_to_date(
-        self,
-        value: Any,
-        date_format: str,
-        field_name: str,
+        self, value: Any, date_format: str, field_name: str
     ) -> str | None:
-        """Convert value to standardized date format."""
-        if isinstance(value, datetime | date):
+        """Convert value to date string."""
+        if isinstance(value, (datetime, date)):
             self.conversion_stats["dates_normalized"] += 1
             return value.isoformat()
 
@@ -202,8 +182,7 @@ class DataValidator:
                 r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}",  # ISO datetime
                 r"\d{4}-\d{2}-\d{2}",  # ISO date
                 r"\d{2}/\d{2}/\d{4}",  # US format
-                # US format with dashes
-                r"\d{2}-\d{2}-\d{4}",
+                r"\d{2}-\d{2}-\d{4}",  # US format with dashes
             ]
 
             for pattern in date_patterns:
@@ -213,13 +192,13 @@ class DataValidator:
 
             if self.strict_mode:
                 msg = f"Cannot parse date '{value}'"
-                raise ValueError(msg) from None
+                raise ValueError(msg)
             return value  # Return as-is if can't parse
 
         return str(value) if value is not None else None
 
     def get_conversion_stats(self) -> dict[str, int]:
-        """Get statistics about conversions performed."""
+        """Get conversion statistics."""
         return self.conversion_stats.copy()
 
     def reset_stats(self) -> None:
@@ -229,7 +208,7 @@ class DataValidator:
 
 
 def create_validator_for_environment(environment: str = "dev") -> DataValidator:
-    """Create validator configured for specific environment."""
+    """Create a validator configured for the given environment."""
     strict_mode = environment == "prod"
     return DataValidator(strict_mode=strict_mode)
 
