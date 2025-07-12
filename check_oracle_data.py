@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the structure of TEST_ALLOCATION table."""
+"""Check Oracle database for loaded data."""
 
 import logging
 import os
@@ -30,7 +30,7 @@ if config["protocol"] == "tcps":
 
 
 def main() -> None:
-    """Check table structure."""
+    """Check Oracle database for data."""
     try:
         # Build connection params
         if config["protocol"] == "tcps":
@@ -57,43 +57,57 @@ def main() -> None:
 
         logger.info("Connected to Oracle database!")
 
-        # Check table structure
         with connection.cursor() as cursor:
-            logger.info("\nChecking TEST_ALLOCATION table structure...")
+            # Check for tables with data
+            logger.info("Checking OIC schema for tables with data...")
+
+            # Get all tables in OIC schema
             cursor.execute("""
-                SELECT column_name, data_type, data_length, nullable
-                FROM user_tab_columns
-                WHERE table_name = 'TEST_ALLOCATION'
-                ORDER BY column_id
+                SELECT table_name
+                FROM user_tables
+                WHERE table_name LIKE '%ALLOCATION%'
+                   OR table_name LIKE '%ORDER%'
+                   OR table_name LIKE 'TEST_%'
+                ORDER BY table_name
             """)
 
-            columns = cursor.fetchall()
-            if columns:
-                logger.info(f"\nFound {len(columns)} columns in TEST_ALLOCATION:")
-                logger.info("-" * 80)
-                logger.info(f"{'Column Name':<30} {'Data Type':<20} {'Length':<10} {'Nullable':<10}")
-                logger.info("-" * 80)
-                for col_name, data_type, data_length, nullable in columns:
-                    logger.info(f"{col_name:<30} {data_type:<20} {data_length:<10} {nullable:<10}")
-            else:
-                logger.info("TEST_ALLOCATION table not found!")
+            tables = cursor.fetchall()
+            logger.info(f"Found {len(tables)} relevant tables")
 
-                # Check if any TEST_ tables exist
-                cursor.execute("""
-                    SELECT table_name
-                    FROM user_tables
-                    WHERE table_name LIKE 'TEST_%'
-                    ORDER BY table_name
-                """)
+            for (table_name,) in tables:
+                logger.info(f"\nChecking table: {table_name}")
 
-                tables = [row[0] for row in cursor]
-                if tables:
-                    logger.info(f"\nFound TEST_ tables: {tables}")
-                else:
-                    logger.info("\nNo TEST_ tables found in the schema")
+                # Count records
+                try:
+                    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                    count = cursor.fetchone()[0]
+                    logger.info(f"  Records: {count}")
+
+                    if count > 0:
+                        # Show sample data
+                        cursor.execute(f"SELECT * FROM {table_name} WHERE ROWNUM <= 3")
+                        rows = cursor.fetchall()
+                        logger.info("  Sample data (first 3 rows):")
+                        for i, row in enumerate(rows, 1):
+                            logger.info(f"    Row {i}: {row}")
+
+                        # Check for Singer metadata
+                        cursor.execute(f"""
+                            SELECT column_name
+                            FROM user_tab_columns
+                            WHERE table_name = '{table_name}'
+                              AND column_name LIKE '_SDC_%'
+                            ORDER BY column_name
+                        """)
+                        sdc_columns = cursor.fetchall()
+                        if sdc_columns:
+                            logger.info(f"  Singer columns: {[col[0] for col in sdc_columns]}")
+
+                except Exception as e:
+                    logger.warning(f"  Error checking table {table_name}: {e}")
 
         connection.close()
-        logger.info("\nCheck completed successfully!")
+        logger.info("Database check completed!")
 
     except Exception as e:
         logger.exception(f"Error: {e}")

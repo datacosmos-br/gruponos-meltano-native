@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Check Oracle ORDER_HDR table structure."""
 
-import os
+import logging
+
 import oracledb
 from dotenv import load_dotenv
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +22,8 @@ config = {
     "protocol": "tcps",
 }
 
-def main():
+
+def main() -> None:
     """Check table structure."""
     try:
         # Build connection with TCPS
@@ -34,9 +35,9 @@ def main():
             dsn=dsn,
             ssl_server_dn_match=False,
         )
-        
+
         logger.info("Connected to Oracle database!")
-        
+
         # Check table structure
         with connection.cursor() as cursor:
             logger.info("\nChecking TEST_ORDER_HDR table structure...")
@@ -48,28 +49,29 @@ def main():
                     ORDER BY column_id
                 """)
                 columns = cursor.fetchall()
-                
+
                 if columns:
                     logger.info("Table TEST_ORDER_HDR structure:")
                     for col in columns:
                         logger.info(f"  {col[0]}: {col[1]}({col[2]}) {'NULL' if col[3] == 'Y' else 'NOT NULL'}")
-                        
+
                     # Check for potentially problematic columns
-                    number_columns = [col[0] for col in columns if col[1] == 'NUMBER']
+                    number_columns = [col[0] for col in columns if col[1] == "NUMBER"]
                     logger.info(f"\nNUMBER columns: {number_columns}")
-                    
+
                 else:
                     logger.info("Table TEST_ORDER_HDR does not exist")
-                    
+
             except Exception as e:
-                logger.error(f"Error checking table: {e}")
-        
+                logger.exception(f"Error checking table: {e}")
+
         connection.close()
         logger.info("Check completed!")
-        
+
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.exception(f"Error: {e}")
         raise
+
 
 if __name__ == "__main__":
     main()

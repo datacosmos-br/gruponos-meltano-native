@@ -1,286 +1,193 @@
-# 🏢 GrupoNOS Meltano Native - Enterprise Data Pipeline
+# GrupoNOS Meltano Native
 
-## 📊 Project Overview
+Enterprise integration project using FLEXT Singer/Meltano components for Oracle WMS data synchronization.
 
-**GrupoNOS Meltano Native** is a production-ready data integration pipeline that extracts data from Oracle WMS and loads it into Oracle Database using industry-standard Meltano framework.
+## FLEXT Ecosystem Position
 
-### ✨ Key Features
+```
+FLEXT Framework:
+├── flext-core - Foundation & Domain patterns
+├── flext-observability - Structured logging (USED)
+├── flext-meltano - ETL orchestration patterns  
+├── flext-tap-oracle-wms - WMS data extraction (USED)
+├── flext-target-oracle - Oracle data loading (USED)
+└── gruponos-meltano-native - THIS PROJECT
+```
 
-- **🔄 Automated Sync**: Full and incremental data synchronization
-- **🛡️ Professional Error Handling**: Comprehensive error detection and recovery
-- **📊 Real-time Monitoring**: Live process monitoring and alerting
-- **🔍 Data Validation**: Intelligent type conversion and validation
-- **🔐 Enterprise Security**: SSL/TCPS connections with fallbacks
-- **📁 Structured Logging**: Professional log management and analysis
+## Architecture
 
-## 🚀 Quick Start
+```
+Oracle WMS → flext-tap-oracle-wms → Meltano → flext-target-oracle → Oracle Analytics
+    ↓              ↓                    ↓              ↓
+Enterprise API   FLEXT Singer TAP   Framework   FLEXT Singer TARGET
+```
+
+## Setup
 
 ### Prerequisites
+- FLEXT workspace: `/home/marlonsc/flext/`
+- Shared venv: `/home/marlonsc/flext/.venv` 
+- Environment: See `.env.example`
 
-- Python 3.9+
-- Oracle Database access
-- Virtual environment at `/home/marlonsc/flext/.venv`
-
-### Installation
-
+### Quick Start
 ```bash
-# Clone and navigate to project
-cd /home/marlonsc/flext/gruponos-meltano-native
+# From FLEXT workspace root
+cd gruponos-meltano-native
 
-# Test environment
-make env
+# Configure project
+cp .env.example .env
+# Edit .env with Oracle credentials
 
-# Validate Oracle connection
-make validate-oracle
+# Run pipeline (uses shared FLEXT venv)
+meltano run tap-oracle-wms-full target-oracle-full
 
-# Run incremental sync
-make incremental-sync
+# Validate using FLEXT patterns
+python validate_oracle_data.py
 ```
 
-## 🎛️ Operations
+## Data Synchronization
 
-### Daily Operations
+### Entities (FLEXT Singer Protocol)
+- **allocation**: Stock allocations (1.250 records)
+- **order_hdr**: Order headers (1.250 records)
+- **order_dtl**: Order details (1.250 records)
 
+### Performance
+- **Volume**: 3.750 total records
+- **Duration**: ~5 minutes complete sync
+- **Pattern**: FLEXT Singer incremental state management
+
+## FLEXT Integration Commands
+
+### Pipeline Operations (FLEXT Singer Protocol)
 ```bash
-# Check system status
-make status
+# Full sync using FLEXT components
+meltano run tap-oracle-wms-full target-oracle-full
 
-# Monitor in real-time
-make monitor
+# Incremental sync (FLEXT state management)
+meltano run tap-oracle-wms-incremental target-oracle-incremental
 
-# Run data sync
-make incremental-sync
-
-# Weekly full refresh
-make full-sync
+# Pre-configured FLEXT jobs
+meltano job run full-sync-job
+meltano job run incremental-sync-job
 ```
 
-### Health Monitoring
-
+### Validation (FLEXT Observability)
 ```bash
-# Comprehensive health check
-make health-check
+# Oracle validation with FLEXT logging
+python validate_oracle_data.py
 
-# Check Oracle connectivity
-make test-oracle-connection
-
-# Validate data types
-make validate-data
-
-# Analyze any failures
-make analyze-failures
+# Advanced validation using FLEXT connection patterns
+PYTHONPATH=. python src/oracle/validate_sync.py
 ```
 
-### Troubleshooting
-
+### Development (FLEXT Standards)
 ```bash
-# Stop problematic processes
-make stop-sync
+# Test FLEXT TAP connection
+meltano invoke tap-oracle-wms-full --test
 
-# Reset state
-make reset-state
+# Test FLEXT TARGET connection
+meltano invoke target-oracle-full --test
 
-# Check logs
-make logs
-
-# Emergency procedures
-make fix-errors
+# Debug with FLEXT observability
+meltano --log-level=debug run tap-oracle-wms-full target-oracle-full
 ```
 
-## 📁 Project Structure
+## FLEXT Configuration
 
-```
-gruponos-meltano-native/
-├── 📄 Makefile                    # Production-ready automation
-├── 📄 meltano.yml                 # Meltano configuration
-├── 📄 oracle_validator.py         # Oracle connection validator
-├── 📁 src/                        # Professional source code
-│   ├── 📁 validators/             # Data validation utilities
-│   │   ├── data_validator.py      # Type conversion and validation
-│   │   └── __init__.py
-│   ├── 📁 oracle/                 # Oracle connection management
-│   │   ├── connection_manager.py  # Professional connection handling
-│   │   └── __init__.py
-│   └── 📁 monitoring/             # Alert and monitoring system
-│       ├── alert_manager.py       # Professional alerting
-│       └── __init__.py
-├── 📁 config/                     # Environment configurations
-│   └── 📁 environments/
-│       ├── dev.yml                # Development settings
-│       └── prod.yml               # Production settings
-├── 📁 docs/                       # Professional documentation
-│   ├── TROUBLESHOOTING.md         # Comprehensive troubleshooting
-│   └── OPERATIONS.md              # Operations manual
-├── 📁 logs/                       # Structured logging
-│   ├── 📁 sync/                   # Synchronization logs
-│   ├── 📁 error/                  # Error logs and analysis
-│   ├── 📁 validation/             # Oracle validation logs
-│   └── 📁 alerts/                 # Alert system logs
-├── 📁 archive/                    # Archived test files
-│   ├── 📁 test-files/
-│   ├── 📁 temp-configs/
-│   └── 📁 legacy-scripts/
-└── 📁 transform/                  # dbt transformations
-    └── 📁 models/
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
+### Environment Variables (FLEXT Namespacing)
 ```bash
-# Oracle WMS Source
-TAP_ORACLE_WMS_BASE_URL=https://ta29.wms.ocs.oraclecloud.com/raizen_test
-TAP_ORACLE_WMS_USERNAME=USER_WMS_INTEGRA
-TAP_ORACLE_WMS_PASSWORD=********
+# FLEXT TAP Configuration (Oracle WMS Source)
+TAP_ORACLE_WMS_BASE_URL=https://enterprise-wms-api.com
+TAP_ORACLE_WMS_USERNAME=wms_user
+TAP_ORACLE_WMS_PASSWORD=wms_password
+TAP_ORACLE_WMS_COMPANY_CODE=COMPANY
+TAP_ORACLE_WMS_FACILITY_CODE=FACILITY
 
-# Oracle Target Database
-FLEXT_TARGET_ORACLE_HOST=10.93.10.166
-FLEXT_TARGET_ORACLE_PORT=1522
-FLEXT_TARGET_ORACLE_SERVICE_NAME=gbe8f3f2dbbc562_gndwdbdev01_low.adb.oraclecloud.com
-FLEXT_TARGET_ORACLE_USERNAME=OIC
-FLEXT_TARGET_ORACLE_PASSWORD=********
+# FLEXT TARGET Configuration (Oracle Analytics)
+FLEXT_TARGET_ORACLE_HOST=oracle.analytics.host
+FLEXT_TARGET_ORACLE_SERVICE_NAME=analytics_service
+FLEXT_TARGET_ORACLE_USERNAME=analytics_user
+FLEXT_TARGET_ORACLE_PASSWORD=analytics_password
 FLEXT_TARGET_ORACLE_PROTOCOL=tcps
+FLEXT_TARGET_ORACLE_TABLE_PREFIX=WMS_
 ```
 
-### Meltano Configuration
+### Oracle Schema (FLEXT Singer Metadata)
+- `OIC.WMS_ALLOCATION` - Stock allocations with Singer metadata
+- `OIC.WMS_ORDER_HDR` - Order headers with Singer metadata  
+- `OIC.WMS_ORDER_DTL` - Order details with Singer metadata
+- Metadata: `_SDC_EXTRACTED_AT`, `_SDC_BATCHED_AT`, `_SDC_RECEIVED_AT`
 
-The `meltano.yml` file is configured with:
+## FLEXT Integration Patterns
 
-- **Data Validation**: Disabled for development (handles string→number conversion)
-- **SSL Settings**: Configured with fallbacks for certificate issues
-- **Batch Processing**: Optimized batch sizes for performance
-- **Error Handling**: Professional retry logic
+### Connection Management
+- **Pattern**: FLEXT Oracle connection pooling
+- **SSL**: TCPS with certificate validation
+- **Retry**: Exponential backoff (FLEXT standards)
+- **Timeout**: Configurable per environment
 
-## 🎯 Data Pipeline
+### State Management  
+- **Pattern**: Singer incremental state (FLEXT Singer protocol)
+- **Storage**: Meltano system database
+- **Recovery**: Automatic state restoration
+- **Replication**: Key-based incremental sync
 
-### Source: Oracle WMS
+### Observability
+- **Logging**: flext-observability structured logging
+- **Monitoring**: Health checks and performance metrics
+- **Alerting**: FLEXT monitoring patterns
+- **Tracing**: Request tracing with context propagation
 
-- **Entities**: allocation, order_hdr, order_dtl
-- **Protocol**: HTTPS REST API
-- **Authentication**: Basic auth with credentials
-- **Data Format**: JSON with automatic schema discovery
+## Troubleshooting (FLEXT Patterns)
 
-### Target: Oracle Database
+### Oracle Connection Issues
+```bash
+# Use FLEXT connection validation
+python src/oracle/validate_sync.py
 
-- **Connection**: TCPS with SSL fallback
-- **Schema**: Automatic table creation with Oracle-specific types
-- **Performance**: Batch processing with configurable sizes
-- **Monitoring**: Real-time health checks
-
-### Data Flow
-
-```ascii
-Oracle WMS API → tap-oracle-wms → Singer Protocol → flext-target-oracle → Oracle Database
+# Check FLEXT TARGET configuration
+meltano invoke target-oracle-full --test
 ```
 
-## 🛡️ Error Handling
+### Singer State Problems
+```bash
+# Clear Singer state (FLEXT pattern)
+meltano state clear tap-oracle-wms-full
 
-### Professional Error Management
+# Validate state consistency
+meltano state list
+```
 
-1. **Type Validation**: Intelligent string→number conversion
-2. **Connection Retries**: Automatic retry with exponential backoff
-3. **SSL Fallbacks**: Graceful fallback to TCP when TCPS fails
-4. **Process Management**: PID tracking and zombie process cleanup
-5. **Log Analysis**: Automated error pattern detection
+### Performance Tuning
+```bash
+# FLEXT recommended settings
+batch_size: 1000          # Oracle bulk operations
+max_parallelism: 5        # Concurrent streams
+request_timeout: 600      # API timeout (seconds)
+```
 
-### Common Issues Resolved
+## FLEXT Ecosystem Files
 
-- ✅ `'540' is not of type 'number'` - Type conversion implemented
-- ✅ SSL certificate verification failed - Fallback mechanism added
-- ✅ Process hanging in background - Professional PID management
-- ✅ Oracle connection timeouts - Retry logic with backoff
+### Core Components
+- `meltano.yml` - FLEXT Singer pipeline configuration
+- `CLAUDE.md` - FLEXT project documentation standards
+- `pyproject.toml` - FLEXT workspace dependencies
 
-## 📊 Monitoring & Alerting
-
-### System Health Monitoring
-
-- **Process Status**: Real-time sync process monitoring
-- **Oracle Connectivity**: Continuous database health checks
-- **Performance Metrics**: Sync duration and throughput tracking
-- **Resource Usage**: Memory and CPU monitoring
-
-### Alert Levels
-
-- **🔴 CRITICAL**: Data sync stopped, database connection lost
-- **🟡 HIGH**: Sync failures, SSL issues, performance degradation
-- **🟠 MEDIUM**: Validation errors, timeouts, resource warnings
-- **🟢 LOW**: Information messages, system notifications
-
-## 🔐 Security
-
-### Data Protection
-
-- **Encrypted Connections**: SSL/TCPS for all database connections
-- **Credential Management**: Environment variables for sensitive data
-- **Access Control**: Limited file permissions and process isolation
-- **Audit Trail**: Comprehensive logging of all operations
-
-### Compliance
-
-- All database connections encrypted
-- Passwords stored in environment variables
-- Audit logs maintained for all operations
-- Error handling prevents data leakage
-
-## 📈 Performance
-
-### Optimizations Implemented
-
-- **Batch Processing**: Configurable batch sizes for optimal throughput
-- **Connection Pooling**: Reused Oracle connections
-- **Parallel Processing**: Multi-threaded data processing
-- **Type Conversion**: Efficient data type handling
-- **Memory Management**: Controlled memory usage patterns
-
-### Performance Metrics
-
-- **Sync Speed**: ~1000+ records/minute typical throughput
-- **Oracle Connection**: <10 seconds connection establishment
-- **Error Rate**: <1% under normal conditions
-- **Memory Usage**: <512MB typical usage
-
-## 🔄 Deployment
-
-### Production Deployment
-
-1. **Environment Setup**: Configure production environment variables
-2. **Database Access**: Ensure Oracle connectivity and permissions
-3. **SSL Certificates**: Verify certificate validity
-4. **Health Check**: Run comprehensive system validation
-5. **Monitoring**: Enable alerting and monitoring systems
-
-### Maintenance
-
-- **Daily**: Health checks and error analysis
-- **Weekly**: Full sync execution and log cleanup
-- **Monthly**: Performance review and optimization
-
-## 📞 Support
+### Validation & Monitoring
+- `validate_oracle_data.py` - FLEXT observability validation
+- `src/oracle/validate_sync.py` - FLEXT connection patterns
+- `src/validators/data_validator.py` - FLEXT data quality
 
 ### Documentation
+- [OPERATIONS.md](OPERATIONS.md) - FLEXT operational procedures
+- [ARCHITECTURE.md](ARCHITECTURE.md) - FLEXT technical patterns
+- [CHANGELOG.md](CHANGELOG.md) - FLEXT project evolution
 
-- 📖 [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Comprehensive issue resolution
-- 🛠️ [Operations Manual](docs/OPERATIONS.md) - Daily operations procedures
+## FLEXT Workspace Integration
 
-### Emergency Procedures
-
-1. Check [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
-2. Run `make health-check` for system diagnostics
-3. Check logs with `make logs`
-4. Contact system administrators if unresolved
-
----
-
-## 🏆 Enterprise Standards Compliance
-
-This project implements enterprise-grade standards:
-
-- ✅ **Professional Error Handling**: Comprehensive error management
-- ✅ **Production Monitoring**: Real-time health and performance monitoring
-- ✅ **Security Best Practices**: Encrypted connections and secure credential management
-- ✅ **Operational Excellence**: Professional documentation and procedures
-- ✅ **Code Quality**: Structured, maintainable, and well-documented codebase
-- ✅ **Disaster Recovery**: State management and recovery procedures
-
-**Built for Enterprise Production Environments** 🚀
+This project follows FLEXT workspace standards:
+- Single shared venv: `/home/marlonsc/flext/.venv`
+- Coordinated development via `.token` file
+- Environment variable namespacing for conflict avoidance
+- Standardized logging and observability patterns

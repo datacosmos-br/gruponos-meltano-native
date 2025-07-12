@@ -35,10 +35,12 @@ class OracleConnectionConfig:
 
 class OracleConnectionManager:
     """Professional Oracle connection manager with SSL handling."""
+
     def __init__(self, config: OracleConnectionConfig) -> None:
         self.config = config
         self._connection = None
         self._connection_attempts = 0
+
     def connect(self) -> oracledb.Connection:
         for attempt in range(1, self.config.retry_attempts + 1):
             try:
@@ -60,26 +62,13 @@ class OracleConnectionManager:
                 )
 
                 if attempt == self.config.retry_attempts:
-                    # Last attempt - try fallback
-                    if self.config.protocol.lower() == "tcps":
-                        logger.info("Attempting fallback to TCP connection")
-                        try:
-                            return self._connect_tcp_fallback()
-                        except Exception as fallback_error:
-                            logger.exception("Fallback connection also failed")
-                            msg = (
-                                f"Could not establish Oracle connection after "
-                                f"{self.config.retry_attempts} attempts. "
-                                f"Last error {e}, Fallback error: {fallback_error}"
-                            )
-                            raise ConnectionError(msg) from e
-                    else:
-                        msg = (
-                            f"Could not establish Oracle connection after "
-                            f"{self.config.retry_attempts} attempts. "
-                            f"Last error: {e}"
-                        )
-                        raise ConnectionError(msg) from e
+                    # No fallbacks allowed - fail explicitly
+                    msg = (
+                        f"Could not establish Oracle connection after "
+                        f"{self.config.retry_attempts} attempts. "
+                        f"Last error: {e}"
+                    )
+                    raise ConnectionError(msg) from e
 
                 # Wait before retry
                 time.sleep(self.config.retry_delay)
@@ -120,32 +109,6 @@ class OracleConnectionManager:
             host=self.config.host,
             port=self.config.port,
             service_name=self.config.service_name,
-        )
-
-    def _connect_tcp_fallback(self) -> oracledb.Connection:
-        logger.info("Using TCP fallback connection")
-
-        # Try with modified port (common fallback)
-        default_oracle_port = 1522
-        fallback_oracle_port = 1521
-        fallback_port = (
-            fallback_oracle_port
-            if self.config.port == default_oracle_port
-            else self.config.port
-        )
-
-        dsn = (
-            f"(DESCRIPTION="
-            f"(ADDRESS=(PROTOCOL=TCP)(HOST={self.config.host})"
-            f"(PORT={fallback_port}))"
-            f"(CONNECT_DATA=(SERVICE_NAME={self.config.service_name}))"
-            f")"
-        )
-
-        return oracledb.connect(  # type: ignore[no-any-return]
-            user=self.config.username,
-            password=self.config.password,
-            dsn=dsn,
         )
 
     def test_connection(self) -> dict[str, Any]:

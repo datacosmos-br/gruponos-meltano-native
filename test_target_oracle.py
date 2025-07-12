@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """Test flext-target-oracle directly."""
 
-import os
 import json
+import os
 from pathlib import Path
 
 # Load environment
 from dotenv import load_dotenv
+
 load_dotenv()
 
 print("🧪 TESTING FLEXT-TARGET-ORACLE")
-print("="*60)
+print("=" * 60)
 
 # Check environment
 env_vars = {
@@ -62,10 +63,10 @@ messages = [
             "properties": {
                 "id": {"type": "integer"},
                 "name": {"type": "string"},
-                "created_at": {"type": "string", "format": "date-time"}
-            }
+                "created_at": {"type": "string", "format": "date-time"},
+            },
         },
-        "key_properties": ["id"]
+        "key_properties": ["id"],
     },
     {
         "type": "RECORD",
@@ -73,21 +74,20 @@ messages = [
         "record": {
             "id": 1,
             "name": "Test Record",
-            "created_at": "2025-07-11T00:00:00Z"
+            "created_at": "2025-07-11T00:00:00Z",
         },
-        "time_extracted": "2025-07-11T16:00:00Z"
+        "time_extracted": "2025-07-11T16:00:00Z",
     },
     {
         "type": "STATE",
-        "value": {"bookmarks": {"test_table": {"replication_key_value": "2025-07-11T00:00:00Z"}}}
-    }
+        "value": {"bookmarks": {"test_table": {"replication_key_value": "2025-07-11T00:00:00Z"}}},
+    },
 ]
 
 # Save messages to file
 messages_file = Path("test_messages.jsonl")
-with open(messages_file, "w") as f:
-    for msg in messages:
-        f.write(json.dumps(msg) + "\n")
+with open(messages_file, "w", encoding="utf-8") as f:
+    f.writelines(json.dumps(msg) + "\n" for msg in messages)
 
 print(f"\n💾 Test messages saved to {messages_file}")
 print("\n✨ Run this command to test the target:")
@@ -95,6 +95,6 @@ print(f"cat {messages_file} | flext-target-oracle -c config.json")
 
 # Create config file for manual testing
 config_file = Path("config.json")
-with open(config_file, "w") as f:
+with open(config_file, "w", encoding="utf-8") as f:
     json.dump(config, f, indent=2)
 print(f"\n💾 Config saved to {config_file}")

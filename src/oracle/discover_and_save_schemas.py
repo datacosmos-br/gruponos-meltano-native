@@ -1,5 +1,6 @@
 """Discover and save WMS schemas to JSON file for table creation.
-  This prevents fallback schemas from being used.  """
+This prevents fallback schemas from being used.
+"""
 
 from __future__ import annotations
 
@@ -9,12 +10,10 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
-from tap_oracle_wms.tap import TapOracleWMS
 
-import logging
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
-# from flext_observability import get_logger
+from tap_oracle_wms.tap import TapOracleWMS
 
 # Add tap path to Python path
 sys.path.insert(0, "/home/marlonsc/flext/flext-tap-oracle-wms/src")
@@ -38,7 +37,7 @@ def discover_schemas() -> bool:
 
     # Check if credentials are available:
     if not all([config["base_url"], config["username"], config["password"]]):
-            log.error("❌ Missing WMS credentials!")
+        log.error("❌ Missing WMS credentials!")
         log.error("Required environment variables:")
         log.error("  - TAP_ORACLE_WMS_BASE_URL")
         log.error("  - TAP_ORACLE_WMS_USERNAME")
@@ -50,7 +49,7 @@ def discover_schemas() -> bool:
     log.info("   User: %s", config["username"])
 
     try:
-            # Create tap instance
+        # Create tap instance
         tap = TapOracleWMS(config=config)
 
         # Discover schemas
@@ -62,9 +61,9 @@ def discover_schemas() -> bool:
             schemas[stream.tap_stream_id] = schema
             prop_count = (
                 len(schema.get("properties", {}))
-                if isinstance(schema, dict):
-                else len(schema.properties):
-             )
+                if isinstance(schema, dict)
+                else len(schema.properties)
+            )
             log.info("✅ Discovered %s: %d properties",
                 stream.tap_stream_id,
                 prop_count,
@@ -78,16 +77,14 @@ def discover_schemas() -> bool:
             json.dump(schemas, f, indent=2)
 
         log.info("\n✅ Schemas saved to %s", schema_file)
-        log.info("   Use this file with table_creator.py to ensure correct DDL generation",
-        )
+        log.info("   Use this file with table_creator.py to ensure correct DDL generation")
 
+        return True
     except Exception:
         log.exception("❌ Error discovering schemas")
         return False
-    else:
-            return True
 
 
 if __name__ == "__main__":
-            success = discover_schemas()
-    sys.exit(0 if success else 1):
+    success = discover_schemas()
+    sys.exit(0 if success else 1)

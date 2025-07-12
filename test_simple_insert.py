@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Direct test of Oracle insert with simple data."""
 
+import logging
 import os
+from datetime import datetime
+
 import oracledb
 from dotenv import load_dotenv
-from datetime import datetime
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,7 +29,8 @@ if config["protocol"] == "tcps":
     config["wallet_location"] = os.getenv("ORACLE_WALLET_LOCATION")
     config["wallet_password"] = os.getenv("ORACLE_WALLET_PASSWORD")
 
-def main():
+
+def main() -> None:
     """Test insert directly."""
     try:
         # Build connection params
@@ -53,9 +55,9 @@ def main():
                 port=config["port"],
                 service_name=config["service_name"],
             )
-        
+
         logger.info("Connected to Oracle database!")
-        
+
         with connection.cursor() as cursor:
             # First, create a simple test table
             logger.info("Creating TEST_SIMPLE table...")
@@ -64,7 +66,7 @@ def main():
                 connection.commit()
             except:
                 pass  # Table doesn't exist
-            
+
             cursor.execute("""
                 CREATE TABLE TEST_SIMPLE (
                     ID VARCHAR2(100),
@@ -75,38 +77,39 @@ def main():
             """)
             connection.commit()
             logger.info("Table created!")
-            
+
             # Test insert with bind parameters
-            sql = """INSERT INTO TEST_SIMPLE (ID, STATUS_ID, ALLOC_QTY, SDC_EXTRACTED_AT) 
+            sql = """INSERT INTO TEST_SIMPLE (ID, STATUS_ID, ALLOC_QTY, SDC_EXTRACTED_AT)
                      VALUES (:id, :status_id, :alloc_qty, TO_TIMESTAMP(:sdc_extracted_at, 'YYYY-MM-DD"T"HH24:MI:SS.FF'))"""
-            
+
             params = {
                 "id": "1001",
                 "status_id": 1,
                 "alloc_qty": "10.0",
-                "sdc_extracted_at": datetime.utcnow().isoformat()
+                "sdc_extracted_at": datetime.utcnow().isoformat(),
             }
-            
+
             logger.info(f"SQL: {sql}")
             logger.info(f"Params: {params}")
-            
+
             cursor.execute(sql, params)
             connection.commit()
             logger.info("Insert successful!")
-            
+
             # Verify
             cursor.execute("SELECT * FROM TEST_SIMPLE")
             rows = cursor.fetchall()
             logger.info(f"Rows in table: {len(rows)}")
             for row in rows:
                 logger.info(f"Row: {row}")
-            
+
         connection.close()
         logger.info("Test completed successfully!")
-        
+
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.exception(f"Error: {e}")
         raise
+
 
 if __name__ == "__main__":
     main()

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Test tap with specific entities."""
 
-import os
-import sys
 import json
+import os
 import subprocess
+import sys
 from pathlib import Path
 
 # Add tap to path
@@ -14,13 +14,14 @@ if str(tap_path) not in sys.path:
 
 # Load environment
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Import tap
 from flext_tap_oracle_wms.tap import TapOracleWMS
 
 print("🧪 TESTING TAP-ORACLE-WMS WITH MULTIPLE ENTITIES")
-print("="*60)
+print("=" * 60)
 
 # Configuration for tap with multiple entities
 tap_config = {
@@ -30,11 +31,11 @@ tap_config = {
     "entities": ["allocation", "order_hdr", "order_dtl"],  # Multiple entities
     "page_size": 5,
     "enable_incremental": False,
-    "discover_catalog": False
+    "discover_catalog": False,
 }
 
 # Write tap config
-with open("tap_config_multi.json", "w") as f:
+with open("tap_config_multi.json", "w", encoding="utf-8") as f:
     json.dump(tap_config, f, indent=2)
 
 # Target config
@@ -46,22 +47,22 @@ target_config = {
     "service_name": os.getenv("DATABASE__SERVICE_NAME", "gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com"),
     "protocol": os.getenv("DATABASE__PROTOCOL", "tcps"),
     "default_target_schema": os.getenv("DATABASE__SCHEMA", "oic"),
-    "table_prefix": "TEST_"
+    "table_prefix": "TEST_",
 }
 
 # Write target config
-with open("target_config_multi.json", "w") as f:
+with open("target_config_multi.json", "w", encoding="utf-8") as f:
     json.dump(target_config, f, indent=2)
 
 # Run pipeline
 tap_cmd = [
     sys.executable, "-m", "flext_tap_oracle_wms.tap",
-    "--config", "tap_config_multi.json"
+    "--config", "tap_config_multi.json",
 ]
 
 target_cmd = [
     sys.executable, "-m", "flext_target_oracle",
-    "--config", "target_config_multi.json"
+    "--config", "target_config_multi.json",
 ]
 
 print(f"\n📊 Running pipeline with entities: {tap_config['entities']}")
@@ -73,7 +74,7 @@ tap_process = subprocess.Popen(
     tap_cmd,
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
-    env={**os.environ}
+    env={**os.environ},
 )
 
 target_process = subprocess.Popen(
@@ -81,7 +82,7 @@ target_process = subprocess.Popen(
     stdin=tap_process.stdout,
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
-    env={**os.environ}
+    env={**os.environ},
 )
 
 # Allow tap to close its stdout
@@ -93,7 +94,7 @@ target_stdout, target_stderr = target_process.communicate()
 tap_stderr = tap_process.stderr.read() if tap_process.stderr else b""
 
 # Extract summary from output
-stdout_lines = target_stdout.decode().split('\n')
+stdout_lines = target_stdout.decode().split("\n")
 summary_started = False
 for line in stdout_lines:
     if "Target completed successfully:" in line or summary_started:
@@ -122,7 +123,7 @@ else:
 target_entities = [
     "allocation",
     "order_hdr",
-    "order_dtl"
+    "order_dtl",
 ]
 
 # Create config with entities
@@ -136,7 +137,7 @@ config = {
     "discovery_sample_size": 0,
     "entities": target_entities,
     "entity_filter": target_entities,
-    "page_size": 100
+    "page_size": 100,
 }
 
 print(f"\n📋 Configured entities: {', '.join(target_entities)}")
@@ -149,22 +150,22 @@ tap = TapOracleWMS(config=config)
 try:
     streams = tap.discover_streams()
     print(f"\n✅ Found {len(streams)} streams")
-    
+
     # Show streams
     print("\n📊 Available Streams:")
     for stream in streams:
         print(f"  - {stream.name}")
-        
+
     # Test extraction for allocation
     if streams:
         print(f"\n🚀 Testing extraction for '{streams[0].name}'...")
         # This would normally run the sync
         print("✅ Stream configured successfully")
-        
+
 except Exception as e:
     print(f"\n❌ Failed: {e}")
     import traceback
     traceback.print_exc()
-    exit(1)
+    sys.exit(1)
 
 print("\n✨ Test completed successfully!")

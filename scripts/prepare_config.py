@@ -114,12 +114,8 @@ def prepare_target_config(env_file: str = ".env") -> None:
         json.dump(resolved_config, f, indent=2)
 
     # Mostra resumo
-    print(f"✅ Configuração preparada: {output_file}")
-    print(f"   Username: {resolved_config.get('username', 'N/A')}")
     if "dsn" in resolved_config:
-        print("   Usando DSN para Oracle Autonomous Database")
-    else:
-        print(f"   Host: {resolved_config.get('host', 'N/A')}")
+        pass
 
 
 def main() -> int:
@@ -135,8 +131,7 @@ def main() -> int:
 
     try:
         prepare_target_config(args.env_file)
-    except Exception as e:
-        print(f"❌ Erro ao preparar configuração: {e}")
+    except Exception:
         return 1
 
     return 0

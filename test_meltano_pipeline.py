@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Test meltano pipeline with tap only."""
 
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
 
 # Load environment
 from dotenv import load_dotenv
+
 load_dotenv()
 
 print("🚀 TESTING MELTANO PIPELINE")
-print("="*60)
+print("=" * 60)
 
 # Create output directory
 output_dir = Path("output")
@@ -22,16 +23,16 @@ print("\n1️⃣ Testing tap-oracle-wms-full...")
 cmd = ["meltano", "invoke", "tap-oracle-wms-full", "--config", "config.json", "--state", "state.json"]
 
 print(f"Running: {' '.join(cmd)}")
-result = subprocess.run(cmd, capture_output=True, text=True)
+result = subprocess.run(cmd, check=False, capture_output=True, text=True)
 
 if result.returncode != 0:
     print(f"❌ Tap failed: {result.returncode}")
     print(f"STDOUT:\n{result.stdout}")
     print(f"STDERR:\n{result.stderr}")
-    exit(1)
+    sys.exit(1)
 
 # Save output
-with open(output_dir / "tap_output.jsonl", "w") as f:
+with open(output_dir / "tap_output.jsonl", "w", encoding="utf-8") as f:
     f.write(result.stdout)
 
 print(f"✅ Tap output saved to {output_dir}/tap_output.jsonl")
@@ -40,7 +41,7 @@ print(f"✅ Tap output saved to {output_dir}/tap_output.jsonl")
 record_count = sum(1 for line in result.stdout.splitlines() if line.strip().startswith('{"type":"RECORD"'))
 schema_count = sum(1 for line in result.stdout.splitlines() if line.strip().startswith('{"type":"SCHEMA"'))
 
-print(f"\n📊 Results:")
+print("\n📊 Results:")
 print(f"  - Schemas: {schema_count}")
 print(f"  - Records: {record_count}")
 

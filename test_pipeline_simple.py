@@ -4,7 +4,7 @@
 import json
 import subprocess
 import sys
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 # Create simple test data
 messages = [
@@ -25,10 +25,10 @@ messages = [
                 "create_ts": {"type": ["string", "null"], "format": "date-time"},
                 "mod_ts": {"type": ["string", "null"], "format": "date-time"},
                 "_sdc_extracted_at": {"type": "string", "format": "date-time"},
-                "_sdc_entity": {"type": "string"}
-            }
+                "_sdc_entity": {"type": "string"},
+            },
         },
-        "key_properties": ["id"]
+        "key_properties": ["id"],
     },
     # Records for allocation
     {
@@ -45,9 +45,9 @@ messages = [
             "create_ts": "2025-01-11T10:00:00Z",
             "mod_ts": "2025-01-11T10:30:00Z",
             "_sdc_extracted_at": datetime.now(UTC).isoformat(),
-            "_sdc_entity": "allocation"
+            "_sdc_entity": "allocation",
         },
-        "time_extracted": datetime.now(UTC).isoformat()
+        "time_extracted": datetime.now(UTC).isoformat(),
     },
     {
         "type": "RECORD",
@@ -63,9 +63,9 @@ messages = [
             "create_ts": "2025-01-11T11:00:00Z",
             "mod_ts": "2025-01-11T11:30:00Z",
             "_sdc_extracted_at": datetime.now(UTC).isoformat(),
-            "_sdc_entity": "allocation"
+            "_sdc_entity": "allocation",
         },
-        "time_extracted": datetime.now(UTC).isoformat()
+        "time_extracted": datetime.now(UTC).isoformat(),
     },
     {
         "type": "RECORD",
@@ -81,36 +81,35 @@ messages = [
             "create_ts": "2025-01-11T12:00:00Z",
             "mod_ts": "2025-01-11T12:30:00Z",
             "_sdc_extracted_at": datetime.now(UTC).isoformat(),
-            "_sdc_entity": "allocation"
+            "_sdc_entity": "allocation",
         },
-        "time_extracted": datetime.now(UTC).isoformat()
-    }
+        "time_extracted": datetime.now(UTC).isoformat(),
+    },
 ]
 
 # Write messages to temp file
-with open("test_messages.jsonl", "w") as f:
-    for msg in messages:
-        f.write(json.dumps(msg) + "\n")
+with open("test_messages.jsonl", "w", encoding="utf-8") as f:
+    f.writelines(json.dumps(msg) + "\n" for msg in messages)
 
 print("Created test_messages.jsonl with", len(messages), "messages")
 
 # Run the target with the test data
 print("\nRunning target with test data...")
-with open("test_messages.jsonl", "r") as input_file:
+with open("test_messages.jsonl", encoding="utf-8") as input_file:
     # Source environment variables
     env_cmd = "export $(grep -v '^#' .env | xargs) && python -m flext_target_oracle"
     result = subprocess.run(
         env_cmd,
-        shell=True,
+        check=False, shell=True,
         stdin=input_file,
         capture_output=True,
-        text=True
+        text=True,
     )
-    
+
     print("\nTarget output:")
     print(result.stdout)
     if result.stderr:
         print("\nTarget errors:")
         print(result.stderr)
-    
+
     print("\nReturn code:", result.returncode)

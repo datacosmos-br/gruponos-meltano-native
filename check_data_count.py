@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Clean up existing tables and run a fresh test."""
+"""Check data count in Oracle tables."""
 
 import logging
 import os
@@ -23,29 +23,19 @@ config = {
     "protocol": os.getenv("FLEXT_TARGET_ORACLE_PROTOCOL", "tcp"),
 }
 
-# Handle TCPS protocol
-if config["protocol"] == "tcps":
-    config["wallet_location"] = os.getenv("ORACLE_WALLET_LOCATION")
-    config["wallet_password"] = os.getenv("ORACLE_WALLET_PASSWORD")
-
 
 def main() -> None:
-    """Clean up and prepare for fresh test."""
+    """Check data count in all TEST_ tables."""
     try:
         # Build connection params
         if config["protocol"] == "tcps":
             logger.info("Connecting with TCPS protocol...")
-            # Use the actual service hostname in DSN to match certificate
-            config["service_name"].split(".")[0] + ".adb.oraclecloud.com"
             dsn = f'(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST={config["host"]})(PORT={config["port"]}))(CONNECT_DATA=(SERVICE_NAME={config["service_name"]})))'
             connection = oracledb.connect(
                 user=config["username"],
                 password=config["password"],
                 dsn=dsn,
-                config_dir=config["wallet_location"],
-                wallet_location=config["wallet_location"],
-                wallet_password=config["wallet_password"],
-                ssl_server_dn_match=False,  # Skip hostname verification
+                ssl_server_dn_match=False,
             )
         else:
             logger.info("Connecting with TCP protocol...")
@@ -59,9 +49,8 @@ def main() -> None:
 
         logger.info("Connected to Oracle database!")
 
-        # Drop existing TEST_ tables
+        # Get all TEST_ tables
         with connection.cursor() as cursor:
-            logger.info("Checking for existing TEST_ tables...")
             cursor.execute("""
                 SELECT table_name
                 FROM user_tables
@@ -70,33 +59,41 @@ def main() -> None:
             """)
 
             tables = [row[0] for row in cursor]
+            if not tables:
+                logger.info("No TEST_ tables found!")
+                return
 
-            if tables:
-                logger.info(f"Found {len(tables)} TEST_ tables to drop: {tables}")
-                for table in tables:
+            logger.info(f"Found {len(tables)} TEST_ tables:")
+            logger.info("-" * 60)
+            logger.info(f"{'Table Name':<30} {'Record Count':<15} {'Latest Record':<15}")
+            logger.info("-" * 60)
+
+            for table_name in tables:
+                # Get count
+                try:
+                    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                    count = cursor.fetchone()[0]
+
+                    # Get latest record timestamp if exists
+                    latest = "N/A"
                     try:
-                        cursor.execute(f"DROP TABLE {table} CASCADE CONSTRAINTS")
-                        logger.info(f"Dropped table: {table}")
-                    except Exception as e:
-                        logger.warning(f"Could not drop {table}: {e}")
-                connection.commit()
-            else:
-                logger.info("No existing TEST_ tables found")
+                        cursor.execute(f"SELECT MAX(_SDC_EXTRACTED_AT) FROM {table_name}")
+                        latest_ts = cursor.fetchone()[0]
+                        if latest_ts:
+                            latest = latest_ts.strftime("%H:%M:%S")
+                    except:
+                        pass
 
-            # Verify cleanup
-            cursor.execute("""
-                SELECT COUNT(*)
-                FROM user_tables
-                WHERE table_name LIKE 'TEST_%'
-            """)
-            count = cursor.fetchone()[0]
-            logger.info(f"Remaining TEST_ tables: {count}")
+                    logger.info(f"{table_name:<30} {count:<15} {latest:<15}")
+
+                except Exception as e:
+                    logger.info(f"{table_name:<30} ERROR: {e}")
 
         connection.close()
-        logger.info("Cleanup completed successfully!")
+        logger.info("\nData count check completed!")
 
     except Exception as e:
-        logger.exception(f"Error during cleanup: {e}")
+        logger.exception(f"Error: {e}")
         raise
 
 

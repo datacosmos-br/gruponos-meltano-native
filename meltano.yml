@@ -10,7 +10,7 @@ plugins:
   extractors:
     - name: tap-oracle-wms-full
       namespace: tap_oracle_wms
-      executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
+      executable: /home/marlonsc/flext/.venv/bin/flext-tap-oracle-wms
       config:
         base_url: $TAP_ORACLE_WMS_BASE_URL
         username: $TAP_ORACLE_WMS_USERNAME
@@ -19,14 +19,13 @@ plugins:
         facility_code: $TAP_ORACLE_WMS_FACILITY_CODE
         entities: ["allocation", "order_hdr", "order_dtl"]
         page_size: 500
-        force_full_table: true
         ordering: "-id"
-        filter_mode: "id_recovery"
         request_timeout: 600
+        enable_incremental: false
 
     - name: tap-oracle-wms-incremental
       namespace: tap_oracle_wms
-      executable: /home/marlonsc/flext/.venv/bin/tap-oracle-wms
+      executable: /home/marlonsc/flext/.venv/bin/flext-tap-oracle-wms
       config:
         base_url: $TAP_ORACLE_WMS_BASE_URL
         username: $TAP_ORACLE_WMS_USERNAME

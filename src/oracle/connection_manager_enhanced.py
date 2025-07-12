@@ -10,11 +10,11 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
-from flext_observability.logging import get_logger
 from flext_db_oracle.connection import (
     ConnectionConfig,
     ResilientOracleConnection,
 )
+from flext_observability.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -37,7 +37,7 @@ class OracleConnectionConfig:
 
 class OracleConnectionManager:
     """Professional Oracle connection manager with FLEXT enterprise features.
-    
+
     This class maintains backward compatibility with the original interface
     while providing enhanced features from flext-db-oracle:
     - Connection pooling
@@ -49,7 +49,7 @@ class OracleConnectionManager:
 
     def __init__(self, config: OracleConnectionConfig) -> None:
         self.config = config
-        
+
         # Convert to FLEXT ConnectionConfig
         self._flext_config = ConnectionConfig(
             host=config.host,
@@ -62,7 +62,7 @@ class OracleConnectionManager:
             # Note: flext-db-oracle uses 'timeout' not 'connection_timeout'
             timeout=config.connection_timeout,
         )
-        
+
         # Create resilient connection with retry and fallback
         self._connection = ResilientOracleConnection(
             config=self._flext_config,
@@ -70,9 +70,9 @@ class OracleConnectionManager:
             retry_delay=config.retry_delay,
             enable_fallback=True,  # Always enable fallback for compatibility
         )
-        
+
         self._connection_attempts = 0
-        
+
         logger.info(
             "Initialized enhanced Oracle connection manager",
             host=config.host,
@@ -84,39 +84,41 @@ class OracleConnectionManager:
 
     def connect(self) -> Any:
         """Connect to Oracle database with enterprise resilience.
-        
+
         Returns:
             The underlying connection object for backward compatibility.
-            
+
         Raises:
             ConnectionError: If connection cannot be established after all retries.
+
         """
         logger.info("Connecting to Oracle using enhanced FLEXT connection")
-        
+
         # ResilientOracleConnection handles all retry logic internally
         self._connection.connect()
-        
+
         # Get the actual connection attempts from the resilient connection
         self._connection_attempts = self._connection._connection_attempts
-        
+
         # Return the underlying oracledb connection for compatibility
         return self._connection._connection
 
     def test_connection(self) -> dict[str, Any]:
         """Test the connection and return detailed results.
-        
+
         Returns:
             Dictionary with connection test results including:
             - success: bool
             - protocol_used: str
             - oracle_version: str
-            - current_user: str  
+            - current_user: str
             - connection_time_ms: float
             - error: str (if failed)
+
         """
         # Use the enhanced test_connection from ResilientOracleConnection
         result = self._connection.test_connection()
-        
+
         # Log the result
         if result["success"]:
             logger.info(
@@ -133,7 +135,7 @@ class OracleConnectionManager:
                 error=result.get("error"),
                 attempts=result.get("attempts"),
             )
-        
+
         return result
 
     def close(self) -> None:
@@ -144,47 +146,50 @@ class OracleConnectionManager:
 
     def execute(self, sql: str, parameters: dict[str, Any] | None = None) -> Any:
         """Execute SQL statement using FLEXT connection.
-        
+
         Args:
             sql: SQL statement to execute
             parameters: Optional parameters for the SQL statement
-            
+
         Returns:
             Query results or row count
+
         """
         if not self._connection.is_connected:
             self.connect()
-        
+
         return self._connection.execute(sql, parameters)
 
     def fetch_one(self, sql: str, parameters: dict[str, Any] | None = None) -> Any:
         """Fetch one row from SQL query.
-        
+
         Args:
             sql: SQL query to execute
             parameters: Optional parameters for the query
-            
+
         Returns:
             Single row result or None
+
         """
         if not self._connection.is_connected:
             self.connect()
-            
+
         return self._connection.fetch_one(sql, parameters)
 
     def fetch_all(self, sql: str, parameters: dict[str, Any] | None = None) -> list[Any]:
         """Fetch all rows from SQL query.
-        
+
         Args:
             sql: SQL query to execute
             parameters: Optional parameters for the query
-            
+
         Returns:
             List of row results
+
         """
         if not self._connection.is_connected:
             self.connect()
-            
+
         return self._connection.fetch_all(sql, parameters)
 
     @property
@@ -194,16 +199,17 @@ class OracleConnectionManager:
 
     def get_connection_info(self) -> dict[str, Any]:
         """Get detailed connection information.
-        
+
         Returns:
             Dictionary with connection details and statistics
+
         """
         return self._connection.get_connection_info()
 
 
 def create_connection_manager_from_env() -> OracleConnectionManager:
     """Create connection manager from environment variables.
-    
+
     This function maintains backward compatibility with existing
     environment variable names while using the enhanced connection.
     """
@@ -285,10 +291,10 @@ def create_connection_manager_from_env() -> OracleConnectionManager:
 if __name__ == "__main__":
     # Test the connection manager
     from flext_observability.logging import setup_logging
-    
+
     # Setup FLEXT logging
     setup_logging(level="INFO")
-    
+
     manager = create_connection_manager_from_env()
     result = manager.test_connection()
 

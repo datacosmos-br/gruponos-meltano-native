@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -62,7 +63,8 @@ class OracleTableCreator:
     def create_table_from_schema(self, table_name: str, singer_schema: dict[str, Any]) -> str:
         """Create Oracle table DDL from Singer schema."""
         if "properties" not in singer_schema:
-            raise ValueError(f"Invalid Singer schema for table {table_name}")
+            msg = f"Invalid Singer schema for table {table_name}"
+            raise ValueError(msg)
 
         columns = []
         primary_keys = []
@@ -123,18 +125,18 @@ class OracleTableCreator:
         if multiple_of >= 1:
             return 18  # Large integers
         # Count decimal places
-        decimal_str = str(multiple_of).split(".")[1] if "." in str(multiple_of) else ""
+        str(multiple_of).split(".")[1] if "." in str(multiple_of) else ""
         return 18  # Conservative precision
 
     def _format_default_value(self, default_value: Any, data_type: str) -> str:
         """Format default value for Oracle DDL."""
         if default_value is None:
             return "NULL"
-        if data_type in ("string", "text"):
+        if data_type in {"string", "text"}:
             return f"'{default_value}'"
         if data_type == "boolean":
             return "1" if default_value else "0"
-        if data_type in ("date-time", "date", "time"):
+        if data_type in {"date-time", "date", "time"}:
             if default_value == "CURRENT_TIMESTAMP":
                 return "SYSTIMESTAMP"
             return f"TIMESTAMP '{default_value}'"
@@ -203,7 +205,7 @@ class OracleTableCreator:
         # Common WMS index patterns
         index_candidates = []
 
-        for column_name, column_schema in properties.items():
+        for column_name in properties:
             # Date columns (for range queries)
             if "date" in column_name.lower() or "time" in column_name.lower():
                 index_candidates.append((column_name, "DATE_RANGE"))
@@ -221,7 +223,7 @@ class OracleTableCreator:
                 index_candidates.append((column_name, "LOOKUP"))
 
         # Generate index DDL
-        for i, (column_name, index_type) in enumerate(index_candidates):
+        for (column_name, index_type) in index_candidates:
             index_name = f"IDX_{table_name.upper()}_{column_name.upper()}"
 
             if index_type == "DATE_RANGE":
@@ -230,7 +232,7 @@ class OracleTableCreator:
                     f"CREATE INDEX {index_name} ON {self.schema}.{table_name.upper()} ({column_name.upper()}) "
                     f"TABLESPACE INDX PCTFREE 10 LOGGING ONLINE COMPUTE STATISTICS;"
                 )
-            elif index_type in ("JOIN", "LOOKUP"):
+            elif index_type in {"JOIN", "LOOKUP"}:
                 # Unique or non-unique based on naming
                 uniqueness = "UNIQUE " if column_name.lower().endswith("_id") else ""
                 index_ddl = (
@@ -285,7 +287,7 @@ class OracleTableCreator:
             return False
 
         except subprocess.TimeoutExpired:
-            logger.error("DDL execution timed out after 5 minutes")
+            logger.exception("DDL execution timed out after 5 minutes")
             return False
         except Exception as e:
             logger.exception(f"Error executing DDL: {e}")
@@ -308,13 +310,15 @@ class OracleTableCreator:
                     break
 
             if not stream:
-                raise ValueError(f"Stream {table_name} not found in catalog")
+                msg = f"Stream {table_name} not found in catalog"
+                raise ValueError(msg)
 
             schema = stream.get("schema", {})
             return self.create_table_from_schema(table_name, schema)
 
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON in catalog file: {e}") from e
+            msg = f"Invalid JSON in catalog file: {e}"
+            raise ValueError(msg) from e
         except Exception as e:
             logger.exception(f"Error processing Singer catalog: {e}")
             raise
@@ -340,7 +344,8 @@ def main() -> None:
     # Get password from environment if not provided
     password = args.password or os.getenv("ORACLE_PASSWORD")
     if not password:
-        raise ValueError("Password must be provided via --password or ORACLE_PASSWORD env var")
+        msg = "Password must be provided via --password or ORACLE_PASSWORD env var"
+        raise ValueError(msg)
 
     # Create connection config
     connection_config = {
@@ -358,18 +363,14 @@ def main() -> None:
     catalog_path = Path(args.catalog)
     table_ddl = creator.generate_table_from_singer_catalog(catalog_path, args.table)
 
-    print("-- Table DDL:")
-    print(table_ddl)
-
     # Generate indexes if requested
     if args.indexes:
         catalog_data = json.loads(catalog_path.read_text(encoding="utf-8"))
         stream = next(s for s in catalog_data["streams"] if s["tap_stream_id"] == args.table)
         indexes = creator.create_indexes_for_table(args.table, stream["schema"])
 
-        print("\n-- Recommended Indexes:")
-        for index_ddl in indexes:
-            print(index_ddl)
+        for _index_ddl in indexes:
+            pass
 
     # Execute if requested
     if args.execute:
@@ -379,13 +380,12 @@ def main() -> None:
 
         success = creator.execute_ddl(ddl_statements)
         if success:
-            print(f"\n✅ Successfully created table {args.table}")
+            pass
         else:
-            print(f"\n❌ Failed to create table {args.table}")
             return 1
 
     return 0
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

@@ -1,9 +1,9 @@
 # CLAUDE.md - GRUPONOS MELTANO NATIVE PROJECT
 
-**Hierarchy**: PROJECT-SPECIFIC  
-**Project**: GrupoNOS WMS Meltano Native - 100% Meltano native replacement for custom Python approach  
-**Status**: PRODUCTION-READY  
-**Last Updated**: 2025-07-01
+**Hierarchy**: PROJECT-SPECIFIC (FLEXT Workspace)
+**Project**: GrupoNOS WMS Meltano Native - Enterprise FLEXT Singer/Meltano Integration
+**Status**: OPERATIONAL  
+**Last Updated**: 2025-07-12
 
 **Reference**: `/home/marlonsc/CLAUDE.md` → Universal principles  
 **Reference**: `/home/marlonsc/CLAUDE.local.md` → Cross-workspace issues  
@@ -11,59 +11,55 @@
 
 ---
 
-## 🎯 PROJECT OVERVIEW
+## 🎯 FLEXT PROJECT OVERVIEW
 
 ### Purpose
 
-Complete 100% Meltano native data pipeline replacing the custom Python approach in `gruponos-meltane-native`.
-This demonstrates enterprise best practices for Singer/Meltano data integration.
+Enterprise data integration project using FLEXT Singer/Meltano components to synchronize Oracle WMS data with Oracle Analytics. Demonstrates FLEXT ecosystem patterns for enterprise ETL operations.
 
-### Key Achievements
+### FLEXT Components Used
 
-✅ **Zero Custom Code** - Pure declarative Meltano configuration  
-✅ **Production Grade** - Enterprise monitoring, error handling, recovery  
-✅ **Comprehensive Testing** - dbt tests, data quality validation  
-✅ **Multi-Environment** - Dev, staging, production configurations  
-✅ **Documentation** - Complete setup, operation, and troubleshooting guides
+✅ **flext-tap-oracle-wms** - WMS data extraction with Singer protocol  
+✅ **flext-target-oracle** - Oracle data loading with connection pooling  
+✅ **flext-observability** - Structured logging and monitoring  
+✅ **flext-meltano** - ETL orchestration patterns and state management
 
-### Architecture
+### FLEXT Architecture
 
 ```ascii
-Oracle WMS → tap-oraclie-wms → Meltano → target-oracle → dbt transformations → Data Marts
+Oracle WMS → flext-tap-oracle-wms → Meltano → flext-target-oracle → Oracle Analytics
+           FLEXT Singer TAP      Framework   FLEXT Singer TARGET
 ```
 
 ---
 
-## 🚨 PROJECT-SPECIFIC CRITICAL REQUIREMENTS
+## 🚨 FLEXT PROJECT REQUIREMENTS
 
-### 1. **100% Meltano Native Constraint**
+### 1. **FLEXT Singer Protocol Compliance**
 
-**Critical**: This project MUST remain 100% Meltano native - no custom Python code
+**Critical**: Project MUST use FLEXT Singer components exclusively
 
 **Enforcement**:
+- flext-tap-oracle-wms for data extraction
+- flext-target-oracle for data loading  
+- flext-observability for all logging
+- FLEXT naming conventions and patterns
 
-- All logic in dbt SQL models
-- All orchestration via Meltano schedules/jobs
-- All configuration via meltano.yml and environment variables
-- Use only standard Meltano plugins and Singer taps/targets
-
-### 2. **Production Oracle Integration**
+### 2. **FLEXT Workspace Integration**
 
 **Requirements**:
+- Shared FLEXT venv: `/home/marlonsc/flext/.venv`
+- Environment variable namespacing (TAP_*, FLEXT_TARGET_*)
+- Coordinated development via `.token` file
+- FLEXT workspace standards compliance
 
-- Uses real tap-oracle-wms from `../flext-tap-oracle-wms`
-- Oracle-specific performance optimizations in dbt macros
-- Proper connection pooling and batch sizing
-- Enterprise security (encrypted passwords, SSL support)
-
-### 3. **Enterprise Data Quality Standards**
+### 3. **Enterprise Oracle Integration (FLEXT Patterns)**
 
 **Implementation**:
-
-- Comprehensive dbt tests for all models
-- Data freshness monitoring via dbt sources
-- Business rule validation in staging models
-- Automated data quality scoring
+- FLEXT Oracle connection pooling
+- TCPS/SSL with certificate validation
+- FLEXT retry patterns with exponential backoff
+- Singer metadata with FLEXT standards
 
 ---
 

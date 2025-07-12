@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Run tap with proper stderr redirection to avoid JSON parsing errors."""
 
-import os
-import sys
-import subprocess
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 # Add parent directory to path
@@ -20,18 +20,18 @@ config = {
     "entities": ["allocation"],
     "page_size": 5,
     "enable_incremental": False,
-    "discover_catalog": False
+    "discover_catalog": False,
 }
 
 # Write config to file
 config_file = "tap_config_clean.json"
-with open(config_file, "w") as f:
+with open(config_file, "w", encoding="utf-8") as f:
     json.dump(config, f, indent=2)
 
 # Run tap with stderr redirected
 cmd = [
     sys.executable, "-m", "flext_tap_oracle_wms.tap",
-    "--config", config_file
+    "--config", config_file,
 ]
 
 # Execute tap and capture only stdout (JSON messages)
@@ -40,7 +40,7 @@ process = subprocess.Popen(
     stdout=subprocess.PIPE,
     stderr=subprocess.DEVNULL,  # Discard stderr to avoid log messages
     text=True,
-    env={**os.environ}
+    env={**os.environ},
 )
 
 # Read and output only valid JSON lines
@@ -51,7 +51,6 @@ for line in process.stdout:
             # Verify it's valid JSON
             json.loads(line)
             # Output the line as-is
-            print(line)
         except json.JSONDecodeError:
             # Skip non-JSON lines
             pass

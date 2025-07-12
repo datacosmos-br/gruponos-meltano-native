@@ -12,10 +12,9 @@ from dotenv import load_dotenv
 
 
 class MeltanoSyncTester:
-         Testador robusto para syncs do Meltano."""
+    """Testador robusto para syncs do Meltano."""
 
-    def __init__(self, project_dir:
-        Path | None = None) -> None:
+    def __init__(self, project_dir: Path | None = None) -> None:
         self.project_dir = project_dir or Path.cwd()
         self.env_file = self.project_dir / ".env"
         self.meltano_yml = self.project_dir / "meltano.yml"
@@ -42,7 +41,7 @@ class MeltanoSyncTester:
                 cwd=self.project_dir,
             )
             if result.returncode != 0:
-            return False
+                return False
         except FileNotFoundError:
             return False
 
@@ -58,7 +57,7 @@ class MeltanoSyncTester:
             host = os.getenv("FLEXT_TARGET_ORACLE_HOST")
 
             if not all([username, password, host]):
-            return False
+                return False
 
             # DSN para Autonomous Database
             dsn = f"""(description=
@@ -87,7 +86,7 @@ class MeltanoSyncTester:
             password = os.getenv("TAP_ORACLE_WMS_PASSWORD")
 
             if not all([base_url, username, password]):
-            return False
+                return False
 
             # Tentar endpoint básico
             response = requests.get(

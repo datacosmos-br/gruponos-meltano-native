@@ -5,7 +5,7 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 # Configuration for tap
 tap_config = {
@@ -15,11 +15,11 @@ tap_config = {
     "entities": ["allocation"],
     "page_size": 5,
     "enable_incremental": False,
-    "discover_catalog": False
+    "discover_catalog": False,
 }
 
 # Write tap config
-with open("tap_config_test.json", "w") as f:
+with open("tap_config_test.json", "w", encoding="utf-8") as f:
     json.dump(tap_config, f, indent=2)
 
 print("🚀 Testing Full Pipeline: tap-oracle-wms → target-oracle")
@@ -34,22 +34,22 @@ target_config = {
     "service_name": os.getenv("DATABASE__SERVICE_NAME", "gbe8f3f2dbbc562_dwpdb_low.adb.oraclecloud.com"),
     "protocol": os.getenv("DATABASE__PROTOCOL", "tcps"),
     "default_target_schema": os.getenv("DATABASE__SCHEMA", "oic"),
-    "table_prefix": "TEST_"
+    "table_prefix": "TEST_",
 }
 
 # Write target config
-with open("target_config_test.json", "w") as f:
+with open("target_config_test.json", "w", encoding="utf-8") as f:
     json.dump(target_config, f, indent=2)
 
 # Run tap and pipe to target
 tap_cmd = [
-    sys.executable, "-m", "flext_tap_oracle_wms.tap",
-    "--config", "tap_config_test.json"
+    sys.executable, "-m", "flext_tap_oracle_wms",
+    "--config", "tap_config_test.json",
 ]
 
 target_cmd = [
     sys.executable, "-m", "flext_target_oracle",
-    "--config", "target_config_test.json"
+    "--config", "target_config_test.json",
 ]
 
 print("\n📊 Running pipeline...")
@@ -61,7 +61,7 @@ tap_process = subprocess.Popen(
     tap_cmd,
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
-    env={**os.environ}
+    env={**os.environ},
 )
 
 target_process = subprocess.Popen(
@@ -69,7 +69,7 @@ target_process = subprocess.Popen(
     stdin=tap_process.stdout,
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
-    env={**os.environ}
+    env={**os.environ},
 )
 
 # Allow tap to close its stdout
