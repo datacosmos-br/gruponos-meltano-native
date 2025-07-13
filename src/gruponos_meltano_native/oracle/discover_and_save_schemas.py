@@ -80,7 +80,7 @@ def discover_schemas() -> bool:
 
         log.info("\n✅ Schemas saved to %s", schema_file)
         log.info(
-            "   Use this file with table_creator.py to ensure correct DDL generation"
+            "   Use this file with table_creator.py to ensure correct DDL generation",
         )
 
         return True

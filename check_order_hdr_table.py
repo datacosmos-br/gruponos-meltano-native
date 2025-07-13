@@ -48,7 +48,7 @@ def main() -> None:
                     FROM user_tab_columns
                     WHERE table_name = 'TEST_ORDER_HDR'
                     ORDER BY column_id
-                """
+                """,
                 )
                 columns = cursor.fetchall()
 
@@ -56,7 +56,7 @@ def main() -> None:
                     logger.info("Table TEST_ORDER_HDR structure:")
                     for col in columns:
                         logger.info(
-                            f"  {col[0]}: {col[1]}({col[2]}) {'NULL' if col[3] == 'Y' else 'NOT NULL'}"
+                            f"  {col[0]}: {col[1]}({col[2]}) {'NULL' if col[3] == 'Y' else 'NOT NULL'}",
                         )
 
                     # Check for potentially problematic columns

@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from flext_core.domain.types import ServiceResult
 from flext_observability.logging import get_logger
 
-from .config import GrupoNOSConfig
+if TYPE_CHECKING:
+    from .config import GrupoNOSConfig
 
 logger = get_logger(__name__)
 

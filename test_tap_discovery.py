@@ -61,7 +61,7 @@ try:
     print("\n📊 Available Streams:")
     for stream in streams:
         print(
-            f"  - {stream.name} ({len(stream.schema.get('properties', {}))} properties)"
+            f"  - {stream.name} ({len(stream.schema.get('properties', {}))} properties)",
         )
 
     # Create catalog

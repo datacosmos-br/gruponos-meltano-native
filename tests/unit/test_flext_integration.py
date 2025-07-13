@@ -172,7 +172,7 @@ class TestAlertManagerIntegration:
 
         assert hasattr(am_module, "get_logger")
         assert not hasattr(
-            am_module, "logging"
+            am_module, "logging",
         )  # Standard logging should not be imported
 
 

@@ -38,7 +38,7 @@ def test_parameter_mapping() -> None:
         # Check if they differ (which would indicate a problem with lstrip)
         if old_param != new_param:
             logger.warning(
-                "    MISMATCH! Old lstrip approach differs from new approach"
+                "    MISMATCH! Old lstrip approach differs from new approach",
             )
 
     # Test SQL placeholder generation

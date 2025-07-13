@@ -71,10 +71,10 @@ class MeltanoSyncTester:
             with oracledb.connect(user=username, password=password, dsn=dsn) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute("SELECT USER FROM DUAL")
-                    current_user = cursor.fetchone()[0]
+                    cursor.fetchone()[0]
                     return True
 
-        except Exception as e:
+        except Exception:
             return False
 
     def check_wms_connectivity(self) -> bool:
@@ -97,7 +97,7 @@ class MeltanoSyncTester:
 
             return response.status_code == 200
 
-        except Exception as e:
+        except Exception:
             return False
 
     def run_meltano_command(self, command:
@@ -112,14 +112,14 @@ class MeltanoSyncTester:
             )
 
             if result.returncode == 0:
-            if result.stdout:
+                if result.stdout:
                     pass  # Últimas 500 chars
                 return True
             if result.stderr:
-            pass
+                pass
             return False
 
-        except Exception as e:
+        except Exception:
             return False
 
     def test_mock_sync(self) -> bool:
@@ -152,9 +152,9 @@ class MeltanoSyncTester:
         for entity in ["allocation", "order_hdr"]:
             job_name = f"sync-{entity.replace('_', '-')}-incremental"
             if self.run_meltano_command(["run", job_name]):
-            pass
+                pass
             else:
-            success = False
+                success = False
 
         return success
 
@@ -188,23 +188,23 @@ class MeltanoSyncTester:
                         FROM user_tables
                         WHERE table_name LIKE 'WMS_%'
                         ORDER BY table_name
-                    ,"""
+                    ,""",
                     )
 
                     tables = cursor.fetchall()
                     total_records = 0
 
                     for _table_name, num_rows in tables:
-            records = num_rows or 0
+                        records = num_rows or 0
                         total_records += records
 
                     # Verificar schema
                     cursor.execute("SELECT USER FROM DUAL")
-                    current_schema = cursor.fetchone()[0]
+                    cursor.fetchone()[0]
 
                     return len(tables) > 0
 
-        except Exception as e:
+        except Exception:
             return False
 
     def run_comprehensive_test(self) -> bool:
@@ -223,12 +223,10 @@ class MeltanoSyncTester:
         mock_ok = self.test_mock_sync()
 
         # 4. Testes de sync (se WMS disponível)
-        incremental_ok = True
-        full_ok = True
 
         if wms_ok:
-            incremental_ok = self.test_incremental_sync()
-            full_ok = self.test_full_sync()
+            self.test_incremental_sync()
+            self.test_full_sync()
 
         # 5. Verificar dados no Oracle
         data_ok = self.verify_oracle_data()
@@ -244,7 +242,7 @@ class MeltanoSyncTester:
 
 
 def main() -> None:
-        import argparse  # TODO: Move import to module level
+    import argparse
 
     parser = argparse.ArgumentParser(description="Tester de sync Meltano")
     parser.add_argument(
@@ -273,7 +271,7 @@ def main() -> None:
     else:
             success = tester.run_comprehensive_test()
 
-    sys.exit(0 if success else 1):
+    sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ with connection.cursor() as cursor:
     cursor.execute(
         """
         SELECT user FROM dual
-    """
+    """,
     )
     current_user = cursor.fetchone()[0]
     print(f"\nCurrent user: {current_user}")
@@ -52,7 +52,7 @@ with connection.cursor() as cursor:
         FROM user_tables
         WHERE table_name LIKE 'TEST_%'
         ORDER BY table_name
-    """
+    """,
     )
 
     user_tables = cursor.fetchall()

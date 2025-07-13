@@ -162,10 +162,10 @@ def main() -> int:
 
     # Test both implementations
     original_success = test_connection_manager(
-        OriginalManager, "Original Connection Manager"
+        OriginalManager, "Original Connection Manager",
     )
     enhanced_success = test_connection_manager(
-        EnhancedManager, "Enhanced Connection Manager (FLEXT)"
+        EnhancedManager, "Enhanced Connection Manager (FLEXT)",
     )
 
     # Test failure handling
@@ -176,10 +176,10 @@ def main() -> int:
     logger.info("SUMMARY")
     logger.info(f"{'=' * 60}")
     logger.info(
-        f"Original Manager: {'✅ SUCCESS' if original_success else '❌ FAILED'}"
+        f"Original Manager: {'✅ SUCCESS' if original_success else '❌ FAILED'}",
     )
     logger.info(
-        f"Enhanced Manager: {'✅ SUCCESS' if enhanced_success else '❌ FAILED'}"
+        f"Enhanced Manager: {'✅ SUCCESS' if enhanced_success else '❌ FAILED'}",
     )
 
     if enhanced_success:

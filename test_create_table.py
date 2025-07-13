@@ -8,7 +8,7 @@ with open("target_config_test.json", encoding="utf-8") as f:
     config = json.load(f)
 
 print(
-    f"Connecting to Oracle at {config['host']}:{config['port']}/{config['service_name']}"
+    f"Connecting to Oracle at {config['host']}:{config['port']}/{config['service_name']}",
 )
 
 # Build DSN with SSL support

@@ -75,7 +75,7 @@ def main() -> None:
                     ALLOC_QTY VARCHAR2(100),
                     SDC_EXTRACTED_AT TIMESTAMP
                 )
-            """
+            """,
             )
             connection.commit()
             logger.info("Table created!")

@@ -66,7 +66,7 @@ def main() -> None:
                 FROM user_tab_columns
                 WHERE table_name = 'TEST_ALLOCATION'
                 ORDER BY column_id
-            """
+            """,
             )
 
             columns = cursor.fetchall()
@@ -74,12 +74,12 @@ def main() -> None:
                 logger.info(f"\nFound {len(columns)} columns in TEST_ALLOCATION:")
                 logger.info("-" * 80)
                 logger.info(
-                    f"{'Column Name':<30} {'Data Type':<20} {'Length':<10} {'Nullable':<10}"
+                    f"{'Column Name':<30} {'Data Type':<20} {'Length':<10} {'Nullable':<10}",
                 )
                 logger.info("-" * 80)
                 for col_name, data_type, data_length, nullable in columns:
                     logger.info(
-                        f"{col_name:<30} {data_type:<20} {data_length:<10} {nullable:<10}"
+                        f"{col_name:<30} {data_type:<20} {data_length:<10} {nullable:<10}",
                     )
             else:
                 logger.info("TEST_ALLOCATION table not found!")
@@ -91,7 +91,7 @@ def main() -> None:
                     FROM user_tables
                     WHERE table_name LIKE 'TEST_%'
                     ORDER BY table_name
-                """
+                """,
                 )
 
                 tables = [row[0] for row in cursor]

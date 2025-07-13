@@ -131,7 +131,7 @@ def convert_metadata_type_to_oracle(
 
 
 def convert_field_pattern_to_oracle(
-    column_name: str, max_length: int | None = None
+    column_name: str, max_length: int | None = None,
 ) -> str | None:
     column_lower = column_name.lower()
 
@@ -166,7 +166,7 @@ def convert_field_pattern_to_oracle(
 
 
 def convert_singer_schema_to_oracle(
-    column_name: str, column_schema: dict[str, Any]
+    column_name: str, column_schema: dict[str, Any],
 ) -> str:
     # Prioridade 1: Padrões de nome de campo (mesma lógica do table_creator)
     oracle_type = convert_field_pattern_to_oracle(column_name)
@@ -221,7 +221,7 @@ def _looks_like_date(value: str) -> bool:
 
 
 def oracle_ddl_from_singer_schema(
-    singer_schema: dict[str, Any], column_name: str = ""
+    singer_schema: dict[str, Any], column_name: str = "",
 ) -> str:
     # Extrair metadata se disponível
     metadata_type = None

@@ -13,14 +13,7 @@ license = "MIT"
 homepage = "https://github.com/flext-sh/flext"
 repository = "https://github.com/flext-sh/flext"
 documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
-keywords = [
-    "gruponos",
-    "meltano", 
-    "native",
-    "etl",
-    "pipeline",
-    "enterprise"
-]
+keywords = ["gruponos", "meltano", "native", "etl", "pipeline", "enterprise"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -32,9 +25,14 @@ classifiers = [
     "Topic :: Database",
     "Topic :: System :: Archiving",
     "Framework :: AsyncIO",
-    "Typing :: Typed"
+    "Typing :: Typed",
 ]
-packages = [{include = "gruponos_meltano_native", from = "src"}]
+packages = [
+    { include = "gruponos_meltano_native", from = "src" },
+    { include = "oracle", from = "src" },
+    { include = "monitoring", from = "src" },
+    { include = "config", from = "src" },
+]
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
@@ -48,16 +46,16 @@ structlog = ">=25.0.0"
 click = ">=8.1.7"
 python-dateutil = ">=2.9.0"
 sqlalchemy = ">=2.0.0"
-psycopg2-binary = ">=2.9.0"
+psycopg-binary = ">=3.2.0"
 alembic = ">=1.13.0"
 croniter = ">=2.0.0"
 tenacity = ">=9.0.0"
 orjson = ">=3.10.0"
 
 # FLEXT Enterprise Libraries - Local workspace dependencies
-flext-core = {path = "../flext-core", develop = true}
-flext-db-oracle = {path = "../flext-db-oracle", develop = true}
-flext-observability = {path = "../flext-observability", develop = true}
+flext-core = { path = "../flext-core", develop = true }
+flext-db-oracle = { path = "../flext-db-oracle", develop = true }
+flext-observability = { path = "../flext-observability", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 # Development dependencies
@@ -108,16 +106,12 @@ markers = [
     "smoke: Smoke tests",
     "e2e: End-to-end tests",
     "meltano: marks tests as Meltano tests",
-    "etl: marks tests as ETL tests", 
+    "etl: marks tests as ETL tests",
     "pipeline: marks tests as pipeline tests",
     "gruponos: marks tests as Grupo Nos specific tests",
     "requires_meltano: tests that need Meltano installed",
 ]
-filterwarnings = [
-    "error",
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
-]
+filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning"]
 asyncio_mode = "auto"
 
 # Ruff configuration - focused on src/ and tests/
@@ -127,19 +121,61 @@ line-length = 88
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = [
-    "ALL",
-]
+select = ["ALL"]
 ignore = [
-    "E501",    # line too long (handled by formatter)
+    "E501", # line too long (handled by formatter)
 ]
 
 # Test-specific ignores
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "D102", "N801", "N802", "N806", "PLR2004", "F401", "PLC0415", "G004", "T201"]
-"**/tests/*.py" = ["S101", "D102", "N801", "N802", "N806", "PLR2004", "F401", "PLC0415", "G004", "T201"]
-"test_*.py" = ["S101", "D102", "N801", "N802", "N806", "PLR2004", "F401", "PLC0415", "G004", "T201"]
-"**/test_*.py" = ["S101", "D102", "N801", "N802", "N806", "PLR2004", "F401", "PLC0415", "G004", "T201"]
+"tests/**/*.py" = [
+    "S101",
+    "D102",
+    "N801",
+    "N802",
+    "N806",
+    "PLR2004",
+    "F401",
+    "PLC0415",
+    "G004",
+    "T201",
+]
+"**/tests/*.py" = [
+    "S101",
+    "D102",
+    "N801",
+    "N802",
+    "N806",
+    "PLR2004",
+    "F401",
+    "PLC0415",
+    "G004",
+    "T201",
+]
+"test_*.py" = [
+    "S101",
+    "D102",
+    "N801",
+    "N802",
+    "N806",
+    "PLR2004",
+    "F401",
+    "PLC0415",
+    "G004",
+    "T201",
+]
+"**/test_*.py" = [
+    "S101",
+    "D102",
+    "N801",
+    "N802",
+    "N806",
+    "PLR2004",
+    "F401",
+    "PLC0415",
+    "G004",
+    "T201",
+]
 
 
 # Auto-generated files - exclude from ALL linting
@@ -204,7 +240,7 @@ module = [
     "structlog.*",
     "click.*",
     "sqlalchemy.*",
-    "psycopg2.*",
+    "psycopg.*",
     "alembic.*",
     "croniter.*",
     "tenacity.*",
@@ -215,12 +251,7 @@ ignore_missing_imports = true
 [tool.coverage.run]
 source = ["src"]
 branch = true
-omit = [
-    "*/tests/*",
-    "*/test_*",
-    "*/__pycache__/*",
-    "*/site-packages/*",
-]
+omit = ["*/tests/*", "*/test_*", "*/__pycache__/*", "*/site-packages/*"]
 
 [tool.coverage.report]
 exclude_lines = [

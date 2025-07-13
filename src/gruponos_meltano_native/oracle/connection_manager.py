@@ -98,12 +98,12 @@ class OracleConnectionManager:
         with contextlib.suppress(Exception):
             connection_params["tcp_connect_timeout"] = self.config.connection_timeout
 
-        return oracledb.connect(**connection_params)  # type: ignore[no-any-return]
+        return oracledb.connect(**connection_params)
 
     def _connect_tcp(self) -> oracledb.Connection:
         logger.debug("Connecting with standard TCP")
 
-        return oracledb.connect(  # type: ignore[no-any-return]
+        return oracledb.connect(
             user=self.config.username,
             password=self.config.password,
             host=self.config.host,
@@ -145,7 +145,7 @@ class OracleConnectionManager:
                     "oracle_version": oracle_version,
                     "current_user": current_user,
                     "connection_time_ms": round(connection_time, 2),
-                }
+                },
             )
 
         except Exception as e:

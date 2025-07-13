@@ -65,7 +65,7 @@ for stream_id in selected_streams:
                 "stream": stream_id,
                 "record": record,
                 "time_extracted": record.get(
-                    "_sdc_extracted_at", datetime.utcnow().isoformat() + "Z"
+                    "_sdc_extracted_at", datetime.utcnow().isoformat() + "Z",
                 ),
             }
 

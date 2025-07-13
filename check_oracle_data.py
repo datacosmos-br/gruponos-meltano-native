@@ -70,7 +70,7 @@ def main() -> None:
                    OR table_name LIKE '%ORDER%'
                    OR table_name LIKE 'TEST_%'
                 ORDER BY table_name
-            """
+            """,
             )
 
             tables = cursor.fetchall()
@@ -101,12 +101,12 @@ def main() -> None:
                             WHERE table_name = '{table_name}'
                               AND column_name LIKE '_SDC_%'
                             ORDER BY column_name
-                        """
+                        """,
                         )
                         sdc_columns = cursor.fetchall()
                         if sdc_columns:
                             logger.info(
-                                f"  Singer columns: {[col[0] for col in sdc_columns]}"
+                                f"  Singer columns: {[col[0] for col in sdc_columns]}",
                             )
 
                 except Exception as e:

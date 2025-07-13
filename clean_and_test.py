@@ -68,7 +68,7 @@ def main() -> None:
                 FROM user_tables
                 WHERE table_name LIKE 'TEST_%'
                 ORDER BY table_name
-            """
+            """,
             )
 
             tables = [row[0] for row in cursor]
@@ -91,7 +91,7 @@ def main() -> None:
                 SELECT COUNT(*)
                 FROM user_tables
                 WHERE table_name LIKE 'TEST_%'
-            """
+            """,
             )
             count = cursor.fetchone()[0]
             logger.info(f"Remaining TEST_ tables: {count}")

@@ -28,25 +28,24 @@ def load_project_config() -> dict[str, Any]:
 
 
 def load_wms_config() -> dict[str, Any]:
-            config_path = Path(__file__).parent.parent / "config" / "wms_integration.yml"
+    config_path = Path(__file__).parent.parent / "config" / "wms_integration.yml"
     if config_path.exists():
-            with Path(config_path).open(encoding="utf-8") as f:
+        with Path(config_path).open(encoding="utf-8") as f:
             data = yaml.safe_load(f)
-            return data if isinstance(data, dict) else {}:
+            return data if isinstance(data, dict) else {}
     return {}
 
 
 def get_env_value(key: str, default: str | None = None) -> str | None:
-        return os.environ.get(key, default)
+    return os.environ.get(key, default)
 
 
 def generate_meltano_config() -> dict[str, Any]:
-        _ = load_project_config()  # Keep for future use
+    _ = load_project_config()  # Keep for future use
     _ = load_wms_config()  # Keep for future use
 
     # Base configuration
-    config:
-            dict[str, Any] = {
+    config: dict[str, Any] = {
         "version": 1,
         "default_environment": get_env_value("MELTANO_ENVIRONMENT", "dev"),
         "project_id": get_env_value("MELTANO_PROJECT_ID", "dynamic-wms-integration"),
@@ -68,7 +67,7 @@ def generate_meltano_config() -> dict[str, Any]:
         "WMS_ENTITIES",
         "allocation,order_hdr,order_dtl",
     )
-    entities = entities_str.split(",") if entities_str else []:
+    entities = entities_str.split(",") if entities_str else []
 
     # Base tap configuration
     base_tap_config = {
@@ -228,7 +227,7 @@ def generate_meltano_config() -> dict[str, Any]:
 
     # Add individual entity jobs
     for entity in entities:
-            jobs = config["jobs"]
+        jobs = config["jobs"]
         if isinstance(jobs, list):
             jobs.extend(
                 [
@@ -268,14 +267,14 @@ def generate_meltano_config() -> dict[str, Any]:
 
 
 def main() -> None:
-        config = generate_meltano_config()
+    config = generate_meltano_config()
 
     # Write to meltano.yml
     output_path = Path(__file__).parent.parent / "meltano.yml"
 
     # Backup existing if present:
     if output_path.exists():
-            backup_path = output_path.with_suffix(".yml.backup")
+        backup_path = output_path.with_suffix(".yml.backup")
         output_path.rename(backup_path)
         log.info("Backed up existing meltano.yml to %s", backup_path)
 

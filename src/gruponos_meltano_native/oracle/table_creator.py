@@ -57,7 +57,7 @@ class OracleTableCreator:
         }
 
     def create_table_from_schema(
-        self, table_name: str, singer_schema: dict[str, Any]
+        self, table_name: str, singer_schema: dict[str, Any],
     ) -> str:
         """Create Oracle table DDL from Singer schema."""
         if "properties" not in singer_schema:
@@ -74,7 +74,7 @@ class OracleTableCreator:
         # Process each column
         for column_name, column_schema in singer_schema["properties"].items():
             column_ddl = self._create_column_ddl(
-                column_name, column_schema, column_name in primary_keys
+                column_name, column_schema, column_name in primary_keys,
             )
             columns.append(column_ddl)
 
@@ -85,7 +85,7 @@ class OracleTableCreator:
         return ddl
 
     def _create_column_ddl(
-        self, column_name: str, column_schema: dict[str, Any], is_primary_key: bool
+        self, column_name: str, column_schema: dict[str, Any], is_primary_key: bool,
     ) -> str:
         """Create column DDL from Singer schema property."""
         # Handle multiple types (e.g., ["string", "null"])
@@ -118,7 +118,7 @@ class OracleTableCreator:
         # Add default value if specified
         if "default" in column_schema:
             default_value = self._format_default_value(
-                column_schema["default"], main_type
+                column_schema["default"], main_type,
             )
             column_ddl += f" DEFAULT {default_value}"
 
@@ -147,7 +147,7 @@ class OracleTableCreator:
         return str(default_value)
 
     def _build_create_table_ddl(
-        self, table_name: str, columns: list[str], primary_keys: list[str]
+        self, table_name: str, columns: list[str], primary_keys: list[str],
     ) -> str:
         """Build complete CREATE TABLE DDL statement."""
         ddl_lines = [
@@ -164,7 +164,7 @@ class OracleTableCreator:
         if primary_keys:
             pk_columns = ", ".join(pk.upper() for pk in primary_keys)
             ddl_lines.append(
-                f"  ,CONSTRAINT PK_{table_name.upper()} PRIMARY KEY ({pk_columns})"
+                f"  ,CONSTRAINT PK_{table_name.upper()} PRIMARY KEY ({pk_columns})",
             )
 
         ddl_lines.extend(
@@ -200,13 +200,13 @@ class OracleTableCreator:
                 "  );",
                 "END;",
                 "/",
-            ]
+            ],
         )
 
         return "\n".join(ddl_lines)
 
     def create_indexes_for_table(
-        self, table_name: str, singer_schema: dict[str, Any]
+        self, table_name: str, singer_schema: dict[str, Any],
     ) -> list[str]:
         """Generate recommended indexes for WMS table based on schema."""
         indexes = []
@@ -276,7 +276,7 @@ class OracleTableCreator:
                     *ddl_statements,
                     "",
                     "EXIT SUCCESS;",
-                ]
+                ],
             )
 
             # Write to temporary file
@@ -313,7 +313,7 @@ class OracleTableCreator:
                 script_path.unlink()
 
     def generate_table_from_singer_catalog(
-        self, catalog_path: Path, table_name: str
+        self, catalog_path: Path, table_name: str,
     ) -> str:
         """Generate Oracle table DDL from Singer catalog file."""
         try:
@@ -354,7 +354,7 @@ def main() -> None:
     parser.add_argument("--password", help="Oracle password (or use env var)")
     parser.add_argument("--schema", help="Oracle schema (defaults to username)")
     parser.add_argument(
-        "--execute", action="store_true", help="Execute DDL immediately"
+        "--execute", action="store_true", help="Execute DDL immediately",
     )
     parser.add_argument("--indexes", action="store_true", help="Generate indexes")
 

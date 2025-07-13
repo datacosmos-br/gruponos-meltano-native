@@ -57,7 +57,7 @@ def main() -> None:
                 FROM user_tables
                 WHERE table_name LIKE 'TEST_%'
                 ORDER BY table_name
-            """
+            """,
             )
 
             tables = [row[0] for row in cursor]
@@ -68,7 +68,7 @@ def main() -> None:
             logger.info(f"Found {len(tables)} TEST_ tables:")
             logger.info("-" * 60)
             logger.info(
-                f"{'Table Name':<30} {'Record Count':<15} {'Latest Record':<15}"
+                f"{'Table Name':<30} {'Record Count':<15} {'Latest Record':<15}",
             )
             logger.info("-" * 60)
 
@@ -82,7 +82,7 @@ def main() -> None:
                     latest = "N/A"
                     try:
                         cursor.execute(
-                            f"SELECT MAX(_SDC_EXTRACTED_AT) FROM {table_name}"
+                            f"SELECT MAX(_SDC_EXTRACTED_AT) FROM {table_name}",
                         )
                         latest_ts = cursor.fetchone()[0]
                         if latest_ts:

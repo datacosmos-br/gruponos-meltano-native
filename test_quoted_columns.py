@@ -78,7 +78,7 @@ def main() -> None:
                     "_SDC_SEQUENCE" NUMBER,
                     "_SDC_BATCHED_AT" TIMESTAMP
                 )
-            """
+            """,
             )
             connection.commit()
             logger.info("Table created!")
