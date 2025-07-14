@@ -29,9 +29,6 @@ classifiers = [
 ]
 packages = [
     { include = "gruponos_meltano_native", from = "src" },
-    { include = "oracle", from = "src" },
-    { include = "monitoring", from = "src" },
-    { include = "config", from = "src" },
 ]
 
 [tool.poetry.dependencies]
