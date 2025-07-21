@@ -234,7 +234,7 @@ class AlertManager:
         self.send_alert(
             AlertType.DATA_QUALITY_ISSUE,
             f"Data quality issue in {entity}: {issue}",
-            level=level,  # type: ignore[arg-type]
+            level=level,
             context={"entity": entity, "issue": issue, "severity": severity},
         )
 
@@ -243,6 +243,6 @@ class AlertManager:
         self.send_alert(
             AlertType.SYNC_TIMEOUT,
             f"Sync timeout for {entity} after {timeout_seconds} seconds",
-            level=AlertSeverity.HIGH,  # type: ignore[arg-type]
+            level=AlertSeverity.HIGH,
             context={"entity": entity, "timeout_seconds": timeout_seconds},
         )
