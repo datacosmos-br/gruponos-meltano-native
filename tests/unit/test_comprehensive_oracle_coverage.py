@@ -117,6 +117,7 @@ class TestComprehensiveOracleCoverage:
         assert oracle_type == "NUMBER"
 
         oracle_type = type_mapping_rules.convert_field_pattern_to_oracle("item_name")
+        assert oracle_type is not None
         assert "VARCHAR2" in oracle_type
 
         # Test singer schema conversion
@@ -277,6 +278,7 @@ class TestComprehensiveOracleCoverage:
 
         # Test date patterns
         result = type_mapping_rules.convert_field_pattern_to_oracle("created_date")
+        assert result is not None
         assert "TIMESTAMP" in result
 
         # Test flag patterns
@@ -355,6 +357,7 @@ class TestComprehensiveOracleCoverage:
         assert result == "NUMBER"
 
         result = type_mapping_rules._infer_oracle_from_sample(sample_value="2024-01-01")
+        assert result is not None
         assert "TIMESTAMP" in result
 
         result = type_mapping_rules._infer_oracle_from_sample(

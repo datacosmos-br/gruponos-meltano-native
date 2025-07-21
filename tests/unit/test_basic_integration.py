@@ -132,6 +132,7 @@ class TestBasicIntegration:
         # Run pipeline
         result = await orchestrator.run_pipeline("test_pipeline")
         assert result.is_success
+        assert result.value is not None
         assert result.value["pipeline"] == "test_pipeline"
         assert result.value["status"] == "success"
 
@@ -144,7 +145,7 @@ class TestBasicIntegration:
         assert success_result.error is None
 
         # Test failure
-        failure_result = ServiceResult.fail("test_error")
+        failure_result: ServiceResult[str] = ServiceResult.fail("test_error")
         assert not failure_result.is_success
         assert failure_result.value is None
         assert failure_result.error == "test_error"

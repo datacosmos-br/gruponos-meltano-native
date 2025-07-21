@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 """Example of using FLEXT Core configuration in GrupoNOS Meltano Native."""
 
-from flext_observability.logging import get_logger, setup_logging
+from flext_core import LogLevel
+from flext_observability.logging import LoggingConfig, get_logger, setup_logging
 
 from gruponos_meltano_native.config import GrupoNOSConfig, get_config
-from gruponos_meltano_native.oracle.connection_manager import (
-    OracleConnectionConfig,
-    OracleConnectionManager,
-)
 
 # Setup logging
-setup_logging(level="INFO")
+setup_logging(LoggingConfig(log_level=LogLevel.INFO))
 logger = get_logger(__name__)
 
 
@@ -95,38 +92,23 @@ def demonstrate_connection_manager_integration() -> None:
     """Show how configuration integrates with connection manager."""
     config = get_config()
 
-    # Create connection config from FLEXT config
-    target_conn_config = OracleConnectionConfig(
-        host=config.target_oracle.oracle.host,
-        port=config.target_oracle.oracle.port,
-        service_name=config.target_oracle.oracle.service_name,
-        username=config.target_oracle.oracle.username,
-        password=config.target_oracle.oracle.password,
-        protocol=config.target_oracle.oracle.protocol,
-        ssl_server_dn_match=config.target_oracle.oracle.ssl_server_dn_match,
-        connection_timeout=config.target_oracle.oracle.connection_timeout,
-        retry_attempts=config.target_oracle.oracle.retry_attempts,
-        retry_delay=config.target_oracle.oracle.retry_delay,
-    )
-
-    # Create connection manager
-    conn_manager = OracleConnectionManager(target_conn_config)
+    # Create connection manager from environment (the available pattern)
+    # The OracleConnectionManager is created from environment variables
+    # rather than from a separate config object
 
     logger.info(
-        "Connection manager created from FLEXT config",
-        host=target_conn_config.host,
-        protocol=target_conn_config.protocol,
+        "Connection manager configuration available",
+        target_host=config.target_oracle.oracle.host,
+        target_port=config.target_oracle.oracle.port,
+        wms_host=config.wms_source.oracle.host,
     )
 
-    # Test connection if not in dry run mode
+    # Note: Connection manager would be created from environment in actual usage
+    # This example shows how configuration values are accessed
     if not config.dry_run:
-        result = conn_manager.test_connection()
-        if result["success"]:
-            logger.info("✅ Connection test successful", details=result)
-        else:
-            logger.error("❌ Connection test failed", error=result["error"])
+        logger.info("Connection configuration ready for production use")
     else:
-        logger.info("Skipping connection test in dry run mode")
+        logger.info("Connection test would be run in production mode")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
@@ -44,7 +45,7 @@ def _validate_table_name(table_name: str) -> bool:
     return table_name.replace("_", "").isalnum()
 
 
-def _check_table_exists(cursor: object, table_name: str) -> bool:
+def _check_table_exists(cursor: Any, table_name: str) -> bool:
     """Check if table exists in the database.
 
     Args:
@@ -60,13 +61,14 @@ def _check_table_exists(cursor: object, table_name: str) -> bool:
             "SELECT COUNT(*) FROM user_tables WHERE table_name = :table_name",
             {"table_name": table_name},
         )
-        return cursor.fetchone()[0] > 0
+        result = cursor.fetchone()
+        return result[0] > 0 if result else False
     except (OSError, ValueError, RuntimeError):
         logger.exception("Error checking if table %s exists", table_name)
         return False
 
 
-def _count_table_records(cursor: object, table_name: str) -> int:
+def _count_table_records(cursor: Any, table_name: str) -> int:
     """Count records in a table.
 
     Args:
@@ -84,13 +86,14 @@ def _count_table_records(cursor: object, table_name: str) -> int:
             return 0
 
         cursor.execute(f'SELECT COUNT(*) FROM "OIC"."{table_name}"')  # noqa: S608
-        return cursor.fetchone()[0]
+        result = cursor.fetchone()
+        return result[0] if result else 0
     except (OSError, ValueError, RuntimeError):
         logger.exception("Error counting records in table %s", table_name)
         return 0
 
 
-def _get_table_details(cursor: object, table_name: str) -> dict[str, str | int | None]:
+def _get_table_details(cursor: Any, table_name: str) -> dict[str, str | int | None]:
     """Get detailed information about a table.
 
     Args:
@@ -101,7 +104,7 @@ def _get_table_details(cursor: object, table_name: str) -> dict[str, str | int |
         Dictionary with table details
 
     """
-    details = {
+    details: dict[str, str | int | None] = {
         "min_date": None,
         "max_date": None,
         "unique_ids": 0,
@@ -146,7 +149,7 @@ def _get_table_details(cursor: object, table_name: str) -> dict[str, str | int |
     return details
 
 
-def _validate_single_table(cursor: object, table_name: str, entity_name: str) -> int:
+def _validate_single_table(cursor: Any, table_name: str, entity_name: str) -> int:
     """Validate data in a specific table.
 
     Args:
@@ -183,8 +186,9 @@ def _validate_single_table(cursor: object, table_name: str, entity_name: str) ->
     if details["unique_ids"]:
         logger.info("   IDs únicos: %s", f"{details['unique_ids']:,}")
 
-    if details["duplicates"] > 0:
-        logger.warning("   ⚠️  Duplicatas encontradas: %d IDs", details["duplicates"])
+    duplicates = details["duplicates"]
+    if duplicates is not None and isinstance(duplicates, int) and duplicates > 0:
+        logger.warning("   ⚠️  Duplicatas encontradas: %d IDs", duplicates)
     else:
         logger.info("   ✅ Nenhuma duplicata encontrada")
 
@@ -198,7 +202,7 @@ def _log_validation_header() -> None:
     logger.info("-" * 60)
 
 
-def _setup_database_connection() -> tuple[object, object] | None:
+def _setup_database_connection() -> tuple[Any, Any] | None:
     """Set up database connection and return connection and cursor.
 
     Returns:
@@ -213,7 +217,7 @@ def _setup_database_connection() -> tuple[object, object] | None:
     manager = OracleConnectionManager(config.target_oracle.oracle)
     try:
         conn = manager.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor()  # type: ignore[attr-defined]
     except (OSError, ValueError, RuntimeError):
         logger.exception("❌ Erro ao conectar com Oracle")
         return None
@@ -221,7 +225,7 @@ def _setup_database_connection() -> tuple[object, object] | None:
     return conn, cursor
 
 
-def _validate_all_tables(cursor: object) -> int:
+def _validate_all_tables(cursor: Any) -> int:
     """Validate all tables and return total record count.
 
     Args:
@@ -264,7 +268,7 @@ def _log_validation_summary(total_records: int) -> None:
     logger.info("   Status: %s", status)
 
 
-def _cleanup_connection(cursor: object, conn: object) -> None:
+def _cleanup_connection(cursor: Any, conn: Any) -> None:
     """Clean up database connection.
 
     Args:

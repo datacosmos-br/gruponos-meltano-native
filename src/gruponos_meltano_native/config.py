@@ -11,6 +11,7 @@ import os
 from flext_core import BaseConfig, BaseSettings
 from flext_observability.logging import get_logger
 from pydantic import Field, ValidationInfo, field_validator
+from pydantic_settings import SettingsConfigDict
 
 # Setup logger
 logger = get_logger(__name__)
@@ -241,12 +242,11 @@ class GrupoNOSConfig(BaseSettings):
     debug_mode: bool = Field(default=False, description="Enable debug mode")
     dry_run: bool = Field(default=False, description="Dry run mode")
 
-    class Config:
-        """Pydantic configuration."""
-
-        env_prefix = "GRUPONOS_"
-        env_nested_delimiter = "__"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_prefix="GRUPONOS_",
+        env_nested_delimiter="__",
+        case_sensitive=False,
+    )
 
     @classmethod
     def from_env(cls, _env_file: str | None = None) -> GrupoNOSConfig:
@@ -477,14 +477,14 @@ _config: GrupoNOSConfig | None = None
 
 def get_config() -> GrupoNOSConfig:
     """Get the configuration singleton."""
-    # Use module-level configuration storage
-    if "_config" not in globals() or globals()["_config"] is None:
-        globals()["_config"] = GrupoNOSConfig.from_env()
-    return globals()["_config"]
+    global _config
+    if _config is None:
+        _config = GrupoNOSConfig.from_env()
+    return _config
 
 
 def reload_config() -> GrupoNOSConfig:
     """Reload configuration from environment."""
-    # Use module-level configuration storage
-    globals()["_config"] = GrupoNOSConfig.from_env()
-    return globals()["_config"]
+    global _config
+    _config = GrupoNOSConfig.from_env()
+    return _config

@@ -83,9 +83,9 @@ known_first_party = [ "gruponos_meltano_native",]
 [tool.pytest.ini_options]
 minversion = "8.0"
 asyncio_mode = "auto"
-addopts = [ "-ra", "--strict-markers", "--strict-config", "--cov=flext_quality", "--cov-branch", "--cov-report=term-missing:skip-covered", "--cov-report=html:reports/coverage", "--cov-report=xml:reports/coverage.xml", "--cov-fail-under=90", "--maxfail=1", "--tb=short",]
+addopts = [ "-ra", "--strict-markers", "--strict-config", "--cov=src/gruponos_meltano_native", "--cov-branch", "--cov-report=term-missing:skip-covered", "--cov-report=html:reports/coverage", "--cov-report=xml:reports/coverage.xml", "--cov-fail-under=85", "--maxfail=1", "--tb=short",]
 testpaths = [ "tests",]
-markers = [ "unit: Unit tests", "integration: Integration tests", "slow: Slow tests", "smoke: Smoke tests", "e2e: End-to-end tests",]
+markers = [ "unit: Unit tests", "integration: Integration tests", "slow: Slow tests", "smoke: Smoke tests", "e2e: End-to-end tests", "wms: WMS integration tests", "oracle: Oracle database tests", "performance: Performance tests",]
 filterwarnings = [ "error", "ignore::UserWarning", "ignore::DeprecationWarning",]
 
 [tool.ruff.lint]

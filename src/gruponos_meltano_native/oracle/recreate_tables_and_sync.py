@@ -12,6 +12,7 @@ import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
@@ -46,7 +47,7 @@ def drop_all_wms_tables() -> bool:
 
     try:
         conn = manager.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor()  # type: ignore[attr-defined]
 
         # Listar todas as tabelas que podem ser do WMS
         cursor.execute(
@@ -72,9 +73,9 @@ def drop_all_wms_tables() -> bool:
                 except (OSError, RuntimeError) as e:
                     logger.warning("   ⚠️ Erro ao remover %s: %s", table_name, e)
 
-        conn.commit()
+        conn.commit()  # type: ignore[attr-defined]
         cursor.close()
-        conn.close()
+        conn.close()  # type: ignore[attr-defined]
 
         logger.info("\n✅ Limpeza concluída")
     except (OSError, RuntimeError):
@@ -84,7 +85,7 @@ def drop_all_wms_tables() -> bool:
     return True
 
 
-def list_current_tables() -> None:
+def list_current_tables() -> list[str]:
     """List all current WMS-related tables in the Oracle schema."""
     logger.info("\n📋 TABELAS ATUAIS NO SCHEMA:")
     logger.info("-" * 40)
@@ -93,13 +94,13 @@ def list_current_tables() -> None:
     config = get_config()
     if config.target_oracle is None:
         logger.error("Target Oracle configuration not found")
-        return
+        return []
 
     manager = OracleConnectionManager(config.target_oracle.oracle)
 
     try:
         conn = manager.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor()  # type: ignore[attr-defined]
 
         cursor.execute(
             """
@@ -115,18 +116,24 @@ def list_current_tables() -> None:
 
         if not tables:
             logger.info("   Nenhuma tabela relevante encontrada")
-        else:
-            for table_name, num_rows in tables:
-                logger.info("   %s: %d registros", table_name, num_rows or 0)
+            cursor.close()
+            conn.close()  # type: ignore[attr-defined]
+            return []
+        table_names = []
+        for table_name, num_rows in tables:
+            logger.info("   %s: %d registros", table_name, num_rows or 0)
+            table_names.append(table_name)
 
         cursor.close()
-        conn.close()
+        conn.close()  # type: ignore[attr-defined]
+        return table_names
 
     except (OSError, RuntimeError):
         logger.exception("   ❌ Erro ao listar tabelas")
+        return []
 
 
-def check_table_structure(table_name: str) -> None:
+def check_table_structure(table_name: str) -> dict[str, Any]:
     """Check the structure of a specific table.
 
     Args:
@@ -137,13 +144,13 @@ def check_table_structure(table_name: str) -> None:
     config = get_config()
     if config.target_oracle is None:
         logger.error("Target Oracle configuration not found")
-        return
+        return {"exists": False, "error": "Target Oracle configuration not found"}
 
     manager = OracleConnectionManager(config.target_oracle.oracle)
 
     try:
         conn = manager.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor()  # type: ignore[attr-defined]
 
         # Verificar colunas
         # Use parameterized query to avoid SQL injection
@@ -169,17 +176,28 @@ def check_table_structure(table_name: str) -> None:
                     "   ... e mais %d colunas",
                     len(columns) - max_columns_to_show,
                 )
-        else:
-            logger.warning("❌ Tabela %s não encontrada", table_name)
 
+            cursor.close()
+            conn.close()  # type: ignore[attr-defined]
+            return {
+                "exists": True,
+                "columns": [
+                    {"name": col[0], "type": col[1], "length": col[2]}
+                    for col in columns
+                ],
+                "column_count": len(columns)
+            }
+        logger.warning("❌ Tabela %s não encontrada", table_name)
         cursor.close()
-        conn.close()
+        conn.close()  # type: ignore[attr-defined]
+        return {"exists": False, "error": f"Table {table_name} not found"}
 
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError) as e:
         logger.exception("❌ Erro ao verificar estrutura")
+        return {"exists": False, "error": f"Error checking table structure: {e}"}
 
 
-def create_tables_with_ddl() -> bool:
+def create_tables_with_ddl(catalog_path: str, table_names: list[str] | None = None) -> bool:
     """Create WMS tables using optimized DDL from table creator.
 
     Returns:
@@ -317,7 +335,7 @@ def main() -> int:
         return 1
 
     # 3. Criar novas tabelas
-    if not create_tables_with_ddl():
+    if not create_tables_with_ddl("", []):
         logger.error("❌ Falha na criação de tabelas")
         return 1
 

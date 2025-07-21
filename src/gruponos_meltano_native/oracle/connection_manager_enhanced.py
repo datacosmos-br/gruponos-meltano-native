@@ -247,7 +247,7 @@ def _get_env_config() -> dict[str, str | int | bool]:
         "FLEXT_TARGET_ORACLE_PROTOCOL",
     ]
 
-    config = {}
+    config: dict[str, str | int | bool] = {}
     for var in required_vars:
         config[var.rsplit("_", maxsplit=1)[-1].lower()] = _validate_required_env_var(
             var,
@@ -272,7 +272,19 @@ def create_connection_manager_from_env() -> OracleConnectionManager:
     environment variable names while using the enhanced connection.
     """
     env_config = _get_env_config()
-    config = OracleConnectionConfig(**env_config)
+    # Convert types for OracleConnectionConfig constructor
+    config = OracleConnectionConfig(
+        host=str(env_config["host"]),
+        port=int(env_config["port"]),
+        service_name=str(env_config["service_name"]),
+        username=str(env_config["username"]),
+        password=str(env_config["password"]),
+        protocol=str(env_config["protocol"]),
+        connection_timeout=int(env_config["connection_timeout"]),
+        retry_attempts=int(env_config["retry_attempts"]),
+        retry_delay=int(env_config["retry_delay"]),
+        ssl_server_dn_match=bool(env_config["ssl_server_dn_match"]),
+    )
 
     logger.info(
         "Creating enhanced Oracle connection manager from environment - "

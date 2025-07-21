@@ -5,7 +5,7 @@ Tests the actual Oracle schema discovery logic with comprehensive error handling
 """
 
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from gruponos_meltano_native.oracle.discover_and_save_schemas import discover_schemas
 
@@ -49,8 +49,12 @@ class TestOracleSchemaDiscovery:
         mock_tap.assert_called_once()
 
     @patch.dict("os.environ", {}, clear=True)
-    def test_discover_schemas_missing_credentials(self) -> None:
+    @patch("gruponos_meltano_native.oracle.discover_and_save_schemas.load_dotenv")
+    def test_discover_schemas_missing_credentials(self, mock_load_dotenv: Mock) -> None:
         """Test schema discovery with missing credentials."""
+        # Prevent loading from .env file
+        mock_load_dotenv.return_value = None
+
         # Test discovery without credentials
         result = discover_schemas()
 

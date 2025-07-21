@@ -3,10 +3,7 @@
 import logging
 from unittest.mock import Mock, patch
 
-from gruponos_meltano_native.connections.oracle import (
-    OracleConnectionConfig,
-    OracleConnectionManager,
-)
+from gruponos_meltano_native.config import OracleConnectionConfig
 
 # Configure logger
 logger = logging.getLogger(__name__)

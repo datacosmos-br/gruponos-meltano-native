@@ -3,14 +3,21 @@
 Integrates with FLEXT observability patterns for structured alerting.
 """
 
+from __future__ import annotations
+
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import requests
 import structlog
 from flext_observability import AlertSeverity
 
 from gruponos_meltano_native.config import AlertConfig
+
+if TYPE_CHECKING:
+    from flext_observability import AlertSeverity as AlertSeverityType
+else:
+    AlertSeverityType = AlertSeverity
 
 logger = structlog.get_logger(__name__)
 
@@ -28,20 +35,26 @@ class AlertType(Enum):
 class AlertService:
     """Local AlertService wrapper for GrupoNOS project."""
 
+    # Make AlertSeverity accessible as class attribute
+    AlertSeverity = AlertSeverity
+
     def __init__(self, config: AlertConfig) -> None:
         """Initialize with AlertConfig."""
         self.config = config
         self.logger = logger.bind(component="alert_service")
 
-    def send_alert(self, message: str, severity: AlertSeverity) -> bool:
+    def send_alert(self, message: str, severity: AlertSeverityType, context: dict[str, Any] | None = None) -> bool:
         """Send alert using configuration."""
-        self.logger.info(
-            "Alert triggered",
-            message=message,
-            severity=severity.value,
-            webhook_enabled=self.config.webhook_enabled,
-            email_enabled=self.config.email_enabled,
-        )
+        log_data = {
+            "message": message,
+            "severity": severity.value,
+            "webhook_enabled": self.config.webhook_enabled,
+            "email_enabled": self.config.email_enabled,
+        }
+        if context:
+            log_data.update(context)
+
+        self.logger.info("Alert triggered", **log_data)
 
         success = True
 
@@ -107,6 +120,7 @@ class AlertManager:
         self.flext_alerts = flext_alerts
         self.logger = logger.bind(component="alert_manager")
         self._monitoring = False
+        self._alert_count = 0
 
     def start_monitoring(self) -> None:
         """Start monitoring."""
@@ -118,6 +132,51 @@ class AlertManager:
         self._monitoring = False
         self.logger.info("Alert monitoring stopped")
 
+    @property
+    def alert_count(self) -> int:
+        """Get current alert count."""
+        return self._alert_count
+
+    def check_connection_time(self, connection_time: float) -> None:
+        """Check if connection time exceeds threshold."""
+        if hasattr(self.config, "max_connection_time_seconds") and connection_time > getattr(self.config, "max_connection_time_seconds", 30.0):
+            self._alert_count += 1
+            self.send_alert(
+                AlertType.CONNECTIVITY_FAILURE,
+                f"Connection time exceeded: {connection_time}s",
+                AlertSeverity.HIGH
+            )
+
+    def check_memory_usage(self, memory_percent: float) -> None:
+        """Check if memory usage exceeds threshold."""
+        if hasattr(self.config, "max_memory_usage_percent") and memory_percent > getattr(self.config, "max_memory_usage_percent", 90.0):
+            self._alert_count += 1
+            self.send_alert(
+                AlertType.THRESHOLD_BREACH,
+                f"Memory usage exceeded: {memory_percent}%",
+                AlertSeverity.HIGH
+            )
+
+    def check_cpu_usage(self, cpu_percent: float) -> None:
+        """Check if CPU usage exceeds threshold."""
+        if hasattr(self.config, "max_cpu_usage_percent") and cpu_percent > getattr(self.config, "max_cpu_usage_percent", 90.0):
+            self._alert_count += 1
+            self.send_alert(
+                AlertType.THRESHOLD_BREACH,
+                f"CPU usage exceeded: {cpu_percent}%",
+                AlertSeverity.HIGH
+            )
+
+    def check_sync_duration(self, duration_minutes: float) -> None:
+        """Check if sync duration exceeds threshold."""
+        if hasattr(self.config, "max_sync_duration_minutes") and duration_minutes > getattr(self.config, "max_sync_duration_minutes", 60.0):
+            self._alert_count += 1
+            self.send_alert(
+                AlertType.SYNC_TIMEOUT,
+                f"Sync duration exceeded: {duration_minutes} minutes",
+                AlertSeverity.HIGH
+            )
+
     def check_thresholds(self, metrics: dict[str, float]) -> list[str]:
         """Check metrics against thresholds."""
         if hasattr(self.alert_service, "check_thresholds"):
@@ -128,7 +187,7 @@ class AlertManager:
         self,
         alert_type: AlertType,
         message: str,
-        level: AlertSeverity = AlertSeverity.MEDIUM,
+        level: AlertSeverityType = AlertSeverity.MEDIUM,
         context: dict[str, Any] | None = None,
     ) -> None:
         """Send alert through FLEXT observability system."""
@@ -175,7 +234,7 @@ class AlertManager:
         self.send_alert(
             AlertType.DATA_QUALITY_ISSUE,
             f"Data quality issue in {entity}: {issue}",
-            level=level,
+            level=level,  # type: ignore[arg-type]
             context={"entity": entity, "issue": issue, "severity": severity},
         )
 
@@ -184,6 +243,6 @@ class AlertManager:
         self.send_alert(
             AlertType.SYNC_TIMEOUT,
             f"Sync timeout for {entity} after {timeout_seconds} seconds",
-            level=AlertSeverity.HIGH,
+            level=AlertSeverity.HIGH,  # type: ignore[arg-type]
             context={"entity": entity, "timeout_seconds": timeout_seconds},
         )

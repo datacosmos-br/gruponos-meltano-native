@@ -495,15 +495,15 @@ class TestConfigFocused:
         assert "api_password is required when api_enabled is True" in error_msg
 
     def test_config_class_config_attributes(self) -> None:
-        """Test Config class attributes."""
+        """Test model_config attributes (Pydantic v2)."""
         config = GrupoNOSConfig()
 
-        # Test that Config class is properly set
-        assert hasattr(config, "Config")
-        assert hasattr(config.Config, "env_prefix")
-        assert hasattr(config.Config, "env_nested_delimiter")
-        assert hasattr(config.Config, "case_sensitive")
+        # Test that model_config is properly set (Pydantic v2 pattern)
+        assert hasattr(config, "model_config")
+        assert "env_prefix" in config.model_config
+        assert "env_nested_delimiter" in config.model_config
+        assert "case_sensitive" in config.model_config
 
-        assert config.Config.env_prefix == "GRUPONOS_"
-        assert config.Config.env_nested_delimiter == "__"
-        assert config.Config.case_sensitive is False
+        assert config.model_config["env_prefix"] == "GRUPONOS_"
+        assert config.model_config["env_nested_delimiter"] == "__"
+        assert config.model_config["case_sensitive"] is False

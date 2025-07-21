@@ -19,9 +19,9 @@ plugins:
         facility_code: $TAP_ORACLE_WMS_FACILITY_CODE
         entities: ["allocation", "order_hdr", "order_dtl"]
         page_size: 500
-        ordering: "-id"
         request_timeout: 600
         enable_incremental: false
+        force_full_table: true
 
     - name: tap-oracle-wms-incremental
       namespace: tap_oracle_wms
@@ -33,12 +33,12 @@ plugins:
         company_code: $TAP_ORACLE_WMS_COMPANY_CODE
         facility_code: $TAP_ORACLE_WMS_FACILITY_CODE
         entities: ["allocation", "order_hdr", "order_dtl"]
-        page_size: 1000
-        force_full_table: false
-        ordering: "mod_ts"
-        filter_mode: "incremental"
-        lookback_minutes: 5
+        page_size: 500
+        request_timeout: 600
         enable_incremental: $TAP_ORACLE_WMS_ENABLE_INCREMENTAL
+        force_full_table: false
+        replication_method: "INCREMENTAL"
+        replication_key: "mod_ts"
 
   loaders:
     - name: target-oracle-full
@@ -46,32 +46,34 @@ plugins:
       executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
       config:
         host: $FLEXT_TARGET_ORACLE_HOST
-        port: 1522
+        port: $FLEXT_TARGET_ORACLE_PORT
         service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
         username: $FLEXT_TARGET_ORACLE_USERNAME
         password: $FLEXT_TARGET_ORACLE_PASSWORD
         protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
-        load_method: append-only
-        batch_size: 1000
-        max_parallelism: 5
+        default_target_schema: $FLEXT_TARGET_ORACLE_SCHEMA
         table_prefix: $FLEXT_TARGET_ORACLE_TABLE_PREFIX
-        default_target_schema: OIC
+        batch_size_rows: 5000
+        pool_size: 10
+        use_bulk_insert: true
+        add_record_metadata: false
 
     - name: target-oracle-incremental
       namespace: target_oracle
       executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
       config:
         host: $FLEXT_TARGET_ORACLE_HOST
-        port: 1522
+        port: $FLEXT_TARGET_ORACLE_PORT
         service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
         username: $FLEXT_TARGET_ORACLE_USERNAME
         password: $FLEXT_TARGET_ORACLE_PASSWORD
         protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
-        load_method: append-only
-        batch_size: 1000
-        max_parallelism: 5
+        default_target_schema: $FLEXT_TARGET_ORACLE_SCHEMA
         table_prefix: $FLEXT_TARGET_ORACLE_TABLE_PREFIX
-        default_target_schema: OIC
+        batch_size_rows: 5000
+        pool_size: 10
+        use_bulk_insert: true
+        add_record_metadata: false
 
 jobs:
   - name: full-sync-job
@@ -82,4 +84,11 @@ jobs:
     tasks:
       - tap-oracle-wms-incremental target-oracle-incremental
 
-schedules: []
+schedules:
+  - name: full-sync-weekly
+    job: full-sync-job
+    interval: "@weekly"
+    
+  - name: incremental-sync-every-2-hours  
+    job: incremental-sync-job
+    interval: "0 */2 * * *"

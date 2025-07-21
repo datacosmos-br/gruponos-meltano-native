@@ -14,9 +14,11 @@ from typing import Any
 from dotenv import load_dotenv
 
 
-def substitute_env_vars(config_dict: dict, env_vars: dict) -> dict:
+def substitute_env_vars(
+    config_dict: dict[str, Any], env_vars: dict[str, str],
+) -> dict[str, Any]:
     """Substitui variáveis de ambiente na configuração."""
-    result = {}
+    result: dict[str, Any] = {}
 
     for key, value in config_dict.items():
         if isinstance(value, dict):
@@ -40,7 +42,7 @@ def _load_config_template() -> dict[str, Any]:
     template_file = Path("target_config.json")
     if template_file.exists():
         with template_file.open(encoding="utf-8") as f:
-            return json.load(f)
+            return json.load(f)  # type: ignore[no-any-return]
 
     # Fallback para template básico se arquivo não existir
     return {

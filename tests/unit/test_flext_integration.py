@@ -198,13 +198,14 @@ class TestConnectionManagerIntegration:
 
             # Test WMS client configuration creation using actual config class
             wms_config = OracleWMSConfig(
-                base_url="https://test.example.com",
+                project_name="test-project",
+                base_url="https://test.example.com",  # type: ignore[arg-type]
                 username="test_user",
                 password="test_password",
-                page_size=100,
-                timeout=30,
-                company_code="*",
-                facility_code="*",
+                wms_environment="development",  # type: ignore[arg-type]
+                wms_org_id="test_org",
+                wms_company_code="*",
+                wms_facility_code="*",
             )
 
             # Should not raise import errors - verify class can be instantiated

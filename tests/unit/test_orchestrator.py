@@ -75,6 +75,7 @@ class TestOrchestrator:
         result = await orchestrator.validate_configuration()
 
         assert not result.is_success
+        assert result.error is not None
         assert "WMS source not configured" in result.error
 
     @pytest.mark.asyncio
@@ -98,6 +99,7 @@ class TestOrchestrator:
         result = await orchestrator.validate_configuration()
 
         assert not result.is_success
+        assert result.error is not None
         assert "Target Oracle not configured" in result.error
 
     @pytest.mark.asyncio
@@ -111,6 +113,7 @@ class TestOrchestrator:
         result = await orchestrator.run_pipeline("test_pipeline")
 
         assert result.is_success
+        assert result.value is not None
         assert result.value["pipeline"] == "test_pipeline"
         assert result.value["status"] == "success"
         assert "records_processed" in result.value

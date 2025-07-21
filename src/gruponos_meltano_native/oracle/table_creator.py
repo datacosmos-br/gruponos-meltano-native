@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 # Use centralized logger from flext-observability
 from flext_observability.logging import get_logger
@@ -385,7 +385,10 @@ class OracleTableCreator:
             if not stream:
                 _raise_stream_not_found_error(table_name)
 
-            schema = stream.get("schema", {})
+            # Type guard: stream is guaranteed to be not None after the check above
+            # Using cast instead of assert for production code
+            stream_typed = cast("dict[str, Any]", stream)
+            schema = stream_typed.get("schema", {})
             return self.create_table_from_schema(table_name, schema)
 
         except json.JSONDecodeError as json_error:

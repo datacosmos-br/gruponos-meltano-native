@@ -18,7 +18,7 @@ from flext_observability.logging import get_logger
 # Add tap path to Python path
 sys.path.insert(0, "/home/marlonsc/flext/flext-tap-oracle-wms/src")
 
-from flext_tap_oracle_wms.tap import TapOracleWMS  # type: ignore[import-untyped]
+from flext_tap_oracle_wms.tap import TapOracleWMS
 
 # Setup logger
 logger = get_logger(__name__)
@@ -90,7 +90,7 @@ def discover_schemas() -> bool:
         logger.info(
             "   Use this file with table_creator.py to ensure correct DDL generation",
         )
-    except (OSError, ValueError, RuntimeError):
+    except Exception:
         logger.exception("❌ Error discovering schemas")
         return False
 

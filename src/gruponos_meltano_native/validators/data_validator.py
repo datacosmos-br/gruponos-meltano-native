@@ -40,7 +40,7 @@ class ValidationRule:
         field_name: str,
         rule_type: str,
         parameters: dict[str, Any] | None = None,
-        **kwargs: dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         """Initialize validation rule.
 
@@ -122,8 +122,9 @@ class DataValidator:
         }
 
         validation_method = validation_methods.get(rule.rule_type)
-        if validation_method and value is not None:
-            validation_method(rule, value=value, errors=errors)
+        if validation_method is not None and value is not None:
+            # mypy: validation_method is callable after null check
+            validation_method(rule, value=value, errors=errors)  # type: ignore[operator]
 
     def validate(self, data: dict[str, Any]) -> list[str]:
         """Validate data against configured rules.
@@ -138,7 +139,7 @@ class DataValidator:
             ValidationError: If validation fails in strict mode
 
         """
-        errors = []
+        errors: list[str] = []
 
         for rule in self.rules:
             # Check required fields first
@@ -388,9 +389,9 @@ class DataValidator:
 
         # Handle type arrays (nullable types)
         if isinstance(expected_type, list):
-            if "null" in expected_type and value is None:
-                return None
-            expected_type = next((t for t in expected_type if t != "null"), "string")
+            # Filter out null type and get the first non-null type
+            non_null_types = [t for t in expected_type if t != "null"]
+            expected_type = "string" if not non_null_types else non_null_types[0]
 
         try:
             if expected_type in {"number", "integer"}:
@@ -406,7 +407,9 @@ class DataValidator:
                 "date-time",
             }:
                 date_format = field_schema.get("format") or "date-time"
-                return self._convert_to_date(value, date_format, field_name)
+                str_value = str(value) if value is not None else None
+                return self._convert_to_date(str_value, date_format, field_name)
+            # This line is reachable for string type conversions
             return str(value) if value is not None else None
 
         except (ValueError, TypeError, AttributeError) as e:
@@ -478,8 +481,8 @@ class DataValidator:
 
         try:
             if expected_type == "integer":
-                return int(value)  # type: ignore[arg-type]
-            return float(value)  # type: ignore[arg-type]
+                return int(value)
+            return float(value)
         except (ValueError, TypeError) as e:
             msg = f"Cannot convert {type(value)} '{value}' to {expected_type}"
             raise ValueError(msg) from e
@@ -494,7 +497,6 @@ class DataValidator:
         """Convert value to boolean."""
         if isinstance(value, bool):
             return value
-
         if isinstance(value, str):
             lower_val = value.lower().strip()
             if lower_val in {"true", "t", "yes", "y", "1", "on"}:
@@ -504,13 +506,7 @@ class DataValidator:
             # Always fail explicitly - no fallbacks allowed
             msg = f"Cannot convert string '{value}' to boolean"
             raise ValueError(msg)
-
-        if isinstance(value, (int, float)):
-            return bool(value)
-
-        # Always fail explicitly - no fallbacks allowed
-        msg = f"Cannot convert {type(value)} '{value}' to boolean"
-        raise ValueError(msg)
+        return bool(value)
 
     def _convert_to_date(
         self,
