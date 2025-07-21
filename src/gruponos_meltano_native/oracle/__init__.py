@@ -1,7 +1,8 @@
 """Oracle database utilities for GrupoNOS Meltano Native."""
 
-from oracle.connection_manager import (
-    OracleConnectionConfig,
+from gruponos_meltano_native.config import OracleConnectionConfig
+
+from .connection_manager import (
     OracleConnectionManager,
     create_connection_manager_from_env,
 )

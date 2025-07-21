@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 
 def load_project_config() -> dict[str, Any]:
+    """Load project configuration from YAML file."""
     config_path = Path(__file__).parent.parent / "config" / "project.yml"
     if config_path.exists():
         with Path(config_path).open(encoding="utf-8") as f:
@@ -28,6 +29,7 @@ def load_project_config() -> dict[str, Any]:
 
 
 def load_wms_config() -> dict[str, Any]:
+    """Load WMS integration configuration from YAML file."""
     config_path = Path(__file__).parent.parent / "config" / "wms_integration.yml"
     if config_path.exists():
         with Path(config_path).open(encoding="utf-8") as f:
@@ -37,10 +39,12 @@ def load_wms_config() -> dict[str, Any]:
 
 
 def get_env_value(key: str, default: str | None = None) -> str | None:
+    """Get environment variable value with optional default."""
     return os.environ.get(key, default)
 
 
 def generate_meltano_config() -> dict[str, Any]:
+    """Generate complete Meltano configuration from environment variables."""
     _ = load_project_config()  # Keep for future use
     _ = load_wms_config()  # Keep for future use
 
@@ -71,8 +75,7 @@ def generate_meltano_config() -> dict[str, Any]:
 
     # Base tap configuration
     base_tap_config = {
-        "base_url":
-             "$TAP_ORACLE_WMS_BASE_URL",
+        "base_url": "$TAP_ORACLE_WMS_BASE_URL",
         "username": "$TAP_ORACLE_WMS_USERNAME",
         "password": "$TAP_ORACLE_WMS_PASSWORD",
         "page_size": int(get_env_value("WMS_PAGE_SIZE", "100") or "100"),
@@ -129,11 +132,11 @@ def generate_meltano_config() -> dict[str, Any]:
 
     extractors = config["plugins"]["extractors"]
     if isinstance(extractors, list):
-            extractors.extend([full_tap, incremental_tap])
+        extractors.extend([full_tap, incremental_tap])
 
     # Add individual entity extractors
     for entity in entities:
-            # Full sync
+        # Full sync
         entity_tap_full = {
             "name": f"tap-oracle-wms-{entity}-full",
             "inherit_from": "tap-oracle-wms-full",
@@ -214,7 +217,7 @@ def generate_meltano_config() -> dict[str, Any]:
 
     loaders = config["plugins"]["loaders"]
     if isinstance(loaders, list):
-            loaders.extend([full_target, incremental_target])
+        loaders.extend([full_target, incremental_target])
 
     # Configure jobs
     config["jobs"] = [
@@ -248,7 +251,7 @@ def generate_meltano_config() -> dict[str, Any]:
     # Configure schedules if enabled:
     enable_schedules = get_env_value("ENABLE_SCHEDULES", "false")
     if enable_schedules and enable_schedules.lower() == "true":
-            config["schedules"] = [
+        config["schedules"] = [
             {
                 "name": "daily-full-sync",
                 "interval": get_env_value("FULL_SYNC_SCHEDULE", "@daily") or "@daily",
@@ -267,6 +270,7 @@ def generate_meltano_config() -> dict[str, Any]:
 
 
 def main() -> None:
+    """Generate and output Meltano configuration."""
     config = generate_meltano_config()
 
     # Write to meltano.yml
@@ -292,4 +296,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-            main()
+    main()

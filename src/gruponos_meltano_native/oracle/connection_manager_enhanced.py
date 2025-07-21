@@ -7,32 +7,19 @@ the enterprise features of flext-db-oracle with resilient connections.
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
 from typing import Any
 
 from flext_db_oracle.connection import (
     ConnectionConfig,
     ResilientOracleConnection,
 )
-from flext_observability.logging import get_logger
+from flext_observability.logging import get_logger, setup_logging
+from pydantic import SecretStr
+
+# Import the REAL config class from our config module - NO DUPLICATION!
+from gruponos_meltano_native.config import OracleConnectionConfig
 
 logger = get_logger(__name__)
-
-
-@dataclass
-class OracleConnectionConfig:
-    """Configuration for Oracle database connections - backward compatible."""
-
-    host: str
-    port: int = 1522
-    service_name: str = ""
-    username: str = ""
-    password: str = ""
-    protocol: str = "tcps"
-    ssl_server_dn_match: bool = False
-    connection_timeout: int = 60
-    retry_attempts: int = 3
-    retry_delay: int = 5
 
 
 class OracleConnectionManager:
@@ -48,6 +35,12 @@ class OracleConnectionManager:
     """
 
     def __init__(self, config: OracleConnectionConfig) -> None:
+        """Initialize Oracle connection manager with configuration.
+
+        Args:
+            config: Oracle connection configuration with host, port, credentials.
+
+        """
         self.config = config
 
         # Convert to FLEXT ConnectionConfig
@@ -56,11 +49,19 @@ class OracleConnectionManager:
             port=config.port,
             service_name=config.service_name,
             username=config.username,
-            password=config.password,
+            password=SecretStr(config.password),
             protocol=config.protocol,
             ssl_server_dn_match=config.ssl_server_dn_match,
             # Note: flext-db-oracle uses 'timeout' not 'connection_timeout'
             timeout=config.connection_timeout,
+            # Required fields with reasonable defaults
+            sid=None,  # Using service_name instead
+            pool_min=1,
+            pool_max=getattr(config, "connection_pool_size", 5),
+            pool_increment=1,
+            encoding="UTF-8",
+            ssl_cert_path=None,
+            ssl_key_path=None,
         )
 
         # Create resilient connection with retry and fallback
@@ -74,15 +75,17 @@ class OracleConnectionManager:
         self._connection_attempts = 0
 
         logger.info(
-            "Initialized enhanced Oracle connection manager",
-            host=config.host,
-            port=config.port,
-            service_name=config.service_name,
-            protocol=config.protocol,
-            retry_attempts=config.retry_attempts,
+            "Initialized enhanced Oracle connection manager - "
+            "host=%s, port=%s, service_name=%s, "
+            "protocol=%s, retry_attempts=%s",
+            config.host,
+            config.port,
+            config.service_name,
+            config.protocol,
+            config.retry_attempts,
         )
 
-    def connect(self) -> Any:
+    def connect(self) -> object:
         """Connect to Oracle database with enterprise resilience.
 
         Returns:
@@ -97,11 +100,17 @@ class OracleConnectionManager:
         # ResilientOracleConnection handles all retry logic internally
         self._connection.connect()
 
-        # Get the actual connection attempts from the resilient connection
-        self._connection_attempts = self._connection._connection_attempts
+        # Store connection attempts for backward compatibility
+        # Note: Accessing private member for backward compatibility only
+        self._connection_attempts = getattr(
+            self._connection,
+            "connection_attempts",
+            0,
+        )
 
         # Return the underlying oracledb connection for compatibility
-        return self._connection._connection
+        # Note: Accessing private member for backward compatibility only
+        return getattr(self._connection, "connection", None)
 
     def test_connection(self) -> dict[str, Any]:
         """Test the connection and return detailed results.
@@ -116,27 +125,30 @@ class OracleConnectionManager:
             - error: str (if failed)
 
         """
-        # Use the enhanced test_connection from ResilientOracleConnection
-        result = self._connection.test_connection()
+        # Use the enhanced test_connection_detailed from ResilientOracleConnection
+        test_result = self._connection.test_connection_detailed()
 
         # Log the result
-        if result["success"]:
+        if test_result["success"]:
             logger.info(
-                "Connection test successful",
-                oracle_version=result.get("oracle_version"),
-                user=result.get("current_user"),
-                time_ms=result.get("connection_time_ms"),
-                attempts=result.get("attempts"),
-                fallback=result.get("fallback_applied"),
+                "Connection test successful - "
+                "oracle_version=%s, user=%s, "
+                "time_ms=%s, attempts=%s, "
+                "fallback=%s",
+                test_result.get("oracle_version"),
+                test_result.get("current_user"),
+                test_result.get("connection_time_ms"),
+                test_result.get("attempts"),
+                test_result.get("fallback_applied"),
             )
         else:
             logger.error(
-                "Connection test failed",
-                error=result.get("error"),
-                attempts=result.get("attempts"),
+                "Connection test failed - error=%s, attempts=%s",
+                test_result.get("error"),
+                test_result.get("attempts"),
             )
 
-        return result
+        return test_result
 
     def close(self) -> None:
         """Close the connection."""
@@ -144,7 +156,7 @@ class OracleConnectionManager:
             self._connection.disconnect()
             logger.info("Connection closed")
 
-    def execute(self, sql: str, parameters: dict[str, Any] | None = None) -> Any:
+    def execute(self, sql: str, parameters: dict[str, Any] | None = None) -> object:
         """Execute SQL statement using FLEXT connection.
 
         Args:
@@ -160,7 +172,11 @@ class OracleConnectionManager:
 
         return self._connection.execute(sql, parameters)
 
-    def fetch_one(self, sql: str, parameters: dict[str, Any] | None = None) -> Any:
+    def fetch_one(
+        self,
+        sql: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> tuple[Any, ...] | None:
         """Fetch one row from SQL query.
 
         Args:
@@ -177,7 +193,9 @@ class OracleConnectionManager:
         return self._connection.fetch_one(sql, parameters)
 
     def fetch_all(
-        self, sql: str, parameters: dict[str, Any] | None = None,
+        self,
+        sql: str,
+        parameters: dict[str, Any] | None = None,
     ) -> list[Any]:
         """Fetch all rows from SQL query.
 
@@ -209,81 +227,61 @@ class OracleConnectionManager:
         return self._connection.get_connection_info()
 
 
+def _validate_required_env_var(var_name: str) -> str:
+    """Validate required environment variable exists."""
+    env_value = os.getenv(var_name)
+    if not env_value:
+        msg = f"Missing {var_name} environment variable"
+        raise ValueError(msg)
+    return env_value
+
+
+def _get_env_config() -> dict[str, str | int | bool]:
+    """Get environment configuration with validation."""
+    # Required variables
+    required_vars = [
+        "FLEXT_TARGET_ORACLE_HOST",
+        "FLEXT_TARGET_ORACLE_SERVICE_NAME",
+        "FLEXT_TARGET_ORACLE_USERNAME",
+        "FLEXT_TARGET_ORACLE_PASSWORD",
+        "FLEXT_TARGET_ORACLE_PROTOCOL",
+    ]
+
+    config = {}
+    for var in required_vars:
+        config[var.rsplit("_", maxsplit=1)[-1].lower()] = _validate_required_env_var(
+            var,
+        )
+
+    # Optional variables with defaults
+    config["port"] = int(os.getenv("FLEXT_TARGET_ORACLE_PORT", "1522"))
+    config["connection_timeout"] = int(os.getenv("FLEXT_TARGET_ORACLE_TIMEOUT", "60"))
+    config["retry_attempts"] = int(os.getenv("FLEXT_TARGET_ORACLE_RETRIES", "3"))
+    config["retry_delay"] = int(os.getenv("FLEXT_TARGET_ORACLE_RETRY_DELAY", "5"))
+
+    ssl_dn_match_str = os.getenv("FLEXT_TARGET_ORACLE_SSL_DN_MATCH", "false")
+    config["ssl_server_dn_match"] = ssl_dn_match_str.lower() == "true"
+
+    return config
+
+
 def create_connection_manager_from_env() -> OracleConnectionManager:
     """Create connection manager from environment variables.
 
     This function maintains backward compatibility with existing
     environment variable names while using the enhanced connection.
     """
-    # Get required environment variables with validation
-    host = os.getenv("FLEXT_TARGET_ORACLE_HOST")
-    service_name = os.getenv("FLEXT_TARGET_ORACLE_SERVICE_NAME")
-    username = os.getenv("FLEXT_TARGET_ORACLE_USERNAME")
-    password = os.getenv("FLEXT_TARGET_ORACLE_PASSWORD")
-
-    if not host:
-        msg = "Missing FLEXT_TARGET_ORACLE_HOST environment variable"
-        raise ValueError(msg)
-    if not service_name:
-        msg = "Missing FLEXT_TARGET_ORACLE_SERVICE_NAME environment variable"
-        raise ValueError(msg)
-    if not username:
-        msg = "Missing FLEXT_TARGET_ORACLE_USERNAME environment variable"
-        raise ValueError(msg)
-    if not password:
-        msg = "Missing FLEXT_TARGET_ORACLE_PASSWORD environment variable"
-        raise ValueError(msg)
-
-    protocol = os.getenv("FLEXT_TARGET_ORACLE_PROTOCOL")
-    if not protocol:
-        msg = "Missing FLEXT_TARGET_ORACLE_PROTOCOL environment variable"
-        raise ValueError(msg)
-
-    ssl_dn_match_str = os.getenv("FLEXT_TARGET_ORACLE_SSL_DN_MATCH")
-    if not ssl_dn_match_str:
-        msg = "Missing FLEXT_TARGET_ORACLE_SSL_DN_MATCH environment variable"
-        raise ValueError(msg)
-    ssl_server_dn_match = ssl_dn_match_str.lower() == "true"
-
-    port_str = os.getenv("FLEXT_TARGET_ORACLE_PORT")
-    if not port_str:
-        msg = "Missing FLEXT_TARGET_ORACLE_PORT environment variable"
-        raise ValueError(msg)
-
-    timeout_str = os.getenv("FLEXT_TARGET_ORACLE_TIMEOUT")
-    if not timeout_str:
-        msg = "Missing FLEXT_TARGET_ORACLE_TIMEOUT environment variable"
-        raise ValueError(msg)
-
-    retries_str = os.getenv("FLEXT_TARGET_ORACLE_RETRIES")
-    if not retries_str:
-        msg = "Missing FLEXT_TARGET_ORACLE_RETRIES environment variable"
-        raise ValueError(msg)
-
-    retry_delay_str = os.getenv("FLEXT_TARGET_ORACLE_RETRY_DELAY")
-    if not retry_delay_str:
-        msg = "Missing FLEXT_TARGET_ORACLE_RETRY_DELAY environment variable"
-        raise ValueError(msg)
-
-    config = OracleConnectionConfig(
-        host=host,
-        port=int(port_str),
-        service_name=service_name,
-        username=username,
-        password=password,
-        protocol=protocol,
-        ssl_server_dn_match=ssl_server_dn_match,
-        connection_timeout=int(timeout_str),
-        retry_attempts=int(retries_str),
-        retry_delay=int(retry_delay_str),
-    )
+    env_config = _get_env_config()
+    config = OracleConnectionConfig(**env_config)
 
     logger.info(
-        "Creating enhanced Oracle connection manager from environment",
-        host=host,
-        port=config.port,
-        service_name=service_name,
-        protocol=protocol,
+        "Creating enhanced Oracle connection manager from environment - "
+        "host=%s, port=%s, service_name=%s, "
+        "protocol=%s",
+        config.host,
+        config.port,
+        config.service_name,
+        config.protocol,
     )
 
     return OracleConnectionManager(config)
@@ -292,15 +290,13 @@ def create_connection_manager_from_env() -> OracleConnectionManager:
 # Backward compatibility - expose the same interface as original
 if __name__ == "__main__":
     # Test the connection manager
-    from flext_observability.logging import setup_logging
-
     # Setup FLEXT logging
-    setup_logging(level="INFO")
+    setup_logging()
 
     manager = create_connection_manager_from_env()
     result = manager.test_connection()
 
     logger.info("Oracle Connection Test Results:")
     logger.info("=" * 40)
-    for key, value in result.items():
-        logger.info(f"{key}: {value}")
+    for key, result_value in result.items():
+        logger.info("%s: %s", key, result_value)

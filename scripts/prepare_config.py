@@ -9,6 +9,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -34,57 +35,67 @@ def substitute_env_vars(config_dict: dict, env_vars: dict) -> dict:
     return result
 
 
+def _load_config_template() -> dict[str, Any]:
+    """Load configuration template from file or use default."""
+    template_file = Path("target_config.json")
+    if template_file.exists():
+        with template_file.open(encoding="utf-8") as f:
+            return json.load(f)
+
+    # Fallback para template básico se arquivo não existir
+    return {
+        "username": "${FLEXT_TARGET_ORACLE_USERNAME}",
+        "password": "${FLEXT_TARGET_ORACLE_PASSWORD}",
+        "host": "${FLEXT_TARGET_ORACLE_HOST}",
+        "port": "${FLEXT_TARGET_ORACLE_PORT}",
+        "service_name": "${FLEXT_TARGET_ORACLE_SERVICE_NAME}",
+        "protocol": "${FLEXT_TARGET_ORACLE_PROTOCOL}",
+        "batch_size": "${FLEXT_TARGET_ORACLE_BATCH_SIZE}",
+        "pool_size": "${FLEXT_TARGET_ORACLE_POOL_SIZE}",
+        "load_method": "append-only",
+    }
+
+
+def _generate_autonomous_dsn(resolved_config: dict[str, Any]) -> dict[str, Any]:
+    """Generate DSN for Autonomous Database if configuration allows."""
+    if not all(key in resolved_config for key in ["host", "port", "service_name"]):
+        return resolved_config
+
+    host = resolved_config["host"]
+    port = resolved_config["port"]
+    service_name = resolved_config["service_name"]
+    protocol = resolved_config.get("protocol", "tcps")
+
+    if protocol == "tcps":
+        autonomous_dsn = f"""(description=
+    (retry_count=20)
+    (retry_delay=3)
+    (address=(protocol=tcps)(port={port})(host={host}))
+    (connect_data=(service_name={service_name}))
+    (security=(ssl_server_dn_match=no))
+)"""
+        resolved_config["dsn"] = autonomous_dsn
+        # Remove campos individuais quando usando DSN
+        for key in ["host", "port", "service_name", "protocol"]:
+            resolved_config.pop(key, None)
+
+    return resolved_config
+
+
 def prepare_target_config(env_file: str = ".env") -> None:
     """Prepara configuração do target Oracle."""
     # Carrega variáveis de ambiente
     load_dotenv(env_file)
     env_vars = dict(os.environ)
 
-    # Lê template de configuração do arquivo
-    template_file = Path("target_config.json")
-    if template_file.exists():
-        with open(template_file, encoding="utf-8") as f:
-            target_config_template = json.load(f)
-    else:
-        # Fallback para template básico se arquivo não existir
-        target_config_template = {
-            "username": "${FLEXT_TARGET_ORACLE_USERNAME}",
-            "password": "${FLEXT_TARGET_ORACLE_PASSWORD}",
-            "host": "${FLEXT_TARGET_ORACLE_HOST}",
-            "port": "${FLEXT_TARGET_ORACLE_PORT}",
-            "service_name": "${FLEXT_TARGET_ORACLE_SERVICE_NAME}",
-            "protocol": "${FLEXT_TARGET_ORACLE_PROTOCOL}",
-            "batch_size": "${FLEXT_TARGET_ORACLE_BATCH_SIZE}",
-            "pool_size": "${FLEXT_TARGET_ORACLE_POOL_SIZE}",
-            "load_method": "append-only",
-        }
+    # Lê template de configuração
+    target_config_template = _load_config_template()
 
     # Substitui variáveis
     resolved_config = substitute_env_vars(target_config_template, env_vars)
 
-    # Gerar DSN para Autonomous Database se temos host/port/service_name
-    if (
-        "host" in resolved_config
-        and "port" in resolved_config
-        and "service_name" in resolved_config
-    ):
-        host = resolved_config["host"]
-        port = resolved_config["port"]
-        service_name = resolved_config["service_name"]
-        protocol = resolved_config.get("protocol", "tcps")
-
-        if protocol == "tcps":
-            autonomous_dsn = f"""(description=
-        (retry_count=20)
-        (retry_delay=3)
-        (address=(protocol=tcps)(port={port})(host={host}))
-        (connect_data=(service_name={service_name}))
-        (security=(ssl_server_dn_match=no))
-    )"""
-            resolved_config["dsn"] = autonomous_dsn
-            # Remove campos individuais quando usando DSN
-            for key in ["host", "port", "service_name", "protocol"]:
-                resolved_config.pop(key, None)
+    # Gerar DSN para Autonomous Database
+    resolved_config = _generate_autonomous_dsn(resolved_config)
 
     # Implementa lógica padrão do Oracle: schema = username quando não especificado
     if "schema" not in resolved_config or not resolved_config.get("schema"):
@@ -110,7 +121,7 @@ def prepare_target_config(env_file: str = ".env") -> None:
 
     # Salva configuração resolvida
     output_file = Path("target_config_resolved.json")
-    with open(output_file, "w", encoding="utf-8") as f:
+    with output_file.open("w", encoding="utf-8") as f:
         json.dump(resolved_config, f, indent=2)
 
     # Mostra resumo
@@ -131,7 +142,8 @@ def main() -> int:
 
     try:
         prepare_target_config(args.env_file)
-    except Exception:
+    except (FileNotFoundError, ValueError, KeyError) as e:
+        sys.stderr.write(f"Error: {e}\n")
         return 1
 
     return 0

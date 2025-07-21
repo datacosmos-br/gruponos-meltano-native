@@ -1,0 +1,28 @@
+Using version ^1.16.4 for alembic
+
+Updating dependencies
+Resolving dependencies...
+
+Package operations: 15 installs, 4 updates, 0 removals
+
+  - Installing frozenlist (1.7.0)
+  - Installing aiohappyeyeballs (2.6.1)
+  - Installing aiosignal (1.4.0)
+  - Updating certifi (2025.7.9 -> 2025.7.14)
+  - Installing greenlet (3.2.3)
+  - Installing aiohttp (3.12.14)
+  - Updating distlib (0.3.9 -> 0.4.0)
+  - Installing fsspec (2025.7.0)
+  - Updating jsonschema (4.24.0 -> 4.25.0)
+  - Installing aiodocker (0.24.0)
+  - Installing atomicwrites (1.4.1)
+  - Installing check-jsonschema (0.33.2)
+  - Installing click-default-group (1.2.4)
+  - Installing click-didyoumean (0.3.1)
+  - Installing dateparser (1.2.2)
+  - Installing fasteners (0.19)
+  - Installing flatten-dict (0.4.2)
+  - Installing inflection (0.5.1)
+  - Updating orjson (3.10.18 -> 3.11.0)
+
+Writing lock file

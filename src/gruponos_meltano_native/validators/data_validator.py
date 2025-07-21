@@ -6,20 +6,75 @@ Handles type conversion and validation issues found in production.
 from __future__ import annotations
 
 import re
-from datetime import date, datetime
+from datetime import UTC, date, datetime
+from decimal import Decimal
 from typing import Any
 
 # Use centralized logger from flext-observability
 from flext_observability.logging import get_logger
 
 # Setup logger
-log = get_logger(__name__)
+logger = get_logger(__name__)
+
+
+class ValidationError(Exception):
+    """Custom validation error with field information."""
+
+    def __init__(self, message: str, field_name: str | None = None) -> None:
+        """Initialize validation error.
+
+        Args:
+            message: Error message
+            field_name: Field that failed validation
+
+        """
+        super().__init__(message)
+        self.field_name = field_name
+
+
+class ValidationRule:
+    """Validation rule definition."""
+
+    def __init__(
+        self,
+        field_name: str,
+        rule_type: str,
+        parameters: dict[str, Any] | None = None,
+        **kwargs: dict[str, Any],
+    ) -> None:
+        """Initialize validation rule.
+
+        Args:
+            field_name: Field to validate
+            rule_type: Type of validation (required, type, range, etc.)
+            parameters: Rule parameters dictionary (optional)
+            **kwargs: Additional rule parameters (merged with parameters)
+
+        """
+        self.field_name = field_name
+        self.rule_type = rule_type
+        # Merge explicit parameters dict with **kwargs
+        self.parameters = {**(parameters or {}), **kwargs}
+        self.params = self.parameters  # Keep for backward compatibility
 
 
 class DataValidator:
     """Professional data validator with Oracle-specific type handling."""
 
-    def __init__(self, *, strict_mode: bool = False) -> None:
+    def __init__(
+        self,
+        rules: list[ValidationRule] | None = None,
+        *,
+        strict_mode: bool = False,
+    ) -> None:
+        """Initialize data validator.
+
+        Args:
+            rules: List of validation rules to apply
+            strict_mode: Whether to raise exceptions on validation failures
+
+        """
+        self.rules = rules or []
         self.strict_mode = strict_mode
         self.conversion_stats = {
             "strings_converted_to_numbers": 0,
@@ -27,6 +82,268 @@ class DataValidator:
             "nulls_handled": 0,
             "validation_errors": 0,
         }
+
+    def _validate_required_field(
+        self,
+        rule: ValidationRule,
+        data: dict[str, Any],
+        errors: list[str],
+    ) -> bool:
+        """Validate required field presence."""
+        if rule.field_name not in data and rule.rule_type == "required":
+            error_msg = f"Required field '{rule.field_name}' is missing"
+            if self.strict_mode:
+                raise ValidationError(error_msg, rule.field_name)
+            logger.warning(
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
+            )
+            errors.append(error_msg)
+            return False
+        return True
+
+    def _validate_field_value(
+        self,
+        rule: ValidationRule,
+        *,
+        value: str | float | bool | datetime | None,
+        errors: list[str],
+    ) -> None:
+        """Validate field value based on rule type."""
+        validation_methods = {
+            "decimal": self._validate_decimal,
+            "string": self._validate_string,
+            "number": self._validate_number,
+            "date": self._validate_date,
+            "boolean": self._validate_boolean,
+            "email": self._validate_email,
+            "enum": self._validate_enum,
+        }
+
+        validation_method = validation_methods.get(rule.rule_type)
+        if validation_method and value is not None:
+            validation_method(rule, value=value, errors=errors)
+
+    def validate(self, data: dict[str, Any]) -> list[str]:
+        """Validate data against configured rules.
+
+        Args:
+            data: Data to validate
+
+        Returns:
+            List of validation error messages (empty if all validations pass)
+
+        Raises:
+            ValidationError: If validation fails in strict mode
+
+        """
+        errors = []
+
+        for rule in self.rules:
+            # Check required fields first
+            if not self._validate_required_field(rule, data, errors):
+                continue
+
+            # Skip if field not in data
+            if rule.field_name not in data:
+                continue
+
+            value = data[rule.field_name]
+            self._validate_field_value(rule, value=value, errors=errors)
+
+        return errors
+
+    def _validate_decimal(
+        self,
+        rule: ValidationRule,
+        value: str | float | Decimal | None,
+        errors: list[str],
+    ) -> None:
+        """Validate decimal field."""
+        try:
+            if not isinstance(value, Decimal):
+                Decimal(str(value))
+        except (ValueError, TypeError) as e:
+            error_msg = f"Field '{rule.field_name}' must be a valid decimal"
+            if self.strict_mode:
+                raise ValidationError(error_msg, rule.field_name) from e
+            logger.warning(
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
+            )
+            errors.append(error_msg)
+
+    def _validate_string(
+        self,
+        rule: ValidationRule,
+        value: str | None,
+        errors: list[str],
+    ) -> None:
+        """Validate string field."""
+        if not isinstance(value, str):
+            error_msg = f"Field '{rule.field_name}' must be a string"
+            if self.strict_mode:
+                raise ValidationError(error_msg, rule.field_name)
+            logger.warning(
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
+            )
+            errors.append(error_msg)
+        else:
+            # Check string length constraints
+            max_length = rule.parameters.get("max_length")
+            if max_length and len(value) > max_length:
+                error_msg = (
+                    f"Field '{rule.field_name}' exceeds maximum length {max_length}"
+                )
+                if self.strict_mode:
+                    raise ValidationError(error_msg, rule.field_name)
+                logger.warning(
+                    "Validation failed: %s (field: %s)",
+                    error_msg,
+                    rule.field_name,
+                )
+                errors.append(error_msg)
+
+    def _validate_number(
+        self,
+        rule: ValidationRule,
+        value: float | str | None,
+        errors: list[str],
+    ) -> None:
+        """Validate number field."""
+        if not isinstance(value, (int, float)):
+            error_msg = f"Field '{rule.field_name}' must be a number"
+            if self.strict_mode:
+                raise ValidationError(error_msg, rule.field_name)
+            logger.warning(
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
+            )
+            errors.append(error_msg)
+        else:
+            # Check numeric range constraints
+            min_value = rule.parameters.get("min_value")
+            max_value = rule.parameters.get("max_value")
+            if min_value is not None and value < min_value:
+                error_msg = f"Field '{rule.field_name}' below minimum value {min_value}"
+                if self.strict_mode:
+                    raise ValidationError(error_msg, rule.field_name)
+                logger.warning(
+                    "Validation failed: %s (field: %s)",
+                    error_msg,
+                    rule.field_name,
+                )
+                errors.append(error_msg)
+            if max_value is not None and value > max_value:
+                error_msg = (
+                    f"Field '{rule.field_name}' exceeds maximum value {max_value}"
+                )
+                if self.strict_mode:
+                    raise ValidationError(error_msg, rule.field_name)
+                logger.warning(
+                    "Validation failed: %s (field: %s)",
+                    error_msg,
+                    rule.field_name,
+                )
+                errors.append(error_msg)
+
+    def _validate_date(
+        self,
+        rule: ValidationRule,
+        value: str | datetime | date | None,
+        errors: list[str],
+    ) -> None:
+        """Validate date field."""
+        if isinstance(value, str):
+            date_format = rule.parameters.get("format", "%Y-%m-%d")
+            try:
+                datetime.strptime(value, date_format).replace(tzinfo=UTC)
+            except ValueError:
+                error_msg = (
+                    f"Field '{rule.field_name}' is not a valid date format "
+                    f"{date_format}"
+                )
+                if self.strict_mode:
+                    raise ValidationError(error_msg, rule.field_name) from None
+                logger.warning(
+                    "Validation failed: %s (field: %s)",
+                    error_msg,
+                    rule.field_name,
+                )
+                errors.append(error_msg)
+        elif not isinstance(value, datetime):
+            error_msg = f"Field '{rule.field_name}' must be a valid date"
+            if self.strict_mode:
+                raise ValidationError(error_msg, rule.field_name)
+            logger.warning(
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
+            )
+            errors.append(error_msg)
+
+    def _validate_boolean(
+        self,
+        rule: ValidationRule,
+        *,
+        value: bool | str | int | None,
+        errors: list[str],
+    ) -> None:
+        """Validate boolean field."""
+        if not isinstance(value, bool):
+            error_msg = f"Field '{rule.field_name}' must be a boolean"
+            if self.strict_mode:
+                raise ValidationError(error_msg, rule.field_name)
+            logger.warning(
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
+            )
+            errors.append(error_msg)
+
+    def _validate_email(
+        self,
+        rule: ValidationRule,
+        value: str | None,
+        errors: list[str],
+    ) -> None:
+        """Validate email field."""
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not isinstance(value, str) or not re.match(email_pattern, value):
+            error_msg = f"Field '{rule.field_name}' must be a valid email address"
+            if self.strict_mode:
+                raise ValidationError(error_msg, rule.field_name)
+            logger.warning(
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
+            )
+            errors.append(error_msg)
+
+    def _validate_enum(
+        self,
+        rule: ValidationRule,
+        *,
+        value: str | float | bool | None,
+        errors: list[str],
+    ) -> None:
+        """Validate enum field."""
+        allowed_values = rule.parameters.get("allowed_values", [])
+        if value not in allowed_values:
+            error_msg = f"Field '{rule.field_name}' must be one of {allowed_values}"
+            if self.strict_mode:
+                raise ValidationError(error_msg, rule.field_name)
+            logger.warning(
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
+            )
+            errors.append(error_msg)
 
     def validate_and_convert_record(
         self,
@@ -43,9 +360,10 @@ class DataValidator:
             if field_name in schema["properties"]:
                 field_schema = schema["properties"][field_name]
                 converted_record[field_name] = self._convert_field(
-                    field_value,
-                    field_schema,
-                    field_name,
+                    value=field_value,
+                    field_schema=field_schema,
+                    field_name=field_name,
+                    strict=self.strict_mode,
                 )
             else:
                 # Pass through unknown fields
@@ -55,10 +373,12 @@ class DataValidator:
 
     def _convert_field(
         self,
-        value: Any,
+        *,
+        value: str | float | bool | None,
         field_schema: dict[str, Any],
         field_name: str,
-    ) -> Any:
+        strict: bool = False,
+    ) -> str | int | float | bool | None:
         """Convert a single field according to its schema."""
         if value is None or value == "":
             self.conversion_stats["nulls_handled"] += 1
@@ -76,7 +396,11 @@ class DataValidator:
             if expected_type in {"number", "integer"}:
                 return self._convert_to_number(value, expected_type, field_name)
             if expected_type == "boolean":
-                return self._convert_to_boolean(value, field_name)
+                return self._convert_to_boolean(
+                    value=value,
+                    _field_name=field_name,
+                    _strict=strict,
+                )
             if expected_type == "string" and field_schema.get("format") in {
                 "date",
                 "date-time",
@@ -93,54 +417,80 @@ class DataValidator:
 
     def _convert_to_number(
         self,
-        value: Any,
+        value: str | float | None,
         expected_type: str,
-        field_name: str,
+        _field_name: str,
     ) -> int | float | None:
         """Convert value to number (int or float)."""
         if isinstance(value, (int, float)):
             return value
 
         if isinstance(value, str):
-            # Remove common formatting
-            cleaned_value = value.strip().replace(",", "").replace("$", "")
+            return self._convert_string_to_number(value, expected_type)
 
-            # Handle empty strings
-            if not cleaned_value:
-                return None
+        return self._convert_other_to_number(value, expected_type)
 
-            try:
-                if expected_type == "integer":
-                    # Handle decimal strings for integers
-                    if "." in cleaned_value:
-                        float_val = float(cleaned_value)
-                        if float_val.is_integer():
-                            self.conversion_stats["strings_converted_to_numbers"] += 1
-                            return int(float_val)
-                        # Always fail explicitly - no fallbacks allowed
-                        msg = f"Cannot convert decimal {cleaned_value} to integer"
-                        raise ValueError(msg)
-                    self.conversion_stats["strings_converted_to_numbers"] += 1
-                    return int(cleaned_value)
-                self.conversion_stats["strings_converted_to_numbers"] += 1
-                return float(cleaned_value)
+    def _convert_string_to_number(
+        self,
+        value: str,
+        expected_type: str,
+    ) -> int | float | None:
+        """Convert string value to number."""
+        cleaned_value = self._clean_numeric_string(value)
 
-            except (ValueError, TypeError) as e:
-                # Always fail explicitly - no fallbacks allowed
-                msg = f"Cannot convert '{value}' to {expected_type}"
-                raise ValueError(msg) from e
+        if not cleaned_value:
+            return None
 
-        # Handle other types
         try:
             if expected_type == "integer":
-                return int(value)
-            return float(value)
+                return self._convert_to_integer(cleaned_value)
+            self.conversion_stats["strings_converted_to_numbers"] += 1
+            return float(cleaned_value)
         except (ValueError, TypeError) as e:
-            # Always fail explicitly - no fallbacks allowed
+            msg = f"Cannot convert '{value}' to {expected_type}"
+            raise ValueError(msg) from e
+
+    def _clean_numeric_string(self, value: str) -> str:
+        """Clean string for numeric conversion."""
+        return value.strip().replace(",", "").replace("$", "")
+
+    def _convert_to_integer(self, cleaned_value: str) -> int:
+        """Convert cleaned string to integer with decimal handling."""
+        if "." in cleaned_value:
+            float_val = float(cleaned_value)
+            if float_val.is_integer():
+                self.conversion_stats["strings_converted_to_numbers"] += 1
+                return int(float_val)
+            msg = f"Cannot convert decimal {cleaned_value} to integer"
+            raise ValueError(msg)
+
+        self.conversion_stats["strings_converted_to_numbers"] += 1
+        return int(cleaned_value)
+
+    def _convert_other_to_number(
+        self,
+        value: str | float | None,
+        expected_type: str,
+    ) -> int | float | None:
+        """Convert non-string types to number."""
+        if value is None:
+            return None
+
+        try:
+            if expected_type == "integer":
+                return int(value)  # type: ignore[arg-type]
+            return float(value)  # type: ignore[arg-type]
+        except (ValueError, TypeError) as e:
             msg = f"Cannot convert {type(value)} '{value}' to {expected_type}"
             raise ValueError(msg) from e
 
-    def _convert_to_boolean(self, value: Any, field_name: str) -> bool:
+    def _convert_to_boolean(
+        self,
+        *,
+        value: str | float | bool,
+        _field_name: str,
+        _strict: bool = False,
+    ) -> bool:
         """Convert value to boolean."""
         if isinstance(value, bool):
             return value
@@ -164,9 +514,9 @@ class DataValidator:
 
     def _convert_to_date(
         self,
-        value: Any,
-        date_format: str,
-        field_name: str,
+        value: str | datetime | date | None,
+        _date_format: str,
+        _field_name: str,
     ) -> str | None:
         """Convert value to date string."""
         if isinstance(value, (datetime, date)):
@@ -232,5 +582,5 @@ if __name__ == "__main__":
     }
 
     result = validator.validate_and_convert_record(test_record, test_schema)
-    log.info("Converted record: %s", result)
-    log.info("Stats: %s", validator.get_conversion_stats())
+    logger.info("Converted record: %s", result)
+    logger.info("Stats: %s", validator.get_conversion_stats())

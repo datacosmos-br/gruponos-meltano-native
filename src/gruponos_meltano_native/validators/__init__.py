@@ -1,6 +1,6 @@
 """Data validation utilities for GrupoNOS Meltano Native."""
 
-from validators.data_validator import (
+from gruponos_meltano_native.validators.data_validator import (
     DataValidator,
     create_validator_for_environment,
 )

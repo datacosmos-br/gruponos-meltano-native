@@ -1,7 +1,7 @@
 """Basic integration tests for GrupoNOS Meltano Native."""
 
 import pytest
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.models import ServiceResult
 
 from gruponos_meltano_native.config import (
     GrupoNOSConfig,
@@ -66,7 +66,10 @@ class TestBasicIntegration:
         )
 
         wms_source = WMSSourceConfig(oracle=oracle_source)
-        target_oracle = TargetOracleConfig(oracle=oracle_target, schema="TEST_SCHEMA")
+        target_oracle = TargetOracleConfig(
+            oracle=oracle_target,
+            schema_name="TEST_SCHEMA",
+        )
 
         # Add required Meltano config
         meltano_config = MeltanoConfig(
@@ -107,7 +110,10 @@ class TestBasicIntegration:
         )
 
         wms_source = WMSSourceConfig(oracle=oracle_source)
-        target_oracle = TargetOracleConfig(oracle=oracle_target, schema="TEST_SCHEMA")
+        target_oracle = TargetOracleConfig(
+            oracle=oracle_target,
+            schema_name="TEST_SCHEMA",
+        )
 
         # Add required Meltano config
         meltano_config = MeltanoConfig(
@@ -132,13 +138,13 @@ class TestBasicIntegration:
     def test_service_result_pattern(self) -> None:
         """Test that FLEXT ServiceResult pattern is used."""
         # Test success
-        success_result = ServiceResult.success("test_value")
+        success_result = ServiceResult.ok("test_value")
         assert success_result.is_success
         assert success_result.value == "test_value"
         assert success_result.error is None
 
         # Test failure
-        failure_result = ServiceResult.failure("test_error")
+        failure_result = ServiceResult.fail("test_error")
         assert not failure_result.is_success
         assert failure_result.value is None
         assert failure_result.error == "test_error"

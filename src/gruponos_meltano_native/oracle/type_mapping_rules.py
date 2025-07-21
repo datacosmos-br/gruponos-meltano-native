@@ -101,12 +101,25 @@ FIELD_PATTERN_RULES = {
 }
 
 
-def convert_metadata_type_to_oracle(
+def convert_field_to_oracle_new(
+    *,
     metadata_type: str | None = None,
     column_name: str = "",
     max_length: int | None = None,
-    sample_value: Any | None = None,
+    sample_value: str | float | bool | None = None,
 ) -> str:
+    """Convert WMS metadata type to Oracle type with intelligent mapping.
+
+    Args:
+        metadata_type: WMS metadata type from API
+        column_name: Column name for pattern matching
+        max_length: Maximum length constraint
+        sample_value: Sample value for type inference (str, int, float, bool, or None)
+
+    Returns:
+        Oracle SQL type definition
+
+    """
     # Prioridade 1: Tipos WMS metadata
     if metadata_type and metadata_type.lower() in WMS_METADATA_TO_ORACLE:
         oracle_type = WMS_METADATA_TO_ORACLE[metadata_type.lower()]
@@ -124,50 +137,95 @@ def convert_metadata_type_to_oracle(
 
     # Prioridade 3: Inferência de valor de amostra (último recurso)
     if sample_value is not None:
-        return _infer_oracle_from_sample(sample_value)
+        return _infer_oracle_from_sample(sample_value=sample_value)
 
     # Default type - explicit failure
     return "VARCHAR2(255 CHAR)"
 
 
 def convert_field_pattern_to_oracle(
-    column_name: str, max_length: int | None = None,
+    column_name: str,
+    max_length: int | None = None,
 ) -> str | None:
+    """Convert field name patterns to Oracle types.
+
+    Args:
+        column_name: Name of the column
+        max_length: Maximum length constraint
+
+    Returns:
+        Oracle type string or None if no pattern matches
+
+    """
     column_lower = column_name.lower()
 
     for pattern_key, patterns in FIELD_PATTERN_RULES.items():
-        for pattern in patterns:
-            # Lidar com padrões wildcard
-            if "*" in pattern:
-                pattern_clean = pattern.replace("*", "")
-                if (
-                    pattern.startswith("*_") and column_lower.endswith(pattern_clean)
-                ) or (
-                    pattern.endswith("_*") and column_lower.startswith(pattern_clean)
-                ):
-                    oracle_type = FIELD_PATTERNS_TO_ORACLE[pattern_key]
-                    # Forçar 4000 CHAR para campos _set independentemente de max_length
-                    if pattern_key == "set_patterns":
-                        return "VARCHAR2(4000 CHAR)"
-                    if oracle_type.startswith("VARCHAR2") and max_length:
-                        return f"VARCHAR2({min(max_length, 4000)} CHAR)"
-                    return oracle_type
-            # Match exato
-            elif pattern == column_lower:
-                oracle_type = FIELD_PATTERNS_TO_ORACLE[pattern_key]
-                # Forçar 4000 CHAR para campos _set independentemente de max_length
-                if pattern_key == "set_patterns":
-                    return "VARCHAR2(4000 CHAR)"
-                if oracle_type.startswith("VARCHAR2") and max_length:
-                    return f"VARCHAR2({min(max_length, 4000)} CHAR)"
-                return oracle_type
+        oracle_type = _check_pattern_match(
+            patterns,
+            column_lower,
+            pattern_key,
+            max_length,
+        )
+        if oracle_type:
+            return oracle_type
 
     return None
 
 
+def _check_pattern_match(
+    patterns: list[str],
+    column_lower: str,
+    pattern_key: str,
+    max_length: int | None,
+) -> str | None:
+    """Check if column matches any pattern and return Oracle type."""
+    for pattern in patterns:
+        if _is_pattern_match(pattern, column_lower):
+            return _get_oracle_type_for_pattern(pattern_key, max_length)
+    return None
+
+
+def _is_pattern_match(pattern: str, column_lower: str) -> bool:
+    """Check if column name matches the pattern."""
+    # Handle wildcard patterns
+    if "*" in pattern:
+        pattern_clean = pattern.replace("*", "")
+        return (pattern.startswith("*_") and column_lower.endswith(pattern_clean)) or (
+            pattern.endswith("_*") and column_lower.startswith(pattern_clean)
+        )
+    # Exact match
+    return pattern == column_lower
+
+
+def _get_oracle_type_for_pattern(pattern_key: str, max_length: int | None) -> str:
+    """Get Oracle type for pattern key with length consideration."""
+    oracle_type = FIELD_PATTERNS_TO_ORACLE[pattern_key]
+
+    # Force 4000 CHAR for set fields regardless of max_length
+    if pattern_key == "set_patterns":
+        return "VARCHAR2(4000 CHAR)"
+
+    # Apply max_length for VARCHAR2 types
+    if oracle_type.startswith("VARCHAR2") and max_length:
+        return f"VARCHAR2({min(max_length, 4000)} CHAR)"
+
+    return oracle_type
+
+
 def convert_singer_schema_to_oracle(
-    column_name: str, column_schema: dict[str, Any],
+    column_name: str,
+    column_schema: dict[str, Any],
 ) -> str:
+    """Convert Singer schema to Oracle type definition.
+
+    Args:
+        column_name: Name of the column
+        column_schema: Singer schema definition
+
+    Returns:
+        Oracle type definition string
+
+    """
     # Prioridade 1: Padrões de nome de campo (mesma lógica do table_creator)
     oracle_type = convert_field_pattern_to_oracle(column_name)
     if oracle_type:
@@ -197,7 +255,7 @@ def convert_singer_schema_to_oracle(
     return "VARCHAR2(255 CHAR)"
 
 
-def _infer_oracle_from_sample(sample_value: Any) -> str:
+def _infer_oracle_from_sample(*, sample_value: Any) -> str:
     if isinstance(sample_value, bool):
         return "NUMBER(1,0)"
     if isinstance(sample_value, (int, float)):
@@ -207,6 +265,7 @@ def _infer_oracle_from_sample(sample_value: Any) -> str:
             return "TIMESTAMP(6)"
         length = min(len(sample_value) * 2, 4000)
         return f"VARCHAR2({length} CHAR)"
+    # Default case for any other type
     return "VARCHAR2(255 CHAR)"
 
 
@@ -221,8 +280,19 @@ def _looks_like_date(value: str) -> bool:
 
 
 def oracle_ddl_from_singer_schema(
-    singer_schema: dict[str, Any], column_name: str = "",
+    singer_schema: dict[str, Any],
+    column_name: str = "",
 ) -> str:
+    """Generate Oracle DDL from Singer schema with enhanced type mapping.
+
+    Args:
+        singer_schema: Singer schema definition
+        column_name: Optional column name for context
+
+    Returns:
+        Oracle DDL statement
+
+    """
     # Extrair metadata se disponível
     metadata_type = None
     if "x-wms-metadata" in singer_schema:
@@ -231,7 +301,7 @@ def oracle_ddl_from_singer_schema(
     # Obter max length se especificado
     max_length = singer_schema.get("maxLength")
 
-    return convert_metadata_type_to_oracle(
+    return convert_field_to_oracle_new(
         metadata_type=metadata_type,
         column_name=column_name,
         max_length=max_length,
@@ -244,7 +314,6 @@ __all__ = [
     "FIELD_PATTERN_RULES",
     "WMS_METADATA_TO_ORACLE",
     "convert_field_pattern_to_oracle",
-    "convert_metadata_type_to_oracle",
     "convert_singer_schema_to_oracle",
     "oracle_ddl_from_singer_schema",
 ]

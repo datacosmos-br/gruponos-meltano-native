@@ -1,4 +1,5 @@
 """Discover and save WMS schemas to JSON file for table creation.
+
 This prevents fallback schemas from being used.
 """
 
@@ -13,16 +14,23 @@ from dotenv import load_dotenv
 
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
-from tap_oracle_wms.tap import TapOracleWMS
 
 # Add tap path to Python path
 sys.path.insert(0, "/home/marlonsc/flext/flext-tap-oracle-wms/src")
 
+from flext_tap_oracle_wms.tap import TapOracleWMS  # type: ignore[import-untyped]
+
 # Setup logger
-log = get_logger(__name__)
+logger = get_logger(__name__)
 
 
 def discover_schemas() -> bool:
+    """Discover WMS schemas from API and save to JSON file.
+
+    Returns:
+        True if schemas were discovered and saved successfully, False otherwise.
+
+    """
     # Load environment variables
     load_dotenv()
 
@@ -38,16 +46,16 @@ def discover_schemas() -> bool:
 
     # Check if credentials are available:
     if not all([config["base_url"], config["username"], config["password"]]):
-        log.error("❌ Missing WMS credentials!")
-        log.error("Required environment variables:")
-        log.error("  - TAP_ORACLE_WMS_BASE_URL")
-        log.error("  - TAP_ORACLE_WMS_USERNAME")
-        log.error("  - TAP_ORACLE_WMS_PASSWORD")
+        logger.error("❌ Missing WMS credentials!")
+        logger.error("Required environment variables:")
+        logger.error("  - TAP_ORACLE_WMS_BASE_URL")
+        logger.error("  - TAP_ORACLE_WMS_USERNAME")
+        logger.error("  - TAP_ORACLE_WMS_PASSWORD")
         return False
 
-    log.info("🔍 Discovering schemas from WMS API...")
-    log.info("   URL: %s", config["base_url"])
-    log.info("   User: %s", config["username"])
+    logger.info("🔍 Discovering schemas from WMS API...")
+    logger.info("   URL: %s", config["base_url"])
+    logger.info("   User: %s", config["username"])
 
     try:
         # Create tap instance
@@ -65,7 +73,7 @@ def discover_schemas() -> bool:
                 if isinstance(schema, dict)
                 else len(schema.properties)
             )
-            log.info(
+            logger.info(
                 "✅ Discovered %s: %d properties",
                 stream.tap_stream_id,
                 prop_count,
@@ -78,17 +86,17 @@ def discover_schemas() -> bool:
         with Path(schema_file).open("w", encoding="utf-8") as f:
             json.dump(schemas, f, indent=2)
 
-        log.info("\n✅ Schemas saved to %s", schema_file)
-        log.info(
+        logger.info("\n✅ Schemas saved to %s", schema_file)
+        logger.info(
             "   Use this file with table_creator.py to ensure correct DDL generation",
         )
-
-        return True
-    except Exception:
-        log.exception("❌ Error discovering schemas")
+    except (OSError, ValueError, RuntimeError):
+        logger.exception("❌ Error discovering schemas")
         return False
+
+    return True
 
 
 if __name__ == "__main__":
-    success = discover_schemas()
-    sys.exit(0 if success else 1)
+    SUCCESS = discover_schemas()
+    sys.exit(0 if SUCCESS else 1)

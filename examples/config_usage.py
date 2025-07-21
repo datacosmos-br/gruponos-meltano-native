@@ -4,6 +4,10 @@
 from flext_observability.logging import get_logger, setup_logging
 
 from gruponos_meltano_native.config import GrupoNOSConfig, get_config
+from gruponos_meltano_native.oracle.connection_manager import (
+    OracleConnectionConfig,
+    OracleConnectionManager,
+)
 
 # Setup logging
 setup_logging(level="INFO")
@@ -89,11 +93,6 @@ def demonstrate_config_usage() -> None:
 
 def demonstrate_connection_manager_integration() -> None:
     """Show how configuration integrates with connection manager."""
-    from src.oracle.connection_manager import (
-        OracleConnectionConfig,
-        OracleConnectionManager,
-    )
-
     config = get_config()
 
     # Create connection config from FLEXT config
@@ -133,7 +132,7 @@ def demonstrate_connection_manager_integration() -> None:
 if __name__ == "__main__":
     try:
         demonstrate_config_usage()
-        logger.info("\n" + "=" * 50 + "\n")
+        logger.info("\n%s\n", "=" * 50)
         demonstrate_connection_manager_integration()
     except Exception as e:
         logger.exception("Demo failed", error=str(e))

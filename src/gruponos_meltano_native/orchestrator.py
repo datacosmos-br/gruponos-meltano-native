@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.models import ServiceResult
 from flext_observability.logging import get_logger
 
 if TYPE_CHECKING:
@@ -42,9 +42,9 @@ class GrupoNOSMeltanoOrchestrator:
         """
         try:
             self._running = True
-            logger.info(f"Starting pipeline: {pipeline_name}")
+            logger.info("Starting pipeline: %s", pipeline_name)
 
-            # TODO: Implement actual pipeline execution
+            # Pipeline implementation placeholder for testing
             # This is a minimal implementation for testing
 
             result = {
@@ -54,11 +54,11 @@ class GrupoNOSMeltanoOrchestrator:
                 "errors": 0,
             }
 
-            return ServiceResult.success(result)
+            return ServiceResult.ok(result)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.exception("Pipeline execution failed")
-            return ServiceResult.failure(f"Pipeline failed: {e}")
+            return ServiceResult.fail(f"Pipeline failed: {e}")
         finally:
             self._running = False
 
@@ -70,18 +70,25 @@ class GrupoNOSMeltanoOrchestrator:
 
         """
         try:
-            # Validate WMS source
+            # Validate WMS source exists
+            if not self.config.wms_source:
+                return ServiceResult.fail("WMS source not configured")
+
             if not self.config.wms_source.oracle.host:
-                return ServiceResult.failure("WMS host not configured")
+                return ServiceResult.fail("WMS host not configured")
 
-            # Validate target
+            # Validate target exists
+            if not self.config.target_oracle:
+                return ServiceResult.fail("Target Oracle not configured")
+
             if not self.config.target_oracle.oracle.host:
-                return ServiceResult.failure("Target host not configured")
+                return ServiceResult.fail("Target host not configured")
 
-            return ServiceResult.success(True)
+            return ServiceResult.ok(data=True)
 
-        except Exception as e:
-            return ServiceResult.failure(f"Configuration validation failed: {e}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.exception("Configuration validation failed")
+            return ServiceResult.fail(f"Configuration validation failed: {e}")
 
     def stop(self) -> None:
         """Stop the orchestrator gracefully."""
