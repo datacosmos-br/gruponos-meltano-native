@@ -1,4 +1,16 @@
-"""Oracle Type Mapping Rules - Módulo Compartilhado.
+"""Oracle Type Mapping Rules - DEPRECATED - USE FLEXT-TARGET-ORACLE.
+
+WARNING: This module duplicates functionality already present in flext-target-oracle.
+Per FLEXT documentation analysis, type mapping should be handled by the Singer target:
+- flext-target-oracle uses flext-db-oracle for type mapping
+- Automatic conversion from Singer JSON Schema to Oracle types
+- Enterprise patterns for Oracle optimization
+
+CORRECT APPROACH:
+Use flext-target-oracle - it handles type mapping automatically.
+
+This module is maintained only for backward compatibility with existing tests.
+For new development, use flext-target-oracle exclusively.
 
 Regras centralizadas para conversão de tipos WMS → Oracle DDL.
 

@@ -134,7 +134,9 @@ class TestOracleTableCreatorComprehensive:
 
         invalid_schema = {"type": "object"}  # Missing properties
 
-        with pytest.raises(ValueError, match="Invalid Singer schema for table test_table"):
+        with pytest.raises(
+            ValueError, match="Invalid Singer schema for table test_table"
+        ):
             creator.create_table_from_schema("test_table", invalid_schema)
 
     def test_create_table_from_schema_no_primary_keys(self) -> None:
@@ -206,7 +208,9 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         column_schema = {"type": "string", "maxLength": 5000}  # Over Oracle limit
-        ddl = creator._create_column_ddl("description", column_schema, is_primary_key=False)
+        ddl = creator._create_column_ddl(
+            "description", column_schema, is_primary_key=False
+        )
         assert ddl == "DESCRIPTION VARCHAR2(4000) NOT NULL"
 
     def test_create_column_ddl_nullable(self) -> None:
@@ -221,7 +225,9 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         column_schema = {"type": ["string", "null"]}
-        ddl = creator._create_column_ddl("optional_field", column_schema, is_primary_key=False)
+        ddl = creator._create_column_ddl(
+            "optional_field", column_schema, is_primary_key=False
+        )
         # Should not have NOT NULL constraint
         assert ddl == "OPTIONAL_FIELD VARCHAR2(4000)"
 
@@ -339,7 +345,9 @@ class TestOracleTableCreatorComprehensive:
 
         creator = OracleTableCreator(config)
 
-        result = creator._format_default_value(default_value="active", data_type="string")
+        result = creator._format_default_value(
+            default_value="active", data_type="string"
+        )
         assert result == "'active'"
 
     def test_format_default_value_boolean_true(self) -> None:
@@ -381,7 +389,9 @@ class TestOracleTableCreatorComprehensive:
 
         creator = OracleTableCreator(config)
 
-        result = creator._format_default_value(default_value="CURRENT_TIMESTAMP", data_type="date-time")
+        result = creator._format_default_value(
+            default_value="CURRENT_TIMESTAMP", data_type="date-time"
+        )
         assert result == "SYSTIMESTAMP"
 
     def test_format_default_value_timestamp(self) -> None:
@@ -395,7 +405,9 @@ class TestOracleTableCreatorComprehensive:
 
         creator = OracleTableCreator(config)
 
-        result = creator._format_default_value(default_value="2025-01-01 00:00:00", data_type="date-time")
+        result = creator._format_default_value(
+            default_value="2025-01-01 00:00:00", data_type="date-time"
+        )
         assert result == "TIMESTAMP '2025-01-01 00:00:00'"
 
     def test_format_default_value_numeric(self) -> None:
@@ -537,10 +549,11 @@ class TestOracleTableCreatorComprehensive:
             "CREATE INDEX idx_test ON test_table (id);",
         ]
 
-        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, \
-             patch("subprocess.run") as mock_run, \
-             patch("pathlib.Path.unlink") as mock_unlink:
-
+        with (
+            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
+            patch("subprocess.run") as mock_run,
+            patch("pathlib.Path.unlink") as mock_unlink,
+        ):
             # Mock temporary file
             mock_file = Mock()
             mock_file.name = TEST_SCRIPT_PATH
@@ -572,10 +585,11 @@ class TestOracleTableCreatorComprehensive:
 
         ddl_statements = ["CREATE TABLE invalid_syntax;"]
 
-        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, \
-             patch("subprocess.run") as mock_run, \
-             patch("pathlib.Path.unlink") as mock_unlink:
-
+        with (
+            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
+            patch("subprocess.run") as mock_run,
+            patch("pathlib.Path.unlink") as mock_unlink,
+        ):
             # Mock temporary file
             mock_file = Mock()
             mock_file.name = TEST_SCRIPT_PATH
@@ -592,7 +606,9 @@ class TestOracleTableCreatorComprehensive:
 
             # The current implementation has a bug where non-zero return codes still return True
             # This test documents the current behavior (will return True despite failure)
-            assert result is True  # Bug: should be False but implementation returns True
+            assert (
+                result is True
+            )  # Bug: should be False but implementation returns True
             mock_unlink.assert_called_once()
 
     def test_execute_ddl_timeout(self) -> None:
@@ -608,10 +624,11 @@ class TestOracleTableCreatorComprehensive:
 
         ddl_statements = ["CREATE TABLE long_running_ddl (id NUMBER);"]
 
-        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, \
-             patch("subprocess.run") as mock_run, \
-             patch("pathlib.Path.unlink") as mock_unlink:
-
+        with (
+            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
+            patch("subprocess.run") as mock_run,
+            patch("pathlib.Path.unlink") as mock_unlink,
+        ):
             # Mock temporary file
             mock_file = Mock()
             mock_file.name = TEST_SCRIPT_PATH
@@ -638,10 +655,11 @@ class TestOracleTableCreatorComprehensive:
 
         ddl_statements = ["CREATE TABLE test (id NUMBER);"]
 
-        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, \
-             patch("subprocess.run") as mock_run, \
-             patch("pathlib.Path.unlink") as mock_unlink:
-
+        with (
+            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
+            patch("subprocess.run") as mock_run,
+            patch("pathlib.Path.unlink") as mock_unlink,
+        ):
             # Mock temporary file
             mock_file = Mock()
             mock_file.name = TEST_SCRIPT_PATH
@@ -668,10 +686,11 @@ class TestOracleTableCreatorComprehensive:
 
         ddl_statements = ["CREATE TABLE test (id NUMBER);"]
 
-        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, \
-             patch("subprocess.run") as mock_run, \
-             patch("pathlib.Path.unlink") as mock_unlink:
-
+        with (
+            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
+            patch("subprocess.run") as mock_run,
+            patch("pathlib.Path.unlink") as mock_unlink,
+        ):
             # Mock temporary file
             mock_file = Mock()
             mock_file.name = TEST_SCRIPT_PATH
@@ -698,10 +717,11 @@ class TestOracleTableCreatorComprehensive:
 
         ddl_statements = ["CREATE TABLE test (id NUMBER);"]
 
-        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, \
-             patch("subprocess.run") as mock_run, \
-             patch("pathlib.Path.unlink") as mock_unlink:
-
+        with (
+            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
+            patch("subprocess.run") as mock_run,
+            patch("pathlib.Path.unlink") as mock_unlink,
+        ):
             # Mock temporary file
             mock_file = Mock()
             mock_file.name = TEST_SCRIPT_PATH
@@ -728,10 +748,11 @@ class TestOracleTableCreatorComprehensive:
 
         ddl_statements = ["CREATE TABLE test (id NUMBER);"]
 
-        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, \
-             patch("subprocess.run") as mock_run, \
-             patch("pathlib.Path.unlink") as mock_unlink:
-
+        with (
+            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
+            patch("subprocess.run") as mock_run,
+            patch("pathlib.Path.unlink") as mock_unlink,
+        ):
             # Mock temporary file
             mock_file = Mock()
             mock_file.name = TEST_SCRIPT_PATH
@@ -758,10 +779,11 @@ class TestOracleTableCreatorComprehensive:
 
         ddl_statements = ["CREATE TABLE test (id NUMBER);"]
 
-        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, \
-             patch("subprocess.run") as mock_run, \
-             patch("pathlib.Path.unlink") as mock_unlink:
-
+        with (
+            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
+            patch("subprocess.run") as mock_run,
+            patch("pathlib.Path.unlink") as mock_unlink,
+        ):
             # Mock temporary file
             mock_file = Mock()
             mock_file.name = TEST_SCRIPT_PATH
@@ -843,7 +865,9 @@ class TestOracleTableCreatorComprehensive:
 
             catalog_path = Path(TEST_CATALOG_PATH)
 
-            with pytest.raises(ValueError, match="Stream allocation not found in catalog"):
+            with pytest.raises(
+                ValueError, match="Stream allocation not found in catalog"
+            ):
                 creator.generate_table_from_singer_catalog(catalog_path, "allocation")
 
     def test_generate_table_from_singer_catalog_invalid_json(self) -> None:
@@ -891,12 +915,18 @@ class TestMainFunction:
     def test_main_minimal_args_success(self) -> None:
         """Test main function with minimal arguments (success path)."""
         test_args = [
-            "--catalog", TEST_CATALOG_PATH,
-            "--table", "allocation",
-            "--host", "localhost",
-            "--service", "XEPDB1",
-            "--username", "test_user",
-            "--password", "test_pass",
+            "--catalog",
+            TEST_CATALOG_PATH,
+            "--table",
+            "allocation",
+            "--host",
+            "localhost",
+            "--service",
+            "XEPDB1",
+            "--username",
+            "test_user",
+            "--password",
+            "test_pass",
         ]
 
         catalog_data = {
@@ -911,13 +941,18 @@ class TestMainFunction:
             ],
         }
 
-        with patch("sys.argv", ["table_creator.py", *test_args]), \
-             patch("pathlib.Path.read_text") as mock_read, \
-             patch("gruponos_meltano_native.oracle.table_creator.OracleTableCreator") as mock_creator:
-
+        with (
+            patch("sys.argv", ["table_creator.py", *test_args]),
+            patch("pathlib.Path.read_text") as mock_read,
+            patch(
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+            ) as mock_creator,
+        ):
             mock_read.return_value = json.dumps(catalog_data)
             mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = "CREATE TABLE test;"
+            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
+                "CREATE TABLE test;"
+            )
             mock_creator.return_value = mock_creator_instance
 
             result = main()
@@ -928,11 +963,16 @@ class TestMainFunction:
     def test_main_with_password_env_var(self) -> None:
         """Test main function using password from environment variable."""
         test_args = [
-            "--catalog", TEST_CATALOG_PATH,
-            "--table", "allocation",
-            "--host", "localhost",
-            "--service", "XEPDB1",
-            "--username", "test_user",
+            "--catalog",
+            TEST_CATALOG_PATH,
+            "--table",
+            "allocation",
+            "--host",
+            "localhost",
+            "--service",
+            "XEPDB1",
+            "--username",
+            "test_user",
             # No --password argument
         ]
 
@@ -948,14 +988,19 @@ class TestMainFunction:
             ],
         }
 
-        with patch("sys.argv", ["table_creator.py", *test_args]), \
-             patch.dict(os.environ, {"ORACLE_PASSWORD": "env_password"}), \
-             patch("pathlib.Path.read_text") as mock_read, \
-             patch("gruponos_meltano_native.oracle.table_creator.OracleTableCreator") as mock_creator:
-
+        with (
+            patch("sys.argv", ["table_creator.py", *test_args]),
+            patch.dict(os.environ, {"ORACLE_PASSWORD": "env_password"}),
+            patch("pathlib.Path.read_text") as mock_read,
+            patch(
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+            ) as mock_creator,
+        ):
             mock_read.return_value = json.dumps(catalog_data)
             mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = "CREATE TABLE test;"
+            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
+                "CREATE TABLE test;"
+            )
             mock_creator.return_value = mock_creator_instance
 
             result = main()
@@ -968,11 +1013,16 @@ class TestMainFunction:
     def test_main_missing_password(self) -> None:
         """Test main function with missing password."""
         test_args = [
-            "--catalog", TEST_CATALOG_PATH,
-            "--table", "allocation",
-            "--host", "localhost",
-            "--service", "XEPDB1",
-            "--username", "test_user",
+            "--catalog",
+            TEST_CATALOG_PATH,
+            "--table",
+            "allocation",
+            "--host",
+            "localhost",
+            "--service",
+            "XEPDB1",
+            "--username",
+            "test_user",
             # No password provided
         ]
 
@@ -986,13 +1036,20 @@ class TestMainFunction:
     def test_main_with_custom_schema(self) -> None:
         """Test main function with custom schema."""
         test_args = [
-            "--catalog", TEST_CATALOG_PATH,
-            "--table", "allocation",
-            "--host", "localhost",
-            "--service", "XEPDB1",
-            "--username", "test_user",
-            "--password", "test_pass",
-            "--schema", "CUSTOM_SCHEMA",
+            "--catalog",
+            TEST_CATALOG_PATH,
+            "--table",
+            "allocation",
+            "--host",
+            "localhost",
+            "--service",
+            "XEPDB1",
+            "--username",
+            "test_user",
+            "--password",
+            "test_pass",
+            "--schema",
+            "CUSTOM_SCHEMA",
         ]
 
         catalog_data = {
@@ -1007,13 +1064,18 @@ class TestMainFunction:
             ],
         }
 
-        with patch("sys.argv", ["table_creator.py", *test_args]), \
-             patch("pathlib.Path.read_text") as mock_read, \
-             patch("gruponos_meltano_native.oracle.table_creator.OracleTableCreator") as mock_creator:
-
+        with (
+            patch("sys.argv", ["table_creator.py", *test_args]),
+            patch("pathlib.Path.read_text") as mock_read,
+            patch(
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+            ) as mock_creator,
+        ):
             mock_read.return_value = json.dumps(catalog_data)
             mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = "CREATE TABLE test;"
+            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
+                "CREATE TABLE test;"
+            )
             mock_creator.return_value = mock_creator_instance
 
             result = main()
@@ -1026,12 +1088,18 @@ class TestMainFunction:
     def test_main_with_indexes(self) -> None:
         """Test main function with index generation."""
         test_args = [
-            "--catalog", TEST_CATALOG_PATH,
-            "--table", "allocation",
-            "--host", "localhost",
-            "--service", "XEPDB1",
-            "--username", "test_user",
-            "--password", "test_pass",
+            "--catalog",
+            TEST_CATALOG_PATH,
+            "--table",
+            "allocation",
+            "--host",
+            "localhost",
+            "--service",
+            "XEPDB1",
+            "--username",
+            "test_user",
+            "--password",
+            "test_pass",
             "--indexes",
         ]
 
@@ -1050,14 +1118,21 @@ class TestMainFunction:
             ],
         }
 
-        with patch("sys.argv", ["table_creator.py", *test_args]), \
-             patch("pathlib.Path.read_text") as mock_read, \
-             patch("gruponos_meltano_native.oracle.table_creator.OracleTableCreator") as mock_creator:
-
+        with (
+            patch("sys.argv", ["table_creator.py", *test_args]),
+            patch("pathlib.Path.read_text") as mock_read,
+            patch(
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+            ) as mock_creator,
+        ):
             mock_read.return_value = json.dumps(catalog_data)
             mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = "CREATE TABLE test;"
-            mock_creator_instance.create_indexes_for_table.return_value = ["CREATE INDEX idx1;"]
+            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
+                "CREATE TABLE test;"
+            )
+            mock_creator_instance.create_indexes_for_table.return_value = [
+                "CREATE INDEX idx1;"
+            ]
             mock_creator.return_value = mock_creator_instance
 
             result = main()
@@ -1071,12 +1146,18 @@ class TestMainFunction:
     def test_main_with_execute(self) -> None:
         """Test main function with DDL execution."""
         test_args = [
-            "--catalog", TEST_CATALOG_PATH,
-            "--table", "allocation",
-            "--host", "localhost",
-            "--service", "XEPDB1",
-            "--username", "test_user",
-            "--password", "test_pass",
+            "--catalog",
+            TEST_CATALOG_PATH,
+            "--table",
+            "allocation",
+            "--host",
+            "localhost",
+            "--service",
+            "XEPDB1",
+            "--username",
+            "test_user",
+            "--password",
+            "test_pass",
             "--execute",
         ]
 
@@ -1092,30 +1173,43 @@ class TestMainFunction:
             ],
         }
 
-        with patch("sys.argv", ["table_creator.py", *test_args]), \
-             patch("pathlib.Path.read_text") as mock_read, \
-             patch("gruponos_meltano_native.oracle.table_creator.OracleTableCreator") as mock_creator:
-
+        with (
+            patch("sys.argv", ["table_creator.py", *test_args]),
+            patch("pathlib.Path.read_text") as mock_read,
+            patch(
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+            ) as mock_creator,
+        ):
             mock_read.return_value = json.dumps(catalog_data)
             mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = "CREATE TABLE test;"
+            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
+                "CREATE TABLE test;"
+            )
             mock_creator_instance.execute_ddl.return_value = True
             mock_creator.return_value = mock_creator_instance
 
             result = main()
 
             assert result == 0
-            mock_creator_instance.execute_ddl.assert_called_once_with(["CREATE TABLE test;"])
+            mock_creator_instance.execute_ddl.assert_called_once_with([
+                "CREATE TABLE test;"
+            ])
 
     def test_main_with_execute_and_indexes(self) -> None:
         """Test main function with DDL execution including indexes."""
         test_args = [
-            "--catalog", TEST_CATALOG_PATH,
-            "--table", "allocation",
-            "--host", "localhost",
-            "--service", "XEPDB1",
-            "--username", "test_user",
-            "--password", "test_pass",
+            "--catalog",
+            TEST_CATALOG_PATH,
+            "--table",
+            "allocation",
+            "--host",
+            "localhost",
+            "--service",
+            "XEPDB1",
+            "--username",
+            "test_user",
+            "--password",
+            "test_pass",
             "--execute",
             "--indexes",
         ]
@@ -1135,14 +1229,21 @@ class TestMainFunction:
             ],
         }
 
-        with patch("sys.argv", ["table_creator.py", *test_args]), \
-             patch("pathlib.Path.read_text") as mock_read, \
-             patch("gruponos_meltano_native.oracle.table_creator.OracleTableCreator") as mock_creator:
-
+        with (
+            patch("sys.argv", ["table_creator.py", *test_args]),
+            patch("pathlib.Path.read_text") as mock_read,
+            patch(
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+            ) as mock_creator,
+        ):
             mock_read.return_value = json.dumps(catalog_data)
             mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = "CREATE TABLE test;"
-            mock_creator_instance.create_indexes_for_table.return_value = ["CREATE INDEX idx1;"]
+            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
+                "CREATE TABLE test;"
+            )
+            mock_creator_instance.create_indexes_for_table.return_value = [
+                "CREATE INDEX idx1;"
+            ]
             mock_creator_instance.execute_ddl.return_value = True
             mock_creator.return_value = mock_creator_instance
 
@@ -1158,12 +1259,18 @@ class TestMainFunction:
     def test_main_execution_failure(self) -> None:
         """Test main function with execution failure."""
         test_args = [
-            "--catalog", TEST_CATALOG_PATH,
-            "--table", "allocation",
-            "--host", "localhost",
-            "--service", "XEPDB1",
-            "--username", "test_user",
-            "--password", "test_pass",
+            "--catalog",
+            TEST_CATALOG_PATH,
+            "--table",
+            "allocation",
+            "--host",
+            "localhost",
+            "--service",
+            "XEPDB1",
+            "--username",
+            "test_user",
+            "--password",
+            "test_pass",
             "--execute",
         ]
 
@@ -1179,13 +1286,18 @@ class TestMainFunction:
             ],
         }
 
-        with patch("sys.argv", ["table_creator.py", *test_args]), \
-             patch("pathlib.Path.read_text") as mock_read, \
-             patch("gruponos_meltano_native.oracle.table_creator.OracleTableCreator") as mock_creator:
-
+        with (
+            patch("sys.argv", ["table_creator.py", *test_args]),
+            patch("pathlib.Path.read_text") as mock_read,
+            patch(
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+            ) as mock_creator,
+        ):
             mock_read.return_value = json.dumps(catalog_data)
             mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = "CREATE TABLE test;"
+            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
+                "CREATE TABLE test;"
+            )
             mock_creator_instance.execute_ddl.return_value = False  # Execution failed
             mock_creator.return_value = mock_creator_instance
 

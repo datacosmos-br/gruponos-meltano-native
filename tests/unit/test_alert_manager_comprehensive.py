@@ -226,13 +226,19 @@ class TestAlertManagerComprehensive:
         """Test starting and stopping monitoring."""
         manager = AlertManager()
 
-        assert not manager._monitoring
+        # Check initial state
+        initial_state = manager._monitoring
+        assert not initial_state
 
+        # Start monitoring
         manager.start_monitoring()
-        assert manager._monitoring
+        monitoring_state = manager._monitoring
+        assert monitoring_state
 
+        # Stop monitoring
         manager.stop_monitoring()
-        assert not manager._monitoring
+        final_state = manager._monitoring
+        assert not final_state
 
     def test_check_thresholds_with_service_method(self) -> None:
         """Test check_thresholds when alert_service has method."""

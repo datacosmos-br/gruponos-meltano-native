@@ -1,4 +1,16 @@
-"""Oracle Table Creator - Professional DDL Generation.
+"""Oracle Table Creator - DEPRECATED - USE FLEXT-TARGET-ORACLE.
+
+WARNING: This module duplicates functionality already present in flext-target-oracle.
+Per FLEXT documentation analysis, the Singer target should handle ALL schema operations:
+- Automatic table creation from Singer streams
+- Type mapping using flext-db-oracle patterns
+- Index creation and optimization
+
+CORRECT APPROACH:
+Use 'meltano run tap-oracle-wms target-oracle' - target creates schemas automatically.
+
+This module is maintained only for backward compatibility with existing tests.
+For new development, use flext-target-oracle exclusively.
 
 REFACTORED: Complete rewrite due to 267+ syntax errors.
 Creates optimized Oracle tables based on WMS schema with enterprise features.
@@ -112,11 +124,15 @@ class OracleTableCreator:
 
         # Handle special cases
         if main_type == "string" and "maxLength" in column_schema:
-            max_length = min(column_schema["maxLength"], 4000)
+            max_length_raw = column_schema["maxLength"]
+            max_length_int = int(max_length_raw) if isinstance(max_length_raw, str) else max_length_raw
+            max_length = min(max_length_int, 4000)
             oracle_type = f"VARCHAR2({max_length})"
         elif main_type == "number" and "multipleOf" in column_schema:
             # Decimal precision handling
-            precision = self._calculate_precision(column_schema["multipleOf"])
+            multiple_of_raw = column_schema["multipleOf"]
+            multiple_of_float = float(multiple_of_raw) if isinstance(multiple_of_raw, str) else multiple_of_raw
+            precision = self._calculate_precision(multiple_of_float)
             oracle_type = f"NUMBER({precision},4)"
 
         # Build column definition
@@ -350,8 +366,8 @@ class OracleTableCreator:
         except (OSError, ValueError, RuntimeError):
             logger.exception("DDL execution failed with known error")
             return False
-        except Exception:  # pylint: disable=broad-exception-caught
-            logger.exception("DDL execution failed with unexpected error")
+        except (subprocess.SubprocessError, PermissionError, FileNotFoundError, ImportError) as e:
+            logger.exception("DDL execution failed with subprocess error: %s", e)
             return False
         else:
             return True

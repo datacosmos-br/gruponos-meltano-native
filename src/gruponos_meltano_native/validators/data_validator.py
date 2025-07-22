@@ -2,12 +2,11 @@
 
 Handles type conversion and validation issues found in production.
 """
-
 from __future__ import annotations
 
 import re
 from datetime import UTC, date, datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 # Use centralized logger from flext-observability
@@ -25,7 +24,7 @@ class ValidationError(Exception):
 
         Args:
             message: Error message
-            field_name: Field that failed validation
+            field_name: Field that failed validation.
 
         """
         super().__init__(message)
@@ -48,7 +47,7 @@ class ValidationRule:
             field_name: Field to validate
             rule_type: Type of validation (required, type, range, etc.)
             parameters: Rule parameters dictionary (optional)
-            **kwargs: Additional rule parameters (merged with parameters)
+            **kwargs: Additional rule parameters (merged with parameters).
 
         """
         self.field_name = field_name
@@ -71,7 +70,7 @@ class DataValidator:
 
         Args:
             rules: List of validation rules to apply
-            strict_mode: Whether to raise exceptions on validation failures
+            strict_mode: Whether to raise exceptions on validation failures.
 
         """
         self.rules = rules or []
@@ -120,39 +119,33 @@ class DataValidator:
             "email": self._validate_email,
             "enum": self._validate_enum,
         }
-
         validation_method = validation_methods.get(rule.rule_type)
         if validation_method is not None and value is not None:
             # mypy: validation_method is callable after null check
-            validation_method(rule, value=value, errors=errors)  # type: ignore[operator]
+            validation_method(rule, value=value, errors=errors)
 
     def validate(self, data: dict[str, Any]) -> list[str]:
         """Validate data against configured rules.
 
         Args:
             data: Data to validate
-
         Returns:
             List of validation error messages (empty if all validations pass)
 
         Raises:
-            ValidationError: If validation fails in strict mode
+            ValidationError: If validation fails in strict mode.
 
         """
         errors: list[str] = []
-
         for rule in self.rules:
             # Check required fields first
             if not self._validate_required_field(rule, data, errors):
                 continue
-
             # Skip if field not in data
             if rule.field_name not in data:
                 continue
-
             value = data[rule.field_name]
             self._validate_field_value(rule, value=value, errors=errors)
-
         return errors
 
     def _validate_decimal(
@@ -165,7 +158,7 @@ class DataValidator:
         try:
             if not isinstance(value, Decimal):
                 Decimal(str(value))
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, InvalidOperation) as e:
             error_msg = f"Field '{rule.field_name}' must be a valid decimal"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name) from e
@@ -354,9 +347,7 @@ class DataValidator:
         """Validate and convert a record according to schema."""
         if not schema.get("properties"):
             return record
-
         converted_record = {}
-
         for field_name, field_value in record.items():
             if field_name in schema["properties"]:
                 field_schema = schema["properties"][field_name]
@@ -369,7 +360,6 @@ class DataValidator:
             else:
                 # Pass through unknown fields
                 converted_record[field_name] = field_value
-
         return converted_record
 
     def _convert_field(
@@ -384,15 +374,12 @@ class DataValidator:
         if value is None or value == "":
             self.conversion_stats["nulls_handled"] += 1
             return None
-
         expected_type = field_schema.get("type", "string")
-
         # Handle type arrays (nullable types)
         if isinstance(expected_type, list):
             # Filter out null type and get the first non-null type
             non_null_types = [t for t in expected_type if t != "null"]
             expected_type = "string" if not non_null_types else non_null_types[0]
-
         try:
             if expected_type in {"number", "integer"}:
                 return self._convert_to_number(value, expected_type, field_name)
@@ -411,7 +398,6 @@ class DataValidator:
                 return self._convert_to_date(str_value, date_format, field_name)
             # This line is reachable for string type conversions
             return str(value) if value is not None else None
-
         except (ValueError, TypeError, AttributeError) as e:
             self.conversion_stats["validation_errors"] += 1
             # Always fail explicitly - no fallbacks allowed
@@ -427,10 +413,8 @@ class DataValidator:
         """Convert value to number (int or float)."""
         if isinstance(value, (int, float)):
             return value
-
         if isinstance(value, str):
             return self._convert_string_to_number(value, expected_type)
-
         return self._convert_other_to_number(value, expected_type)
 
     def _convert_string_to_number(
@@ -440,10 +424,8 @@ class DataValidator:
     ) -> int | float | None:
         """Convert string value to number."""
         cleaned_value = self._clean_numeric_string(value)
-
         if not cleaned_value:
             return None
-
         try:
             if expected_type == "integer":
                 return self._convert_to_integer(cleaned_value)
@@ -466,7 +448,6 @@ class DataValidator:
                 return int(float_val)
             msg = f"Cannot convert decimal {cleaned_value} to integer"
             raise ValueError(msg)
-
         self.conversion_stats["strings_converted_to_numbers"] += 1
         return int(cleaned_value)
 
@@ -478,7 +459,6 @@ class DataValidator:
         """Convert non-string types to number."""
         if value is None:
             return None
-
         try:
             if expected_type == "integer":
                 return int(value)
@@ -518,7 +498,6 @@ class DataValidator:
         if isinstance(value, (datetime, date)):
             self.conversion_stats["dates_normalized"] += 1
             return value.isoformat()
-
         if isinstance(value, str):
             # Try parsing common date formats
             date_patterns = [
@@ -527,16 +506,13 @@ class DataValidator:
                 r"\d{2}/\d{2}/\d{4}",  # US format
                 r"\d{2}-\d{2}-\d{4}",  # US format with dashes
             ]
-
             for pattern in date_patterns:
                 if re.match(pattern, value.strip()):
                     self.conversion_stats["dates_normalized"] += 1
                     return value.strip()
-
             # Always fail explicitly - no fallbacks allowed
             msg = f"Cannot parse date '{value}'"
             raise ValueError(msg)
-
         return str(value) if value is not None else None
 
     def get_conversion_stats(self) -> dict[str, int]:
@@ -558,7 +534,6 @@ def create_validator_for_environment(environment: str = "dev") -> DataValidator:
 if __name__ == "__main__":
     # Test the validator
     validator = DataValidator(strict_mode=False)
-
     test_record = {
         "id": "123",
         "amount": "540.50",
@@ -566,7 +541,6 @@ if __name__ == "__main__":
         "active": "true",
         "created_date": "2025-07-02T10:00:00",
     }
-
     test_schema = {
         "properties": {
             "id": {"type": "integer"},
@@ -576,7 +550,6 @@ if __name__ == "__main__":
             "created_date": {"type": "string", "format": "date-time"},
         },
     }
-
     result = validator.validate_and_convert_record(test_record, test_schema)
     logger.info("Converted record: %s", result)
     logger.info("Stats: %s", validator.get_conversion_stats())

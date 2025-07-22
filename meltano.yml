@@ -10,8 +10,9 @@ plugins:
   extractors:
     - name: tap-oracle-wms-full
       namespace: tap_oracle_wms
-      executable: /home/marlonsc/flext/.venv/bin/flext-tap-oracle-wms
+      executable: flext-tap-oracle-wms
       config:
+        # REST API Configuration - CORRECTED per FLEXT documentation
         base_url: $TAP_ORACLE_WMS_BASE_URL
         username: $TAP_ORACLE_WMS_USERNAME
         password: $TAP_ORACLE_WMS_PASSWORD
@@ -19,14 +20,16 @@ plugins:
         facility_code: $TAP_ORACLE_WMS_FACILITY_CODE
         entities: ["allocation", "order_hdr", "order_dtl"]
         page_size: 500
-        request_timeout: 600
+        timeout: 600
+        max_retries: 3
         enable_incremental: false
-        force_full_table: true
+        start_date: "2024-01-01T00:00:00Z"
 
     - name: tap-oracle-wms-incremental
       namespace: tap_oracle_wms
-      executable: /home/marlonsc/flext/.venv/bin/flext-tap-oracle-wms
+      executable: flext-tap-oracle-wms
       config:
+        # REST API Configuration - CORRECTED per FLEXT documentation
         base_url: $TAP_ORACLE_WMS_BASE_URL
         username: $TAP_ORACLE_WMS_USERNAME
         password: $TAP_ORACLE_WMS_PASSWORD
@@ -34,45 +37,45 @@ plugins:
         facility_code: $TAP_ORACLE_WMS_FACILITY_CODE
         entities: ["allocation", "order_hdr", "order_dtl"]
         page_size: 500
-        request_timeout: 600
-        enable_incremental: $TAP_ORACLE_WMS_ENABLE_INCREMENTAL
-        force_full_table: false
-        replication_method: "INCREMENTAL"
+        timeout: 600
+        max_retries: 3
+        enable_incremental: true
         replication_key: "mod_ts"
+        start_date: "2024-01-01T00:00:00Z"
 
   loaders:
     - name: target-oracle-full
       namespace: target_oracle
-      executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
+      executable: flext-target-oracle
       config:
-        host: $FLEXT_TARGET_ORACLE_HOST
-        port: $FLEXT_TARGET_ORACLE_PORT
-        service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
-        username: $FLEXT_TARGET_ORACLE_USERNAME
-        password: $FLEXT_TARGET_ORACLE_PASSWORD
-        protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
+        # NESTED oracle_config - CORRECTED per FLEXT documentation
+        oracle_config:
+          host: $FLEXT_TARGET_ORACLE_HOST
+          port: $FLEXT_TARGET_ORACLE_PORT
+          service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
+          username: $FLEXT_TARGET_ORACLE_USERNAME
+          password: $FLEXT_TARGET_ORACLE_PASSWORD
+          protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
         default_target_schema: $FLEXT_TARGET_ORACLE_SCHEMA
-        table_prefix: $FLEXT_TARGET_ORACLE_TABLE_PREFIX
-        batch_size_rows: 5000
-        pool_size: 10
-        use_bulk_insert: true
+        batch_size: 5000
+        load_method: "append_only"
         add_record_metadata: false
 
     - name: target-oracle-incremental
       namespace: target_oracle
-      executable: /home/marlonsc/flext/.venv/bin/flext-target-oracle
+      executable: flext-target-oracle
       config:
-        host: $FLEXT_TARGET_ORACLE_HOST
-        port: $FLEXT_TARGET_ORACLE_PORT
-        service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
-        username: $FLEXT_TARGET_ORACLE_USERNAME
-        password: $FLEXT_TARGET_ORACLE_PASSWORD
-        protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
+        # NESTED oracle_config - CORRECTED per FLEXT documentation
+        oracle_config:
+          host: $FLEXT_TARGET_ORACLE_HOST
+          port: $FLEXT_TARGET_ORACLE_PORT
+          service_name: $FLEXT_TARGET_ORACLE_SERVICE_NAME
+          username: $FLEXT_TARGET_ORACLE_USERNAME
+          password: $FLEXT_TARGET_ORACLE_PASSWORD
+          protocol: $FLEXT_TARGET_ORACLE_PROTOCOL
         default_target_schema: $FLEXT_TARGET_ORACLE_SCHEMA
-        table_prefix: $FLEXT_TARGET_ORACLE_TABLE_PREFIX
-        batch_size_rows: 5000
-        pool_size: 10
-        use_bulk_insert: true
+        batch_size: 5000
+        load_method: "upsert"
         add_record_metadata: false
 
 jobs:

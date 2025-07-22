@@ -64,7 +64,7 @@ def generate_meltano_config() -> dict[str, Any]:
 
     # Get project-specific values
     _ = get_env_value("COMPANY_NAME", "YourCompany")  # Keep for future use
-    table_prefix = get_env_value("TABLE_PREFIX", "WMS_")
+    get_env_value("TABLE_PREFIX", "WMS_")
 
     # Configure extractors
     entities_str = get_env_value(
@@ -73,14 +73,17 @@ def generate_meltano_config() -> dict[str, Any]:
     )
     entities = entities_str.split(",") if entities_str else []
 
-    # Base tap configuration
+    # Base tap configuration - CORRECTED for REST API per FLEXT documentation
     base_tap_config = {
         "base_url": "$TAP_ORACLE_WMS_BASE_URL",
         "username": "$TAP_ORACLE_WMS_USERNAME",
         "password": "$TAP_ORACLE_WMS_PASSWORD",
-        "page_size": int(get_env_value("WMS_PAGE_SIZE", "100") or "100"),
-        "timeout": int(get_env_value("WMS_REQUEST_TIMEOUT", "3600") or "3600"),
-        "request_timeout": int(get_env_value("WMS_REQUEST_TIMEOUT", "3600") or "3600"),
+        "company_code": "$TAP_ORACLE_WMS_COMPANY_CODE",
+        "facility_code": "$TAP_ORACLE_WMS_FACILITY_CODE",
+        "page_size": int(get_env_value("WMS_PAGE_SIZE", "500") or "500"),
+        "timeout": int(get_env_value("WMS_REQUEST_TIMEOUT", "600") or "600"),
+        "max_retries": int(get_env_value("WMS_MAX_RETRIES", "3") or "3"),
+        "start_date": get_env_value("TAP_ORACLE_WMS_START_DATE", "2024-01-01T00:00:00Z"),
     }
 
     # Full sync tap
@@ -89,18 +92,12 @@ def generate_meltano_config() -> dict[str, Any]:
         "namespace": "tap_oracle_wms",
         "executable": get_env_value(
             "TAP_EXECUTABLE",
-            "/home/marlonsc/flext/.venv/bin/tap-oracle-wms",
+            "flext-tap-oracle-wms",
         ),
         "config": {
             **base_tap_config,
             "entities": entities,
-            "force_full_table": True,
-            "ordering": "-id",
-            "filter_mode": "id_recovery",
-            "batch_size_rows": int(get_env_value("WMS_BATCH_SIZE", "100") or "100"),
-            "max_sync_duration": int(
-                get_env_value("MAX_SYNC_DURATION", "10800") or "10800",
-            ),
+            "enable_incremental": False,
         },
     }
 
@@ -110,23 +107,13 @@ def generate_meltano_config() -> dict[str, Any]:
         "namespace": "tap_oracle_wms",
         "executable": get_env_value(
             "TAP_EXECUTABLE",
-            "/home/marlonsc/flext/.venv/bin/tap-oracle-wms",
+            "flext-tap-oracle-wms",
         ),
         "config": {
             **base_tap_config,
             "entities": entities,
-            "force_full_table": False,
-            "ordering": "mod_ts",
-            "filter_mode": "incremental",
-            "lookback_minutes": int(
-                get_env_value("WMS_LOOKBACK_MINUTES", "30") or "30",
-            ),
-            "incremental_overlap_minutes": int(
-                get_env_value("WMS_INCREMENTAL_OVERLAP", "30") or "30",
-            ),
-            "max_sync_duration": int(
-                get_env_value("MAX_SYNC_DURATION", "5400") or "5400",
-            ),
+            "enable_incremental": True,
+            "replication_key": "mod_ts",
         },
     }
 
@@ -154,20 +141,18 @@ def generate_meltano_config() -> dict[str, Any]:
         if isinstance(extractors, list):
             extractors.extend([entity_tap_full, entity_tap_inc])
 
-    # Configure loaders
+    # Configure loaders - CORRECTED per FLEXT documentation
     base_target_config = {
-        "host": "$FLEXT_TARGET_ORACLE_HOST",
-        "port": int(get_env_value("TARGET_ORACLE_PORT", "1522") or "1522"),
-        "service_name": "$FLEXT_TARGET_ORACLE_SERVICE_NAME",
-        "username": "$FLEXT_TARGET_ORACLE_USERNAME",
-        "password": "$FLEXT_TARGET_ORACLE_PASSWORD",
-        "protocol": "$FLEXT_TARGET_ORACLE_PROTOCOL",
-        "ssl_server_dn_match": False,
-        "add_record_metadata": False,
-        "validate_records": False,
+        "oracle_config": {
+            "host": "$FLEXT_TARGET_ORACLE_HOST",
+            "port": int(get_env_value("TARGET_ORACLE_PORT", "1522") or "1522"),
+            "service_name": "$FLEXT_TARGET_ORACLE_SERVICE_NAME",
+            "username": "$FLEXT_TARGET_ORACLE_USERNAME",
+            "password": "$FLEXT_TARGET_ORACLE_PASSWORD",
+            "protocol": "$FLEXT_TARGET_ORACLE_PROTOCOL",
+        },
         "default_target_schema": get_env_value("TARGET_ORACLE_SCHEMA", "OIC"),
-        "primary_key_required": True,
-        "table_prefix": table_prefix,
+        "add_record_metadata": False,
     }
 
     # Full load target
@@ -176,20 +161,14 @@ def generate_meltano_config() -> dict[str, Any]:
         "namespace": "target_oracle",
         "executable": get_env_value(
             "TARGET_EXECUTABLE",
-            "/home/marlonsc/flext/.venv/bin/flext-target-oracle",
+            "flext-target-oracle",
         ),
         "config": {
             **base_target_config,
-            "batch_size_rows": int(
+            "batch_size": int(
                 get_env_value("TARGET_BATCH_SIZE", "1000") or "1000",
             ),
-            "pool_size": 2,
-            "max_overflow": 5,
-            "parallel_threads": 1,
-            "load_method": "append-only",
-            "primary_key_includes_mod_ts": True,
-            "debug_type_mapping": False,
-            "use_null_pool": True,
+            "load_method": "append_only",
         },
     }
 
@@ -199,19 +178,14 @@ def generate_meltano_config() -> dict[str, Any]:
         "namespace": "target_oracle",
         "executable": get_env_value(
             "TARGET_EXECUTABLE",
-            "/home/marlonsc/flext/.venv/bin/flext-target-oracle",
+            "flext-target-oracle",
         ),
         "config": {
             **base_target_config,
-            "batch_size_rows": int(
+            "batch_size": int(
                 get_env_value("TARGET_BATCH_SIZE", "5000") or "5000",
             ),
-            "pool_size": 8,
-            "parallel_threads": 2,
-            "load_method": "append-only",
-            "primary_key_includes_mod_ts": True,
-            "enable_historical_versioning": True,
-            "historical_versioning_column": "mod_ts",
+            "load_method": "upsert",
         },
     }
 

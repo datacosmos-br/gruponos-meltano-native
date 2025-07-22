@@ -9,14 +9,17 @@ import json
 import sys
 
 import click
-import structlog
 import yaml
 
-from gruponos_meltano_native.config import GrupoNOSConfig
+# Use centralized FLEXT logging and patterns
+from flext_core import LogLevel
+from flext_observability.logging import LoggingConfig, get_logger, setup_logging
+
+from gruponos_meltano_native.config import get_config
 from gruponos_meltano_native.orchestrator import GrupoNOSMeltanoOrchestrator
 
-# Setup logger
-logger = structlog.get_logger(__name__)
+# Setup FLEXT logger
+logger = get_logger(__name__)
 
 
 @click.group()
@@ -43,16 +46,17 @@ def main(
     # Ensure that ctx.obj exists and is a dict
     ctx.ensure_object(dict)
 
-    # Configure logging level
+    # Configure FLEXT logging
     if debug:
-        structlog.configure(
-            processors=[
-                structlog.dev.ConsoleRenderer(colors=True),
-            ],
-            context_class=dict,
-            logger_factory=structlog.stdlib.LoggerFactory(),
-            cache_logger_on_first_use=True,
+        config = LoggingConfig(
+            service_name="gruponos-meltano-native",
+            log_level=LogLevel.DEBUG,
+            json_logs=False,
+            environment="development",
         )
+        setup_logging(config)
+    else:
+        setup_logging()
 
     # Store context
     ctx.obj["debug"] = debug
@@ -69,7 +73,7 @@ def health(_ctx: click.Context) -> None:
 
     try:
         # Create config
-        config = GrupoNOSConfig()
+        config = get_config()
 
         # Create orchestrator
         GrupoNOSMeltanoOrchestrator(config)
@@ -85,9 +89,9 @@ def health(_ctx: click.Context) -> None:
         logger.exception("Health check failed", error=str(e))
         click.echo(f"❌ Pipeline health check: FAILED - {e}")
         sys.exit(1)
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.exception("Unexpected error during health check", error=str(e))
-        click.echo(f"❌ Pipeline health check: UNEXPECTED ERROR - {e}")
+    except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
+        logger.exception("Configuration or import error during health check", error=str(e))
+        click.echo(f"❌ Pipeline health check: CONFIGURATION ERROR - {e}")
         sys.exit(1)
 
 
@@ -115,7 +119,7 @@ def sync(
 
     try:
         # Create config
-        config = GrupoNOSConfig()
+        config = get_config()
 
         # Create orchestrator
         GrupoNOSMeltanoOrchestrator(config)
@@ -134,9 +138,9 @@ def sync(
         logger.exception("Sync failed", error=str(e))
         click.echo(f"❌ Data sync failed: {e}")
         sys.exit(1)
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.exception("Unexpected error during sync", error=str(e))
-        click.echo(f"❌ Data sync failed: UNEXPECTED ERROR - {e}")
+    except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
+        logger.exception("Configuration or import error during sync", error=str(e))
+        click.echo(f"❌ Data sync failed: CONFIGURATION ERROR - {e}")
         sys.exit(1)
 
 
@@ -150,11 +154,13 @@ def sync(
 @click.pass_context
 def validate(_ctx: click.Context, output_format: str) -> None:
     """Validate configuration and pipeline setup."""
-    logger.info("Running validation", output_format=output_format)
+    # Only log in non-JSON format to keep JSON output clean
+    if output_format != "json":
+        logger.info("Running validation", output_format=output_format)
 
     try:
         # Create config
-        config = GrupoNOSConfig()
+        config = get_config()
 
         # Create orchestrator
         GrupoNOSMeltanoOrchestrator(config)
@@ -176,15 +182,17 @@ def validate(_ctx: click.Context, output_format: str) -> None:
             for component, status in validation_results.items():
                 click.echo(f"  {component.ljust(15)}: {status}")
 
-        logger.info("Validation completed successfully")
+        # Only log in non-JSON format to keep JSON output clean
+        if output_format != "json":
+            logger.info("Validation completed successfully")
 
     except (OSError, ValueError, RuntimeError) as e:
         logger.exception("Validation failed", error=str(e))
         click.echo(f"❌ Validation failed: {e}")
         sys.exit(1)
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.exception("Unexpected error during validation", error=str(e))
-        click.echo(f"❌ Validation failed: UNEXPECTED ERROR - {e}")
+    except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
+        logger.exception("Configuration or import error during validation", error=str(e))
+        click.echo(f"❌ Validation failed: CONFIGURATION ERROR - {e}")
         sys.exit(1)
 
 
@@ -199,11 +207,23 @@ def validate(_ctx: click.Context, output_format: str) -> None:
 @click.pass_context
 def show_config(_ctx: click.Context, output_format: str) -> None:
     """Show current configuration."""
-    logger.info("Showing configuration", output_format=output_format)
+    # Temporarily suppress logging for JSON output to ensure clean JSON
+    root_logger = None
+    original_level = None
+    if output_format == "json":
+        import logging
+        # Temporarily set the root logger level to suppress all logs
+        root_logger = logging.getLogger()
+        original_level = root_logger.level
+        root_logger.setLevel(logging.CRITICAL + 1)  # Suppress all logs
+
+    # Only log in non-JSON format to keep JSON output clean
+    if output_format != "json":
+        logger.info("Showing configuration", output_format=output_format)
 
     try:
         # Create config
-        config = GrupoNOSConfig()
+        config = get_config()
 
         # Convert to dict (excluding sensitive data)
         config_dict = {
@@ -215,7 +235,7 @@ def show_config(_ctx: click.Context, output_format: str) -> None:
                     "entities": getattr(config.wms_source, "entities", []),
                     "page_size": getattr(config.wms_source, "page_size", 100),
                 }
-                if hasattr(config, "wms_source")
+                if hasattr(config, "wms_source") and config.wms_source is not None
                 else {}
             ),
             "oracle_target": (
@@ -224,7 +244,7 @@ def show_config(_ctx: click.Context, output_format: str) -> None:
                     "port": getattr(config.oracle_target, "port", 1521),
                     "service_name": getattr(config.oracle_target, "service_name", ""),
                 }
-                if hasattr(config, "oracle_target")
+                if hasattr(config, "oracle_target") and config.oracle_target is not None
                 else {}
             ),
         }
@@ -234,16 +254,22 @@ def show_config(_ctx: click.Context, output_format: str) -> None:
         else:  # yaml
             click.echo(yaml.dump(config_dict, default_flow_style=False))
 
-        logger.info("Configuration displayed successfully")
+        # Only log in non-JSON format to keep JSON output clean
+        if output_format != "json":
+            logger.info("Configuration displayed successfully")
 
     except (OSError, ValueError, RuntimeError) as e:
         logger.exception("Failed to show configuration", error=str(e))
         click.echo(f"❌ Failed to show configuration: {e}")
         sys.exit(1)
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.exception("Unexpected error showing configuration", error=str(e))
-        click.echo(f"❌ Failed to show configuration: UNEXPECTED ERROR - {e}")
+    except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
+        logger.exception("Configuration or import error showing configuration", error=str(e))
+        click.echo(f"❌ Failed to show configuration: CONFIGURATION ERROR - {e}")
         sys.exit(1)
+    finally:
+        # Restore original logging level if we suppressed it
+        if output_format == "json" and root_logger is not None and original_level is not None:
+            root_logger.setLevel(original_level)
 
 
 if __name__ == "__main__":

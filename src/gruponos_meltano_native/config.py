@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 
+from dotenv import load_dotenv
 from flext_core import BaseConfig, BaseSettings
 from flext_observability.logging import get_logger
 from pydantic import Field, ValidationInfo, field_validator
@@ -254,6 +255,9 @@ class GrupoNOSConfig(BaseSettings):
 
         Maps legacy environment variables to new structure.
         """
+        # Load .env file first
+        load_dotenv()
+
         # Map legacy and direct environment variables
         env_mapping = {
             # WMS Source Oracle - check both legacy and direct formats
@@ -313,6 +317,12 @@ class GrupoNOSConfig(BaseSettings):
             )
             or os.getenv(
                 "FLEXT_TARGET_ORACLE_PROTOCOL",
+            ),
+            "GRUPONOS__TARGET_ORACLE__ORACLE__SSL_SERVER_DN_MATCH": os.getenv(
+                "GRUPONOS_TARGET_SSL_SERVER_DN_MATCH",
+            )
+            or os.getenv(
+                "FLEXT_TARGET_ORACLE_SSL_SERVER_DN_MATCH",
             ),
             "GRUPONOS__TARGET_ORACLE__SCHEMA": os.getenv("GRUPONOS_TARGET_SCHEMA")
             or os.getenv("FLEXT_TARGET_ORACLE_SCHEMA"),
@@ -385,6 +395,10 @@ class GrupoNOSConfig(BaseSettings):
                         "GRUPONOS__TARGET_ORACLE__ORACLE__PROTOCOL",
                         "tcps",
                     ),
+                    ssl_server_dn_match=os.environ.get(
+                        "GRUPONOS__TARGET_ORACLE__ORACLE__SSL_SERVER_DN_MATCH",
+                        "false",
+                    ).lower() == "true",
                 )
                 target_oracle = TargetOracleConfig(
                     oracle=target_oracle_conn,

@@ -1,7 +1,7 @@
 """Basic integration tests for GrupoNOS Meltano Native."""
 
 import pytest
-from flext_core.domain.models import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from gruponos_meltano_native.config import (
     GrupoNOSConfig,
@@ -88,8 +88,8 @@ class TestBasicIntegration:
 
         # Test validation
         result = await orchestrator.validate_configuration()
-        assert result.is_success
-        assert result.value is True
+        assert result.success
+        assert result.data is True
 
     @pytest.mark.asyncio
     async def test_orchestrator_pipeline_run(self) -> None:
@@ -131,21 +131,21 @@ class TestBasicIntegration:
 
         # Run pipeline
         result = await orchestrator.run_pipeline("test_pipeline")
-        assert result.is_success
-        assert result.value is not None
-        assert result.value["pipeline"] == "test_pipeline"
-        assert result.value["status"] == "success"
+        assert result.success
+        assert result.data is not None
+        assert result.data["pipeline"] == "test_pipeline"
+        assert result.data["status"] == "success"
 
     def test_service_result_pattern(self) -> None:
         """Test that FLEXT ServiceResult pattern is used."""
         # Test success
-        success_result = ServiceResult.ok("test_value")
-        assert success_result.is_success
-        assert success_result.value == "test_value"
+        success_result = ServiceResult.ok(data="test_value")
+        assert success_result.success
+        assert success_result.data == "test_value"
         assert success_result.error is None
 
         # Test failure
         failure_result: ServiceResult[str] = ServiceResult.fail("test_error")
-        assert not failure_result.is_success
-        assert failure_result.value is None
+        assert not failure_result.success
+        assert failure_result.data is None
         assert failure_result.error == "test_error"

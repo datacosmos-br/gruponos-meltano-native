@@ -68,17 +68,14 @@ meltano run tap-oracle-wms-full target-oracle-full
 meltano run tap-oracle-wms-incremental target-oracle-incremental
 
 # Pre-configured FLEXT jobs
-meltano job run full-sync-job
-meltano job run incremental-sync-job
+meltano run full-sync-job
+meltano run incremental-sync-job
 ```
 
 ### Validation (FLEXT Observability)
 ```bash
-# Oracle validation with FLEXT logging
-python validate_oracle_data.py
-
-# Advanced validation using FLEXT connection patterns
-PYTHONPATH=. python src/oracle/validate_sync.py
+# Oracle validation using FLEXT connection patterns
+PYTHONPATH=. python src/gruponos_meltano_native/oracle/validate_sync.py
 ```
 
 ### Development (FLEXT Standards)
@@ -144,7 +141,7 @@ FLEXT_TARGET_ORACLE_TABLE_PREFIX=WMS_
 ### Oracle Connection Issues
 ```bash
 # Use FLEXT connection validation
-python src/oracle/validate_sync.py
+PYTHONPATH=. python src/gruponos_meltano_native/oracle/validate_sync.py
 
 # Check FLEXT TARGET configuration
 meltano invoke target-oracle-full --test
@@ -175,8 +172,7 @@ request_timeout: 600      # API timeout (seconds)
 - `pyproject.toml` - FLEXT workspace dependencies
 
 ### Validation & Monitoring
-- `validate_oracle_data.py` - FLEXT observability validation
-- `src/oracle/validate_sync.py` - FLEXT connection patterns
+- `src/gruponos_meltano_native/oracle/validate_sync.py` - FLEXT connection patterns
 - `src/validators/data_validator.py` - FLEXT data quality
 
 ### Documentation

@@ -19,21 +19,27 @@ def demonstrate_config_usage() -> None:
     logger.info("=== GrupoNOS Configuration Demo ===")
 
     # 1. Access nested configuration
-    logger.info(
-        "WMS Source Database",
-        host=config.wms_source.oracle.host,
-        port=config.wms_source.oracle.port,
-        service=config.wms_source.oracle.service_name,
-        batch_size=config.wms_source.oracle.batch_size,
-    )
+    if config.wms_source is not None:
+        logger.info(
+            "WMS Source Database",
+            host=config.wms_source.oracle.host,
+            port=config.wms_source.oracle.port,
+            service=config.wms_source.oracle.service_name,
+            batch_size=config.wms_source.oracle.batch_size,
+        )
+    else:
+        logger.info("WMS Source Database not configured")
 
     # 2. Access target configuration
-    logger.info(
-        "Target Oracle Database",
-        host=config.target_oracle.oracle.host,
-        schema=config.target_oracle.schema,
-        parallel_degree=config.target_oracle.parallel_degree,
-    )
+    if config.target_oracle is not None:
+        logger.info(
+            "Target Oracle Database",
+            host=config.target_oracle.oracle.host,
+            schema=config.target_oracle.schema,
+            parallel_degree=config.target_oracle.parallel_degree,
+        )
+    else:
+        logger.info("Target Oracle Database not configured")
 
     # 3. Check alert configuration
     if config.alerts.webhook_enabled:
@@ -44,9 +50,13 @@ def demonstrate_config_usage() -> None:
         )
 
     # 4. Environment-specific settings
+    environment = "unknown"
+    if config.meltano is not None:
+        environment = config.meltano.environment
+
     logger.info(
         "Environment Configuration",
-        environment=config.meltano.environment,
+        environment=environment,
         debug_mode=config.debug_mode,
         dry_run=config.dry_run,
     )
@@ -78,13 +88,19 @@ def demonstrate_config_usage() -> None:
     # 8. Create a modified configuration
     modified_config_data = config.model_dump()
     modified_config_data["debug_mode"] = True
-    modified_config_data["meltano"]["environment"] = "staging"
+    if "meltano" in modified_config_data and modified_config_data["meltano"] is not None:
+        modified_config_data["meltano"]["environment"] = "staging"
 
     modified_config = GrupoNOSConfig.model_validate(modified_config_data)
+
+    modified_env = "unknown"
+    if modified_config.meltano is not None:
+        modified_env = modified_config.meltano.environment
+
     logger.info(
         "Modified configuration created",
         debug=modified_config.debug_mode,
-        env=modified_config.meltano.environment,
+        env=modified_env,
     )
 
 
@@ -96,11 +112,23 @@ def demonstrate_connection_manager_integration() -> None:
     # The OracleConnectionManager is created from environment variables
     # rather than from a separate config object
 
+    # Access connection configuration safely
+    target_host = "not configured"
+    target_port = 0
+    wms_host = "not configured"
+
+    if config.target_oracle is not None:
+        target_host = config.target_oracle.oracle.host
+        target_port = config.target_oracle.oracle.port
+
+    if config.wms_source is not None:
+        wms_host = config.wms_source.oracle.host
+
     logger.info(
         "Connection manager configuration available",
-        target_host=config.target_oracle.oracle.host,
-        target_port=config.target_oracle.oracle.port,
-        wms_host=config.wms_source.oracle.host,
+        target_host=target_host,
+        target_port=target_port,
+        wms_host=wms_host,
     )
 
     # Note: Connection manager would be created from environment in actual usage
