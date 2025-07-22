@@ -3,7 +3,6 @@
 
 Centraliza todas as configurações em um lugar usando arquivos .env.
 """
-
 import argparse
 import json
 import os
@@ -19,7 +18,6 @@ def substitute_env_vars(
 ) -> dict[str, Any]:
     """Substitui variáveis de ambiente na configuração."""
     result: dict[str, Any] = {}
-
     for key, value in config_dict.items():
         if isinstance(value, dict):
             result[key] = substitute_env_vars(value, env_vars)
@@ -33,7 +31,6 @@ def substitute_env_vars(
             result[key] = env_vars.get(var_name, value)
         else:
             result[key] = value
-
     return result
 
 
@@ -42,8 +39,7 @@ def _load_config_template() -> dict[str, Any]:
     template_file = Path("target_config.json")
     if template_file.exists():
         with template_file.open(encoding="utf-8") as f:
-            return json.load(f)  # type: ignore[no-any-return]
-
+            return json.load(f)
     # Fallback para template básico se arquivo não existir
     return {
         "username": "${FLEXT_TARGET_ORACLE_USERNAME}",
@@ -62,12 +58,10 @@ def _generate_autonomous_dsn(resolved_config: dict[str, Any]) -> dict[str, Any]:
     """Generate DSN for Autonomous Database if configuration allows."""
     if not all(key in resolved_config for key in ["host", "port", "service_name"]):
         return resolved_config
-
     host = resolved_config["host"]
     port = resolved_config["port"]
     service_name = resolved_config["service_name"]
     protocol = resolved_config.get("protocol", "tcps")
-
     if protocol == "tcps":
         autonomous_dsn = f"""(description=
     (retry_count=20)
@@ -80,7 +74,6 @@ def _generate_autonomous_dsn(resolved_config: dict[str, Any]) -> dict[str, Any]:
         # Remove campos individuais quando usando DSN
         for key in ["host", "port", "service_name", "protocol"]:
             resolved_config.pop(key, None)
-
     return resolved_config
 
 
@@ -89,23 +82,18 @@ def prepare_target_config(env_file: str = ".env") -> None:
     # Carrega variáveis de ambiente
     load_dotenv(env_file)
     env_vars = dict(os.environ)
-
     # Lê template de configuração
     target_config_template = _load_config_template()
-
     # Substitui variáveis
     resolved_config = substitute_env_vars(target_config_template, env_vars)
-
     # Gerar DSN para Autonomous Database
     resolved_config = _generate_autonomous_dsn(resolved_config)
-
     # Implementa lógica padrão do Oracle: schema = username quando não especificado
     if "schema" not in resolved_config or not resolved_config.get("schema"):
         username = resolved_config.get("username")
         if username:
             pass
             # Não adicionamos o campo schema - deixamos o target Oracle usar o padrão
-
     # Converte tipos conforme necessário
     for field, default_value in [("port", 1521), ("batch_size", 500), ("pool_size", 1)]:
         if field in resolved_config:
@@ -113,19 +101,16 @@ def prepare_target_config(env_file: str = ".env") -> None:
                 resolved_config[field] = int(resolved_config[field])
             except (ValueError, TypeError):
                 resolved_config[field] = default_value
-
     # Converte booleanos
     for field in ["ssl_server_dn_match", "add_record_metadata", "validate_records"]:
         if field in resolved_config:
             value = resolved_config[field]
             if isinstance(value, str):
                 resolved_config[field] = value.lower() in {"true", "1", "yes", "on"}
-
     # Salva configuração resolvida
     output_file = Path("target_config_resolved.json")
     with output_file.open("w", encoding="utf-8") as f:
         json.dump(resolved_config, f, indent=2)
-
     # Mostra resumo
     if "dsn" in resolved_config:
         pass
@@ -139,15 +124,12 @@ def main() -> int:
         default=".env",
         help="Arquivo de variáveis de ambiente (padrão: .env)",
     )
-
     args = parser.parse_args()
-
     try:
         prepare_target_config(args.env_file)
     except (FileNotFoundError, ValueError, KeyError) as e:
         sys.stderr.write(f"Error: {e}\n")
         return 1
-
     return 0
 
 

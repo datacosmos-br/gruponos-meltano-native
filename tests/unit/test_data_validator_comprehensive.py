@@ -975,13 +975,14 @@ class TestDateConversion:
         assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_to_date_non_string_non_datetime(self) -> None:
-        """Test converting non-string, non-datetime to string."""
+        """Test converting non-string, non-datetime values."""
         validator = DataValidator()
 
-        # Test converting int via str() fallback
-        result = validator._convert_to_date("123", "date", "test_field")
-        assert result == "123"
+        # Test invalid date string should raise ValueError
+        with pytest.raises(ValueError, match="Cannot parse date '123'"):
+            validator._convert_to_date("123", "date", "test_field")
 
+        # Test None value should return None
         result = validator._convert_to_date(None, "date", "test_field")
         assert result is None
 
@@ -1093,5 +1094,5 @@ class TestMainExecution:
             assert result["created_date"] == "2025-07-02T10:00:00"
 
             # Verify stats were updated
-            assert stats["strings_converted_to_numbers"] == 2  # id and amount
+            assert stats["strings_converted_to_numbers"] == 3  # id, amount and count
             assert stats["dates_normalized"] == 1  # created_date

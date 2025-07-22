@@ -24,8 +24,12 @@ class TestDropAllWMSTables:
     """Test drop_all_wms_tables function."""
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_drop_all_wms_tables_success(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_drop_all_wms_tables_success(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test successful dropping of all WMS tables."""
         # Setup config
         mock_config = Mock()
@@ -37,7 +41,11 @@ class TestDropAllWMSTables:
         mock_manager = Mock()
         mock_connection = Mock()
         mock_cursor = Mock()
-        mock_cursor.fetchall.return_value = [("WMS_ALLOCATION",), ("WMS_ORDER_HDR",), ("WMS_ORDER_DTL",)]
+        mock_cursor.fetchall.return_value = [
+            ("WMS_ALLOCATION",),
+            ("WMS_ORDER_HDR",),
+            ("WMS_ORDER_DTL",),
+        ]
         mock_connection.cursor.return_value = mock_cursor
         mock_manager.connect.return_value = mock_connection
         mock_manager_class.return_value = mock_manager
@@ -62,8 +70,12 @@ class TestDropAllWMSTables:
         assert result is False
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_drop_all_wms_tables_no_tables(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_drop_all_wms_tables_no_tables(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test dropping tables when no tables exist."""
         # Setup config
         mock_config = Mock()
@@ -86,8 +98,12 @@ class TestDropAllWMSTables:
         mock_cursor.execute.assert_called_once()  # Only the SELECT
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_drop_all_wms_tables_drop_error(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_drop_all_wms_tables_drop_error(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test error handling during table drop."""
         # Setup config
         mock_config = Mock()
@@ -110,8 +126,12 @@ class TestDropAllWMSTables:
         assert result is True  # Should continue despite individual table errors
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_drop_all_wms_tables_connection_error(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_drop_all_wms_tables_connection_error(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test connection error during table drop."""
         # Setup config
         mock_config = Mock()
@@ -129,8 +149,12 @@ class TestDropAllWMSTables:
         assert result is False
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_drop_all_wms_tables_runtime_error(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_drop_all_wms_tables_runtime_error(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test runtime error during table drop."""
         # Setup config
         mock_config = Mock()
@@ -152,8 +176,12 @@ class TestListCurrentTables:
     """Test list_current_tables function."""
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_list_current_tables_success(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_list_current_tables_success(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test successful table listing."""
         # Setup config
         mock_config = Mock()
@@ -165,7 +193,10 @@ class TestListCurrentTables:
         mock_manager = Mock()
         mock_connection = Mock()
         mock_cursor = Mock()
-        mock_cursor.fetchall.return_value = [("WMS_ALLOCATION", 1000), ("WMS_ORDER_HDR", 500)]
+        mock_cursor.fetchall.return_value = [
+            ("WMS_ALLOCATION", 1000),
+            ("WMS_ORDER_HDR", 500),
+        ]
         mock_connection.cursor.return_value = mock_cursor
         mock_manager.connect.return_value = mock_connection
         mock_manager_class.return_value = mock_manager
@@ -186,8 +217,12 @@ class TestListCurrentTables:
         list_current_tables()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_list_current_tables_no_tables(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_list_current_tables_no_tables(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test listing when no tables exist."""
         # Setup config
         mock_config = Mock()
@@ -208,8 +243,12 @@ class TestListCurrentTables:
         list_current_tables()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_list_current_tables_connection_error(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_list_current_tables_connection_error(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test connection error during table listing."""
         # Setup config
         mock_config = Mock()
@@ -226,8 +265,12 @@ class TestListCurrentTables:
         list_current_tables()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_list_current_tables_runtime_error(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_list_current_tables_runtime_error(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test runtime error during table listing."""
         # Setup config
         mock_config = Mock()
@@ -248,8 +291,12 @@ class TestCheckTableStructure:
     """Test check_table_structure function."""
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_check_table_structure_success(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_check_table_structure_success(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test successful table structure check."""
         # Setup config
         mock_config = Mock()
@@ -275,7 +322,9 @@ class TestCheckTableStructure:
         mock_cursor.execute.assert_called_once()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    def test_check_table_structure_no_target_config(self, mock_get_config: Mock) -> None:
+    def test_check_table_structure_no_target_config(
+        self, mock_get_config: Mock
+    ) -> None:
         """Test table structure check when target_oracle config is missing."""
         mock_config = Mock()
         mock_config.target_oracle = None
@@ -285,8 +334,12 @@ class TestCheckTableStructure:
         check_table_structure("WMS_ALLOCATION")
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_check_table_structure_no_columns(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_check_table_structure_no_columns(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test table structure check when table doesn't exist."""
         # Setup config
         mock_config = Mock()
@@ -306,8 +359,12 @@ class TestCheckTableStructure:
         check_table_structure("NONEXISTENT_TABLE")
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_check_table_structure_many_columns(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_check_table_structure_many_columns(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test table structure check with many columns (truncation)."""
         # Setup config
         mock_config = Mock()
@@ -329,8 +386,12 @@ class TestCheckTableStructure:
         check_table_structure("LARGE_TABLE")
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_check_table_structure_connection_error(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_check_table_structure_connection_error(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test connection error during table structure check."""
         # Setup config
         mock_config = Mock()
@@ -347,8 +408,12 @@ class TestCheckTableStructure:
         check_table_structure("WMS_ALLOCATION")
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager")
-    def test_check_table_structure_runtime_error(self, mock_manager_class: Mock, mock_get_config: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.OracleConnectionManager"
+    )
+    def test_check_table_structure_runtime_error(
+        self, mock_manager_class: Mock, mock_get_config: Mock
+    ) -> None:
         """Test runtime error during table structure check."""
         # Setup config
         mock_config = Mock()
@@ -370,7 +435,9 @@ class TestCreateTablesWithDDL:
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
-    def test_create_tables_with_ddl_success(self, mock_path: Mock, mock_subprocess: Mock) -> None:
+    def test_create_tables_with_ddl_success(
+        self, mock_path: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test successful table creation."""
         # Setup path
         mock_path_instance = Mock()
@@ -391,7 +458,9 @@ class TestCreateTablesWithDDL:
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
-    def test_create_tables_with_ddl_failure(self, mock_path: Mock, mock_subprocess: Mock) -> None:
+    def test_create_tables_with_ddl_failure(
+        self, mock_path: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test table creation failure."""
         # Setup path
         mock_path_instance = Mock()
@@ -411,7 +480,9 @@ class TestCreateTablesWithDDL:
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
-    def test_create_tables_with_ddl_timeout(self, mock_path: Mock, mock_subprocess: Mock) -> None:
+    def test_create_tables_with_ddl_timeout(
+        self, mock_path: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test table creation timeout."""
         # Setup path
         mock_path_instance = Mock()
@@ -427,7 +498,9 @@ class TestCreateTablesWithDDL:
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
-    def test_create_tables_with_ddl_os_error(self, mock_path: Mock, mock_subprocess: Mock) -> None:
+    def test_create_tables_with_ddl_os_error(
+        self, mock_path: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test table creation OS error."""
         # Setup path
         mock_path_instance = Mock()
@@ -443,7 +516,9 @@ class TestCreateTablesWithDDL:
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
-    def test_create_tables_with_ddl_runtime_error(self, mock_path: Mock, mock_subprocess: Mock) -> None:
+    def test_create_tables_with_ddl_runtime_error(
+        self, mock_path: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test table creation runtime error."""
         # Setup path
         mock_path_instance = Mock()
@@ -464,7 +539,9 @@ class TestRunFullSync:
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.time.time")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
-    def test_run_full_sync_success(self, mock_environ: Mock, mock_time: Mock, mock_subprocess: Mock) -> None:
+    def test_run_full_sync_success(
+        self, mock_environ: Mock, mock_time: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test successful sync execution."""
         # Setup environment
         mock_environ.copy.return_value = {"TEST": "env"}
@@ -487,7 +564,9 @@ class TestRunFullSync:
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.time.time")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
-    def test_run_full_sync_failure(self, mock_environ: Mock, mock_time: Mock, mock_subprocess: Mock) -> None:
+    def test_run_full_sync_failure(
+        self, mock_environ: Mock, mock_time: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test sync execution failure."""
         # Setup environment
         mock_environ.copy.return_value = {"TEST": "env"}
@@ -509,7 +588,9 @@ class TestRunFullSync:
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.time.time")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
-    def test_run_full_sync_long_stderr(self, mock_environ: Mock, mock_time: Mock, mock_subprocess: Mock) -> None:
+    def test_run_full_sync_long_stderr(
+        self, mock_environ: Mock, mock_time: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test sync failure with long stderr output."""
         # Setup environment
         mock_environ.copy.return_value = {"TEST": "env"}
@@ -530,7 +611,9 @@ class TestRunFullSync:
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
-    def test_run_full_sync_timeout(self, mock_environ: Mock, mock_subprocess: Mock) -> None:
+    def test_run_full_sync_timeout(
+        self, mock_environ: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test sync execution timeout."""
         # Setup environment
         mock_environ.copy.return_value = {"TEST": "env"}
@@ -544,7 +627,9 @@ class TestRunFullSync:
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
-    def test_run_full_sync_os_error(self, mock_environ: Mock, mock_subprocess: Mock) -> None:
+    def test_run_full_sync_os_error(
+        self, mock_environ: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test sync execution OS error."""
         # Setup environment
         mock_environ.copy.return_value = {"TEST": "env"}
@@ -558,7 +643,9 @@ class TestRunFullSync:
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
-    def test_run_full_sync_runtime_error(self, mock_environ: Mock, mock_subprocess: Mock) -> None:
+    def test_run_full_sync_runtime_error(
+        self, mock_environ: Mock, mock_subprocess: Mock
+    ) -> None:
         """Test sync execution runtime error."""
         # Setup environment
         mock_environ.copy.return_value = {"TEST": "env"}
@@ -603,7 +690,9 @@ class TestValidateSyncResults:
         assert result is False
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync")
-    def test_validate_sync_results_runtime_error(self, mock_validate_sync: Mock) -> None:
+    def test_validate_sync_results_runtime_error(
+        self, mock_validate_sync: Mock
+    ) -> None:
         """Test sync validation runtime error."""
         mock_validate_sync.side_effect = RuntimeError("Runtime error")
 
@@ -616,12 +705,22 @@ class TestMainFunction:
     """Test main function."""
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.datetime")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync_results")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync_results"
+    )
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.run_full_sync")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.check_table_structure")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.create_tables_with_ddl")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.check_table_structure"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.create_tables_with_ddl"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables"
+    )
     def test_main_success(
         self,
         mock_list_tables: Mock,
@@ -652,9 +751,15 @@ class TestMainFunction:
         mock_sync.assert_called_once()
         mock_validate.assert_called_once()
 
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables")
-    def test_main_drop_tables_failure(self, mock_list_tables: Mock, mock_drop_tables: Mock) -> None:
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables"
+    )
+    def test_main_drop_tables_failure(
+        self, mock_list_tables: Mock, mock_drop_tables: Mock
+    ) -> None:
         """Test main execution with drop tables failure."""
         mock_drop_tables.return_value = False
 
@@ -664,9 +769,15 @@ class TestMainFunction:
         mock_list_tables.assert_called_once()
         mock_drop_tables.assert_called_once()
 
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.create_tables_with_ddl")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.create_tables_with_ddl"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables"
+    )
     def test_main_create_tables_failure(
         self,
         mock_list_tables: Mock,
@@ -683,10 +794,18 @@ class TestMainFunction:
         mock_create_tables.assert_called_once()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.run_full_sync")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.check_table_structure")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.create_tables_with_ddl")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.check_table_structure"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.create_tables_with_ddl"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables"
+    )
     def test_main_sync_failure(
         self,
         mock_list_tables: Mock,
@@ -705,12 +824,22 @@ class TestMainFunction:
         assert result == 1
         mock_sync.assert_called_once()
 
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync_results")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync_results"
+    )
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.run_full_sync")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.check_table_structure")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.create_tables_with_ddl")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables")
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.check_table_structure"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.create_tables_with_ddl"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.drop_all_wms_tables"
+    )
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.list_current_tables"
+    )
     def test_main_validation_failure(
         self,
         mock_list_tables: Mock,
@@ -735,10 +864,14 @@ class TestMainFunction:
 class TestMainExecution:
     """Test main execution path."""
 
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.logging.basicConfig")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.logging.basicConfig"
+    )
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.main")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.sys.exit")
-    def test_main_execution_success(self, mock_exit: Mock, mock_main: Mock, mock_logging: Mock) -> None:
+    def test_main_execution_success(
+        self, mock_exit: Mock, mock_main: Mock, mock_logging: Mock
+    ) -> None:
         """Test main execution success path."""
         mock_main.return_value = 0
 
@@ -749,10 +882,14 @@ class TestMainExecution:
         # We're testing that the path exists
         assert callable(gruponos_meltano_native.oracle.recreate_tables_and_sync.main)
 
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.logging.basicConfig")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.logging.basicConfig"
+    )
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.main")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.sys.exit")
-    def test_main_execution_keyboard_interrupt(self, mock_exit: Mock, mock_main: Mock, mock_logging: Mock) -> None:
+    def test_main_execution_keyboard_interrupt(
+        self, mock_exit: Mock, mock_main: Mock, mock_logging: Mock
+    ) -> None:
         """Test main execution with keyboard interrupt."""
         mock_main.side_effect = KeyboardInterrupt()
 
@@ -760,10 +897,14 @@ class TestMainExecution:
         # Testing that the exception handling path exists
         assert True  # Path exists
 
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.logging.basicConfig")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.logging.basicConfig"
+    )
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.main")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.sys.exit")
-    def test_main_execution_os_error(self, mock_exit: Mock, mock_main: Mock, mock_logging: Mock) -> None:
+    def test_main_execution_os_error(
+        self, mock_exit: Mock, mock_main: Mock, mock_logging: Mock
+    ) -> None:
         """Test main execution with OS error."""
         mock_main.side_effect = OSError("System error")
 
@@ -771,10 +912,14 @@ class TestMainExecution:
         # Testing that the exception handling path exists
         assert True  # Path exists
 
-    @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.logging.basicConfig")
+    @patch(
+        "gruponos_meltano_native.oracle.recreate_tables_and_sync.logging.basicConfig"
+    )
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.main")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.sys.exit")
-    def test_main_execution_runtime_error(self, mock_exit: Mock, mock_main: Mock, mock_logging: Mock) -> None:
+    def test_main_execution_runtime_error(
+        self, mock_exit: Mock, mock_main: Mock, mock_logging: Mock
+    ) -> None:
         """Test main execution with runtime error."""
         mock_main.side_effect = RuntimeError("Runtime error")
 

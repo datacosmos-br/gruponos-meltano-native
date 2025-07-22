@@ -144,7 +144,7 @@ class AlertManager:
             self.send_alert(
                 AlertType.CONNECTIVITY_FAILURE,
                 f"Connection time exceeded: {connection_time}s",
-                AlertSeverity.HIGH
+                AlertSeverity.HIGH,
             )
 
     def check_memory_usage(self, memory_percent: float) -> None:
@@ -154,7 +154,7 @@ class AlertManager:
             self.send_alert(
                 AlertType.THRESHOLD_BREACH,
                 f"Memory usage exceeded: {memory_percent}%",
-                AlertSeverity.HIGH
+                AlertSeverity.HIGH,
             )
 
     def check_cpu_usage(self, cpu_percent: float) -> None:
@@ -164,7 +164,7 @@ class AlertManager:
             self.send_alert(
                 AlertType.THRESHOLD_BREACH,
                 f"CPU usage exceeded: {cpu_percent}%",
-                AlertSeverity.HIGH
+                AlertSeverity.HIGH,
             )
 
     def check_sync_duration(self, duration_minutes: float) -> None:
@@ -174,7 +174,7 @@ class AlertManager:
             self.send_alert(
                 AlertType.SYNC_TIMEOUT,
                 f"Sync duration exceeded: {duration_minutes} minutes",
-                AlertSeverity.HIGH
+                AlertSeverity.HIGH,
             )
 
     def check_thresholds(self, metrics: dict[str, float]) -> list[str]:

@@ -75,7 +75,8 @@ class TestOracleConnectionManagerComprehensive:
             mock_connection = Mock()
             mock_conn_instance = Mock()
             mock_conn_instance.connect.return_value = None
-            mock_conn_instance.connection = mock_connection
+            # Set _connection as private attribute to match our fix
+            mock_conn_instance._connection = mock_connection
             mock_conn_instance.connection_attempts = 2
             mock_conn_class.return_value = mock_conn_instance
 
@@ -100,8 +101,11 @@ class TestOracleConnectionManagerComprehensive:
             mock_connection = Mock()
             mock_conn_instance = Mock()
             mock_conn_instance.connect.return_value = None
-            mock_conn_instance.connection = mock_connection
-            # Don't set connection_attempts to test default
+            # Set _connection as private attribute to match our fix
+            mock_conn_instance._connection = mock_connection
+            # Configure the mock to NOT have connection_attempts attribute
+            # This will make getattr return the default value
+            del mock_conn_instance.connection_attempts
             mock_conn_class.return_value = mock_conn_instance
 
             manager = OracleConnectionManager(config)
@@ -123,7 +127,9 @@ class TestOracleConnectionManagerComprehensive:
         with patch("gruponos_meltano_native.oracle.connection_manager_enhanced.ResilientOracleConnection") as mock_conn_class:
             mock_conn_instance = Mock()
             mock_conn_instance.connect.return_value = None
-            # Don't set connection attribute
+            # Configure the mock to NOT have _connection attribute
+            # This will make getattr return None as the default
+            del mock_conn_instance._connection
             mock_conn_class.return_value = mock_conn_instance
 
             manager = OracleConnectionManager(config)

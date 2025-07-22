@@ -110,7 +110,7 @@ class OracleConnectionManager:
 
         # Return the underlying oracledb connection for compatibility
         # Note: Accessing private member for backward compatibility only
-        return getattr(self._connection, "connection", None)
+        return getattr(self._connection, "_connection", None)
 
     def test_connection(self) -> dict[str, Any]:
         """Test the connection and return detailed results.
@@ -239,19 +239,18 @@ def _validate_required_env_var(var_name: str) -> str:
 def _get_env_config() -> dict[str, str | int | bool]:
     """Get environment configuration with validation."""
     # Required variables
-    required_vars = [
-        "FLEXT_TARGET_ORACLE_HOST",
-        "FLEXT_TARGET_ORACLE_SERVICE_NAME",
-        "FLEXT_TARGET_ORACLE_USERNAME",
-        "FLEXT_TARGET_ORACLE_PASSWORD",
-        "FLEXT_TARGET_ORACLE_PROTOCOL",
-    ]
 
     config: dict[str, str | int | bool] = {}
-    for var in required_vars:
-        config[var.rsplit("_", maxsplit=1)[-1].lower()] = _validate_required_env_var(
-            var,
-        )
+    # Map environment variable names to config keys
+    var_mapping = {
+        "FLEXT_TARGET_ORACLE_HOST": "host",
+        "FLEXT_TARGET_ORACLE_SERVICE_NAME": "service_name",
+        "FLEXT_TARGET_ORACLE_USERNAME": "username",
+        "FLEXT_TARGET_ORACLE_PASSWORD": "password",
+        "FLEXT_TARGET_ORACLE_PROTOCOL": "protocol",
+    }
+    for var, key in var_mapping.items():
+        config[key] = _validate_required_env_var(var)
 
     # Optional variables with defaults
     config["port"] = int(os.getenv("FLEXT_TARGET_ORACLE_PORT", "1522"))

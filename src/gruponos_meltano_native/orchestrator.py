@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.models import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 from flext_observability.logging import get_logger
 
 if TYPE_CHECKING:
@@ -54,15 +54,15 @@ class GrupoNOSMeltanoOrchestrator:
                 "errors": 0,
             }
 
-            return ServiceResult.ok(result)
+            return ServiceResult.ok(data=result)
 
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except (OSError, ValueError, RuntimeError, ImportError, AttributeError) as e:
             logger.exception("Pipeline execution failed")
             return ServiceResult.fail(f"Pipeline failed: {e}")
         finally:
             self._running = False
 
-    async def validate_configuration(self) -> ServiceResult[bool]:
+    async def validate_configuration(self) -> ServiceResult[dict[str, Any]]:
         """Validate orchestrator configuration.
 
         Returns:
@@ -86,7 +86,7 @@ class GrupoNOSMeltanoOrchestrator:
 
             return ServiceResult.ok(data=True)
 
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except (OSError, ValueError, RuntimeError, ImportError, AttributeError) as e:
             logger.exception("Configuration validation failed")
             return ServiceResult.fail(f"Configuration validation failed: {e}")
 
