@@ -6,20 +6,89 @@ Professional CLI implementation using FLEXT patterns and Click.
 from __future__ import annotations
 
 import json
+import logging
 import sys
+from pathlib import Path
 
 import click
 import yaml
 
-# Use centralized FLEXT logging and patterns
-from flext_core import LogLevel
-from flext_observability.logging import LoggingConfig, get_logger, setup_logging
-
 from gruponos_meltano_native.config import get_config
+
+# Use dependency injection instead of direct imports for Clean Architecture compliance
 from gruponos_meltano_native.orchestrator import GrupoNOSMeltanoOrchestrator
 
-# Setup FLEXT logger
-logger = get_logger(__name__)
+# Get dependencies via DI
+logger = logging.getLogger(__name__)
+
+# 🚨 ARCHITECTURAL COMPLIANCE: Use DI instead of direct imports
+# Projects at level 6 (specific) CANNOT import abstractions directly.
+# LogLevel must be injected from workspace DI container.
+
+try:
+    # Try to get LogLevel via workspace DI container
+    import os
+
+    workspace_container_path = os.environ.get(
+        "FLEXT_WORKSPACE_CONTAINER",
+        "/home/marlonsc/flext/src/workspace_di_container.py",
+    )
+
+    LogLevel = None
+    if Path(workspace_container_path).exists():
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "workspace_di", workspace_container_path
+        )
+        if spec and spec.loader:
+            workspace_di = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(workspace_di)
+
+            # Get LogLevel via workspace DI if available
+            LogLevel = (
+                workspace_di.get_log_level()
+                if hasattr(workspace_di, "get_log_level")
+                else None
+            )
+
+    # Fallback: Direct import with architectural debt warning (temporary)
+    if LogLevel is None:
+        # TEMPORARY FALLBACK: Direct import with architectural debt warning
+        # TODO: This should be completely removed once workspace DI is configured
+        import importlib
+
+        flext_core = importlib.import_module("flext_core")
+        LogLevel = flext_core.LogLevel
+
+        import logging
+
+        temp_logger = logging.getLogger(__name__)
+        temp_logger.warning(
+            "🚨 ARCHITECTURAL DEBT: Using direct import fallback for LogLevel. "
+            "Configure workspace DI container to resolve this violation."
+        )
+
+except ImportError:
+    # Generic fallback if DI not available
+    from enum import Enum
+
+    class LogLevel(Enum):
+        """Log level enumeration fallback."""
+
+        DEBUG = "DEBUG"
+        INFO = "INFO"
+        WARNING = "WARNING"
+        ERROR = "ERROR"
+
+    class LoggingConfig:
+        """Logging configuration."""
+
+        def __init__(self, level: LogLevel = LogLevel.INFO) -> None:
+            self.level = level
+
+    def setup_logging(config: LoggingConfig) -> None:
+        logging.basicConfig(level=getattr(logging, config.level.value))
 
 
 @click.group()
@@ -90,7 +159,9 @@ def health(_ctx: click.Context) -> None:
         click.echo(f"❌ Pipeline health check: FAILED - {e}")
         sys.exit(1)
     except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
-        logger.exception("Configuration or import error during health check", error=str(e))
+        logger.exception(
+            "Configuration or import error during health check", error=str(e)
+        )
         click.echo(f"❌ Pipeline health check: CONFIGURATION ERROR - {e}")
         sys.exit(1)
 
@@ -191,7 +262,9 @@ def validate(_ctx: click.Context, output_format: str) -> None:
         click.echo(f"❌ Validation failed: {e}")
         sys.exit(1)
     except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
-        logger.exception("Configuration or import error during validation", error=str(e))
+        logger.exception(
+            "Configuration or import error during validation", error=str(e)
+        )
         click.echo(f"❌ Validation failed: CONFIGURATION ERROR - {e}")
         sys.exit(1)
 
@@ -212,6 +285,7 @@ def show_config(_ctx: click.Context, output_format: str) -> None:
     original_level = None
     if output_format == "json":
         import logging
+
         # Temporarily set the root logger level to suppress all logs
         root_logger = logging.getLogger()
         original_level = root_logger.level
@@ -263,12 +337,18 @@ def show_config(_ctx: click.Context, output_format: str) -> None:
         click.echo(f"❌ Failed to show configuration: {e}")
         sys.exit(1)
     except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
-        logger.exception("Configuration or import error showing configuration", error=str(e))
+        logger.exception(
+            "Configuration or import error showing configuration", error=str(e)
+        )
         click.echo(f"❌ Failed to show configuration: CONFIGURATION ERROR - {e}")
         sys.exit(1)
     finally:
         # Restore original logging level if we suppressed it
-        if output_format == "json" and root_logger is not None and original_level is not None:
+        if (
+            output_format == "json"
+            and root_logger is not None
+            and original_level is not None
+        ):
             root_logger.setLevel(original_level)
 
 

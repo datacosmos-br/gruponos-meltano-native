@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -29,10 +30,10 @@ import tempfile
 from pathlib import Path
 from typing import Any, cast
 
-# Use centralized logger from flext-observability
-from flext_observability.logging import get_logger
+# Use dependency injection instead of direct imports for Clean Architecture compliance
 
-logger = get_logger(__name__)
+# Get dependencies via DI
+logger = logging.getLogger(__name__)
 
 
 class OracleTableCreator:
@@ -125,13 +126,21 @@ class OracleTableCreator:
         # Handle special cases
         if main_type == "string" and "maxLength" in column_schema:
             max_length_raw = column_schema["maxLength"]
-            max_length_int = int(max_length_raw) if isinstance(max_length_raw, str) else max_length_raw
+            max_length_int = (
+                int(max_length_raw)
+                if isinstance(max_length_raw, str)
+                else max_length_raw
+            )
             max_length = min(max_length_int, 4000)
             oracle_type = f"VARCHAR2({max_length})"
         elif main_type == "number" and "multipleOf" in column_schema:
             # Decimal precision handling
             multiple_of_raw = column_schema["multipleOf"]
-            multiple_of_float = float(multiple_of_raw) if isinstance(multiple_of_raw, str) else multiple_of_raw
+            multiple_of_float = (
+                float(multiple_of_raw)
+                if isinstance(multiple_of_raw, str)
+                else multiple_of_raw
+            )
             precision = self._calculate_precision(multiple_of_float)
             oracle_type = f"NUMBER({precision},4)"
 
@@ -366,7 +375,12 @@ class OracleTableCreator:
         except (OSError, ValueError, RuntimeError):
             logger.exception("DDL execution failed with known error")
             return False
-        except (subprocess.SubprocessError, PermissionError, FileNotFoundError, ImportError) as e:
+        except (
+            subprocess.SubprocessError,
+            PermissionError,
+            FileNotFoundError,
+            ImportError,
+        ) as e:
             logger.exception("DDL execution failed with subprocess error: %s", e)
             return False
         else:

@@ -136,7 +136,7 @@ meltano-test: ## Test Meltano plugin connections
 
 meltano-run: ## Run complete Meltano pipeline
 	@echo "🚀 Running Meltano pipeline..."
-	@poetry run meltano run tap-oracle-wms target-postgres dbt-postgres:run
+	@poetry run meltano run tap-oracle-wms-full target-oracle-full
 	@echo "✅ Meltano pipeline complete"
 
 meltano-validate: ## Validate Meltano configuration

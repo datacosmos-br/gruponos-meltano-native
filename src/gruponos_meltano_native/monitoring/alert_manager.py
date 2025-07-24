@@ -5,21 +5,41 @@ Integrates with FLEXT observability patterns for structured alerting.
 
 from __future__ import annotations
 
+import logging
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
 import requests
-import structlog
-from flext_observability import AlertSeverity
 
 from gruponos_meltano_native.config import AlertConfig
 
-if TYPE_CHECKING:
-    from flext_observability import AlertSeverity as AlertSeverityType
-else:
-    AlertSeverityType = AlertSeverity
+# Use dependency injection instead of direct imports for Clean Architecture compliance
+from gruponos_meltano_native.infrastructure.di_container import (
+    get_alert_manager,
+)
 
-logger = structlog.get_logger(__name__)
+# Get dependencies via DI
+alert_manager = get_alert_manager()
+logger = logging.getLogger(__name__)
+
+# Import with fallback for AlertSeverity
+try:
+    from logging import AlertSeverity
+    if TYPE_CHECKING:
+        from logging import AlertSeverity as AlertSeverityType
+    else:
+        AlertSeverityType = AlertSeverity
+except ImportError:
+    # Fallback for development
+    from enum import Enum
+    class AlertSeverity(Enum):
+        """Alert severity levels for GrupoNOS pipeline."""
+
+        LOW = "low"
+        MEDIUM = "medium"
+        HIGH = "high"
+        CRITICAL = "critical"
+    AlertSeverityType = AlertSeverity
 
 
 class AlertType(Enum):

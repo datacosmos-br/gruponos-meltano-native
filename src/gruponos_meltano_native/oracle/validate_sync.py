@@ -1,17 +1,24 @@
 """Validate data in Oracle tables after sync."""
 from __future__ import annotations
+
+# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
+# Removed circular dependency - use DI pattern
+# # FIXME: Removed circular dependency - use DI pattern
+import logging
 from datetime import UTC, datetime
 from typing import Any
-# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
-from flext_observability.logging import get_logger
+
 from gruponos_meltano_native.config import get_config
 from gruponos_meltano_native.oracle.connection_manager import OracleConnectionManager
+
 # Setup logger
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 def _get_table_list() -> list[tuple[str, str]]:
     """Get list of tables to validate.
+
     Returns:
         List of (table_name, entity_name) tuples
+
     """
     return [
         ("WMS_ALLOCATION", "allocation"),
@@ -23,19 +30,23 @@ def _get_table_list() -> list[tuple[str, str]]:
     ]
 def _validate_table_name(table_name: str) -> bool:
     """Validate table name for safety.
+
     Args:
         table_name: Table name to validate
     Returns:
         True if valid, False otherwise
+
     """
     return table_name.replace("_", "").isalnum()
 def _check_table_exists(cursor: Any, table_name: str) -> bool:
     """Check if table exists in the database.
+
     Args:
         cursor: Database cursor
         table_name: Name of table to check
     Returns:
         True if table exists, False otherwise
+
     """
     try:
         cursor.execute(
@@ -49,11 +60,13 @@ def _check_table_exists(cursor: Any, table_name: str) -> bool:
         return False
 def _count_table_records(cursor: Any, table_name: str) -> int:
     """Count records in a table.
+
     Args:
         cursor: Database cursor
         table_name: Name of table to count
     Returns:
         Number of records, 0 if error or empty
+
     """
     try:
         # Validate table name for safety before using in query
@@ -68,11 +81,13 @@ def _count_table_records(cursor: Any, table_name: str) -> int:
         return 0
 def _get_table_details(cursor: Any, table_name: str) -> dict[str, str | int | None]:
     """Get detailed information about a table.
+
     Args:
         cursor: Database cursor
         table_name: Name of table to analyze
     Returns:
         Dictionary with table details
+
     """
     details: dict[str, str | int | None] = {
         "min_date": None,
@@ -133,12 +148,14 @@ def _get_table_details(cursor: Any, table_name: str) -> dict[str, str | int | No
     return details
 def _validate_single_table(cursor: Any, table_name: str, entity_name: str) -> int:
     """Validate data in a specific table.
+
     Args:
         cursor: Database cursor
         table_name: Name of table to validate
         entity_name: Entity name for logging
     Returns:
         Number of records found, 0 if table doesn't exist or error
+
     """
     logger.info("📊 Tabela: %s (%s)", table_name, entity_name)
     # Check if table exists
@@ -172,8 +189,10 @@ def _log_validation_header() -> None:
     logger.info("-" * 60)
 def _setup_database_connection() -> tuple[Any, Any] | None:
     """Set up database connection and return connection and cursor.
+
     Returns:
         Tuple of (connection, cursor) or None if setup failed
+
     """
     config = get_config()
     if config.target_oracle is None:
@@ -189,10 +208,12 @@ def _setup_database_connection() -> tuple[Any, Any] | None:
     return conn, cursor
 def _validate_all_tables(cursor: Any) -> int:
     """Validate all tables and return total record count.
+
     Args:
         cursor: Database cursor
     Returns:
         Total number of records across all tables
+
     """
     tables = _get_table_list()
     total_records = 0
@@ -206,8 +227,10 @@ def _validate_all_tables(cursor: Any) -> int:
     return total_records
 def _log_validation_summary(total_records: int) -> None:
     """Log validation summary.
+
     Args:
         total_records: Total number of records found
+
     """
     logger.info("\n%s", "=" * 60)
     logger.info("📊 RESUMO GERAL:")
@@ -221,16 +244,20 @@ def _log_validation_summary(total_records: int) -> None:
     logger.info("   Status: %s", status)
 def _cleanup_connection(cursor: Any, conn: Any) -> None:
     """Clean up database connection.
+
     Args:
         cursor: Database cursor to close
         conn: Database connection to close
+
     """
     cursor.close()
     conn.close()
 def validate_sync() -> bool:
     """Validate data synchronization in Oracle tables.
+
     Returns:
         True if validation passes, False otherwise
+
     """
     _log_validation_header()
     # Setup database connection

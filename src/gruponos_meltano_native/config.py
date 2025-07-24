@@ -6,16 +6,33 @@ providing type safety, validation, and documentation.
 
 from __future__ import annotations
 
+import logging
 import os
 
 from dotenv import load_dotenv
-from flext_core import BaseConfig, BaseSettings
-from flext_observability.logging import get_logger
 from pydantic import Field, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
 
-# Setup logger
-logger = get_logger(__name__)
+# Use dependency injection instead of direct imports for Clean Architecture compliance
+from gruponos_meltano_native.infrastructure.di_container import get_config
+
+# Get dependencies via DI
+base_config = get_config()
+logger = logging.getLogger(__name__)
+
+# Import base classes through DI container
+try:
+    from gruponos_meltano_native.infrastructure.di_container import (
+        get_base_config,
+        get_base_settings,
+    )
+
+    BaseConfig = get_base_config()
+    BaseSettings = get_base_settings()
+except ImportError:
+    # Fallback for development
+    from pydantic import BaseModel as BaseConfig
+    from pydantic_settings import BaseSettings
 
 
 class OracleConnectionConfig(BaseConfig):
@@ -398,7 +415,8 @@ class GrupoNOSConfig(BaseSettings):
                     ssl_server_dn_match=os.environ.get(
                         "GRUPONOS__TARGET_ORACLE__ORACLE__SSL_SERVER_DN_MATCH",
                         "false",
-                    ).lower() == "true",
+                    ).lower()
+                    == "true",
                 )
                 target_oracle = TargetOracleConfig(
                     oracle=target_oracle_conn,

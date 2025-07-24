@@ -1,0 +1,10 @@
+[2m2025-07-22T20:11:21.559605Z[0m [[32m[1minfo     [0m] [1mEnvironment 'dev' is active   [0m
+Skipping parse of env var settings...
+🔧 Initializing TapOracleWMS...
+🔧 Args: ()
+🔧 Kwargs keys: ['config', 'parse_env_config', 'validate_config', 'setup_mapper']
+🔧 base_url: https://a29.wms.ocs.oraclecloud.com/raizen
+🔧 entities: ['allocation', 'order_hdr', 'order_dtl']
+🔧 page_size: 500 (int)
+🔧 TapOracleWMS initialization completed.
+{}

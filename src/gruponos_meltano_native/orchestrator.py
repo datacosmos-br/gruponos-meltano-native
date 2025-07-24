@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.shared_types import ServiceResult
-from flext_observability.logging import get_logger
+# Use dependency injection instead of direct imports for Clean Architecture compliance
+from gruponos_meltano_native.infrastructure.di_container import (
+    get_service_result,
+)
 
 if TYPE_CHECKING:
     from .config import GrupoNOSConfig
 
-logger = get_logger(__name__)
+# Get dependencies via DI
+ServiceResult = get_service_result()
+logger = logging.getLogger(__name__)
 
 
 class GrupoNOSMeltanoOrchestrator:

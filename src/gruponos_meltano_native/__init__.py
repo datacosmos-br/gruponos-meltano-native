@@ -14,16 +14,102 @@ from __future__ import annotations
 import contextlib
 import importlib.metadata
 import warnings
+from pathlib import Path
 
-# Re-export commonly used imports from flext-core
-# Foundation patterns - ALWAYS from flext-core
-from flext_core import (
-    BaseConfig as MeltanoBaseConfig,  # Configuration base
-    DomainBaseModel as BaseModel,  # Base for meltano models
-    DomainError as MeltanoError,  # Meltano-specific errors
-    ServiceResult,  # Service operation results
-    ValidationError as ValidationError,  # Validation errors
+# Use dependency injection instead of direct imports for Clean Architecture compliance
+from gruponos_meltano_native.infrastructure.di_container import (
+    get_base_config,
+    get_base_settings,
+    get_config,
+    get_service_result,
 )
+
+# Get dependencies via DI
+ServiceResult = get_service_result()
+
+# 🚨 ARCHITECTURAL COMPLIANCE: Use DI instead of direct imports
+# Projects at level 6 (specific) CANNOT import abstractions directly.
+# All dependencies must be injected from workspace DI container.
+
+# Get dependencies via DI instead of direct import violations
+try:
+    config_di = get_config()
+    base_config_di = get_base_config()
+    base_settings_di = get_base_settings()
+
+    # Use DI-provided implementations
+    MeltanoBaseConfig = base_config_di
+
+    # Try to get additional types via workspace DI container
+    import os
+
+    workspace_container_path = os.environ.get(
+        "FLEXT_WORKSPACE_CONTAINER",
+        "/home/marlonsc/flext/src/workspace_di_container.py",
+    )
+
+    if Path(workspace_container_path).exists():
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "workspace_di", workspace_container_path
+        )
+        if spec and spec.loader:
+            workspace_di = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(workspace_di)
+
+            # Get domain types via workspace DI
+            BaseModel = (
+                workspace_di.get_domain_base_model()
+                if hasattr(workspace_di, "get_domain_base_model")
+                else None
+            )
+            MeltanoError = (
+                workspace_di.get_domain_error()
+                if hasattr(workspace_di, "get_domain_error")
+                else None
+            )
+            ValidationError = (
+                workspace_di.get_validation_error()
+                if hasattr(workspace_di, "get_validation_error")
+                else None
+            )
+
+    # Fallback to generic implementations if workspace DI not available
+    if not globals().get("BaseModel"):
+        from pydantic import BaseModel
+
+    if not globals().get("MeltanoError"):
+
+        class MeltanoError(Exception):
+            """Meltano-specific errors."""
+
+    if not globals().get("ValidationError"):
+
+        class ValidationError(ValueError):
+            """Validation errors."""
+
+except ImportError:
+    # Fallback apenas se DI não estiver disponível
+    from pydantic import BaseModel
+    from pydantic_settings import BaseSettings as MeltanoBaseConfig
+
+    class ServiceResult:
+        """Fallback ServiceResult."""
+
+        def __init__(
+            self, success: bool, data: object = None, error: object = None
+        ) -> None:
+            self.is_success = success
+            self.data = data
+            self.error = error
+
+    class MeltanoError(Exception):
+        """Meltano-specific errors."""
+
+    class ValidationError(ValueError):
+        """Validation errors."""
+
 
 try:
     __version__ = importlib.metadata.version("gruponos-meltano-native")
@@ -97,29 +183,29 @@ with contextlib.suppress(ImportError):
 
 __all__ = [
     # Monitoring (simplified access)
-    "AlertManager",        # from gruponos_meltano_native import AlertManager
+    "AlertManager",  # from gruponos_meltano_native import AlertManager
     # Core Patterns (from flext-core)
-    "BaseModel",           # from gruponos_meltano_native import BaseModel
+    "BaseModel",  # from gruponos_meltano_native import BaseModel
     # Configuration (simplified access)
-    "Config",              # from gruponos_meltano_native import Config
+    "Config",  # from gruponos_meltano_native import Config
     # Validation (simplified access)
-    "DataValidator",       # from gruponos_meltano_native import DataValidator
+    "DataValidator",  # from gruponos_meltano_native import DataValidator
     # Oracle Integration (simplified access)
     "EnhancedOracleConnectionManager",  # from gruponos_meltano_native import EnhancedOracleConnectionManager
     # Deprecation utilities
     "GruponosMeltanoNativeDeprecationWarning",
-    "MeltanoBaseConfig",   # from gruponos_meltano_native import MeltanoBaseConfig
-    "MeltanoConfig",       # from gruponos_meltano_native import MeltanoConfig
-    "MeltanoError",        # from gruponos_meltano_native import MeltanoError
+    "MeltanoBaseConfig",  # from gruponos_meltano_native import MeltanoBaseConfig
+    "MeltanoConfig",  # from gruponos_meltano_native import MeltanoConfig
+    "MeltanoError",  # from gruponos_meltano_native import MeltanoError
     # Orchestration (simplified access)
     "MeltanoOrchestrator",  # from gruponos_meltano_native import MeltanoOrchestrator
     "OracleConnectionManager",  # from gruponos_meltano_native import OracleConnectionManager
-    "PipelineRunner",      # from gruponos_meltano_native import PipelineRunner
-    "ServiceResult",       # from gruponos_meltano_native import ServiceResult
-    "ValidationError",     # from gruponos_meltano_native import ValidationError
+    "PipelineRunner",  # from gruponos_meltano_native import PipelineRunner
+    "ServiceResult",  # from gruponos_meltano_native import ServiceResult
+    "ValidationError",  # from gruponos_meltano_native import ValidationError
     # Version
     "__version__",
     "__version_info__",
     # CLI (simplified access)
-    "cli_main",            # from gruponos_meltano_native import cli_main
+    "cli_main",  # from gruponos_meltano_native import cli_main
 ]

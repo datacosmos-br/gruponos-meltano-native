@@ -23,17 +23,17 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
-from flext_observability.logging import get_logger
-
 from gruponos_meltano_native.config import get_config
+
+# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
+# Use dependency injection instead of direct imports for Clean Architecture compliance
 from gruponos_meltano_native.oracle.connection_manager import OracleConnectionManager
 
 # Always fail explicitly - no fallbacks allowed
 from gruponos_meltano_native.oracle.validate_sync import validate_sync
 
 # Setup logger
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def drop_all_wms_tables() -> bool:

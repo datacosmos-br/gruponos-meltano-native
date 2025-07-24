@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
-"""Example of using FLEXT Core configuration in GrupoNOS Meltano Native."""
+"""Example of using FLEXT Core configuration in GrupoNOS Meltano Native.
 
+🚨 ARCHITECTURAL NOTE: This example file shows direct imports for demonstration purposes.
+In production code within level 6 projects (specific implementations), these dependencies
+should be injected via DI container instead of direct imports to maintain Clean Architecture.
+
+Example files are exempt from architectural constraints for educational purposes.
+"""
+
+# NOTE: Example files can show direct imports for educational purposes
+# In production code, use DI container instead
 from flext_core import LogLevel
 from flext_observability.logging import LoggingConfig, get_logger, setup_logging
 
@@ -88,7 +97,10 @@ def demonstrate_config_usage() -> None:
     # 8. Create a modified configuration
     modified_config_data = config.model_dump()
     modified_config_data["debug_mode"] = True
-    if "meltano" in modified_config_data and modified_config_data["meltano"] is not None:
+    if (
+        "meltano" in modified_config_data
+        and modified_config_data["meltano"] is not None
+    ):
         modified_config_data["meltano"]["environment"] = "staging"
 
     modified_config = GrupoNOSConfig.model_validate(modified_config_data)

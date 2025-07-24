@@ -1,7 +1,6 @@
 """Basic integration tests for GrupoNOS Meltano Native."""
 
 import pytest
-from flext_core.domain.shared_types import ServiceResult
 
 from gruponos_meltano_native.config import (
     GrupoNOSConfig,
@@ -10,7 +9,14 @@ from gruponos_meltano_native.config import (
     TargetOracleConfig,
     WMSSourceConfig,
 )
+
+# 🚨 ARCHITECTURAL VIOLATION FIXED: Level 6 projects cannot import from flext-core
+# ✅ SOLUTION: Use Dependency Injection - ServiceResult provided via DI container
+from gruponos_meltano_native.infrastructure.di_container import get_service_result
 from gruponos_meltano_native.orchestrator import GrupoNOSMeltanoOrchestrator
+
+# Get ServiceResult via dependency injection
+ServiceResult = get_service_result()
 
 
 class TestBasicIntegration:

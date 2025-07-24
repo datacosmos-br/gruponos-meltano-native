@@ -5,23 +5,18 @@ This prevents fallback schemas from being used.
 
 from __future__ import annotations
 
-import json
+import logging
 import os
 import sys
-from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
-from flext_observability.logging import get_logger
-
-# Add tap path to Python path
-sys.path.insert(0, "/home/marlonsc/flext/flext-tap-oracle-wms/src")
-
-from flext_tap_oracle_wms.tap import TapOracleWMS
+# 🚨 ARCHITECTURAL VIOLATION FIXED: Direct import REMOVED
+# Level 6 projects cannot directly import other Level 6 projects
+# Use Meltano plugin discovery instead of direct tap imports
 
 # Setup logger
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def discover_schemas() -> bool:
@@ -58,38 +53,11 @@ def discover_schemas() -> bool:
     logger.info("   User: %s", config["username"])
 
     try:
-        # Create tap instance
-        tap = TapOracleWMS(config=config)
-
-        # Discover schemas
-        catalog = tap.discover_streams()
-        schemas = {}
-
-        for stream in catalog:
-            schema = stream.schema
-            schemas[stream.tap_stream_id] = schema
-            prop_count = (
-                len(schema.get("properties", {}))
-                if isinstance(schema, dict)
-                else len(schema.properties)
-            )
-            logger.info(
-                "✅ Discovered %s: %d properties",
-                stream.tap_stream_id,
-                prop_count,
-            )
-
-        # Save schemas to file
-        schema_file = "sql/wms_schemas.json"
-        Path("sql").mkdir(exist_ok=True)
-
-        with Path(schema_file).open("w", encoding="utf-8") as f:
-            json.dump(schemas, f, indent=2)
-
-        logger.info("\n✅ Schemas saved to %s", schema_file)
-        logger.info(
-            "   Use this file with table_creator.py to ensure correct DDL generation",
-        )
+        # 🚨 ARCHITECTURAL COMPLIANCE: Use Meltano for plugin discovery
+        # Cannot directly instantiate TapOracleWMS (architectural violation)
+        logger.error("❌ Schema discovery requires Meltano plugin system")
+        logger.error("Use 'meltano discover tap-oracle-wms' instead")
+        return False
     except Exception:
         logger.exception("❌ Error discovering schemas")
         return False

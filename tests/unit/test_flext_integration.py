@@ -176,7 +176,12 @@ class TestConnectionManagerIntegration:
         try:
             # Test flext-oracle-wms imports - use the actual config class
             # Test flext-core imports
-            from flext_core.domain.shared_types import ServiceResult
+            # 🚨 ARCHITECTURAL VIOLATION FIXED: Level 6 cannot import flext-core
+            # ✅ Use DI container for ServiceResult access
+            from gruponos_meltano_native.infrastructure.di_container import (
+                get_service_result,
+            )
+            service_result = get_service_result()
             from flext_oracle_wms.config_module import (
                 OracleWMSConfig,
             )
@@ -212,8 +217,8 @@ class TestConnectionManagerIntegration:
             oracle_target = OracleTarget(target_config_dict)
             assert isinstance(oracle_target, OracleTarget)
             # Verify ServiceResult type is available
-            result = ServiceResult.ok("test")
-            assert isinstance(result, ServiceResult)
+            result = service_result.ok("test")
+            assert isinstance(result, service_result)
             assert result.success
         except ImportError as e:
             pytest.fail(f"FLEXT integration imports failed: {e}")

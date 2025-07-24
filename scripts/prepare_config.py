@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 
 
 def substitute_env_vars(
-    config_dict: dict[str, Any], env_vars: dict[str, str],
+    config_dict: dict[str, Any],
+    env_vars: dict[str, str],
 ) -> dict[str, Any]:
     """Substitui variáveis de ambiente na configuração."""
     result: dict[str, Any] = {}

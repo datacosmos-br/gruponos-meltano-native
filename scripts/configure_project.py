@@ -83,7 +83,9 @@ def generate_meltano_config() -> dict[str, Any]:
         "page_size": int(get_env_value("WMS_PAGE_SIZE", "500") or "500"),
         "timeout": int(get_env_value("WMS_REQUEST_TIMEOUT", "600") or "600"),
         "max_retries": int(get_env_value("WMS_MAX_RETRIES", "3") or "3"),
-        "start_date": get_env_value("TAP_ORACLE_WMS_START_DATE", "2024-01-01T00:00:00Z"),
+        "start_date": get_env_value(
+            "TAP_ORACLE_WMS_START_DATE", "2024-01-01T00:00:00Z"
+        ),
     }
 
     # Full sync tap

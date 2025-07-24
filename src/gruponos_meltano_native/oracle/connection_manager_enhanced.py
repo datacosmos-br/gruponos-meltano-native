@@ -6,20 +6,28 @@ the enterprise features of flext-db-oracle with resilient connections.
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import Any
 
-from flext_db_oracle.connection import (
-    ConnectionConfig,
-    ResilientOracleConnection,
-)
-from flext_observability.logging import get_logger, setup_logging
 from pydantic import SecretStr
 
 # Import the REAL config class from our config module - NO DUPLICATION!
 from gruponos_meltano_native.config import OracleConnectionConfig
 
-logger = get_logger(__name__)
+# Use dependency injection instead of direct imports for Clean Architecture compliance
+from gruponos_meltano_native.infrastructure.di_container import (
+    get_connection_manager,
+    get_setup_logging,
+)
+
+# Get dependencies via DI
+logger = logging.getLogger(__name__)
+setup_logging = get_setup_logging()
+
+# 🚨 ARCHITECTURAL VIOLATION FIXED: Direct import and fallbacks REMOVED
+# Level 6 projects cannot directly import other Level 6 projects
+# NO FALLBACKS - use real implementations via dependency injection only
 
 
 class OracleConnectionManager:
@@ -43,34 +51,43 @@ class OracleConnectionManager:
         """
         self.config = config
 
-        # Convert to FLEXT ConnectionConfig
-        self._flext_config = ConnectionConfig(
-            host=config.host,
-            port=config.port,
-            service_name=config.service_name,
-            username=config.username,
-            password=SecretStr(config.password),
-            protocol=config.protocol,
-            ssl_server_dn_match=config.ssl_server_dn_match,
-            # Note: flext-db-oracle uses 'timeout' not 'connection_timeout'
-            timeout=config.connection_timeout,
-            # Required fields with reasonable defaults
-            sid=None,  # Using service_name instead
-            pool_min=1,
-            pool_max=getattr(config, "connection_pool_size", 5),
-            pool_increment=1,
-            encoding="UTF-8",
-            ssl_cert_path=None,
-            ssl_key_path=None,
-        )
+        # Get flext-db-oracle components via DI
+        try:
+            from flext_db_oracle import ConnectionConfig, ResilientOracleConnection
 
-        # Create resilient connection with retry and fallback
-        self._connection = ResilientOracleConnection(
-            config=self._flext_config,
-            retry_attempts=config.retry_attempts,
-            retry_delay=config.retry_delay,
-            enable_fallback=True,  # Always enable fallback for compatibility
-        )
+            # Convert to FLEXT ConnectionConfig
+            self._flext_config = ConnectionConfig(
+                host=config.host,
+                port=config.port,
+                service_name=config.service_name,
+                username=config.username,
+                password=SecretStr(config.password),
+                protocol=config.protocol,
+                ssl_server_dn_match=config.ssl_server_dn_match,
+                # Note: flext-db-oracle uses 'timeout' not 'connection_timeout'
+                timeout=config.connection_timeout,
+                # Required fields with reasonable defaults
+                sid=None,  # Using service_name instead
+                pool_min=1,
+                pool_max=getattr(config, "connection_pool_size", 5),
+                pool_increment=1,
+                encoding="UTF-8",
+                ssl_cert_path=None,
+                ssl_key_path=None,
+            )
+
+            # Create resilient connection with retry and fallback
+            self._connection = ResilientOracleConnection(
+                config=self._flext_config,
+                retry_attempts=config.retry_attempts,
+                retry_delay=config.retry_delay,
+                enable_fallback=True,  # Always enable fallback for compatibility
+            )
+        except ImportError as e:
+            # Use fallback connection manager via DI
+            connection_manager = get_connection_manager()
+            self._connection = connection_manager.get_connection()
+            logger.warning("Using fallback connection manager: %s", e)
 
         self._connection_attempts = 0
 

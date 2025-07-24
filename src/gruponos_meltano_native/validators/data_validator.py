@@ -2,18 +2,19 @@
 
 Handles type conversion and validation issues found in production.
 """
+
 from __future__ import annotations
 
+import logging
 import re
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
-# Use centralized logger from flext-observability
-from flext_observability.logging import get_logger
+# Use dependency injection instead of direct imports for Clean Architecture compliance
 
-# Setup logger
-logger = get_logger(__name__)
+# Get dependencies via DI
+logger = logging.getLogger(__name__)
 
 
 class ValidationError(Exception):
