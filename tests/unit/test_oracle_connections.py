@@ -1,12 +1,14 @@
 """Unit tests for Oracle connection functionality."""
 
-import logging
 from unittest.mock import Mock, patch
 
-from gruponos_meltano_native.config import OracleConnectionConfig
+from flext_core import FlextLoggerFactory
+
+from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
 # Configure logger
-logger = logging.getLogger(__name__)
+logger_factory = FlextLoggerFactory()
+logger = logger_factory.create_logger(__name__)
 
 # Mock flext_db_oracle module before importing connection_manager
 with patch.dict(
@@ -19,7 +21,7 @@ with patch.dict(
     },
 ):
     from gruponos_meltano_native.oracle.connection_manager import (
-        OracleConnectionManager,
+        GruponosMeltanoOracleConnectionManager,
     )
 
 
@@ -29,7 +31,7 @@ class TestOracleConnections:
     def test_oracle_connection_config_validation(self) -> None:
         """Test Oracle connection configuration validation."""
         # Valid configuration
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="oracle.example.com",
             port=1521,
             service_name="PROD",
@@ -44,7 +46,7 @@ class TestOracleConnections:
 
     def test_oracle_connection_config_defaults(self) -> None:
         """Test Oracle connection configuration defaults."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             service_name="XE",
             username="user",
@@ -59,21 +61,21 @@ class TestOracleConnections:
 
     def test_oracle_connection_manager_initialization(self) -> None:
         """Test Oracle connection manager initialization."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="test.local",
             service_name="TEST",
             username="user",
             password="pass",
         )
 
-        manager = OracleConnectionManager(config)
+        manager = GruponosMeltanoOracleConnectionManager(config)
         assert manager.config == config
         assert hasattr(manager, "test_connection")
         assert hasattr(manager, "connect")
 
     def test_oracle_connection_manager_connect(self) -> None:
         """Test Oracle connection manager connection."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="test.local",
             service_name="TEST",
             username="user",
@@ -81,7 +83,7 @@ class TestOracleConnections:
         )
 
         # Since flext_db_oracle is mocked at module level, create manager directly
-        manager = OracleConnectionManager(config)
+        manager = GruponosMeltanoOracleConnectionManager(config)
 
         # Test basic manager functionality - the connection functionality is mocked
         assert manager.config == config
@@ -93,7 +95,8 @@ class TestOracleConnections:
         try:
             manager.test_connection()
             # If method succeeds, verify it returns any value (including None)
-            # No assertion needed as any return value is acceptable with mocked dependencies
+            # No assertion needed as any return value is acceptable with mocked
+            # dependencies
         except (AttributeError, ValueError, RuntimeError, OSError) as e:
             # If mocked dependencies cause specific issues, log and continue
             logger.debug(f"Expected error in test_connection: {e}")
@@ -103,7 +106,7 @@ class TestOracleConnections:
 
     def test_oracle_connection_ssl_config(self) -> None:
         """Test Oracle SSL/TCPS configuration."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="secure.oracle.com",
             service_name="SECURE_DB",
             username="secure_user",
@@ -117,7 +120,7 @@ class TestOracleConnections:
 
     def test_oracle_connection_pool_settings(self) -> None:
         """Test Oracle connection pool configuration."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="pool.oracle.com",
             service_name="POOL_DB",
             username="pool_user",
@@ -131,7 +134,7 @@ class TestOracleConnections:
 
     def test_oracle_connection_retry_settings(self) -> None:
         """Test Oracle connection retry configuration."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="retry.oracle.com",
             service_name="RETRY_DB",
             username="retry_user",

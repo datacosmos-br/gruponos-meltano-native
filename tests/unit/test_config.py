@@ -4,12 +4,11 @@ import pytest
 from pydantic import ValidationError
 
 from gruponos_meltano_native.config import (
-    AlertConfig,
-    GrupoNOSConfig,
-    MeltanoConfig,
-    OracleConnectionConfig,
-    TargetOracleConfig,
-    WMSSourceConfig,
+    GruponosMeltanoAlertConfig,
+    GruponosMeltanoOracleConnectionConfig,
+    GruponosMeltanoSettings,
+    GruponosMeltanoTargetOracleConfig,
+    GruponosMeltanoWMSSourceConfig,
 )
 
 
@@ -18,7 +17,7 @@ class TestConfiguration:
 
     def test_oracle_connection_config_creation(self) -> None:
         """Test Oracle connection configuration creation."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="oracle.example.com",
             port=1521,
             service_name="PROD",
@@ -36,7 +35,7 @@ class TestConfiguration:
 
     def test_oracle_connection_config_defaults(self) -> None:
         """Test Oracle connection configuration defaults."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             service_name="XE",
             username="user",
@@ -46,21 +45,20 @@ class TestConfiguration:
         # Check defaults
         assert config.port == 1522
         assert config.protocol == "tcps"
-        assert config.retry_attempts == 3
-        assert config.connection_timeout == 60
-        assert config.batch_size == 1000
-        assert config.connection_pool_size == 5
+        assert config.wallet_location == ""
+        assert config.trust_store_location == ""
+        assert config.key_store_location == ""
 
     def test_wms_source_config_creation(self) -> None:
         """Test WMS source configuration creation."""
-        oracle_config = OracleConnectionConfig(
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
             service_name="WMS",
             username="user",
             password="pass",
         )
 
-        wms_config = WMSSourceConfig(
+        wms_config = GruponosMeltanoWMSSourceConfig(
             oracle=oracle_config,
             api_enabled=True,
             api_base_url="https://wms.example.com/api",
@@ -74,7 +72,7 @@ class TestConfiguration:
 
     def test_wms_source_config_validation(self) -> None:
         """Test WMS source configuration validation."""
-        oracle_config = OracleConnectionConfig(
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
             service_name="WMS",
             username="user",
@@ -83,7 +81,7 @@ class TestConfiguration:
 
         # Should fail when API enabled but no URL provided
         with pytest.raises(ValidationError):
-            WMSSourceConfig(
+            GruponosMeltanoWMSSourceConfig(
                 oracle=oracle_config,
                 api_enabled=True,
                 api_base_url=None,
@@ -91,115 +89,97 @@ class TestConfiguration:
 
     def test_target_oracle_config_creation(self) -> None:
         """Test target Oracle configuration creation."""
-        oracle_config = OracleConnectionConfig(
+        GruponosMeltanoOracleConnectionConfig(
             host="target.local",
             service_name="TARGET",
             username="target_user",
             password="target_pass",
         )
 
-        target_config = TargetOracleConfig(
-            oracle=oracle_config,
-            schema_name="WMS_SYNC",
-            truncate_before_load=True,
-            analyze_after_load=False,
+        target_config = GruponosMeltanoTargetOracleConfig(
+            target_schema="WMS_SYNC",
+            drop_target_tables=True,
+            enable_compression=False,
         )
 
-        assert target_config.oracle == oracle_config
-        assert target_config.schema_name == "WMS_SYNC"
-        assert target_config.truncate_before_load is True
-        assert target_config.analyze_after_load is False
+        assert target_config.target_schema == "WMS_SYNC"
+        assert target_config.drop_target_tables is True
+        assert target_config.enable_compression is False
 
-    def test_meltano_config_creation(self) -> None:
-        """Test Meltano configuration creation."""
-        config = MeltanoConfig(
-            project_id="test-project",
-            environment="prod",
-            state_backend="s3",
-            state_backend_uri="s3://bucket/state",
-            log_level="DEBUG",
+    def test_meltano_settings_creation(self) -> None:
+        """Test main Meltano settings creation."""
+        settings = GruponosMeltanoSettings(
+            meltano_project_root="./test-project",
+            meltano_environment="prod",
+            meltano_state_backend="s3",
+            debug=True,
         )
 
-        assert config.project_id == "test-project"
-        assert config.environment == "prod"
-        assert config.state_backend == "s3"
-        assert config.log_level == "DEBUG"
+        assert settings.meltano_project_root.endswith("test-project")
+        assert settings.meltano_environment == "prod"
+        assert settings.meltano_state_backend == "s3"
+        assert settings.debug is True
 
     def test_alert_config_creation(self) -> None:
         """Test alert configuration creation."""
-        config = AlertConfig(
-            max_sync_duration_minutes=120,
-            max_error_rate_percent=10.0,
+        config = GruponosMeltanoAlertConfig(
             webhook_enabled=True,
             webhook_url="https://hooks.slack.com/webhook",
             email_enabled=True,
-            alert_email="admin@example.com",
+            email_recipients=["admin@example.com"],
+            alert_threshold=10,
         )
 
-        assert config.max_sync_duration_minutes == 120
-        assert config.max_error_rate_percent == 10.0
         assert config.webhook_enabled is True
+        assert config.webhook_url == "https://hooks.slack.com/webhook"
         assert config.email_enabled is True
+        assert config.email_recipients == ["admin@example.com"]
+        assert config.alert_threshold == 10
 
     def test_gruponos_config_creation(self) -> None:
         """Test main GrupoNOS configuration creation."""
-        oracle_wms = OracleConnectionConfig(
+        GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
             service_name="WMS",
             username="wms_user",
             password="wms_pass",
         )
 
-        oracle_target = OracleConnectionConfig(
+        GruponosMeltanoOracleConnectionConfig(
             host="target.local",
             service_name="TARGET",
             username="target_user",
             password="target_pass",
         )
 
-        wms_source = WMSSourceConfig(oracle=oracle_wms)
-        target_oracle = TargetOracleConfig(oracle=oracle_target, schema_name="SYNC")
-        meltano = MeltanoConfig(project_id="test", environment="dev")
-        alerts = AlertConfig()
+        wms_source = GruponosMeltanoWMSSourceConfig()
+        target_oracle = GruponosMeltanoTargetOracleConfig(target_schema="SYNC")
+        alerts = GruponosMeltanoAlertConfig()
 
-        config = GrupoNOSConfig(
+        config = GruponosMeltanoSettings(
             wms_source=wms_source,
             target_oracle=target_oracle,
-            meltano=meltano,
             alerts=alerts,
-            debug_mode=True,
+            debug=True,
         )
 
         assert config.wms_source == wms_source
         assert config.target_oracle == target_oracle
-        assert config.meltano == meltano
         assert config.alerts == alerts
-        assert config.debug_mode is True
+        assert config.debug is True
 
-    def test_config_to_legacy_env(self) -> None:
-        """Test configuration to legacy environment variables."""
-        oracle_wms = OracleConnectionConfig(
+    def test_config_oracle_connection_string(self) -> None:
+        """Test Oracle connection string generation."""
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
+            port=1521,
             service_name="WMS",
             username="wms_user",
             password="wms_pass",
         )
 
-        oracle_target = OracleConnectionConfig(
-            host="target.local",
-            service_name="TARGET",
-            username="target_user",
-            password="target_pass",
-        )
+        config = GruponosMeltanoSettings(oracle=oracle_config)
 
-        config = GrupoNOSConfig(
-            wms_source=WMSSourceConfig(oracle=oracle_wms),
-            target_oracle=TargetOracleConfig(oracle=oracle_target, schema_name="SYNC"),
-            meltano=MeltanoConfig(project_id="test", environment="dev"),
-        )
-
-        legacy_env = config.to_legacy_env()
-
-        assert legacy_env["TAP_ORACLE_WMS_HOST"] == "wms.local"
-        assert legacy_env["FLEXT_TARGET_ORACLE_HOST"] == "target.local"
-        assert legacy_env["MELTANO_PROJECT_ID"] == "test"
+        connection_string = config.get_oracle_connection_string()
+        expected = "wms_user/wms_pass@wms.local:1521/WMS"
+        assert connection_string == expected

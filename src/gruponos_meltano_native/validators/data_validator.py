@@ -5,16 +5,22 @@ Handles type conversion and validation issues found in production.
 
 from __future__ import annotations
 
-import logging
 import re
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+from flext_core import FlextLoggerFactory
+from flext_core.patterns.typedefs import FlextLoggerName
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 # Use dependency injection instead of direct imports for Clean Architecture compliance
 
 # Get dependencies via DI
-logger = logging.getLogger(__name__)
+logger_factory = FlextLoggerFactory()
+logger = logger_factory.create_logger(FlextLoggerName(__name__))
 
 
 class ValidationError(Exception):
@@ -40,7 +46,7 @@ class ValidationRule:
         field_name: str,
         rule_type: str,
         parameters: dict[str, Any] | None = None,
-        **kwargs: Any,
+        **kwargs: object,
     ) -> None:
         """Initialize validation rule.
 
@@ -94,11 +100,7 @@ class DataValidator:
             error_msg = f"Required field '{rule.field_name}' is missing"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name)
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
+            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
             return False
         return True
@@ -111,7 +113,10 @@ class DataValidator:
         errors: list[str],
     ) -> None:
         """Validate field value based on rule type."""
-        validation_methods = {
+        validation_methods: dict[
+            str,
+            Callable[[ValidationRule, Any, list[str]], None],
+        ] = {
             "decimal": self._validate_decimal,
             "string": self._validate_string,
             "number": self._validate_number,
@@ -122,8 +127,7 @@ class DataValidator:
         }
         validation_method = validation_methods.get(rule.rule_type)
         if validation_method is not None and value is not None:
-            # mypy: validation_method is callable after null check
-            validation_method(rule, value=value, errors=errors)
+            validation_method(rule, value, errors)
 
     def validate(self, data: dict[str, Any]) -> list[str]:
         """Validate data against configured rules.
@@ -152,7 +156,7 @@ class DataValidator:
     def _validate_decimal(
         self,
         rule: ValidationRule,
-        value: str | float | Decimal | None,
+        value: Any,
         errors: list[str],
     ) -> None:
         """Validate decimal field."""
@@ -163,17 +167,13 @@ class DataValidator:
             error_msg = f"Field '{rule.field_name}' must be a valid decimal"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name) from e
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
+            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
 
     def _validate_string(
         self,
         rule: ValidationRule,
-        value: str | None,
+        value: Any,
         errors: list[str],
     ) -> None:
         """Validate string field."""
@@ -181,11 +181,7 @@ class DataValidator:
             error_msg = f"Field '{rule.field_name}' must be a string"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name)
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
+            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
         else:
             # Check string length constraints
@@ -197,16 +193,14 @@ class DataValidator:
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name)
                 logger.warning(
-                    "Validation failed: %s (field: %s)",
-                    error_msg,
-                    rule.field_name,
+                    f"Validation failed: {error_msg} (field: {rule.field_name})"
                 )
                 errors.append(error_msg)
 
     def _validate_number(
         self,
         rule: ValidationRule,
-        value: float | str | None,
+        value: Any,
         errors: list[str],
     ) -> None:
         """Validate number field."""
@@ -214,11 +208,7 @@ class DataValidator:
             error_msg = f"Field '{rule.field_name}' must be a number"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name)
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
+            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
         else:
             # Check numeric range constraints
@@ -229,9 +219,7 @@ class DataValidator:
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name)
                 logger.warning(
-                    "Validation failed: %s (field: %s)",
-                    error_msg,
-                    rule.field_name,
+                    f"Validation failed: {error_msg} (field: {rule.field_name})"
                 )
                 errors.append(error_msg)
             if max_value is not None and value > max_value:
@@ -241,16 +229,14 @@ class DataValidator:
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name)
                 logger.warning(
-                    "Validation failed: %s (field: %s)",
-                    error_msg,
-                    rule.field_name,
+                    f"Validation failed: {error_msg} (field: {rule.field_name})"
                 )
                 errors.append(error_msg)
 
     def _validate_date(
         self,
         rule: ValidationRule,
-        value: str | datetime | date | None,
+        value: Any,
         errors: list[str],
     ) -> None:
         """Validate date field."""
@@ -266,27 +252,20 @@ class DataValidator:
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name) from None
                 logger.warning(
-                    "Validation failed: %s (field: %s)",
-                    error_msg,
-                    rule.field_name,
+                    f"Validation failed: {error_msg} (field: {rule.field_name})"
                 )
                 errors.append(error_msg)
         elif not isinstance(value, datetime):
             error_msg = f"Field '{rule.field_name}' must be a valid date"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name)
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
+            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
 
     def _validate_boolean(
         self,
         rule: ValidationRule,
-        *,
-        value: bool | str | int | None,
+        value: Any,
         errors: list[str],
     ) -> None:
         """Validate boolean field."""
@@ -294,17 +273,13 @@ class DataValidator:
             error_msg = f"Field '{rule.field_name}' must be a boolean"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name)
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
+            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
 
     def _validate_email(
         self,
         rule: ValidationRule,
-        value: str | None,
+        value: Any,
         errors: list[str],
     ) -> None:
         """Validate email field."""
@@ -313,18 +288,13 @@ class DataValidator:
             error_msg = f"Field '{rule.field_name}' must be a valid email address"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name)
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
+            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
 
     def _validate_enum(
         self,
         rule: ValidationRule,
-        *,
-        value: str | float | bool | None,
+        value: Any,
         errors: list[str],
     ) -> None:
         """Validate enum field."""
@@ -333,11 +303,7 @@ class DataValidator:
             error_msg = f"Field '{rule.field_name}' must be one of {allowed_values}"
             if self.strict_mode:
                 raise ValidationError(error_msg, rule.field_name)
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
+            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
 
     def validate_and_convert_record(
@@ -552,5 +518,5 @@ if __name__ == "__main__":
         },
     }
     result = validator.validate_and_convert_record(test_record, test_schema)
-    logger.info("Converted record: %s", result)
-    logger.info("Stats: %s", validator.get_conversion_stats())
+    logger.info(f"Converted record: {result}")
+    logger.info(f"Stats: {validator.get_conversion_stats()}")

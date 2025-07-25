@@ -4,11 +4,10 @@ import pytest
 from pydantic import ValidationError
 
 from gruponos_meltano_native.config import (
-    GrupoNOSConfig,
-    MeltanoConfig,
-    OracleConnectionConfig,
-    TargetOracleConfig,
-    WMSSourceConfig,
+    GruponosMeltanoOracleConnectionConfig,
+    GruponosMeltanoSettings,
+    GruponosMeltanoTargetOracleConfig,
+    GruponosMeltanoWMSSourceConfig,
 )
 
 
@@ -17,7 +16,7 @@ class TestFlextConfig:
 
     def test_oracle_connection_config(self) -> None:
         """Test Oracle connection configuration."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1522,
             service_name="TESTDB",
@@ -35,13 +34,13 @@ class TestFlextConfig:
     def test_wms_source_config_validation(self) -> None:
         """Test WMS source configuration validation."""
         # Valid config without API
-        oracle_config = OracleConnectionConfig(
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
             service_name="WMS",
             username="user",
             password="test",
         )
-        config = WMSSourceConfig(
+        config = GruponosMeltanoWMSSourceConfig(
             oracle=oracle_config,
             api_enabled=False,
         )
@@ -52,7 +51,7 @@ class TestFlextConfig:
             ValidationError,
             match="api_base_url.*required when api_enabled is True",
         ):
-            WMSSourceConfig(
+            GruponosMeltanoWMSSourceConfig(
                 oracle=oracle_config,
                 api_enabled=True,
                 api_base_url=None,
@@ -80,9 +79,10 @@ class TestFlextConfig:
         }
         with patch.dict(os.environ, test_env, clear=False):
             # Test that config can load from environment
-            config = GrupoNOSConfig.from_env()
-            # Verify config was created (even if sub-configs are None due to missing required fields)
-            assert isinstance(config, GrupoNOSConfig)
+            config = GruponosMeltanoSettings.from_env()
+            # Verify config was created (even if sub-configs are None due to missing
+            # required fields)
+            assert isinstance(config, GruponosMeltanoSettings)
             assert config.project_name == "gruponos-meltano-native"
             # The from_env() method should successfully create a basic config
             # Even if some sub-configs are None due to incomplete environment setup
@@ -90,25 +90,25 @@ class TestFlextConfig:
     def test_config_to_legacy_env(self) -> None:
         """Test converting config back to legacy environment variables."""
         # Create minimal config
-        wms_oracle = OracleConnectionConfig(
+        wms_oracle = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
             service_name="WMS",
             username="user",
             password="test",
         )
-        target_oracle = OracleConnectionConfig(
+        target_oracle = GruponosMeltanoOracleConnectionConfig(
             host="target.local",
             service_name="TARGET",
             username="target_user",
             password="test",
         )
-        config = GrupoNOSConfig(
-            wms_source=WMSSourceConfig(oracle=wms_oracle),
-            target_oracle=TargetOracleConfig(
+        config = GruponosMeltanoSettings(
+            wms_source=GruponosMeltanoWMSSourceConfig(oracle=wms_oracle),
+            target_oracle=GruponosMeltanoTargetOracleConfig(
                 oracle=target_oracle,
                 schema_name="WMS_SYNC",
             ),
-            meltano=MeltanoConfig(
+            meltano=GruponosMeltanoSettings(
                 project_id="test-project",
                 environment="dev",
             ),
@@ -126,33 +126,33 @@ class TestGrupoNOSOrchestrator:
     """Test GrupoNOS Meltano orchestrator."""
 
     @pytest.fixture
-    def mock_config(self) -> GrupoNOSConfig:
+    def mock_config(self) -> GruponosMeltanoSettings:
         """Create mock configuration."""
-        wms_oracle = OracleConnectionConfig(
+        wms_oracle = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
             service_name="WMS",
             username="user",
             password="test",
         )
-        target_oracle = OracleConnectionConfig(
+        target_oracle = GruponosMeltanoOracleConnectionConfig(
             host="target.local",
             service_name="TARGET",
             username="target_user",
             password="test",
         )
-        return GrupoNOSConfig(
-            wms_source=WMSSourceConfig(oracle=wms_oracle),
-            target_oracle=TargetOracleConfig(
+        return GruponosMeltanoSettings(
+            wms_source=GruponosMeltanoWMSSourceConfig(oracle=wms_oracle),
+            target_oracle=GruponosMeltanoTargetOracleConfig(
                 oracle=target_oracle,
                 schema_name="WMS_SYNC",
             ),
-            meltano=MeltanoConfig(
+            meltano=GruponosMeltanoSettings(
                 project_id="test-project",
                 environment="dev",
             ),
         )
 
-    def test_orchestrator_initialization(self, mock_config: GrupoNOSConfig) -> None:
+    def test_orchestrator_initialization(self, mock_config: GruponosMeltanoSettings) -> None:
         """Test orchestrator initialization with mock config."""
         from gruponos_meltano_native.orchestrator import GrupoNOSMeltanoOrchestrator
 
@@ -177,10 +177,11 @@ class TestConnectionManagerIntegration:
             # Test flext-oracle-wms imports - use the actual config class
             # Test flext-core imports
             # 🚨 ARCHITECTURAL VIOLATION FIXED: Level 6 cannot import flext-core
-            # ✅ Use DI container for ServiceResult access
+            # ✅ Use DI container for FlextResult access
             from gruponos_meltano_native.infrastructure.di_container import (
                 get_service_result,
             )
+
             service_result = get_service_result()
             from flext_oracle_wms.config_module import (
                 OracleWMSConfig,
@@ -216,7 +217,7 @@ class TestConnectionManagerIntegration:
             # Test Oracle target instantiation - pass dict directly as expected
             oracle_target = OracleTarget(target_config_dict)
             assert isinstance(oracle_target, OracleTarget)
-            # Verify ServiceResult type is available
+            # Verify FlextResult type is available
             result = service_result.ok("test")
             assert isinstance(result, service_result)
             assert result.success
@@ -224,7 +225,7 @@ class TestConnectionManagerIntegration:
             pytest.fail(f"FLEXT integration imports failed: {e}")
 
 
-class TestAlertManagerIntegration:
+class TestGruponosMeltanoAlertManagerIntegration:
     """Test alert manager FLEXT integration."""
 
     def test_alert_manager_uses_flext_logging(self) -> None:
@@ -235,8 +236,8 @@ class TestAlertManagerIntegration:
             import gruponos_meltano_native.monitoring.alert_manager as am_module
         except ImportError as e:
             pytest.skip(f"Alert manager module not available: {e}")
-        # Should use structlog (FLEXT standard) and AlertService
-        assert hasattr(am_module, "AlertService")
+        # Should use structlog (FLEXT standard) and GruponosMeltanoAlertService
+        assert hasattr(am_module, "GruponosMeltanoAlertService")
         assert hasattr(am_module, "AlertSeverity")
         assert hasattr(am_module, "logger")  # Module-level logger
         # Should not use standard logging

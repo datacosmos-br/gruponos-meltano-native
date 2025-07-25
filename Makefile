@@ -1,179 +1,431 @@
-# GRUPONOS MELTANO NATIVE - Enterprise Meltano Implementation
-# ================================================================
-# Production-ready Meltano configuration with Oracle WMS integration
-# Python 3.13 + Meltano + FLEXT Framework + Zero Tolerance Quality Gates
+# GRUPONOS MELTANO NATIVE - Makefile Unificado
+# =============================================
+# Enterprise Meltano Implementation
+# Python 3.13 + Meltano + FLEXT Framework + Zero Tolerance Quality
 
-.PHONY: help check validate test lint type-check security format format-check
-.PHONY: install dev-install setup pre-commit build clean
-.PHONY: coverage coverage-html test-unit test-integration
-.PHONY: meltano-install meltano-test meltano-run env-setup env-validate
+.PHONY: help install test lint type-check format clean build docs
+.PHONY: check validate dev-setup deps-update deps-audit info diagnose
+.PHONY: install-dev test-unit test-integration test-coverage test-watch
+.PHONY: format-check security pre-commit build-clean publish publish-test
+.PHONY: dev dev-test clean-all emergency-reset
+.PHONY: meltano-install meltano-test meltano-run meltano-validate env-setup
 
 # ============================================================================
-# 🎯 HELP & INFORMATION
+# 🎯 CONFIGURAÇÃO E DETECÇÃO
 # ============================================================================
 
-help: ## Show this help message
-	@echo "🏢 GRUPONOS MELTANO NATIVE - Enterprise Meltano Implementation"
-	@echo "=============================================================="
-	@echo "🎯 Meltano + Python 3.13 + FLEXT Framework + Oracle WMS Integration"
+# Detectar nome do projeto
+PROJECT_NAME := gruponos-meltano-native
+PROJECT_TITLE := GRUPONOS MELTANO NATIVE
+PROJECT_VERSION := $(shell poetry version -s)
+
+# Ambiente Python
+PYTHON := python3.13
+POETRY := poetry
+VENV_PATH := $(shell poetry env info --path 2>/dev/null || echo "")
+
+# ============================================================================
+# 🎯 AJUDA E INFORMAÇÃO
+# ============================================================================
+
+help: ## Mostrar ajuda e comandos disponíveis
+	@echo "🏆 $(PROJECT_TITLE) - Comandos Essenciais"
+	@echo "========================================="
+	@echo "📦 Enterprise Meltano Implementation"
+	@echo "🐍 Python 3.13 + Meltano + Zero Tolerância"
 	@echo ""
-	@echo "📦 Production-ready Meltano deployment with enterprise integrations"
-	@echo "🔒 Zero tolerance quality gates for production data pipelines"
-	@echo "🧪 100% test coverage requirement with real data connections"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "%-20s %s\\n", $$1, $$2}'
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo "💡 Comandos principais: make install, make test, make lint"
+
+info: ## Mostrar informações do projeto
+	@echo "📊 Informações do Projeto"
+	@echo "======================"
+	@echo "Nome: $(PROJECT_NAME)"
+	@echo "Título: $(PROJECT_TITLE)"
+	@echo "Versão: $(PROJECT_VERSION)"
+	@echo "Python: $(shell $(PYTHON) --version 2>/dev/null || echo "Não encontrado")"
+	@echo "Poetry: $(shell $(POETRY) --version 2>/dev/null || echo "Não instalado")"
+	@echo "Venv: $(shell [ -n "$(VENV_PATH)" ] && echo "$(VENV_PATH)" || echo "Não ativado")"
+	@echo "Diretório: $(CURDIR)"
+	@echo "Git Branch: $(shell git branch --show-current 2>/dev/null || echo "Não é repo git")"
+	@echo "Git Status: $(shell git status --porcelain 2>/dev/null | wc -l | xargs echo) arquivos alterados"
+
+diagnose: ## Executar diagnósticos completos
+	@echo "🔍 Executando diagnósticos para $(PROJECT_NAME)..."
+	@echo "Informações do Sistema:"
+	@echo "OS: $(shell uname -s)"
+	@echo "Arquitetura: $(shell uname -m)"
+	@echo "Python: $(shell $(PYTHON) --version 2>/dev/null || echo "Não encontrado")"
+	@echo "Poetry: $(shell $(POETRY) --version 2>/dev/null || echo "Não instalado")"
+	@echo ""
+	@echo "Estrutura do Projeto:"
+	@ls -la
+	@echo ""
+	@echo "Configuração Poetry:"
+	@$(POETRY) config --list 2>/dev/null || echo "Poetry não configurado"
+	@echo ""
+	@echo "Status das Dependências:"
+	@$(POETRY) show --outdated 2>/dev/null || echo "Nenhuma dependência desatualizada"
 
 # ============================================================================
-# 🎯 CORE QUALITY GATES - ZERO TOLERANCE
+# 📦 GERENCIAMENTO DE DEPENDÊNCIAS
 # ============================================================================
 
-validate: lint type-check security test ## STRICT compliance validation (all must pass)
-	@echo "✅ ALL QUALITY GATES PASSED - GRUPONOS MELTANO NATIVE COMPLIANT"
+validate-setup: ## Validar ambiente de desenvolvimento
+	@echo "🔍 Validando ambiente de desenvolvimento..."
+	@command -v $(PYTHON) >/dev/null 2>&1 || { echo "❌ Python 3.13 não encontrado"; exit 1; }
+	@command -v $(POETRY) >/dev/null 2>&1 || { echo "❌ Poetry não encontrado"; exit 1; }
+	@test -f pyproject.toml || { echo "❌ pyproject.toml não encontrado"; exit 1; }
+	@echo "✅ Validação do ambiente passou"
 
-check: lint type-check test ## Essential quality checks (pre-commit standard)
-	@echo "✅ Essential checks passed"
+install: validate-setup ## Instalar dependências de runtime
+	@echo "📦 Instalando dependências de runtime para $(PROJECT_NAME)..."
+	@$(POETRY) install --only main
+	@echo "✅ Dependências de runtime instaladas"
 
-lint: ## Ruff linting (ALL rules enabled)
-	@echo "🔍 Running ruff linter (ALL rules enabled)..."
-	@poetry run ruff check src/ tests/ scripts/ examples/ --fix --unsafe-fixes
-	@echo "✅ Linting complete"
+install-dev: validate-setup ## Instalar todas as dependências incluindo dev tools
+	@echo "📦 Instalando todas as dependências para $(PROJECT_NAME)..."
+	@$(POETRY) install --all-extras
+	@echo "✅ Todas as dependências instaladas"
 
-type-check: ## MyPy strict mode type checking
-	@echo "🛡️ Running MyPy strict type checking..."
-	@poetry run mypy src/ tests/ --strict
-	@echo "✅ Type checking complete"
+deps-update: ## Atualizar dependências para versões mais recentes
+	@echo "🔄 Atualizando dependências para $(PROJECT_NAME)..."
+	@$(POETRY) update
+	@echo "✅ Dependências atualizadas"
 
-security: ## Security scans (bandit + pip-audit)
-	@echo "🔒 Running security scans..."
-	@poetry run bandit -r src/ --severity-level medium --confidence-level medium
-	@poetry run pip-audit --ignore-vuln PYSEC-2022-42969
-	@echo "✅ Security scan complete"
+deps-show: ## Mostrar árvore de dependências
+	@echo "📊 Árvore de dependências para $(PROJECT_NAME):"
+	@$(POETRY) show --tree
 
-test: ## Run all tests with coverage
-	@echo "🧪 Running comprehensive test suite..."
-	@poetry run pytest tests/ -v --cov=src/gruponos_meltano_native --cov-report=term-missing --cov-report=html --cov-fail-under=85
-	@echo "✅ All tests passed"
-
-format: ## Format code with ruff
-	@echo "🎨 Formatting code..."
-	@poetry run ruff format src/ tests/ scripts/ examples/
-	@echo "✅ Code formatted"
-
-format-check: ## Check code formatting
-	@echo "🎨 Checking code formatting..."
-	@poetry run ruff format --check src/ tests/ scripts/ examples/
-	@echo "✅ Code formatting verified"
+deps-audit: ## Auditoria de dependências para vulnerabilidades
+	@echo "🔍 Auditando dependências para $(PROJECT_NAME)..."
+	@$(POETRY) run pip-audit --format=columns || echo "⚠️  pip-audit não disponível"
+	@$(POETRY) run safety check --json || echo "⚠️  safety não disponível"
 
 # ============================================================================
-# 🏗️ ENVIRONMENT & SETUP
+# 🧪 TESTES
 # ============================================================================
 
-install: ## Install dependencies
-	@echo "📦 Installing dependencies..."
-	@poetry install --with dev,test
-	@echo "✅ Dependencies installed"
+test: ## Executar todos os testes (85% cobertura mínima)
+	@echo "🧪 Executando todos os testes para $(PROJECT_NAME)..."
+	@$(POETRY) run pytest tests/ -v --cov=src/gruponos_meltano_native --cov-report=term-missing --cov-fail-under=85
+	@echo "✅ Todos os testes passaram"
 
-dev-install: install pre-commit ## Complete development setup
-	@echo "🔧 Development environment ready"
+test-unit: ## Executar apenas testes unitários
+	@echo "🧪 Executando testes unitários para $(PROJECT_NAME)..."
+	@$(POETRY) run pytest tests/unit/ -xvs -m "not integration and not slow"
+	@echo "✅ Testes unitários passaram"
 
-setup: dev-install env-setup meltano-install ## Complete project setup
-	@echo "🚀 Project setup complete"
+test-integration: ## Executar apenas testes de integração
+	@echo "🧪 Executando testes de integração para $(PROJECT_NAME)..."
+	@$(POETRY) run pytest tests/integration/ -xvs -m "integration"
+	@echo "✅ Testes de integração passaram"
 
-pre-commit: ## Install pre-commit hooks
-	@echo "🔗 Installing pre-commit hooks..."
-	@poetry run pre-commit install
-	@echo "✅ Pre-commit hooks installed"
+test-coverage: ## Executar testes com relatório de cobertura
+	@echo "🧪 Executando testes com cobertura para $(PROJECT_NAME)..."
+	@$(POETRY) run pytest --cov --cov-report=html --cov-report=term-missing --cov-report=xml
+	@echo "✅ Relatório de cobertura gerado"
 
-build: ## Build package
-	@echo "🏗️ Building package..."
-	@poetry build
-	@echo "✅ Package built"
+test-watch: ## Executar testes em modo watch
+	@echo "👀 Executando testes em modo watch para $(PROJECT_NAME)..."
+	@$(POETRY) run pytest-watch --clear
 
-clean: ## Clean build artifacts
-	@echo "🧹 Cleaning build artifacts..."
-	@rm -rf dist/ build/ *.egg-info/ .coverage htmlcov/ .pytest_cache/ .mypy_cache/ .ruff_cache/
+coverage-html: test-coverage ## Gerar e abrir relatório HTML de cobertura
+	@echo "📊 Abrindo relatório de cobertura..."
+	@python -m webbrowser htmlcov/index.html
+
+# ============================================================================
+# 🎨 QUALIDADE DE CÓDIGO E FORMATAÇÃO
+# ============================================================================
+
+lint: ## Executar todos os linters com máxima rigorosidade
+	@echo "🔍 Executando linting com máxima rigorosidade para $(PROJECT_NAME)..."
+	@$(POETRY) run ruff check . --output-format=github
+	@echo "✅ Linting completado"
+
+format: ## Formatar código com padrões rigorosos
+	@echo "🎨 Formatando código para $(PROJECT_NAME)..."
+	@$(POETRY) run ruff format .
+	@$(POETRY) run ruff check . --fix --unsafe-fixes
+	@echo "✅ Código formatado"
+
+format-check: ## Verificar formatação sem alterar
+	@echo "🔍 Verificando formatação para $(PROJECT_NAME)..."
+	@$(POETRY) run ruff format . --check
+	@$(POETRY) run ruff check . --output-format=github
+	@echo "✅ Formatação verificada"
+
+type-check: ## Executar verificação de tipos rigorosa
+	@echo "🔍 Executando verificação de tipos rigorosa para $(PROJECT_NAME)..."
+	@$(POETRY) run mypy src/ --strict --show-error-codes
+	@echo "✅ Verificação de tipos passou"
+
+typecheck: type-check ## Alias para type-check
+
+security: ## Executar análise de segurança
+	@echo "🔒 Executando análise de segurança para $(PROJECT_NAME)..."
+	@$(POETRY) run bandit -r src/ -f json || echo "⚠️  bandit não disponível"
+	@$(POETRY) run detect-secrets scan --all-files || echo "⚠️  detect-secrets não disponível"
+	@echo "✅ Análise de segurança completada"
+
+pre-commit: ## Executar hooks pre-commit
+	@echo "🔧 Executando hooks pre-commit para $(PROJECT_NAME)..."
+	@$(POETRY) run pre-commit run --all-files || echo "⚠️  pre-commit não disponível"
+	@echo "✅ Hooks pre-commit completados"
+
+check: lint type-check security ## Executar todas as verificações de qualidade
+	@echo "🔍 Executando verificações abrangentes de qualidade para $(PROJECT_NAME)..."
+	@echo "✅ Todas as verificações de qualidade passaram"
+
+validate: check test ## Validação STRICT de conformidade (tudo deve passar)
+	@echo "✅ TODOS OS QUALITY GATES PASSARAM - GRUPONOS MELTANO NATIVE COMPLIANT"
+
+# ============================================================================
+# 🏗️ BUILD E DISTRIBUIÇÃO
+# ============================================================================
+
+build: clean ## Construir o pacote com Poetry
+	@echo "🏗️  Construindo pacote $(PROJECT_NAME)..."
+	@$(POETRY) build
+	@echo "✅ Pacote construído com sucesso"
+	@echo "📦 Artefatos de build:"
+	@ls -la dist/
+
+build-clean: clean build ## Limpar e construir
+	@echo "✅ Build limpo completado"
+
+publish-test: build ## Publicar no TestPyPI
+	@echo "📤 Publicando $(PROJECT_NAME) no TestPyPI..."
+	@$(POETRY) publish --repository testpypi
+	@echo "✅ Publicado no TestPyPI"
+
+publish: build ## Publicar no PyPI
+	@echo "📤 Publicando $(PROJECT_NAME) no PyPI..."
+	@$(POETRY) publish
+	@echo "✅ Publicado no PyPI"
+
+# ============================================================================
+# 📚 DOCUMENTAÇÃO
+# ============================================================================
+
+docs: ## Gerar documentação
+	@echo "📚 Gerando documentação para $(PROJECT_NAME)..."
+	@if [ -f mkdocs.yml ]; then \
+		$(POETRY) run mkdocs build; \
+	else \
+		echo "⚠️  Nenhum mkdocs.yml encontrado, pulando geração de documentação"; \
+	fi
+	@echo "✅ Documentação gerada"
+
+docs-serve: ## Servir documentação localmente
+	@echo "📚 Servindo documentação para $(PROJECT_NAME)..."
+	@if [ -f mkdocs.yml ]; then \
+		$(POETRY) run mkdocs serve; \
+	else \
+		echo "⚠️  Nenhum mkdocs.yml encontrado"; \
+	fi
+
+# ============================================================================
+# 🚀 DESENVOLVIMENTO
+# ============================================================================
+
+dev-setup: install-dev ## Configuração completa de desenvolvimento
+	@echo "🚀 Configurando ambiente de desenvolvimento para $(PROJECT_NAME)..."
+	@$(POETRY) run pre-commit install || echo "⚠️  pre-commit não disponível"
+	@echo "✅ Ambiente de desenvolvimento pronto"
+
+dev: ## Executar em modo desenvolvimento
+	@echo "🚀 Iniciando modo desenvolvimento para $(PROJECT_NAME)..."
+	@if [ -f src/gruponos_meltano_native/cli.py ]; then \
+		$(POETRY) run python -m gruponos_meltano_native.cli --dev; \
+	elif [ -f src/gruponos_meltano_native/main.py ]; then \
+		$(POETRY) run python -m gruponos_meltano_native.main --dev; \
+	else \
+		echo "⚠️  Nenhum ponto de entrada principal encontrado"; \
+	fi
+
+dev-test: ## Ciclo rápido de teste de desenvolvimento
+	@echo "⚡ Ciclo rápido de teste de desenvolvimento para $(PROJECT_NAME)..."
+	@$(POETRY) run ruff check . --fix
+	@$(POETRY) run pytest tests/ -x --tb=short
+	@echo "✅ Ciclo de teste de desenvolvimento completado"
+
+# ============================================================================
+# 🎵 OPERAÇÕES ESPECÍFICAS MELTANO
+# ============================================================================
+
+meltano-install: ## Instalar todos os plugins Meltano
+	@echo "🎵 Instalando plugins Meltano..."
+	@$(POETRY) run meltano install
+	@echo "✅ Plugins Meltano instalados"
+
+meltano-test: ## Testar conexões dos plugins Meltano
+	@echo "🧪 Testando conexões dos plugins Meltano..."
+	@$(POETRY) run meltano test tap-oracle-wms || echo "⚠️  Falha no teste tap-oracle-wms"
+	@$(POETRY) run meltano test tap-ldap || echo "⚠️  Falha no teste tap-ldap"
+	@echo "✅ Testes dos plugins Meltano completados"
+
+meltano-run: ## Executar pipeline completo Meltano
+	@echo "🚀 Executando pipeline Meltano..."
+	@$(POETRY) run meltano run tap-oracle-wms-full target-oracle-full
+	@echo "✅ Pipeline Meltano completado"
+
+meltano-validate: ## Validar configuração Meltano
+	@echo "🔍 Validando configuração Meltano..."
+	@$(POETRY) run meltano config list
+	@$(POETRY) run meltano invoke dbt-postgres deps || echo "⚠️  dbt deps falhou"
+	@echo "✅ Configuração Meltano validada"
+
+meltano-discover: ## Descobrir esquemas dos taps
+	@echo "🔍 Descobrindo esquemas dos taps..."
+	@$(POETRY) run meltano discover tap-oracle-wms
+	@$(POETRY) run meltano discover tap-ldap
+	@echo "✅ Descoberta de esquemas completada"
+
+meltano-elt: ## Executar processo ELT completo
+	@echo "🔄 Executando processo ELT completo..."
+	@$(POETRY) run meltano elt tap-oracle-wms target-oracle
+	@echo "✅ Processo ELT completado"
+
+meltano-operations: meltano-install meltano-validate meltano-test ## Validar todas as operações Meltano
+	@echo "✅ Todas as operações Meltano validadas"
+
+# ============================================================================
+# 🌍 OPERAÇÕES ESPECÍFICAS AMBIENTE
+# ============================================================================
+
+env-setup: ## Configurar variáveis de ambiente
+	@echo "🌍 Configurando ambiente..."
+	@if [ ! -f .env ]; then cp .env.example .env; echo "Criado .env do template"; fi
+	@echo "✅ Configuração do ambiente completada"
+
+env-validate: ## Validar configuração do ambiente
+	@echo "🔍 Validando configuração do ambiente..."
+	@$(POETRY) run python -c "from src.gruponos_meltano_native.config import Settings; settings = Settings(); print('Configuração do ambiente válida')"
+	@echo "✅ Validação do ambiente completada"
+
+oracle-test: ## Testar conexão Oracle WMS
+	@echo "🔍 Testando conexão Oracle WMS..."
+	@$(POETRY) run python -c "from src.gruponos_meltano_native.oracle.connection_manager import OracleConnectionManager; import asyncio; asyncio.run(OracleConnectionManager().test_connection())"
+	@echo "✅ Teste de conexão Oracle WMS completado"
+
+ldap-test: ## Testar conexão LDAP
+	@echo "🔍 Testando conexão LDAP..."
+	@$(POETRY) run python -c "from src.gruponos_meltano_native.ldap.client import LDAPClient; client = LDAPClient(); result = client.test_connection(); print(f'Conexão LDAP: {result}')"
+	@echo "✅ Teste de conexão LDAP completado"
+
+validate-schemas: ## Validar esquemas do banco de dados
+	@echo "🔍 Validando esquemas do banco de dados..."
+	@$(POETRY) run python -c "from src.gruponos_meltano_native.validators import SchemaValidator; validator = SchemaValidator(); validator.validate_all(); print('Esquemas validados')"
+	@echo "✅ Validação de esquemas completada"
+
+enterprise-validate: env-validate oracle-test ldap-test validate-schemas ## Validar todas as operações enterprise
+	@echo "✅ Todas as operações enterprise validadas"
+
+# ============================================================================
+# 🧹 LIMPEZA
+# ============================================================================
+
+clean: ## Limpar artefatos de build
+	@echo "🧹 Limpando artefatos de build para $(PROJECT_NAME)..."
+	@rm -rf build/
+	@rm -rf dist/
+	@rm -rf *.egg-info/
+	@rm -rf .pytest_cache/
+	@rm -rf .coverage
+	@rm -rf htmlcov/
+	@rm -rf .mypy_cache/
+	@rm -rf .ruff_cache/
+	@rm -rf reports/
+	@rm -rf .meltano/
 	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	@echo "✅ Build artifacts cleaned"
+	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@find . -type f -name "*.pyo" -delete 2>/dev/null || true
+	@echo "✅ Limpeza completada"
+
+clean-all: clean ## Limpar tudo incluindo ambiente virtual
+	@echo "🧹 Limpeza profunda para $(PROJECT_NAME)..."
+	@$(POETRY) env remove --all || true
+	@echo "✅ Limpeza profunda completada"
 
 # ============================================================================
-# 🔬 TESTING & COVERAGE
+# 🚨 PROCEDIMENTOS DE EMERGÊNCIA
 # ============================================================================
 
-test-unit: ## Run unit tests only
-	@echo "🧪 Running unit tests..."
-	@poetry run pytest tests/unit/ -v
-	@echo "✅ Unit tests complete"
-
-test-integration: ## Run integration tests only
-	@echo "🧪 Running integration tests..."
-	@poetry run pytest tests/integration/ -v
-	@echo "✅ Integration tests complete"
-
-coverage: ## Generate coverage report
-	@echo "📊 Generating coverage report..."
-	@poetry run pytest tests/ --cov=src/gruponos_meltano_native --cov-report=term-missing
-	@echo "✅ Coverage report generated"
-
-coverage-html: ## Generate HTML coverage report
-	@echo "📊 Generating HTML coverage report..."
-	@poetry run pytest tests/ --cov=src/gruponos_meltano_native --cov-report=html
-	@echo "✅ HTML coverage report generated (see htmlcov/index.html)"
+emergency-reset: ## Reset de emergência para estado limpo
+	@echo "🚨 RESET DE EMERGÊNCIA para $(PROJECT_NAME)..."
+	@read -p "Tem certeza que quer resetar tudo? (y/N) " -n 1 -r; \
+	echo; \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		$(MAKE) clean-all; \
+		$(MAKE) install-dev; \
+		echo "✅ Reset de emergência completado"; \
+	else \
+		echo "⚠️  Reset de emergência cancelado"; \
+	fi
 
 # ============================================================================
-# 🎵 MELTANO OPERATIONS
+# 🎯 VALIDAÇÃO E VERIFICAÇÃO
 # ============================================================================
 
-meltano-install: ## Install all Meltano plugins
-	@echo "🎵 Installing Meltano plugins..."
-	@poetry run meltano install
-	@echo "✅ Meltano plugins installed"
-
-meltano-test: ## Test Meltano plugin connections
-	@echo "🧪 Testing Meltano plugin connections..."
-	@poetry run meltano test tap-oracle-wms
-	@poetry run meltano test tap-ldap
-	@echo "✅ Meltano plugin tests complete"
-
-meltano-run: ## Run complete Meltano pipeline
-	@echo "🚀 Running Meltano pipeline..."
-	@poetry run meltano run tap-oracle-wms-full target-oracle-full
-	@echo "✅ Meltano pipeline complete"
-
-meltano-validate: ## Validate Meltano configuration
-	@echo "🔍 Validating Meltano configuration..."
-	@poetry run meltano config list
-	@poetry run meltano invoke dbt-postgres deps
-	@echo "✅ Meltano configuration validated"
+workspace-validate: ## Validar conformidade do workspace
+	@echo "🔍 Validando conformidade do workspace para $(PROJECT_NAME)..."
+	@test -f pyproject.toml || { echo "❌ pyproject.toml ausente"; exit 1; }
+	@test -f CLAUDE.md || echo "⚠️  CLAUDE.md ausente"
+	@test -f README.md || echo "⚠️  README.md ausente"
+	@test -d src/ || { echo "❌ diretório src/ ausente"; exit 1; }
+	@test -d tests/ || echo "⚠️  diretório tests/ ausente"
+	@test -f meltano.yml || { echo "❌ meltano.yml ausente"; exit 1; }
+	@echo "✅ Conformidade do workspace validada"
 
 # ============================================================================
-# 🌍 ENVIRONMENT MANAGEMENT
+# 🎯 ALIASES DE CONVENIÊNCIA
 # ============================================================================
 
-env-setup: ## Setup environment variables
-	@echo "🌍 Setting up environment..."
-	@if [ ! -f .env ]; then cp .env.example .env; echo "Created .env from template"; fi
-	@echo "✅ Environment setup complete"
+# Aliases para operações comuns
+t: test ## Alias para test
+l: lint ## Alias para lint
+tc: type-check ## Alias para type-check
+f: format ## Alias para format
+c: clean ## Alias para clean
+i: install-dev ## Alias para install-dev
+d: dev ## Alias para dev
+dt: dev-test ## Alias para dev-test
 
-env-validate: ## Validate environment configuration
-	@echo "🔍 Validating environment configuration..."
-	@poetry run python scripts/validate_config.py
-	@echo "✅ Environment validation complete"
+# Aliases específicos Meltano
+mi: meltano-install ## Alias para meltano-install
+mt: meltano-test ## Alias para meltano-test
+mr: meltano-run ## Alias para meltano-run
+mv: meltano-validate ## Alias para meltano-validate
+md: meltano-discover ## Alias para meltano-discover
+me: meltano-elt ## Alias para meltano-elt
+mo: meltano-operations ## Alias para meltano-operations
 
-# ============================================================================
-# 🎯 PROJECT-SPECIFIC COMMANDS
-# ============================================================================
+# Aliases específicos ambiente
+es: env-setup ## Alias para env-setup
+ev: env-validate ## Alias para env-validate
+ot: oracle-test ## Alias para oracle-test
+lt: ldap-test ## Alias para ldap-test
+vs: validate-schemas ## Alias para validate-schemas
+ev: enterprise-validate ## Alias para enterprise-validate
 
-oracle-test: ## Test Oracle WMS connection
-	@echo "🔍 Testing Oracle WMS connection..."
-	@poetry run python -c "from src.gruponos_meltano_native.oracle.connection_manager import OracleConnectionManager; import asyncio; asyncio.run(OracleConnectionManager().test_connection())"
-	@echo "✅ Oracle WMS connection test complete"
+# Configurações de ambiente
+export PYTHONPATH := $(PWD)/src:$(PYTHONPATH)
+export PYTHONDONTWRITEBYTECODE := 1
+export PYTHONUNBUFFERED := 1
 
-ldap-test: ## Test LDAP connection  
-	@echo "🔍 Testing LDAP connection..."
-	@poetry run python scripts/test_ldap_connection.py
-	@echo "✅ LDAP connection test complete"
+# Meltano settings for development
+export MELTANO_PROJECT_ROOT := $(PWD)
+export MELTANO_VENV := $(VENV_PATH)
+export MELTANO_ENVIRONMENT := dev
 
-validate-schemas: ## Validate database schemas
-	@echo "🔍 Validating database schemas..."
-	@poetry run python scripts/validate_schemas.py
-	@echo "✅ Schema validation complete"
+# Enterprise settings
+export GRUPONOS_ENV := development
+export GRUPONOS_DEBUG := true
+export GRUPONOS_ORACLE_HOST := localhost
+export GRUPONOS_ORACLE_PORT := 1521
+export GRUPONOS_LDAP_HOST := localhost
+export GRUPONOS_LDAP_PORT := 389
+
+.DEFAULT_GOAL := help

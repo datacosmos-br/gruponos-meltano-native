@@ -3,6 +3,7 @@
 
 Centraliza todas as configurações em um lugar usando arquivos .env.
 """
+
 import argparse
 import json
 import os

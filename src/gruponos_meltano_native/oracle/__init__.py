@@ -1,14 +1,24 @@
-"""Oracle database utilities for GrupoNOS Meltano Native."""
+"""Oracle Integration Module - FLEXT standardized.
 
-from gruponos_meltano_native.config import OracleConnectionConfig
+This module provides Oracle database integration capabilities following FLEXT standards,
+Clean Architecture principles, and proper type safety.
 
-from .connection_manager import (
-    OracleConnectionManager,
-    create_connection_manager_from_env,
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+# Direct imports - NO wrappers or legacy aliases
+from gruponos_meltano_native.oracle.connection_manager_enhanced import (
+    GruponosMeltanoOracleConnectionManager,
+    create_gruponos_meltano_oracle_connection_manager,
 )
 
+# Public API exports - FLEXT standard only
 __all__ = [
-    "OracleConnectionConfig",
-    "OracleConnectionManager",
-    "create_connection_manager_from_env",
+    # FLEXT Standard Classes
+    "GruponosMeltanoOracleConnectionManager",
+    # Factory Functions
+    "create_gruponos_meltano_oracle_connection_manager",
 ]

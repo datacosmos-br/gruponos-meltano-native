@@ -135,7 +135,8 @@ class TestOracleTableCreatorComprehensive:
         invalid_schema = {"type": "object"}  # Missing properties
 
         with pytest.raises(
-            ValueError, match="Invalid Singer schema for table test_table"
+            ValueError,
+            match="Invalid Singer schema for table test_table",
         ):
             creator.create_table_from_schema("test_table", invalid_schema)
 
@@ -209,7 +210,9 @@ class TestOracleTableCreatorComprehensive:
 
         column_schema = {"type": "string", "maxLength": 5000}  # Over Oracle limit
         ddl = creator._create_column_ddl(
-            "description", column_schema, is_primary_key=False
+            "description",
+            column_schema,
+            is_primary_key=False,
         )
         assert ddl == "DESCRIPTION VARCHAR2(4000) NOT NULL"
 
@@ -226,7 +229,9 @@ class TestOracleTableCreatorComprehensive:
 
         column_schema = {"type": ["string", "null"]}
         ddl = creator._create_column_ddl(
-            "optional_field", column_schema, is_primary_key=False
+            "optional_field",
+            column_schema,
+            is_primary_key=False,
         )
         # Should not have NOT NULL constraint
         assert ddl == "OPTIONAL_FIELD VARCHAR2(4000)"
@@ -346,7 +351,8 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         result = creator._format_default_value(
-            default_value="active", data_type="string"
+            default_value="active",
+            data_type="string",
         )
         assert result == "'active'"
 
@@ -390,7 +396,8 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         result = creator._format_default_value(
-            default_value="CURRENT_TIMESTAMP", data_type="date-time"
+            default_value="CURRENT_TIMESTAMP",
+            data_type="date-time",
         )
         assert result == "SYSTIMESTAMP"
 
@@ -406,7 +413,8 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         result = creator._format_default_value(
-            default_value="2025-01-01 00:00:00", data_type="date-time"
+            default_value="2025-01-01 00:00:00",
+            data_type="date-time",
         )
         assert result == "TIMESTAMP '2025-01-01 00:00:00'"
 
@@ -604,8 +612,10 @@ class TestOracleTableCreatorComprehensive:
 
             result = creator.execute_ddl(ddl_statements)
 
-            # The current implementation has a bug where non-zero return codes still return True
-            # This test documents the current behavior (will return True despite failure)
+            # The current implementation has a bug where non-zero return codes still
+            # return True
+            # This test documents the current behavior (will return True despite
+            # failure)
             assert (
                 result is True
             )  # Bug: should be False but implementation returns True
@@ -866,7 +876,8 @@ class TestOracleTableCreatorComprehensive:
             catalog_path = Path(TEST_CATALOG_PATH)
 
             with pytest.raises(
-                ValueError, match="Stream allocation not found in catalog"
+                ValueError,
+                match="Stream allocation not found in catalog",
             ):
                 creator.generate_table_from_singer_catalog(catalog_path, "allocation")
 
@@ -945,7 +956,7 @@ class TestMainFunction:
             patch("sys.argv", ["table_creator.py", *test_args]),
             patch("pathlib.Path.read_text") as mock_read,
             patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
             ) as mock_creator,
         ):
             mock_read.return_value = json.dumps(catalog_data)
@@ -993,7 +1004,7 @@ class TestMainFunction:
             patch.dict(os.environ, {"ORACLE_PASSWORD": "env_password"}),
             patch("pathlib.Path.read_text") as mock_read,
             patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
             ) as mock_creator,
         ):
             mock_read.return_value = json.dumps(catalog_data)
@@ -1068,7 +1079,7 @@ class TestMainFunction:
             patch("sys.argv", ["table_creator.py", *test_args]),
             patch("pathlib.Path.read_text") as mock_read,
             patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
             ) as mock_creator,
         ):
             mock_read.return_value = json.dumps(catalog_data)
@@ -1122,7 +1133,7 @@ class TestMainFunction:
             patch("sys.argv", ["table_creator.py", *test_args]),
             patch("pathlib.Path.read_text") as mock_read,
             patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
             ) as mock_creator,
         ):
             mock_read.return_value = json.dumps(catalog_data)
@@ -1131,7 +1142,7 @@ class TestMainFunction:
                 "CREATE TABLE test;"
             )
             mock_creator_instance.create_indexes_for_table.return_value = [
-                "CREATE INDEX idx1;"
+                "CREATE INDEX idx1;",
             ]
             mock_creator.return_value = mock_creator_instance
 
@@ -1177,7 +1188,7 @@ class TestMainFunction:
             patch("sys.argv", ["table_creator.py", *test_args]),
             patch("pathlib.Path.read_text") as mock_read,
             patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
             ) as mock_creator,
         ):
             mock_read.return_value = json.dumps(catalog_data)
@@ -1191,9 +1202,11 @@ class TestMainFunction:
             result = main()
 
             assert result == 0
-            mock_creator_instance.execute_ddl.assert_called_once_with([
-                "CREATE TABLE test;"
-            ])
+            mock_creator_instance.execute_ddl.assert_called_once_with(
+                [
+                    "CREATE TABLE test;",
+                ],
+            )
 
     def test_main_with_execute_and_indexes(self) -> None:
         """Test main function with DDL execution including indexes."""
@@ -1233,7 +1246,7 @@ class TestMainFunction:
             patch("sys.argv", ["table_creator.py", *test_args]),
             patch("pathlib.Path.read_text") as mock_read,
             patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
             ) as mock_creator,
         ):
             mock_read.return_value = json.dumps(catalog_data)
@@ -1242,7 +1255,7 @@ class TestMainFunction:
                 "CREATE TABLE test;"
             )
             mock_creator_instance.create_indexes_for_table.return_value = [
-                "CREATE INDEX idx1;"
+                "CREATE INDEX idx1;",
             ]
             mock_creator_instance.execute_ddl.return_value = True
             mock_creator.return_value = mock_creator_instance
@@ -1251,10 +1264,12 @@ class TestMainFunction:
 
             assert result == 0
             # Should execute both table DDL and index DDL
-            mock_creator_instance.execute_ddl.assert_called_once_with([
-                "CREATE TABLE test;",
-                "CREATE INDEX idx1;",
-            ])
+            mock_creator_instance.execute_ddl.assert_called_once_with(
+                [
+                    "CREATE TABLE test;",
+                    "CREATE INDEX idx1;",
+                ],
+            )
 
     def test_main_execution_failure(self) -> None:
         """Test main function with execution failure."""
@@ -1290,7 +1305,7 @@ class TestMainFunction:
             patch("sys.argv", ["table_creator.py", *test_args]),
             patch("pathlib.Path.read_text") as mock_read,
             patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator"
+                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
             ) as mock_creator,
         ):
             mock_read.return_value = json.dumps(catalog_data)

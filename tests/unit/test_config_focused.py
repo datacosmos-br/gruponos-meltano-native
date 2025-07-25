@@ -17,12 +17,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 from pydantic import ValidationError
 
 from gruponos_meltano_native.config import (
-    AlertConfig,
-    GrupoNOSConfig,
-    MeltanoConfig,
-    OracleConnectionConfig,
-    TargetOracleConfig,
-    WMSSourceConfig,
+    GruponosMeltanoAlertConfig,
+    GruponosMeltanoOracleConnectionConfig,
+    GruponosMeltanoSettings,
+    GruponosMeltanoTargetOracleConfig,
+    GruponosMeltanoWMSSourceConfig,
 )
 
 
@@ -30,9 +29,9 @@ class TestConfigFocused:
     """Focused configuration testing for comprehensive coverage."""
 
     def test_oracle_connection_config_creation(self) -> None:
-        """Test OracleConnectionConfig creation and validation."""
+        """Test GruponosMeltanoOracleConnectionConfig creation and validation."""
         # Test valid configuration
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
             service_name="XEPDB1",
@@ -56,10 +55,10 @@ class TestConfigFocused:
         assert config.connection_pool_size == 5
 
     def test_oracle_connection_config_validation(self) -> None:
-        """Test OracleConnectionConfig field validation."""
+        """Test GruponosMeltanoOracleConnectionConfig field validation."""
         # Test invalid port
         with pytest.raises(ValidationError) as exc_info:
-            OracleConnectionConfig(
+            GruponosMeltanoOracleConnectionConfig(
                 host="localhost",
                 port=70000,  # Invalid port
                 service_name="XEPDB1",
@@ -70,7 +69,7 @@ class TestConfigFocused:
 
         # Test invalid protocol
         with pytest.raises(ValidationError) as exc_info:
-            OracleConnectionConfig(
+            GruponosMeltanoOracleConnectionConfig(
                 host="localhost",
                 port=1521,
                 service_name="XEPDB1",
@@ -82,7 +81,7 @@ class TestConfigFocused:
 
         # Test negative values
         with pytest.raises(ValidationError) as exc_info:
-            OracleConnectionConfig(
+            GruponosMeltanoOracleConnectionConfig(
                 host="localhost",
                 port=1521,
                 service_name="XEPDB1",
@@ -93,9 +92,9 @@ class TestConfigFocused:
         assert "greater than or equal to 1" in str(exc_info.value)
 
     def test_oracle_connection_config_edge_values(self) -> None:
-        """Test OracleConnectionConfig with edge values."""
+        """Test GruponosMeltanoOracleConnectionConfig with edge values."""
         # Test minimum valid values
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1,  # Minimum port
             service_name="XEPDB1",
@@ -116,7 +115,7 @@ class TestConfigFocused:
         assert config.connection_pool_size == 1
 
         # Test maximum valid values
-        config_max = OracleConnectionConfig(
+        config_max = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=65535,  # Maximum port
             service_name="XEPDB1",
@@ -131,8 +130,8 @@ class TestConfigFocused:
         assert config_max.connection_pool_size == 20
 
     def test_wms_source_config_api_validation(self) -> None:
-        """Test WMSSourceConfig API field validation."""
-        oracle_config = OracleConnectionConfig(
+        """Test GruponosMeltanoWMSSourceConfig API field validation."""
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
             service_name="XEPDB1",
@@ -141,7 +140,7 @@ class TestConfigFocused:
         )
 
         # Test API disabled - should not require API fields
-        config = WMSSourceConfig(
+        config = GruponosMeltanoWMSSourceConfig(
             oracle=oracle_config,
             api_enabled=False,
             api_base_url=None,
@@ -152,7 +151,7 @@ class TestConfigFocused:
         assert config.api_base_url is None
 
         # Test API enabled with valid fields
-        config_api = WMSSourceConfig(
+        config_api = GruponosMeltanoWMSSourceConfig(
             oracle=oracle_config,
             api_enabled=True,
             api_base_url="https://api.example.com",
@@ -166,7 +165,7 @@ class TestConfigFocused:
 
         # Test API enabled but missing required fields
         with pytest.raises(ValidationError) as exc_info:
-            WMSSourceConfig(
+            GruponosMeltanoWMSSourceConfig(
                 oracle=oracle_config,
                 api_enabled=True,
                 api_base_url=None,  # Missing required field
@@ -178,7 +177,7 @@ class TestConfigFocused:
         )
 
         with pytest.raises(ValidationError) as exc_info:
-            WMSSourceConfig(
+            GruponosMeltanoWMSSourceConfig(
                 oracle=oracle_config,
                 api_enabled=True,
                 api_base_url="https://api.example.com",
@@ -190,7 +189,7 @@ class TestConfigFocused:
         )
 
         with pytest.raises(ValidationError) as exc_info:
-            WMSSourceConfig(
+            GruponosMeltanoWMSSourceConfig(
                 oracle=oracle_config,
                 api_enabled=True,
                 api_base_url="https://api.example.com",
@@ -202,8 +201,8 @@ class TestConfigFocused:
         )
 
     def test_wms_source_config_defaults(self) -> None:
-        """Test WMSSourceConfig default values."""
-        oracle_config = OracleConnectionConfig(
+        """Test GruponosMeltanoWMSSourceConfig default values."""
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
             service_name="XEPDB1",
@@ -211,7 +210,7 @@ class TestConfigFocused:
             password="test_pass",
         )
 
-        config = WMSSourceConfig(oracle=oracle_config)
+        config = GruponosMeltanoWMSSourceConfig(oracle=oracle_config)
 
         # Test defaults
         assert config.api_enabled is False
@@ -222,8 +221,8 @@ class TestConfigFocused:
         assert config.lookback_days == 7
 
     def test_target_oracle_config_creation(self) -> None:
-        """Test TargetOracleConfig creation and defaults."""
-        oracle_config = OracleConnectionConfig(
+        """Test GruponosMeltanoTargetOracleConfig creation and defaults."""
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
             service_name="XEPDB1",
@@ -231,7 +230,7 @@ class TestConfigFocused:
             password="test_pass",
         )
 
-        config = TargetOracleConfig(oracle=oracle_config, schema_name="TARGET_SCHEMA")
+        config = GruponosMeltanoTargetOracleConfig(oracle=oracle_config, schema_name="TARGET_SCHEMA")
 
         assert config.oracle == oracle_config
         assert config.schema_name == "TARGET_SCHEMA"
@@ -244,8 +243,8 @@ class TestConfigFocused:
         assert config.commit_interval == 1000
 
     def test_target_oracle_config_validation(self) -> None:
-        """Test TargetOracleConfig validation."""
-        oracle_config = OracleConnectionConfig(
+        """Test GruponosMeltanoTargetOracleConfig validation."""
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
             service_name="XEPDB1",
@@ -255,7 +254,7 @@ class TestConfigFocused:
 
         # Test invalid parallel degree
         with pytest.raises(ValidationError) as exc_info:
-            TargetOracleConfig(
+            GruponosMeltanoTargetOracleConfig(
                 oracle=oracle_config,
                 schema_name="TARGET_SCHEMA",
                 parallel_degree=20,  # Too high
@@ -264,7 +263,7 @@ class TestConfigFocused:
 
         # Test invalid commit interval
         with pytest.raises(ValidationError) as exc_info:
-            TargetOracleConfig(
+            GruponosMeltanoTargetOracleConfig(
                 oracle=oracle_config,
                 schema_name="TARGET_SCHEMA",
                 commit_interval=50,  # Too low
@@ -272,9 +271,9 @@ class TestConfigFocused:
         assert "greater than or equal to 100" in str(exc_info.value)
 
     def test_alert_config_comprehensive(self) -> None:
-        """Test AlertConfig comprehensive validation."""
+        """Test GruponosMeltanoAlertConfig comprehensive validation."""
         # Test default values
-        config = AlertConfig()
+        config = GruponosMeltanoAlertConfig()
 
         assert config.max_sync_duration_minutes == 60
         assert config.max_error_rate_percent == 5.0
@@ -291,7 +290,7 @@ class TestConfigFocused:
         assert config.slack_webhook is None
 
         # Test custom values
-        config_custom = AlertConfig(
+        config_custom = GruponosMeltanoAlertConfig(
             max_sync_duration_minutes=120,
             max_error_rate_percent=10.0,
             min_records_threshold=500,
@@ -314,17 +313,17 @@ class TestConfigFocused:
 
         # Test validation errors
         with pytest.raises(ValidationError) as exc_info:
-            AlertConfig(max_error_rate_percent=150.0)  # Invalid percentage
+            GruponosMeltanoAlertConfig(max_error_rate_percent=150.0)  # Invalid percentage
         assert "less than or equal to 100" in str(exc_info.value)
 
         with pytest.raises(ValidationError) as exc_info:
-            AlertConfig(max_connection_failures=0)  # Invalid minimum
+            GruponosMeltanoAlertConfig(max_connection_failures=0)  # Invalid minimum
         assert "greater than or equal to 1" in str(exc_info.value)
 
     def test_meltano_config_comprehensive(self) -> None:
-        """Test MeltanoConfig comprehensive validation."""
+        """Test GruponosMeltanoSettings comprehensive validation."""
         # Test with required fields
-        config = MeltanoConfig(project_id="test-project")
+        config = GruponosMeltanoSettings(project_id="test-project")
 
         assert config.project_id == "test-project"
         assert config.environment == "dev"
@@ -336,7 +335,7 @@ class TestConfigFocused:
         assert config.timeout_seconds == 3600
 
         # Test custom values
-        config_custom = MeltanoConfig(
+        config_custom = GruponosMeltanoSettings(
             project_id="production-project",
             environment="production",
             state_backend="s3",
@@ -356,26 +355,26 @@ class TestConfigFocused:
 
         # Test validation errors
         with pytest.raises(ValidationError) as exc_info:
-            MeltanoConfig(project_id="test", environment="invalid")
+            GruponosMeltanoSettings(project_id="test", environment="invalid")
         assert "pattern" in str(exc_info.value)
 
         with pytest.raises(ValidationError) as exc_info:
-            MeltanoConfig(project_id="test", log_level="INVALID")
+            GruponosMeltanoSettings(project_id="test", log_level="INVALID")
         assert "pattern" in str(exc_info.value)
 
         with pytest.raises(ValidationError) as exc_info:
-            MeltanoConfig(project_id="test", parallelism=15)  # Too high
+            GruponosMeltanoSettings(project_id="test", parallelism=15)  # Too high
         assert "less than or equal to 10" in str(exc_info.value)
 
     def test_gruponos_config_creation(self) -> None:
-        """Test GrupoNOSConfig creation and defaults."""
-        config = GrupoNOSConfig()
+        """Test GruponosMeltanoSettings creation and defaults."""
+        config = GruponosMeltanoSettings()
 
         # Test defaults
         assert config.wms_source is None
         assert config.target_oracle is None
         assert config.alerts is not None
-        assert isinstance(config.alerts, AlertConfig)
+        assert isinstance(config.alerts, GruponosMeltanoAlertConfig)
         assert config.meltano is None
         assert config.project_name == "gruponos-meltano-native"
         assert config.company == "GrupoNOS"
@@ -383,8 +382,8 @@ class TestConfigFocused:
         assert config.dry_run is False
 
     def test_gruponos_config_with_subconfigs(self) -> None:
-        """Test GrupoNOSConfig with sub-configurations."""
-        oracle_config = OracleConnectionConfig(
+        """Test GruponosMeltanoSettings with sub-configurations."""
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
             service_name="XEPDB1",
@@ -392,11 +391,11 @@ class TestConfigFocused:
             password="test_pass",
         )
 
-        wms_config = WMSSourceConfig(oracle=oracle_config)
-        target_config = TargetOracleConfig(oracle=oracle_config, schema_name="TARGET")
-        meltano_config = MeltanoConfig(project_id="test-project")
+        wms_config = GruponosMeltanoWMSSourceConfig(oracle=oracle_config)
+        target_config = GruponosMeltanoTargetOracleConfig(oracle=oracle_config, schema_name="TARGET")
+        meltano_config = GruponosMeltanoSettings(project_id="test-project")
 
-        config = GrupoNOSConfig(
+        config = GruponosMeltanoSettings(
             wms_source=wms_config,
             target_oracle=target_config,
             meltano=meltano_config,
@@ -429,12 +428,12 @@ class TestConfigFocused:
         clear=False,
     )
     def test_gruponos_config_from_env(self) -> None:
-        """Test GrupoNOSConfig.from_env() method."""
-        config = GrupoNOSConfig.from_env()
+        """Test GruponosMeltanoSettings.from_env() method."""
+        config = GruponosMeltanoSettings.from_env()
 
         # Test that configuration was created
         assert config is not None
-        assert isinstance(config, GrupoNOSConfig)
+        assert isinstance(config, GruponosMeltanoSettings)
 
         # Test that the method runs without error
         # (actual env mapping is complex and would require full env setup)
@@ -450,15 +449,15 @@ class TestConfigFocused:
     )
     def test_gruponos_config_legacy_env_mapping(self) -> None:
         """Test legacy environment variable mapping."""
-        config = GrupoNOSConfig.from_env()
+        config = GruponosMeltanoSettings.from_env()
 
         # Test that legacy mapping works
         assert config is not None
-        assert isinstance(config, GrupoNOSConfig)
+        assert isinstance(config, GruponosMeltanoSettings)
 
     def test_config_repr_and_password_hiding(self) -> None:
         """Test that passwords are hidden in repr."""
-        config = OracleConnectionConfig(
+        config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
             service_name="XEPDB1",
@@ -473,7 +472,7 @@ class TestConfigFocused:
 
     def test_config_validation_info_usage(self) -> None:
         """Test that validation uses ValidationInfo correctly."""
-        oracle_config = OracleConnectionConfig(
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
             service_name="XEPDB1",
@@ -483,7 +482,7 @@ class TestConfigFocused:
 
         # Test the validation logic for multiple fields
         with pytest.raises(ValidationError) as exc_info:
-            WMSSourceConfig(
+            GruponosMeltanoWMSSourceConfig(
                 oracle=oracle_config,
                 api_enabled=True,
                 api_base_url="https://api.example.com",
@@ -496,7 +495,7 @@ class TestConfigFocused:
 
     def test_config_class_config_attributes(self) -> None:
         """Test model_config attributes (Pydantic v2)."""
-        config = GrupoNOSConfig()
+        config = GruponosMeltanoSettings()
 
         # Test that model_config is properly set (Pydantic v2 pattern)
         assert hasattr(config, "model_config")

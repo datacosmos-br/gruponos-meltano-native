@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 from click.testing import CliRunner
 
-from gruponos_meltano_native.cli import main
+from gruponos_meltano_native.cli import cli as main
 
 
 class TestCLIComprehensive:
@@ -23,9 +23,13 @@ class TestCLIComprehensive:
     def test_main_context_setup(self) -> None:
         """Test main context setup with debug and config file flags."""
         # Test debug flag enables FLEXT logging configuration
-        with patch("gruponos_meltano_native.cli.setup_logging") as mock_setup_logging, patch(
-            "gruponos_meltano_native.cli.get_config",
-        ) as mock_config, patch("gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator"):
+        with (
+            patch("gruponos_meltano_native.cli.setup_logging") as mock_setup_logging,
+            patch(
+                "gruponos_meltano_native.cli.get_config",
+            ) as mock_config,
+            patch("gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator"),
+        ):
             mock_config.return_value = Mock()
 
             result = self.runner.invoke(main, ["--debug", "health"])
@@ -41,19 +45,27 @@ class TestCLIComprehensive:
             with open("test_config.yml", "w", encoding="utf-8") as f:
                 f.write("test: config")
 
-            with patch("gruponos_meltano_native.cli.get_config") as mock_config, patch(
-                "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+            with (
+                patch("gruponos_meltano_native.cli.get_config") as mock_config,
+                patch(
+                    "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+                ),
             ):
                 mock_config.return_value = Mock()
 
-                result = self.runner.invoke(main, ["--config-file", "test_config.yml", "health"])
+                result = self.runner.invoke(
+                    main, ["--config-file", "test_config.yml", "health"],
+                )
                 assert result.exit_code == 0
 
     def test_health_command_success(self) -> None:
         """Test health command success path."""
-        with patch("gruponos_meltano_native.cli.get_config") as mock_config, patch(
-            "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
-        ) as mock_orchestrator:
+        with (
+            patch("gruponos_meltano_native.cli.get_config") as mock_config,
+            patch(
+                "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+            ) as mock_orchestrator,
+        ):
             mock_config.return_value = Mock()
             mock_orchestrator.return_value = Mock()
 
@@ -63,37 +75,57 @@ class TestCLIComprehensive:
 
     def test_health_command_os_error(self) -> None:
         """Test health command OSError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=OSError("Connection failed")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=OSError("Connection failed"),
+        ):
             result = self.runner.invoke(main, ["health"])
             assert result.exit_code == 1
-            assert "❌ Pipeline health check: FAILED - Connection failed" in result.output
+            assert (
+                "❌ Pipeline health check: FAILED - Connection failed" in result.output
+            )
 
     def test_health_command_value_error(self) -> None:
         """Test health command ValueError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=ValueError("Invalid config")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=ValueError("Invalid config"),
+        ):
             result = self.runner.invoke(main, ["health"])
             assert result.exit_code == 1
             assert "❌ Pipeline health check: FAILED - Invalid config" in result.output
 
     def test_health_command_runtime_error(self) -> None:
         """Test health command RuntimeError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=RuntimeError("Runtime error")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=RuntimeError("Runtime error"),
+        ):
             result = self.runner.invoke(main, ["health"])
             assert result.exit_code == 1
             assert "❌ Pipeline health check: FAILED - Runtime error" in result.output
 
     def test_health_command_unexpected_error(self) -> None:
         """Test health command unexpected error handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=Exception("Unexpected error")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=Exception("Unexpected error"),
+        ):
             result = self.runner.invoke(main, ["health"])
             assert result.exit_code == 1
-            assert "❌ Pipeline health check: UNEXPECTED ERROR - Unexpected error" in result.output
+            assert (
+                "❌ Pipeline health check: UNEXPECTED ERROR - Unexpected error"
+                in result.output
+            )
 
     def test_sync_command_success(self) -> None:
         """Test sync command success path."""
-        with patch("gruponos_meltano_native.cli.get_config") as mock_config, patch(
-            "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
-        ) as mock_orchestrator:
+        with (
+            patch("gruponos_meltano_native.cli.get_config") as mock_config,
+            patch(
+                "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+            ) as mock_orchestrator,
+        ):
             mock_config.return_value = Mock()
             mock_orchestrator.return_value = Mock()
 
@@ -103,21 +135,29 @@ class TestCLIComprehensive:
 
     def test_sync_command_with_entities(self) -> None:
         """Test sync command with specific entities."""
-        with patch("gruponos_meltano_native.cli.get_config") as mock_config, patch(
-            "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
-        ) as mock_orchestrator:
+        with (
+            patch("gruponos_meltano_native.cli.get_config") as mock_config,
+            patch(
+                "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+            ) as mock_orchestrator,
+        ):
             mock_config.return_value = Mock()
             mock_orchestrator.return_value = Mock()
 
-            result = self.runner.invoke(main, ["sync", "--entity", "allocation", "--entity", "order"])
+            result = self.runner.invoke(
+                main, ["sync", "--entity", "allocation", "--entity", "order"],
+            )
             assert result.exit_code == 0
             assert "✅ Data sync completed for: allocation, order" in result.output
 
     def test_sync_command_dry_run(self) -> None:
         """Test sync command in dry-run mode."""
-        with patch("gruponos_meltano_native.cli.get_config") as mock_config, patch(
-            "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
-        ) as mock_orchestrator:
+        with (
+            patch("gruponos_meltano_native.cli.get_config") as mock_config,
+            patch(
+                "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+            ) as mock_orchestrator,
+        ):
             mock_config.return_value = Mock()
             mock_orchestrator.return_value = Mock()
 
@@ -127,37 +167,55 @@ class TestCLIComprehensive:
 
     def test_sync_command_os_error(self) -> None:
         """Test sync command OSError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=OSError("Connection failed")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=OSError("Connection failed"),
+        ):
             result = self.runner.invoke(main, ["sync"])
             assert result.exit_code == 1
             assert "❌ Data sync failed: Connection failed" in result.output
 
     def test_sync_command_value_error(self) -> None:
         """Test sync command ValueError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=ValueError("Invalid config")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=ValueError("Invalid config"),
+        ):
             result = self.runner.invoke(main, ["sync"])
             assert result.exit_code == 1
             assert "❌ Data sync failed: Invalid config" in result.output
 
     def test_sync_command_runtime_error(self) -> None:
         """Test sync command RuntimeError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=RuntimeError("Runtime error")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=RuntimeError("Runtime error"),
+        ):
             result = self.runner.invoke(main, ["sync"])
             assert result.exit_code == 1
             assert "❌ Data sync failed: Runtime error" in result.output
 
     def test_sync_command_unexpected_error(self) -> None:
         """Test sync command unexpected error handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=Exception("Unexpected error")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=Exception("Unexpected error"),
+        ):
             result = self.runner.invoke(main, ["sync"])
             assert result.exit_code == 1
-            assert "❌ Data sync failed: UNEXPECTED ERROR - Unexpected error" in result.output
+            assert (
+                "❌ Data sync failed: UNEXPECTED ERROR - Unexpected error"
+                in result.output
+            )
 
     def test_validate_command_success_table_format(self) -> None:
         """Test validate command success with table format."""
-        with patch("gruponos_meltano_native.cli.get_config") as mock_config, patch(
-            "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
-        ) as mock_orchestrator:
+        with (
+            patch("gruponos_meltano_native.cli.get_config") as mock_config,
+            patch(
+                "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+            ) as mock_orchestrator,
+        ):
             mock_config.return_value = Mock()
             mock_orchestrator.return_value = Mock()
 
@@ -168,9 +226,12 @@ class TestCLIComprehensive:
 
     def test_validate_command_json_format(self) -> None:
         """Test validate command with JSON output format."""
-        with patch("gruponos_meltano_native.cli.get_config") as mock_config, patch(
-            "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
-        ) as mock_orchestrator:
+        with (
+            patch("gruponos_meltano_native.cli.get_config") as mock_config,
+            patch(
+                "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+            ) as mock_orchestrator,
+        ):
             mock_config.return_value = Mock()
             mock_orchestrator.return_value = Mock()
 
@@ -192,9 +253,12 @@ class TestCLIComprehensive:
 
     def test_validate_command_yaml_format(self) -> None:
         """Test validate command with YAML output format."""
-        with patch("gruponos_meltano_native.cli.get_config") as mock_config, patch(
-            "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
-        ) as mock_orchestrator:
+        with (
+            patch("gruponos_meltano_native.cli.get_config") as mock_config,
+            patch(
+                "gruponos_meltano_native.cli.GrupoNOSMeltanoOrchestrator",
+            ) as mock_orchestrator,
+        ):
             mock_config.return_value = Mock()
             mock_orchestrator.return_value = Mock()
 
@@ -205,31 +269,46 @@ class TestCLIComprehensive:
 
     def test_validate_command_os_error(self) -> None:
         """Test validate command OSError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=OSError("Connection failed")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=OSError("Connection failed"),
+        ):
             result = self.runner.invoke(main, ["validate"])
             assert result.exit_code == 1
             assert "❌ Validation failed: Connection failed" in result.output
 
     def test_validate_command_value_error(self) -> None:
         """Test validate command ValueError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=ValueError("Invalid config")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=ValueError("Invalid config"),
+        ):
             result = self.runner.invoke(main, ["validate"])
             assert result.exit_code == 1
             assert "❌ Validation failed: Invalid config" in result.output
 
     def test_validate_command_runtime_error(self) -> None:
         """Test validate command RuntimeError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=RuntimeError("Runtime error")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=RuntimeError("Runtime error"),
+        ):
             result = self.runner.invoke(main, ["validate"])
             assert result.exit_code == 1
             assert "❌ Validation failed: Runtime error" in result.output
 
     def test_validate_command_unexpected_error(self) -> None:
         """Test validate command unexpected error handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=Exception("Unexpected error")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=Exception("Unexpected error"),
+        ):
             result = self.runner.invoke(main, ["validate"])
             assert result.exit_code == 1
-            assert "❌ Validation failed: UNEXPECTED ERROR - Unexpected error" in result.output
+            assert (
+                "❌ Validation failed: UNEXPECTED ERROR - Unexpected error"
+                in result.output
+            )
 
     def test_show_config_command_yaml_format(self) -> None:
         """Test show-config command with YAML format."""
@@ -302,31 +381,46 @@ class TestCLIComprehensive:
 
     def test_show_config_command_os_error(self) -> None:
         """Test show-config command OSError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=OSError("Connection failed")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=OSError("Connection failed"),
+        ):
             result = self.runner.invoke(main, ["show-config"])
             assert result.exit_code == 1
             assert "❌ Failed to show configuration: Connection failed" in result.output
 
     def test_show_config_command_value_error(self) -> None:
         """Test show-config command ValueError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=ValueError("Invalid config")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=ValueError("Invalid config"),
+        ):
             result = self.runner.invoke(main, ["show-config"])
             assert result.exit_code == 1
             assert "❌ Failed to show configuration: Invalid config" in result.output
 
     def test_show_config_command_runtime_error(self) -> None:
         """Test show-config command RuntimeError handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=RuntimeError("Runtime error")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=RuntimeError("Runtime error"),
+        ):
             result = self.runner.invoke(main, ["show-config"])
             assert result.exit_code == 1
             assert "❌ Failed to show configuration: Runtime error" in result.output
 
     def test_show_config_command_unexpected_error(self) -> None:
         """Test show-config command unexpected error handling."""
-        with patch("gruponos_meltano_native.cli.get_config", side_effect=Exception("Unexpected error")):
+        with patch(
+            "gruponos_meltano_native.cli.get_config",
+            side_effect=Exception("Unexpected error"),
+        ):
             result = self.runner.invoke(main, ["show-config"])
             assert result.exit_code == 1
-            assert "❌ Failed to show configuration: UNEXPECTED ERROR - Unexpected error" in result.output
+            assert (
+                "❌ Failed to show configuration: UNEXPECTED ERROR - Unexpected error"
+                in result.output
+            )
 
     def test_main_entry_point(self) -> None:
         """Test main entry point execution."""

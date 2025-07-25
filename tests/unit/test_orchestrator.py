@@ -3,11 +3,10 @@
 import pytest
 
 from gruponos_meltano_native.config import (
-    GrupoNOSConfig,
-    MeltanoConfig,
-    OracleConnectionConfig,
-    TargetOracleConfig,
-    WMSSourceConfig,
+    GruponosMeltanoOracleConnectionConfig,
+    GruponosMeltanoSettings,
+    GruponosMeltanoTargetOracleConfig,
+    GruponosMeltanoWMSSourceConfig,
 )
 from gruponos_meltano_native.orchestrator import GrupoNOSMeltanoOrchestrator
 
@@ -16,29 +15,29 @@ class TestOrchestrator:
     """Test orchestrator functionality."""
 
     @pytest.fixture
-    def valid_config(self) -> GrupoNOSConfig:
+    def valid_config(self) -> GruponosMeltanoSettings:
         """Create valid test configuration."""
-        oracle_wms = OracleConnectionConfig(
+        oracle_wms = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
             service_name="WMS",
             username="wms_user",
             password="wms_pass",
         )
 
-        oracle_target = OracleConnectionConfig(
+        oracle_target = GruponosMeltanoOracleConnectionConfig(
             host="target.local",
             service_name="TARGET",
             username="target_user",
             password="target_pass",
         )
 
-        return GrupoNOSConfig(
-            wms_source=WMSSourceConfig(oracle=oracle_wms),
-            target_oracle=TargetOracleConfig(oracle=oracle_target, schema_name="SYNC"),
-            meltano=MeltanoConfig(project_id="test", environment="dev"),
+        return GruponosMeltanoSettings(
+            wms_source=GruponosMeltanoWMSSourceConfig(oracle=oracle_wms),
+            target_oracle=GruponosMeltanoTargetOracleConfig(oracle=oracle_target, schema_name="SYNC"),
+            meltano=GruponosMeltanoSettings(project_id="test", environment="dev"),
         )
 
-    def test_orchestrator_initialization(self, valid_config: GrupoNOSConfig) -> None:
+    def test_orchestrator_initialization(self, valid_config: GruponosMeltanoSettings) -> None:
         """Test orchestrator initialization."""
         orchestrator = GrupoNOSMeltanoOrchestrator(valid_config)
 
@@ -51,7 +50,7 @@ class TestOrchestrator:
     @pytest.mark.asyncio
     async def test_orchestrator_validation_success(
         self,
-        valid_config: GrupoNOSConfig,
+        valid_config: GruponosMeltanoSettings,
     ) -> None:
         """Test successful configuration validation."""
         orchestrator = GrupoNOSMeltanoOrchestrator(valid_config)
@@ -64,10 +63,10 @@ class TestOrchestrator:
     @pytest.mark.asyncio
     async def test_orchestrator_validation_missing_wms(self) -> None:
         """Test validation failure with missing WMS source."""
-        config = GrupoNOSConfig(
+        config = GruponosMeltanoSettings(
             wms_source=None,
             target_oracle=None,
-            meltano=MeltanoConfig(project_id="test", environment="dev"),
+            meltano=GruponosMeltanoSettings(project_id="test", environment="dev"),
         )
 
         orchestrator = GrupoNOSMeltanoOrchestrator(config)
@@ -81,17 +80,17 @@ class TestOrchestrator:
     @pytest.mark.asyncio
     async def test_orchestrator_validation_missing_target(self) -> None:
         """Test validation failure with missing target."""
-        oracle_wms = OracleConnectionConfig(
+        oracle_wms = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
             service_name="WMS",
             username="wms_user",
             password="wms_pass",
         )
 
-        config = GrupoNOSConfig(
-            wms_source=WMSSourceConfig(oracle=oracle_wms),
+        config = GruponosMeltanoSettings(
+            wms_source=GruponosMeltanoWMSSourceConfig(oracle=oracle_wms),
             target_oracle=None,
-            meltano=MeltanoConfig(project_id="test", environment="dev"),
+            meltano=GruponosMeltanoSettings(project_id="test", environment="dev"),
         )
 
         orchestrator = GrupoNOSMeltanoOrchestrator(config)
@@ -105,7 +104,7 @@ class TestOrchestrator:
     @pytest.mark.asyncio
     async def test_orchestrator_run_pipeline(
         self,
-        valid_config: GrupoNOSConfig,
+        valid_config: GruponosMeltanoSettings,
     ) -> None:
         """Test pipeline execution."""
         orchestrator = GrupoNOSMeltanoOrchestrator(valid_config)
@@ -119,7 +118,7 @@ class TestOrchestrator:
         assert "records_processed" in result.value
         assert "errors" in result.value
 
-    def test_orchestrator_stop(self, valid_config: GrupoNOSConfig) -> None:
+    def test_orchestrator_stop(self, valid_config: GruponosMeltanoSettings) -> None:
         """Test orchestrator stop functionality."""
         orchestrator = GrupoNOSMeltanoOrchestrator(valid_config)
         orchestrator._running = True
@@ -131,7 +130,7 @@ class TestOrchestrator:
     @pytest.mark.asyncio
     async def test_orchestrator_running_state(
         self,
-        valid_config: GrupoNOSConfig,
+        valid_config: GruponosMeltanoSettings,
     ) -> None:
         """Test orchestrator running state management."""
         orchestrator = GrupoNOSMeltanoOrchestrator(valid_config)

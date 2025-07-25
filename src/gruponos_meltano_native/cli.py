@@ -1,98 +1,59 @@
-"""Command-line interface for GrupoNOS Meltano Native.
+"""GrupoNOS Meltano Native CLI - FLEXT standardized.
 
-Professional CLI implementation using FLEXT patterns and Click.
+Command-line interface following FLEXT standards, Clean Architecture
+principles, and proper type safety.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
-import logging
 import sys
-from pathlib import Path
 
 import click
 import yaml
 
-from gruponos_meltano_native.config import get_config
+# FLEXT Core Standards
+from flext_core import FlextLoggerFactory
+from flext_core.patterns.typedefs import FlextLoggerName
 
-# Use dependency injection instead of direct imports for Clean Architecture compliance
-from gruponos_meltano_native.orchestrator import GrupoNOSMeltanoOrchestrator
+from gruponos_meltano_native.config import (
+    GruponosMeltanoSettings,
+    create_gruponos_meltano_settings,
+)
+from gruponos_meltano_native.orchestrator import (
+    create_gruponos_meltano_orchestrator,
+)
 
-# Get dependencies via DI
-logger = logging.getLogger(__name__)
+logger_factory = FlextLoggerFactory()
+logger = logger_factory.create_logger(FlextLoggerName(__name__))
 
-# 🚨 ARCHITECTURAL COMPLIANCE: Use DI instead of direct imports
-# Projects at level 6 (specific) CANNOT import abstractions directly.
-# LogLevel must be injected from workspace DI container.
 
-try:
-    # Try to get LogLevel via workspace DI container
-    import os
+def setup_logging(debug: bool = False) -> None:
+    """Setup logging configuration using FLEXT logging standards."""
+    import logging
 
-    workspace_container_path = os.environ.get(
-        "FLEXT_WORKSPACE_CONTAINER",
-        "/home/marlonsc/flext/src/workspace_di_container.py",
+    level = logging.DEBUG if debug else logging.INFO
+
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    LogLevel = None
-    if Path(workspace_container_path).exists():
-        import importlib.util
+    # Suppress overly verbose loggers directly
+    urllib3_logger = logging.getLogger("urllib3")
+    requests_logger = logging.getLogger("requests")
 
-        spec = importlib.util.spec_from_file_location(
-            "workspace_di", workspace_container_path
-        )
-        if spec and spec.loader:
-            workspace_di = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(workspace_di)
-
-            # Get LogLevel via workspace DI if available
-            LogLevel = (
-                workspace_di.get_log_level()
-                if hasattr(workspace_di, "get_log_level")
-                else None
-            )
-
-    # Fallback: Direct import with architectural debt warning (temporary)
-    if LogLevel is None:
-        # TEMPORARY FALLBACK: Direct import with architectural debt warning
-        # TODO: This should be completely removed once workspace DI is configured
-        import importlib
-
-        flext_core = importlib.import_module("flext_core")
-        LogLevel = flext_core.LogLevel
-
-        import logging
-
-        temp_logger = logging.getLogger(__name__)
-        temp_logger.warning(
-            "🚨 ARCHITECTURAL DEBT: Using direct import fallback for LogLevel. "
-            "Configure workspace DI container to resolve this violation."
-        )
-
-except ImportError:
-    # Generic fallback if DI not available
-    from enum import Enum
-
-    class LogLevel(Enum):
-        """Log level enumeration fallback."""
-
-        DEBUG = "DEBUG"
-        INFO = "INFO"
-        WARNING = "WARNING"
-        ERROR = "ERROR"
-
-    class LoggingConfig:
-        """Logging configuration."""
-
-        def __init__(self, level: LogLevel = LogLevel.INFO) -> None:
-            self.level = level
-
-    def setup_logging(config: LoggingConfig) -> None:
-        logging.basicConfig(level=getattr(logging, config.level.value))
+    urllib3_logger.setLevel(logging.WARNING)
+    requests_logger.setLevel(logging.WARNING)
 
 
 @click.group()
-@click.version_option()
+@click.version_option(version="0.7.0")
 @click.option(
     "--debug",
     is_flag=True,
@@ -105,117 +66,178 @@ except ImportError:
     help="Path to configuration file",
 )
 @click.pass_context
-def main(
+def cli(
     ctx: click.Context,
-    *,
     debug: bool,
     config_file: str | None,
 ) -> None:
-    """GrupoNOS Meltano Native - Enterprise ETL Pipeline."""
-    # Ensure that ctx.obj exists and is a dict
+    """GrupoNOS Meltano Native - Enterprise ETL Pipeline Manager.
+
+    A FLEXT-standardized tool for managing Meltano pipelines with Oracle
+    integration, comprehensive monitoring, and enterprise-grade reliability.
+    """
     ctx.ensure_object(dict)
 
-    # Configure FLEXT logging
-    if debug:
-        config = LoggingConfig(
-            service_name="gruponos-meltano-native",
-            log_level=LogLevel.DEBUG,
-            json_logs=False,
-            environment="development",
-        )
-        setup_logging(config)
-    else:
-        setup_logging()
+    # Setup logging
+    setup_logging(debug)
 
     # Store context
     ctx.obj["debug"] = debug
     ctx.obj["config_file"] = config_file
 
-    logger.info("GrupoNOS Meltano Native CLI started", debug=debug)
+    logger.info("GrupoNOS Meltano Native CLI started")
 
 
-@main.command()
+@cli.command()
 @click.pass_context
-def health(_ctx: click.Context) -> None:
-    """Check pipeline health and connectivity."""
-    logger.info("Running health check...")
+def health(ctx: click.Context) -> None:
+    """Check pipeline health and system connectivity."""
+    click.echo("🔍 Running health check...")
+    logger.info("Starting health check")
 
     try:
-        # Create config
-        config = get_config()
+        # Create configuration
+        config = create_gruponos_meltano_settings()
+        click.echo("✅ Configuration loaded successfully")
 
         # Create orchestrator
-        GrupoNOSMeltanoOrchestrator(config)
+        _ = create_gruponos_meltano_orchestrator(config)
+        click.echo("✅ Orchestrator initialized successfully")
 
-        # Run health check (this would be implemented in orchestrator)
-        logger.info("✅ Configuration loaded successfully")
-        logger.info("✅ Orchestrator created successfully")
-        logger.info("✅ Health check completed")
+        # Run comprehensive health check
+        if config.oracle and config.oracle.host and config.oracle.username and config.oracle.password:
+            click.echo("✅ Oracle connection configured")
+        else:
+            click.echo("⚠️  Oracle connection not fully configured")
 
+        if config.meltano_project_root and config.meltano_environment:
+            click.echo("✅ Meltano project configured")
+        else:
+            click.echo("⚠️  Meltano project not fully configured")
+
+        logger.info("Health check completed successfully")
         click.echo("✅ Pipeline health check: PASSED")
 
-    except (OSError, ValueError, RuntimeError) as e:
-        logger.exception("Health check failed", error=str(e))
+    except Exception as e:
+        logger.exception(f"Health check failed: {e}")
         click.echo(f"❌ Pipeline health check: FAILED - {e}")
         sys.exit(1)
-    except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
-        logger.exception(
-            "Configuration or import error during health check", error=str(e)
-        )
-        click.echo(f"❌ Pipeline health check: CONFIGURATION ERROR - {e}")
-        sys.exit(1)
 
 
-@main.command()
-@click.option(
-    "--entity",
-    multiple=True,
-    help="Specific entity to sync (can be used multiple times)",
-)
+@cli.command()
+@click.argument("pipeline_name")
 @click.option(
     "--dry-run",
     is_flag=True,
     default=False,
     help="Show what would be done without executing",
 )
+@click.option(
+    "--retry-attempts",
+    type=int,
+    default=3,
+    help="Number of retry attempts on failure",
+)
 @click.pass_context
-def sync(
-    _ctx: click.Context,
-    entity: tuple[str, ...],
-    *,
+def run(
+    ctx: click.Context,
+    pipeline_name: str,
     dry_run: bool,
+    retry_attempts: int,
 ) -> None:
-    """Run data synchronization pipeline."""
-    logger.info("Starting data sync", entities=list(entity), dry_run=dry_run)
+    """Run a specific Meltano pipeline.
+
+    PIPELINE_NAME: Name of the pipeline to execute
+    """
+    if dry_run:
+        click.echo("🔍 DRY RUN MODE - No actual changes will be made")
+        logger.info("Running in dry-run mode")
+        return
+
+    click.echo(f"🚀 Starting pipeline: {pipeline_name}")
+    logger.info(f"Starting pipeline execution: {pipeline_name}")
 
     try:
-        # Create config
-        config = get_config()
+        # Create configuration and orchestrator
+        config = create_gruponos_meltano_settings()
+        orchestrator = create_gruponos_meltano_orchestrator(config)
 
-        # Create orchestrator
-        GrupoNOSMeltanoOrchestrator(config)
+        async def run_pipeline() -> None:
+            """Run the pipeline asynchronously."""
+            result = await orchestrator.run_pipeline(pipeline_name)
 
-        if dry_run:
-            click.echo("🔍 DRY RUN MODE - No actual changes will be made")
-            logger.info("Running in dry-run mode")
+            if result.is_success and result.data:
+                pipeline_result = result.data
+                click.echo("✅ Pipeline completed successfully!")
+                click.echo(f"   Records processed: {pipeline_result.records_processed}")
+                click.echo(
+                    f"   Execution time: {pipeline_result.execution_time_seconds:.2f}s",
+                )
 
-        # Run sync (this would be implemented in orchestrator)
-        entities_list = list(entity) if entity else ["all"]
+                if pipeline_result.has_warnings():
+                    click.echo("⚠️  Warnings:")
+                    for warning in pipeline_result.warnings:
+                        click.echo(f"   - {warning}")
+            else:
+                click.echo(f"❌ Pipeline failed: {result.error}")
+                if result.data:
+                    pipeline_result = result.data
+                    click.echo(
+                        f"   Execution time: {pipeline_result.execution_time_seconds:.2f}s",
+                    )
+                    if pipeline_result.errors:
+                        click.echo("   Errors:")
+                        for error in pipeline_result.errors:
+                            click.echo(f"   - {error}")
+                sys.exit(1)
 
-        logger.info("Sync completed successfully", entities=entities_list)
-        click.echo(f"✅ Data sync completed for: {', '.join(entities_list)}")
+        # Run the pipeline
+        asyncio.run(run_pipeline())
 
-    except (OSError, ValueError, RuntimeError) as e:
-        logger.exception("Sync failed", error=str(e))
-        click.echo(f"❌ Data sync failed: {e}")
+    except Exception as e:
+        logger.exception(f"Pipeline execution failed: {e}")
+        click.echo(f"❌ Pipeline execution failed: {e}")
         sys.exit(1)
-    except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
-        logger.exception("Configuration or import error during sync", error=str(e))
-        click.echo(f"❌ Data sync failed: CONFIGURATION ERROR - {e}")
+
+
+@cli.command()
+@click.pass_context
+def list_pipelines(ctx: click.Context) -> None:
+    """List available Meltano pipelines."""
+    click.echo("📋 Listing available pipelines...")
+    logger.info("Listing pipelines")
+
+    try:
+        # Create configuration and orchestrator
+        config = create_gruponos_meltano_settings()
+        orchestrator = create_gruponos_meltano_orchestrator(config)
+
+        async def list_available_pipelines() -> None:
+            """List pipelines asynchronously."""
+            result = await orchestrator.list_pipelines()
+
+            if result.is_success:
+                pipelines = result.data
+                if pipelines:
+                    click.echo("Available pipelines:")
+                    for pipeline in pipelines:
+                        click.echo(f"  - {pipeline}")
+                else:
+                    click.echo("No pipelines found")
+            else:
+                click.echo(f"❌ Failed to list pipelines: {result.error}")
+                sys.exit(1)
+
+        # List pipelines
+        asyncio.run(list_available_pipelines())
+
+    except Exception as e:
+        logger.exception(f"Failed to list pipelines: {e}")
+        click.echo(f"❌ Failed to list pipelines: {e}")
         sys.exit(1)
 
 
-@main.command()
+@cli.command()
 @click.option(
     "--output-format",
     type=click.Choice(["json", "yaml", "table"]),
@@ -223,27 +245,30 @@ def sync(
     help="Output format",
 )
 @click.pass_context
-def validate(_ctx: click.Context, output_format: str) -> None:
+def validate(ctx: click.Context, output_format: str) -> None:
     """Validate configuration and pipeline setup."""
-    # Only log in non-JSON format to keep JSON output clean
     if output_format != "json":
-        logger.info("Running validation", output_format=output_format)
+        click.echo("🔍 Running validation...")
+        logger.info(f"Running validation with format: {output_format}")
 
     try:
-        # Create config
-        config = get_config()
+        # Create configuration
+        config = create_gruponos_meltano_settings()
 
-        # Create orchestrator
-        GrupoNOSMeltanoOrchestrator(config)
-
-        # Run validation (this would be implemented in orchestrator)
+        # Run validation checks
         validation_results = {
-            "config": "✅ Valid",
-            "dependencies": "✅ Available",
-            "connections": "✅ Reachable",
-            "schema": "✅ Compatible",
+            "configuration": "✅ Valid",
+            "oracle_connection": "✅ Configured"
+            if config.oracle and config.oracle.host
+            else "❌ Missing",
+            "meltano_project": "✅ Found"
+            if config.meltano_project_root
+            else "❌ Missing",
+            "environment": config.environment,
+            "debug_mode": config.is_debug_enabled(),
         }
 
+        # Output results
         if output_format == "json":
             click.echo(json.dumps(validation_results, indent=2))
         elif output_format == "yaml":
@@ -251,25 +276,18 @@ def validate(_ctx: click.Context, output_format: str) -> None:
         else:  # table
             click.echo("📋 Validation Results:")
             for component, status in validation_results.items():
-                click.echo(f"  {component.ljust(15)}: {status}")
+                click.echo(f"  {component.ljust(20)}: {status}")
 
-        # Only log in non-JSON format to keep JSON output clean
         if output_format != "json":
             logger.info("Validation completed successfully")
 
-    except (OSError, ValueError, RuntimeError) as e:
-        logger.exception("Validation failed", error=str(e))
+    except Exception as e:
+        logger.exception(f"Validation failed: {e}")
         click.echo(f"❌ Validation failed: {e}")
         sys.exit(1)
-    except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
-        logger.exception(
-            "Configuration or import error during validation", error=str(e)
-        )
-        click.echo(f"❌ Validation failed: CONFIGURATION ERROR - {e}")
-        sys.exit(1)
 
 
-@main.command()
+@cli.command()
 @click.option(
     "--format",
     "output_format",
@@ -277,81 +295,165 @@ def validate(_ctx: click.Context, output_format: str) -> None:
     default="yaml",
     help="Configuration output format",
 )
+@click.option(
+    "--show-secrets",
+    is_flag=True,
+    default=False,
+    help="Include sensitive configuration (use with caution)",
+)
 @click.pass_context
-def show_config(_ctx: click.Context, output_format: str) -> None:
+def show_config(ctx: click.Context, output_format: str, show_secrets: bool) -> None:
     """Show current configuration."""
-    # Temporarily suppress logging for JSON output to ensure clean JSON
-    root_logger = None
-    original_level = None
-    if output_format == "json":
-        import logging
-
-        # Temporarily set the root logger level to suppress all logs
-        root_logger = logging.getLogger()
-        original_level = root_logger.level
-        root_logger.setLevel(logging.CRITICAL + 1)  # Suppress all logs
-
-    # Only log in non-JSON format to keep JSON output clean
     if output_format != "json":
-        logger.info("Showing configuration", output_format=output_format)
+        click.echo("📋 Current configuration:")
+        logger.info(f"Showing configuration with format: {output_format}")
 
     try:
-        # Create config
-        config = get_config()
+        # Create configuration
+        config: GruponosMeltanoSettings = create_gruponos_meltano_settings()
 
-        # Convert to dict (excluding sensitive data)
+        # Build configuration dictionary
+        oracle_config = None
+        if config.oracle:
+            oracle_config = {
+                "host": config.oracle.host,
+                "port": config.oracle.port,
+                "service_name": config.oracle.service_name,
+                "username": config.oracle.username,
+                "password": "***HIDDEN***"
+                if not show_secrets
+                else config.oracle.password,
+                "protocol": config.oracle.protocol,
+            }
+
+        wms_source_config = None
+        if config.wms_source:
+            wms_source_config = {
+                "organization_id": config.wms_source.organization_id,
+                "facility_code": config.wms_source.facility_code,
+                "source_schema": config.wms_source.source_schema,
+                "batch_size": config.wms_source.batch_size,
+                "parallel_jobs": config.wms_source.parallel_jobs,
+                "extract_mode": config.wms_source.extract_mode,
+            }
+
+        target_oracle_config = None
+        if config.target_oracle:
+            target_oracle_config = {
+                "target_schema": config.target_oracle.target_schema,
+                "table_prefix": config.target_oracle.table_prefix,
+                "batch_size": config.target_oracle.batch_size,
+                "parallel_workers": config.target_oracle.parallel_workers,
+            }
+
         config_dict = {
-            "project_name": "gruponos-meltano-native",
-            "environment": getattr(config, "environment", "development"),
-            "wms_source": (
-                {
-                    "base_url": getattr(config.wms_source, "base_url", ""),
-                    "entities": getattr(config.wms_source, "entities", []),
-                    "page_size": getattr(config.wms_source, "page_size", 100),
-                }
-                if hasattr(config, "wms_source") and config.wms_source is not None
-                else {}
-            ),
-            "oracle_target": (
-                {
-                    "host": getattr(config.oracle_target, "host", ""),
-                    "port": getattr(config.oracle_target, "port", 1521),
-                    "service_name": getattr(config.oracle_target, "service_name", ""),
-                }
-                if hasattr(config, "oracle_target") and config.oracle_target is not None
-                else {}
-            ),
+            "app_name": config.app_name,
+            "version": config.version,
+            "environment": config.environment,
+            "debug": config.debug,
+            "log_level": config.log_level,
+            "oracle": oracle_config,
+            "wms_source": wms_source_config,
+            "target_oracle": target_oracle_config,
+            "job": {
+                "job_name": getattr(config.job, "job_name", "gruponos-etl-pipeline"),
+                "schedule": getattr(config.job, "schedule", "0 0 * * *"),
+                "timeout_minutes": getattr(config.job, "timeout_minutes", 60),
+                "retry_attempts": getattr(config.job, "retry_attempts", 3),
+                "retry_delay_seconds": getattr(config.job, "retry_delay_seconds", 30),
+            },
+            "meltano": {
+                "project_root": config.meltano_project_root,
+                "environment": config.meltano_environment,
+                "state_backend": config.meltano_state_backend,
+            },
         }
 
+        # Output configuration
         if output_format == "json":
             click.echo(json.dumps(config_dict, indent=2))
         else:  # yaml
             click.echo(yaml.dump(config_dict, default_flow_style=False))
 
-        # Only log in non-JSON format to keep JSON output clean
         if output_format != "json":
             logger.info("Configuration displayed successfully")
 
-    except (OSError, ValueError, RuntimeError) as e:
-        logger.exception("Failed to show configuration", error=str(e))
+    except Exception as e:
+        logger.exception(f"Failed to show configuration: {e}")
         click.echo(f"❌ Failed to show configuration: {e}")
         sys.exit(1)
-    except (ImportError, ModuleNotFoundError, AttributeError, TypeError) as e:
-        logger.exception(
-            "Configuration or import error showing configuration", error=str(e)
+
+
+@cli.command()
+@click.argument("pipeline_name")
+@click.option(
+    "--max-retries",
+    type=int,
+    default=3,
+    help="Maximum number of retry attempts",
+)
+@click.pass_context
+def run_with_retry(
+    ctx: click.Context,
+    pipeline_name: str,
+    max_retries: int,
+) -> None:
+    """Run a pipeline with automatic retry logic.
+
+    PIPELINE_NAME: Name of the pipeline to execute with retry
+    """
+    click.echo(f"🚀 Starting pipeline with retry: {pipeline_name}")
+    click.echo(f"   Max retries: {max_retries}")
+    logger.info(
+        f"Starting pipeline with retry: {pipeline_name} (max retries: {max_retries})",
+    )
+
+    try:
+        # Create configuration and orchestrator
+        config = create_gruponos_meltano_settings()
+        orchestrator = create_gruponos_meltano_orchestrator(config)
+
+        # Create pipeline runner for retry functionality
+        from gruponos_meltano_native.orchestrator import (
+            create_gruponos_meltano_pipeline_runner,
         )
-        click.echo(f"❌ Failed to show configuration: CONFIGURATION ERROR - {e}")
+
+        runner = create_gruponos_meltano_pipeline_runner(orchestrator.settings)
+
+        async def run_with_retry_logic() -> None:
+            """Run pipeline with retry logic."""
+            result = await runner.run_with_retry(
+                pipeline_name,
+                max_retries=max_retries,
+            )
+
+            if result.is_success and result.data:
+                pipeline_result = result.data
+                click.echo("✅ Pipeline completed successfully!")
+                click.echo(f"   Records processed: {pipeline_result.records_processed}")
+                click.echo(
+                    f"   Execution time: {pipeline_result.execution_time_seconds:.2f}s",
+                )
+
+                if pipeline_result.has_warnings():
+                    click.echo("⚠️  Warnings:")
+                    for warning in pipeline_result.warnings:
+                        click.echo(f"   - {warning}")
+            else:
+                click.echo(f"❌ Pipeline failed after retries: {result.error}")
+                sys.exit(1)
+
+        # Run with retry
+        asyncio.run(run_with_retry_logic())
+
+    except Exception as e:
+        logger.exception(f"Pipeline execution with retry failed: {e}")
+        click.echo(f"❌ Pipeline execution failed: {e}")
         sys.exit(1)
-    finally:
-        # Restore original logging level if we suppressed it
-        if (
-            output_format == "json"
-            and root_logger is not None
-            and original_level is not None
-        ):
-            root_logger.setLevel(original_level)
+
+
+# Entry point for CLI execution
 
 
 if __name__ == "__main__":
-    # Execute the Click group - Click handles all argument parsing automatically
-    main.main(standalone_mode=True)
+    cli()

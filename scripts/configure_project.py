@@ -7,15 +7,15 @@ This allows complete customization without hardcoded values.
 
 from __future__ import annotations
 
-import logging
 import os
 from pathlib import Path
 from typing import Any
 
 import yaml
+from flext_core import get_logger
 
 # Setup logger
-log = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 
 def load_project_config() -> dict[str, Any]:
@@ -84,7 +84,8 @@ def generate_meltano_config() -> dict[str, Any]:
         "timeout": int(get_env_value("WMS_REQUEST_TIMEOUT", "600") or "600"),
         "max_retries": int(get_env_value("WMS_MAX_RETRIES", "3") or "3"),
         "start_date": get_env_value(
-            "TAP_ORACLE_WMS_START_DATE", "2024-01-01T00:00:00Z"
+            "TAP_ORACLE_WMS_START_DATE",
+            "2024-01-01T00:00:00Z",
         ),
     }
 

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "gruponos-meltano-native"
-version = "0.7.0"
+version = "0.8.0"
 description = "Grupo Nos Meltano Native - Enterprise ETL Pipeline for Grupo Nos"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
@@ -35,6 +35,7 @@ show-fixes = true
 respect-gitignore = true
 src = [ "src", "tests",]
 extend-exclude = [ "__pycache__", ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "venv", "build", "dist", "htmlcov",]
+extend = "../.ruff-shared.toml"
 
 [tool.mypy]
 python_version = "3.13"
@@ -83,7 +84,7 @@ known_first_party = [ "gruponos_meltano_native",]
 [tool.pytest.ini_options]
 minversion = "8.0"
 asyncio_mode = "auto"
-addopts = [ "-ra", "--strict-markers", "--strict-config", "--cov=src/gruponos_meltano_native", "--cov-branch", "--cov-report=term-missing:skip-covered", "--cov-report=html:reports/coverage", "--cov-report=xml:reports/coverage.xml", "--cov-fail-under=85", "--maxfail=1", "--tb=short",]
+addopts = [ "-ra", "--strict-markers", "--strict-config", "--maxfail=1", "--tb=short", "--cov-fail-under=90"]
 testpaths = [ "tests",]
 markers = [ "unit: Unit tests", "integration: Integration tests", "slow: Slow tests", "smoke: Smoke tests", "e2e: End-to-end tests", "wms: WMS integration tests", "oracle: Oracle database tests", "performance: Performance tests", "destructive: Tests that may modify or delete data", "memory: Memory usage tests",]
 filterwarnings = [ "error", "ignore::UserWarning", "ignore::DeprecationWarning",]

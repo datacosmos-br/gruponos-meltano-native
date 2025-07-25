@@ -252,7 +252,7 @@ class TestOracleValidateSync:
         assert result == 0
 
     @patch("gruponos_meltano_native.oracle.validate_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.validate_sync.OracleConnectionManager")
+    @patch("gruponos_meltano_native.oracle.validate_sync.GruponosMeltanoOracleConnectionManager")
     def test_validate_sync_no_config(
         self,
         mock_manager: Any,
@@ -267,7 +267,7 @@ class TestOracleValidateSync:
         assert result is False
 
     @patch("gruponos_meltano_native.oracle.validate_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.validate_sync.OracleConnectionManager")
+    @patch("gruponos_meltano_native.oracle.validate_sync.GruponosMeltanoOracleConnectionManager")
     def test_validate_sync_connection_error(
         self,
         mock_manager: Any,
@@ -299,7 +299,7 @@ class TestOracleValidateSync:
         assert result is False
 
     @patch("gruponos_meltano_native.oracle.validate_sync.get_config")
-    @patch("gruponos_meltano_native.oracle.validate_sync.OracleConnectionManager")
+    @patch("gruponos_meltano_native.oracle.validate_sync.GruponosMeltanoOracleConnectionManager")
     def test_validate_sync_success(
         self,
         mock_manager: Any,
@@ -320,7 +320,8 @@ class TestOracleValidateSync:
 
         def mock_fetchone(self: Any) -> list[Any]:
             call_count[0] += 1
-            # Pattern: table exists check, count records, get details (2 calls), then repeat for other tables
+            # Pattern: table exists check, count records, get details (2 calls), then
+            # repeat for other tables
             fetch_calls = call_count[0] % 4
             if fetch_calls == 1:  # table exists check
                 return [1]

@@ -174,7 +174,9 @@ class TestDataValidator:
 
         data = {"amount": "invalid_decimal"}
 
-        with pytest.raises(ValidationError, match="Field 'amount' must be a valid decimal"):
+        with pytest.raises(
+            ValidationError, match="Field 'amount' must be a valid decimal",
+        ):
             validator.validate(data)
 
     def test_validate_string_valid(self) -> None:
@@ -236,7 +238,9 @@ class TestDataValidator:
 
         data = {"name": "very long string"}
 
-        with pytest.raises(ValidationError, match="Field 'name' exceeds maximum length 5"):
+        with pytest.raises(
+            ValidationError, match="Field 'name' exceeds maximum length 5",
+        ):
             validator.validate(data)
 
     def test_validate_number_valid(self) -> None:
@@ -303,7 +307,9 @@ class TestDataValidator:
 
         data = {"count": 3}
 
-        with pytest.raises(ValidationError, match="Field 'count' below minimum value 5"):
+        with pytest.raises(
+            ValidationError, match="Field 'count' below minimum value 5",
+        ):
             validator.validate(data)
 
     def test_validate_number_max_value_valid(self) -> None:
@@ -334,7 +340,9 @@ class TestDataValidator:
 
         data = {"count": 15}
 
-        with pytest.raises(ValidationError, match="Field 'count' exceeds maximum value 10"):
+        with pytest.raises(
+            ValidationError, match="Field 'count' exceeds maximum value 10",
+        ):
             validator.validate(data)
 
     def test_validate_date_string_valid(self) -> None:
@@ -375,7 +383,9 @@ class TestDataValidator:
 
         data = {"created_date": "invalid-date"}
 
-        with pytest.raises(ValidationError, match="Field 'created_date' is not a valid date format"):
+        with pytest.raises(
+            ValidationError, match="Field 'created_date' is not a valid date format",
+        ):
             validator.validate(data)
 
     def test_validate_date_datetime_object_valid(self) -> None:
@@ -406,7 +416,9 @@ class TestDataValidator:
 
         data = {"created_date": 123}
 
-        with pytest.raises(ValidationError, match="Field 'created_date' must be a valid date"):
+        with pytest.raises(
+            ValidationError, match="Field 'created_date' must be a valid date",
+        ):
             validator.validate(data)
 
     def test_validate_boolean_valid(self) -> None:
@@ -487,7 +499,9 @@ class TestDataValidator:
 
         data = {"email": "invalid-email"}
 
-        with pytest.raises(ValidationError, match="Field 'email' must be a valid email address"):
+        with pytest.raises(
+            ValidationError, match="Field 'email' must be a valid email address",
+        ):
             validator.validate(data)
 
     def test_validate_enum_valid(self) -> None:
@@ -511,7 +525,10 @@ class TestDataValidator:
         errors = validator.validate(data)
 
         assert len(errors) == 1
-        assert "Field 'status' must be one of ['active', 'inactive', 'pending']" in errors[0]
+        assert (
+            "Field 'status' must be one of ['active', 'inactive', 'pending']"
+            in errors[0]
+        )
 
     def test_validate_enum_invalid_strict_mode(self) -> None:
         """Test enum validation with invalid value in strict mode."""
@@ -843,7 +860,9 @@ class TestNumberConversion:
         """Test error handling in other type conversion."""
         validator = DataValidator()
 
-        with pytest.raises(ValueError, match="Cannot convert <class 'str'> 'invalid' to integer"):
+        with pytest.raises(
+            ValueError, match="Cannot convert <class 'str'> 'invalid' to integer",
+        ):
             validator._convert_other_to_number("invalid", "integer")
 
 
@@ -854,8 +873,16 @@ class TestBooleanConversion:
         """Test converting boolean that's already boolean."""
         validator = DataValidator()
 
-        assert validator._convert_to_boolean(value=True, _field_name="test", _strict=False) is True
-        assert validator._convert_to_boolean(value=False, _field_name="test", _strict=False) is False
+        assert (
+            validator._convert_to_boolean(value=True, _field_name="test", _strict=False)
+            is True
+        )
+        assert (
+            validator._convert_to_boolean(
+                value=False, _field_name="test", _strict=False,
+            )
+            is False
+        )
 
     def test_convert_to_boolean_string_truthy(self) -> None:
         """Test converting truthy string values to boolean."""
@@ -864,39 +891,72 @@ class TestBooleanConversion:
         truthy_values = ["true", "t", "yes", "y", "1", "on", "TRUE", "True", " TRUE "]
 
         for value in truthy_values:
-            result = validator._convert_to_boolean(value=value, _field_name="test", _strict=False)
+            result = validator._convert_to_boolean(
+                value=value, _field_name="test", _strict=False,
+            )
             assert result is True, f"Value '{value}' should convert to True"
 
     def test_convert_to_boolean_string_falsy(self) -> None:
         """Test converting falsy string values to boolean."""
         validator = DataValidator()
 
-        falsy_values = ["false", "f", "no", "n", "0", "off", "FALSE", "False", " FALSE "]
+        falsy_values = [
+            "false",
+            "f",
+            "no",
+            "n",
+            "0",
+            "off",
+            "FALSE",
+            "False",
+            " FALSE ",
+        ]
 
         for value in falsy_values:
-            result = validator._convert_to_boolean(value=value, _field_name="test", _strict=False)
+            result = validator._convert_to_boolean(
+                value=value, _field_name="test", _strict=False,
+            )
             assert result is False, f"Value '{value}' should convert to False"
 
     def test_convert_to_boolean_string_invalid(self) -> None:
         """Test converting invalid string to boolean raises error."""
         validator = DataValidator()
 
-        with pytest.raises(ValueError, match="Cannot convert string 'maybe' to boolean"):
-            validator._convert_to_boolean(value="maybe", _field_name="test", _strict=False)
+        with pytest.raises(
+            ValueError, match="Cannot convert string 'maybe' to boolean",
+        ):
+            validator._convert_to_boolean(
+                value="maybe", _field_name="test", _strict=False,
+            )
 
     def test_convert_to_boolean_other_types(self) -> None:
         """Test converting other types to boolean."""
         validator = DataValidator()
 
         # Truthy values
-        assert validator._convert_to_boolean(value=1, _field_name="test", _strict=False) is True
-        assert validator._convert_to_boolean(value=42, _field_name="test", _strict=False) is True
+        assert (
+            validator._convert_to_boolean(value=1, _field_name="test", _strict=False)
+            is True
+        )
+        assert (
+            validator._convert_to_boolean(value=42, _field_name="test", _strict=False)
+            is True
+        )
         # Lists are not supported by _convert_to_boolean - test with numeric values
-        assert validator._convert_to_boolean(value=1.5, _field_name="test", _strict=False) is True
+        assert (
+            validator._convert_to_boolean(value=1.5, _field_name="test", _strict=False)
+            is True
+        )
 
         # Falsy values
-        assert validator._convert_to_boolean(value=0, _field_name="test", _strict=False) is False
-        assert validator._convert_to_boolean(value=0.0, _field_name="test", _strict=False) is False
+        assert (
+            validator._convert_to_boolean(value=0, _field_name="test", _strict=False)
+            is False
+        )
+        assert (
+            validator._convert_to_boolean(value=0.0, _field_name="test", _strict=False)
+            is False
+        )
 
 
 class TestDateConversion:
@@ -926,7 +986,9 @@ class TestDateConversion:
         """Test converting ISO datetime string."""
         validator = DataValidator()
 
-        result = validator._convert_to_date("2025-01-15T10:30:45", "date-time", "test_field")
+        result = validator._convert_to_date(
+            "2025-01-15T10:30:45", "date-time", "test_field",
+        )
 
         assert result == "2025-01-15T10:30:45"
         assert validator.conversion_stats["dates_normalized"] == 1
@@ -997,7 +1059,9 @@ class TestStatisticsAndUtilities:
         # Perform some conversions to update stats
         validator._convert_to_number("123", "integer", "test")
         validator._convert_to_date(datetime.now(), "date-time", "test")
-        validator._convert_field(value=None, field_schema={"type": "string"}, field_name="test")
+        validator._convert_field(
+            value=None, field_schema={"type": "string"}, field_name="test",
+        )
 
         stats = validator.get_conversion_stats()
 
@@ -1060,11 +1124,15 @@ class TestMainExecution:
         # The actual main execution would happen here if __name__ == "__main__"
         # We're testing that the functions exist and can be called
         assert callable(gruponos_meltano_native.validators.data_validator.DataValidator)
-        assert callable(gruponos_meltano_native.validators.data_validator.create_validator_for_environment)
+        assert callable(
+            gruponos_meltano_native.validators.data_validator.create_validator_for_environment,
+        )
 
         # Test that example code runs without error
         with patch("gruponos_meltano_native.validators.data_validator.logger"):
-            validator = gruponos_meltano_native.validators.data_validator.DataValidator(strict_mode=False)
+            validator = gruponos_meltano_native.validators.data_validator.DataValidator(
+                strict_mode=False,
+            )
 
             test_record = {
                 "id": "123",

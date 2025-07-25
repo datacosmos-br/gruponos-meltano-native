@@ -1,330 +1,382 @@
-"""Enhanced Oracle Connection Manager using FLEXT-DB-Oracle.
+"""GrupoNOS Meltano Native Oracle Connection Manager - FLEXT standardized.
 
-This module provides a backward-compatible interface while leveraging
-the enterprise features of flext-db-oracle with resilient connections.
+Professional Oracle connection management following FLEXT patterns
+and Clean Architecture principles with proper type safety.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-import logging
-import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pydantic import SecretStr
+# FLEXT Core Standards
+from flext_core import FlextResult
 
-# Import the REAL config class from our config module - NO DUPLICATION!
-from gruponos_meltano_native.config import OracleConnectionConfig
+# Oracle database imports - TYPE_CHECKING to avoid runtime dependency issues
+if TYPE_CHECKING:
+    from flext_db_oracle.connection.config import ConnectionConfig
 
-# Use dependency injection instead of direct imports for Clean Architecture compliance
-from gruponos_meltano_native.infrastructure.di_container import (
-    get_connection_manager,
-    get_setup_logging,
+from gruponos_meltano_native.exceptions import (
+    GruponosMeltanoOracleConnectionError,
+    GruponosMeltanoOracleError,
 )
 
-# Get dependencies via DI
-logger = logging.getLogger(__name__)
-setup_logging = get_setup_logging()
+if TYPE_CHECKING:
+    from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
-# 🚨 ARCHITECTURAL VIOLATION FIXED: Direct import and fallbacks REMOVED
-# Level 6 projects cannot directly import other Level 6 projects
-# NO FALLBACKS - use real implementations via dependency injection only
+# Use standard logging for Oracle connection management
+from flext_core import FlextLoggerFactory
+from flext_core.patterns.typedefs import FlextLoggerName
+
+logger_factory = FlextLoggerFactory()
+logger = logger_factory.create_logger(FlextLoggerName(__name__))
 
 
-class OracleConnectionManager:
-    """Professional Oracle connection manager with FLEXT enterprise features.
+class GruponosMeltanoOracleConnectionManager:
+    """GrupoNOS Meltano Oracle connection manager following FLEXT patterns.
 
-    This class maintains backward compatibility with the original interface
-    while providing enhanced features from flext-db-oracle:
-    - Connection pooling
-    - Automatic retry with configurable attempts
-    - TCPS to TCP fallback
-    - Port fallback (1522 -> 1521)
-    - Health monitoring
+    Professional Oracle connection management with enterprise features:
+    - Connection validation and health monitoring
+    - Proper error handling with FlextResult
+    - Configuration validation
+    - Clean logging without external dependencies
     """
 
-    def __init__(self, config: OracleConnectionConfig) -> None:
+    def __init__(self, config: GruponosMeltanoOracleConnectionConfig) -> None:
         """Initialize Oracle connection manager with configuration.
 
         Args:
-            config: Oracle connection configuration with host, port, credentials.
+            config: Oracle connection configuration
 
         """
         self.config = config
-
-        # Get flext-db-oracle components via DI
-        try:
-            from flext_db_oracle import ConnectionConfig, ResilientOracleConnection
-
-            # Convert to FLEXT ConnectionConfig
-            self._flext_config = ConnectionConfig(
-                host=config.host,
-                port=config.port,
-                service_name=config.service_name,
-                username=config.username,
-                password=SecretStr(config.password),
-                protocol=config.protocol,
-                ssl_server_dn_match=config.ssl_server_dn_match,
-                # Note: flext-db-oracle uses 'timeout' not 'connection_timeout'
-                timeout=config.connection_timeout,
-                # Required fields with reasonable defaults
-                sid=None,  # Using service_name instead
-                pool_min=1,
-                pool_max=getattr(config, "connection_pool_size", 5),
-                pool_increment=1,
-                encoding="UTF-8",
-                ssl_cert_path=None,
-                ssl_key_path=None,
-            )
-
-            # Create resilient connection with retry and fallback
-            self._connection = ResilientOracleConnection(
-                config=self._flext_config,
-                retry_attempts=config.retry_attempts,
-                retry_delay=config.retry_delay,
-                enable_fallback=True,  # Always enable fallback for compatibility
-            )
-        except ImportError as e:
-            # Use fallback connection manager via DI
-            connection_manager = get_connection_manager()
-            self._connection = connection_manager.get_connection()
-            logger.warning("Using fallback connection manager: %s", e)
-
         self._connection_attempts = 0
+        self._is_connected = False
+        self._oracle_config: ConnectionConfig | None = None
+
+        # Validate configuration on initialization
+        config.validate_domain_rules()
 
         logger.info(
-            "Initialized enhanced Oracle connection manager - "
-            "host=%s, port=%s, service_name=%s, "
-            "protocol=%s, retry_attempts=%s",
-            config.host,
-            config.port,
-            config.service_name,
-            config.protocol,
-            config.retry_attempts,
+            f"GrupoNOS Meltano Oracle Connection Manager initialized - "
+            f"host: {config.host}, port: {config.port}, service_name: {config.service_name}, protocol: {config.protocol}",
         )
 
-    def connect(self) -> object:
-        """Connect to Oracle database with enterprise resilience.
+    def _get_oracle_config(self) -> ConnectionConfig:
+        """Get or create Oracle configuration for flext-db-oracle."""
+        if self._oracle_config is None:
+            # Import at runtime to avoid dependency issues
+            from flext_db_oracle.connection.config import ConnectionConfig
+            from pydantic import SecretStr
+
+            self._oracle_config = ConnectionConfig(
+                host=self.config.host,
+                port=self.config.port,
+                service_name=self.config.service_name,
+                username=self.config.username,
+                password=SecretStr(self.config.password),
+                protocol=self.config.protocol,
+            )
+        return self._oracle_config
+
+    def test_connection(self) -> FlextResult[dict[str, Any]]:
+        """Test Oracle database connection.
 
         Returns:
-            The underlying connection object for backward compatibility.
-
-        Raises:
-            ConnectionError: If connection cannot be established after all retries.
+            FlextResult with connection test results
 
         """
-        logger.info("Connecting to Oracle using enhanced FLEXT connection")
+        try:
+            self._connection_attempts += 1
 
-        # ResilientOracleConnection handles all retry logic internally
-        self._connection.connect()
-
-        # Store connection attempts for backward compatibility
-        # Note: Accessing private member for backward compatibility only
-        self._connection_attempts = getattr(
-            self._connection,
-            "connection_attempts",
-            0,
-        )
-
-        # Return the underlying oracledb connection for compatibility
-        # Note: Accessing private member for backward compatibility only
-        return getattr(self._connection, "_connection", None)
-
-    def test_connection(self) -> dict[str, Any]:
-        """Test the connection and return detailed results.
-
-        Returns:
-            Dictionary with connection test results including:
-            - success: bool
-            - protocol_used: str
-            - oracle_version: str
-            - current_user: str
-            - connection_time_ms: float
-            - error: str (if failed)
-
-        """
-        # Use the enhanced test_connection_detailed from ResilientOracleConnection
-        test_result = self._connection.test_connection_detailed()
-
-        # Log the result
-        if test_result["success"]:
             logger.info(
-                "Connection test successful - "
-                "oracle_version=%s, user=%s, "
-                "time_ms=%s, attempts=%s, "
-                "fallback=%s",
-                test_result.get("oracle_version"),
-                test_result.get("current_user"),
-                test_result.get("connection_time_ms"),
-                test_result.get("attempts"),
-                test_result.get("fallback_applied"),
-            )
-        else:
-            logger.error(
-                "Connection test failed - error=%s, attempts=%s",
-                test_result.get("error"),
-                test_result.get("attempts"),
+                f"Testing Oracle connection (attempt {self._connection_attempts}): "
+                f"{self.config.host}:{self.config.port}/{self.config.service_name}",
             )
 
-        return test_result
+            # Get Oracle configuration using DRY principle
+            oracle_config = self._get_oracle_config()
 
-    def close(self) -> None:
-        """Close the connection."""
-        if self._connection and self._connection.is_connected:
-            self._connection.disconnect()
-            logger.info("Connection closed")
+            # Import at runtime to avoid dependency issues
+            from flext_db_oracle.connection.resilient_connection import (
+                FlextDbOracleResilientConnection,
+            )
 
-    def execute(self, sql: str, parameters: dict[str, Any] | None = None) -> object:
-        """Execute SQL statement using FLEXT connection.
+            # Test actual connection
+            conn = FlextDbOracleResilientConnection(oracle_config)
+            try:
+                conn.connect()
+                result = conn.fetch_one("SELECT 1 FROM DUAL")
 
-        Args:
-            sql: SQL statement to execute
-            parameters: Optional parameters for the SQL statement
+                if result and result[0] == 1:
+                    test_result = {
+                        "success": True,
+                        "host": self.config.host,
+                        "port": self.config.port,
+                        "service_name": self.config.service_name,
+                        "protocol": self.config.protocol,
+                        "connection_attempts": self._connection_attempts,
+                        "message": "Oracle connection test successful",
+                        "oracle_version": conn.get_version(),
+                    }
+                    self._is_connected = True
+                    logger.info("Oracle connection test successful")
+                else:
+                    msg = "Oracle connection test failed: invalid response"
+                    raise ConnectionError(msg)
+            finally:
+                conn.disconnect()
+
+            return FlextResult.ok(test_result)
+
+        except Exception as e:
+            logger.exception(f"Oracle connection test failed: {e}")
+            self._is_connected = False
+            msg = f"Oracle connection test failed: {e}"
+            raise GruponosMeltanoOracleConnectionError(
+                msg,
+                context={"host": self.config.host, "port": self.config.port},
+            ) from e
+
+    def connect(self) -> FlextResult[bool]:
+        """Establish connection to Oracle database.
 
         Returns:
-            Query results or row count
+            FlextResult indicating connection success
 
         """
-        if not self._connection.is_connected:
-            self.connect()
+        try:
+            # Test connection first
+            test_result = self.test_connection()
+            if not test_result.is_success:
+                return FlextResult.fail(test_result.error or "Connection test failed")
 
-        return self._connection.execute(sql, parameters)
+            logger.info("Oracle connection established successfully")
+            return FlextResult.ok(True)
 
-    def fetch_one(
+        except GruponosMeltanoOracleConnectionError:
+            raise
+        except Exception as e:
+            logger.exception(f"Failed to connect to Oracle database: {e}")
+            msg = f"Connection failed: {e}"
+            raise GruponosMeltanoOracleConnectionError(
+                msg,
+                context={"host": self.config.host, "port": self.config.port},
+            ) from e
+
+    def disconnect(self) -> FlextResult[bool]:
+        """Disconnect from Oracle database.
+
+        Returns:
+            FlextResult indicating disconnection success
+
+        """
+        try:
+            if self._is_connected:
+                # Reset connection state
+                self._is_connected = False
+                self._oracle_config = None
+                logger.info("Oracle connection closed successfully")
+
+            return FlextResult.ok(True)
+
+        except Exception as e:
+            logger.exception(f"Failed to disconnect from Oracle database: {e}")
+            return FlextResult.fail(f"Disconnection failed: {e}")
+
+    def execute_query(
         self,
         sql: str,
         parameters: dict[str, Any] | None = None,
-    ) -> tuple[Any, ...] | None:
-        """Fetch one row from SQL query.
+    ) -> FlextResult[list[dict[str, Any]]]:
+        """Execute SQL query and return results.
 
         Args:
             sql: SQL query to execute
-            parameters: Optional parameters for the query
+            parameters: Query parameters
 
         Returns:
-            Single row result or None
+            FlextResult with query results
 
         """
-        if not self._connection.is_connected:
-            self.connect()
+        try:
+            if not self._is_connected:
+                connect_result = self.connect()
+                if not connect_result.is_success:
+                    return FlextResult.fail(connect_result.error or "Connection failed")
 
-        return self._connection.fetch_one(sql, parameters)
+            logger.debug(f"Executing SQL query: {sql[:100]}")
 
-    def fetch_all(
+            # Get Oracle configuration using DRY principle
+            oracle_config = self._get_oracle_config()
+
+            # Import at runtime to avoid dependency issues
+            from flext_db_oracle.connection.resilient_connection import (
+                FlextDbOracleResilientConnection,
+            )
+
+            # Execute actual SQL query with proper column metadata
+            conn = FlextDbOracleResilientConnection(oracle_config)
+            try:
+                conn.connect()
+
+                # Use the new public method to get metadata
+                query_result = conn.execute_with_metadata(sql, parameters)
+
+                # Extract columns and rows from the result
+                columns = query_result["columns"]
+                rows = query_result["rows"]
+
+                # Convert to list of dictionaries with real column names
+                results = [dict(zip(columns, row, strict=True)) for row in rows]
+            finally:
+                conn.disconnect()
+
+            logger.debug(f"Query executed successfully, {len(results)} rows returned")
+            return FlextResult.ok(results)
+
+        except Exception as e:
+            logger.exception(f"SQL query execution failed: {e}")
+            return FlextResult.fail(f"Query execution failed: {e}")
+
+    def execute_command(
         self,
         sql: str,
         parameters: dict[str, Any] | None = None,
-    ) -> list[Any]:
-        """Fetch all rows from SQL query.
+    ) -> FlextResult[int]:
+        """Execute SQL command and return affected rows.
 
         Args:
-            sql: SQL query to execute
-            parameters: Optional parameters for the query
+            sql: SQL command to execute
+            parameters: Command parameters
 
         Returns:
-            List of row results
+            FlextResult with number of affected rows
 
         """
-        if not self._connection.is_connected:
-            self.connect()
+        try:
+            if not self._is_connected:
+                connect_result = self.connect()
+                if not connect_result.is_success:
+                    return FlextResult.fail(connect_result.error or "Connection failed")
 
-        return self._connection.fetch_all(sql, parameters)
+            logger.debug(f"Executing SQL command: {sql[:100]}")
 
-    @property
+            # Get Oracle configuration using DRY principle
+            oracle_config = self._get_oracle_config()
+
+            # Import at runtime to avoid dependency issues
+            from flext_db_oracle.connection.resilient_connection import (
+                FlextDbOracleResilientConnection,
+            )
+
+            # Execute actual SQL command
+            conn = FlextDbOracleResilientConnection(oracle_config)
+            try:
+                conn.connect()
+
+                # Use the new public method to get metadata including affected rows
+                command_result = conn.execute_with_metadata(sql, parameters)
+
+                # Extract affected rows count
+                affected_rows = command_result["affected_rows"]
+
+                # Commit the transaction for commands
+                conn.commit()
+            finally:
+                conn.disconnect()
+
+            logger.debug(
+                f"Command executed successfully, {affected_rows} rows affected",
+            )
+            return FlextResult.ok(affected_rows)
+
+        except Exception as e:
+            logger.exception(f"SQL command execution failed: {e}")
+            return FlextResult.fail(f"Command execution failed: {e}")
+
     def is_connected(self) -> bool:
-        """Check if connected to database."""
-        return self._connection.is_connected
+        """Check if connection is active.
+
+        Returns:
+            True if connected, False otherwise
+
+        """
+        return self._is_connected
 
     def get_connection_info(self) -> dict[str, Any]:
-        """Get detailed connection information.
+        """Get connection information.
 
         Returns:
-            Dictionary with connection details and statistics
+            Dictionary with connection details
 
         """
-        return self._connection.get_connection_info()
+        return {
+            "host": self.config.host,
+            "port": self.config.port,
+            "service_name": self.config.service_name,
+            "protocol": self.config.protocol,
+            "username": self.config.username,
+            "is_connected": self._is_connected,
+            "connection_attempts": self._connection_attempts,
+        }
+
+    def validate_configuration(self) -> FlextResult[bool]:
+        """Validate Oracle connection configuration.
+
+        Returns:
+            FlextResult indicating validation success
+
+        """
+        try:
+            self.config.validate_domain_rules()
+            logger.debug("Oracle connection configuration validated successfully")
+            return FlextResult.ok(True)
+
+        except ValueError as e:
+            logger.exception(f"Oracle connection configuration validation failed: {e}")
+            msg = f"Configuration validation failed: {e}"
+            raise GruponosMeltanoOracleError(
+                msg,
+                context={"config": str(self.config)},
+            ) from e
 
 
-def _validate_required_env_var(var_name: str) -> str:
-    """Validate required environment variable exists."""
-    env_value = os.getenv(var_name)
-    if not env_value:
-        msg = f"Missing {var_name} environment variable"
-        raise ValueError(msg)
-    return env_value
+# Factory function
+def create_gruponos_meltano_oracle_connection_manager(
+    config: GruponosMeltanoOracleConnectionConfig | None = None,
+) -> GruponosMeltanoOracleConnectionManager:
+    """Create GrupoNOS Meltano Oracle connection manager instance.
 
+    Args:
+        config: Optional Oracle connection configuration
 
-def _get_env_config() -> dict[str, str | int | bool]:
-    """Get environment configuration with validation."""
-    # Required variables
+    Returns:
+        Configured GruponosMeltanoOracleConnectionManager instance
 
-    config: dict[str, str | int | bool] = {}
-    # Map environment variable names to config keys
-    var_mapping = {
-        "FLEXT_TARGET_ORACLE_HOST": "host",
-        "FLEXT_TARGET_ORACLE_SERVICE_NAME": "service_name",
-        "FLEXT_TARGET_ORACLE_USERNAME": "username",
-        "FLEXT_TARGET_ORACLE_PASSWORD": "password",
-        "FLEXT_TARGET_ORACLE_PROTOCOL": "protocol",
-    }
-    for var, key in var_mapping.items():
-        config[key] = _validate_required_env_var(var)
-
-    # Optional variables with defaults
-    config["port"] = int(os.getenv("FLEXT_TARGET_ORACLE_PORT", "1522"))
-    config["connection_timeout"] = int(os.getenv("FLEXT_TARGET_ORACLE_TIMEOUT", "60"))
-    config["retry_attempts"] = int(os.getenv("FLEXT_TARGET_ORACLE_RETRIES", "3"))
-    config["retry_delay"] = int(os.getenv("FLEXT_TARGET_ORACLE_RETRY_DELAY", "5"))
-
-    ssl_dn_match_str = os.getenv("FLEXT_TARGET_ORACLE_SSL_DN_MATCH", "false")
-    config["ssl_server_dn_match"] = ssl_dn_match_str.lower() == "true"
-
-    return config
-
-
-def create_connection_manager_from_env() -> OracleConnectionManager:
-    """Create connection manager from environment variables.
-
-    This function maintains backward compatibility with existing
-    environment variable names while using the enhanced connection.
     """
-    env_config = _get_env_config()
-    # Convert types for OracleConnectionConfig constructor
-    config = OracleConnectionConfig(
-        host=str(env_config["host"]),
-        port=int(env_config["port"]),
-        service_name=str(env_config["service_name"]),
-        username=str(env_config["username"]),
-        password=str(env_config["password"]),
-        protocol=str(env_config["protocol"]),
-        connection_timeout=int(env_config["connection_timeout"]),
-        retry_attempts=int(env_config["retry_attempts"]),
-        retry_delay=int(env_config["retry_delay"]),
-        ssl_server_dn_match=bool(env_config["ssl_server_dn_match"]),
-    )
+    if config is None:
+        import os
 
-    logger.info(
-        "Creating enhanced Oracle connection manager from environment - "
-        "host=%s, port=%s, service_name=%s, "
-        "protocol=%s",
-        config.host,
-        config.port,
-        config.service_name,
-        config.protocol,
-    )
+        from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
-    return OracleConnectionManager(config)
+        config = GruponosMeltanoOracleConnectionConfig(
+            host=os.getenv("ORACLE_HOST", "localhost"),
+            port=int(os.getenv("ORACLE_PORT", "1522")),
+            service_name=os.getenv("ORACLE_SERVICE_NAME", "ORCL"),
+            username=os.getenv("ORACLE_USERNAME", "system"),
+            password=os.getenv("ORACLE_PASSWORD", "oracle"),
+        )
+
+    return GruponosMeltanoOracleConnectionManager(config)
 
 
-# Backward compatibility - expose the same interface as original
-if __name__ == "__main__":
-    # Test the connection manager
-    # Setup FLEXT logging
-    setup_logging()
-
-    manager = create_connection_manager_from_env()
-    result = manager.test_connection()
-
-    logger.info("Oracle Connection Test Results:")
-    logger.info("=" * 40)
-    for key, result_value in result.items():
-        logger.info("%s: %s", key, result_value)
+# Public API exports
+__all__ = [
+    # FLEXT Standard Classes
+    "GruponosMeltanoOracleConnectionManager",
+    # Factory Functions
+    "create_gruponos_meltano_oracle_connection_manager",
+]

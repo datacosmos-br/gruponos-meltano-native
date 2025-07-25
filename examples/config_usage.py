@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """Example of using FLEXT Core configuration in GrupoNOS Meltano Native.
 
-🚨 ARCHITECTURAL NOTE: This example file shows direct imports for demonstration purposes.
-In production code within level 6 projects (specific implementations), these dependencies
-should be injected via DI container instead of direct imports to maintain Clean Architecture.
+🚨 ARCHITECTURAL NOTE: This example file shows direct imports for demonstration
+purposes. In production code within level 6 projects (specific implementations), these
+dependencies should be injected via DI container instead of direct imports to maintain
+Clean Architecture.
 
 Example files are exempt from architectural constraints for educational purposes.
 """
 
 # NOTE: Example files can show direct imports for educational purposes
 # In production code, use DI container instead
-from flext_core import LogLevel
-from flext_observability.logging import LoggingConfig, get_logger, setup_logging
+from flext_observability.structured_logging import get_logger
 
 from gruponos_meltano_native.config import GrupoNOSConfig, get_config
 
-# Setup logging
-setup_logging(LoggingConfig(log_level=LogLevel.INFO))
 logger = get_logger(__name__)
 
 

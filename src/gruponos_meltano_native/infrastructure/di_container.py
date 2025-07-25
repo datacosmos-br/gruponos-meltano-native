@@ -1,48 +1,45 @@
-"""🚨 ARCHITECTURAL COMPLIANCE: ELIMINATED DUPLICATE DIContainer.
+"""GrupoNOS Meltano Native DI Configuration - FLEXT standardized.
 
-REFATORADO COMPLETO:
-- REMOVIDA TODAS as duplicações de DIContainer (576 linhas!)
-- USA APENAS a implementação oficial do flext-core
-- Mantém apenas utilitários GrupoNOS-específicos
+Clean dependency injection configuration using only FLEXT-core standards.
+NO legacy/backward compatibility code maintained.
 
-Copyright (c) 2025 Flext. All rights reserved.
+Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-# 🚨 ARCHITECTURAL COMPLIANCE: Use ONLY official flext-core DIContainer - NO duplications
-from flext_core.config.base import DIContainer
+from flext_core import (
+    FlextContainer,
+    FlextLoggerFactory,
+    FlextLoggerName,
+    get_flext_container,
+)
 
-# ==================== GRUPONOS-SPECIFIC DI UTILITIES ====================
+logger_factory = FlextLoggerFactory()
+logger = logger_factory.create_logger(FlextLoggerName(__name__))
 
-_gruponos_container_instance: DIContainer | None = None
-
-
-def get_gruponos_container() -> DIContainer:
-    """Get GrupoNOS-specific DI container instance."""
-    global _gruponos_container_instance
-    if _gruponos_container_instance is None:
-        _gruponos_container_instance = DIContainer()
-    return _gruponos_container_instance
+_container_instance: FlextContainer | None = None
 
 
-def configure_gruponos_dependencies() -> None:
-    """Configure GrupoNOS dependencies using official DIContainer."""
-    container = get_gruponos_container()
+def get_gruponos_meltano_container() -> FlextContainer:
+    """Get GrupoNOS Meltano dependency injection container."""
+    global _container_instance
+    if _container_instance is None:
+        _container_instance = get_flext_container()
+        _configure_dependencies(_container_instance)
+    return _container_instance
 
-    # Import GrupoNOS-specific services
-    try:
-        from gruponos_meltano_native.config import get_gruponos_settings
 
-        settings = get_gruponos_settings()
+def _configure_dependencies(container: FlextContainer) -> None:
+    """Configure core dependencies for GrupoNOS Meltano."""
+    from flext_core import FlextCoreSettings, FlextResult
 
-        # Register settings
-        container.register(type(settings), settings)
+    # Register core FLEXT components
+    result = container.register("flext_result", FlextResult)
+    if not result.is_success:
+        logger.warning(f"Failed to register FlextResult: {result.error}")
 
-        # Configure any dependencies if settings support it
-        if hasattr(settings, "configure_dependencies"):
-            settings.configure_dependencies(container)
-    except ImportError:
-        # GrupoNOS configuration not available
-        pass
+    settings_result = container.register("flext_settings", FlextCoreSettings)
+    if not settings_result.is_success:
+        logger.warning(f"Failed to register FlextCoreSettings: {settings_result.error}")

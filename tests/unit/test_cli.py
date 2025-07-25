@@ -2,7 +2,7 @@
 
 from click.testing import CliRunner
 
-from gruponos_meltano_native.cli import main as app
+from gruponos_meltano_native.cli import cli as app
 
 
 class TestCLI:
