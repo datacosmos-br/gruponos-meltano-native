@@ -33,15 +33,22 @@ class TestOrchestrator:
 
         return GruponosMeltanoSettings(
             wms_source=GruponosMeltanoWMSSourceConfig(oracle=oracle_wms),
-            target_oracle=GruponosMeltanoTargetOracleConfig(oracle=oracle_target, schema_name="SYNC"),
+            target_oracle=GruponosMeltanoTargetOracleConfig(
+                oracle=oracle_target, schema_name="SYNC",
+            ),
             meltano=GruponosMeltanoSettings(project_id="test", environment="dev"),
         )
 
-    def test_orchestrator_initialization(self, valid_config: GruponosMeltanoSettings) -> None:
+    def test_orchestrator_initialization(
+        self, valid_config: GruponosMeltanoSettings,
+    ) -> None:
         """Test orchestrator initialization."""
         orchestrator = GrupoNOSMeltanoOrchestrator(valid_config)
 
-        assert orchestrator.config == valid_config
+        if orchestrator.config != valid_config:
+
+            msg = f"Expected {valid_config}, got {orchestrator.config}"
+            raise AssertionError(msg)
         assert not orchestrator._running
         assert hasattr(orchestrator, "run_pipeline")
         assert hasattr(orchestrator, "validate_configuration")
@@ -58,7 +65,9 @@ class TestOrchestrator:
         result = await orchestrator.validate_configuration()
 
         assert result.success
-        assert result.value is True
+        if not (result.value):
+            msg = f"Expected True, got {result.value}"
+            raise AssertionError(msg)
 
     @pytest.mark.asyncio
     async def test_orchestrator_validation_missing_wms(self) -> None:
@@ -75,7 +84,9 @@ class TestOrchestrator:
 
         assert not result.success
         assert result.error is not None
-        assert "WMS source not configured" in result.error
+        if "WMS source not configured" not in result.error:
+            msg = f"Expected {"WMS source not configured"} in {result.error}"
+            raise AssertionError(msg)
 
     @pytest.mark.asyncio
     async def test_orchestrator_validation_missing_target(self) -> None:
@@ -99,7 +110,9 @@ class TestOrchestrator:
 
         assert not result.success
         assert result.error is not None
-        assert "Target Oracle not configured" in result.error
+        if "Target Oracle not configured" not in result.error:
+            msg = f"Expected {"Target Oracle not configured"} in {result.error}"
+            raise AssertionError(msg)
 
     @pytest.mark.asyncio
     async def test_orchestrator_run_pipeline(
@@ -113,9 +126,13 @@ class TestOrchestrator:
 
         assert result.success
         assert result.value is not None
-        assert result.value["pipeline"] == "test_pipeline"
+        if result.value["pipeline"] != "test_pipeline":
+            msg = f"Expected {"test_pipeline"}, got {result.value["pipeline"]}"
+            raise AssertionError(msg)
         assert result.value["status"] == "success"
-        assert "records_processed" in result.value
+        if "records_processed" not in result.value:
+            msg = f"Expected {"records_processed"} in {result.value}"
+            raise AssertionError(msg)
         assert "errors" in result.value
 
     def test_orchestrator_stop(self, valid_config: GruponosMeltanoSettings) -> None:

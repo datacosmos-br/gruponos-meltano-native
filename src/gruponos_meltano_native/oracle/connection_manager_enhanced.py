@@ -7,6 +7,11 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
+from flext_db_oracle.connection.config import ConnectionConfig
+from pydantic import SecretStr
+from flext_db_oracle.connection.resilient_connection import (
+
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -27,11 +32,9 @@ if TYPE_CHECKING:
     from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
 # Use standard logging for Oracle connection management
-from flext_core import FlextLoggerFactory
-from flext_core.patterns.typedefs import FlextLoggerName
+from flext_core import get_logger
 
-logger_factory = FlextLoggerFactory()
-logger = logger_factory.create_logger(FlextLoggerName(__name__))
+logger = get_logger(__name__)
 
 
 class GruponosMeltanoOracleConnectionManager:
@@ -68,8 +71,8 @@ class GruponosMeltanoOracleConnectionManager:
         """Get or create Oracle configuration for flext-db-oracle."""
         if self._oracle_config is None:
             # Import at runtime to avoid dependency issues
-            from flext_db_oracle.connection.config import ConnectionConfig
-            from pydantic import SecretStr
+
+
 
             self._oracle_config = ConnectionConfig(
                 host=self.config.host,
@@ -100,7 +103,7 @@ class GruponosMeltanoOracleConnectionManager:
             oracle_config = self._get_oracle_config()
 
             # Import at runtime to avoid dependency issues
-            from flext_db_oracle.connection.resilient_connection import (
+
                 FlextDbOracleResilientConnection,
             )
 
@@ -131,13 +134,13 @@ class GruponosMeltanoOracleConnectionManager:
 
             return FlextResult.ok(test_result)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception(f"Oracle connection test failed: {e}")
             self._is_connected = False
             msg = f"Oracle connection test failed: {e}"
             raise GruponosMeltanoOracleConnectionError(
                 msg,
-                context={"host": self.config.host, "port": self.config.port},
+
             ) from e
 
     def connect(self) -> FlextResult[bool]:
@@ -158,12 +161,12 @@ class GruponosMeltanoOracleConnectionManager:
 
         except GruponosMeltanoOracleConnectionError:
             raise
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception(f"Failed to connect to Oracle database: {e}")
             msg = f"Connection failed: {e}"
             raise GruponosMeltanoOracleConnectionError(
                 msg,
-                context={"host": self.config.host, "port": self.config.port},
+
             ) from e
 
     def disconnect(self) -> FlextResult[bool]:
@@ -182,7 +185,7 @@ class GruponosMeltanoOracleConnectionManager:
 
             return FlextResult.ok(True)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception(f"Failed to disconnect from Oracle database: {e}")
             return FlextResult.fail(f"Disconnection failed: {e}")
 
@@ -237,7 +240,7 @@ class GruponosMeltanoOracleConnectionManager:
             logger.debug(f"Query executed successfully, {len(results)} rows returned")
             return FlextResult.ok(results)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception(f"SQL query execution failed: {e}")
             return FlextResult.fail(f"Query execution failed: {e}")
 
@@ -293,7 +296,7 @@ class GruponosMeltanoOracleConnectionManager:
             )
             return FlextResult.ok(affected_rows)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception(f"SQL command execution failed: {e}")
             return FlextResult.fail(f"Command execution failed: {e}")
 
@@ -340,7 +343,7 @@ class GruponosMeltanoOracleConnectionManager:
             msg = f"Configuration validation failed: {e}"
             raise GruponosMeltanoOracleError(
                 msg,
-                context={"config": str(self.config)},
+
             ) from e
 
 

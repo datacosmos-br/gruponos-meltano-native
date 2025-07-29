@@ -1,5 +1,8 @@
 """Tests for Oracle schema discovery functionality.
 
+# Constants
+EXPECTED_BULK_SIZE = 2
+
 REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle schema discovery logic with comprehensive error handling.
 """
@@ -45,7 +48,9 @@ class TestOracleSchemaDiscovery:
         # Test discovery
         result = discover_schemas()
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
         mock_tap.assert_called_once()
 
     @patch.dict("os.environ", {}, clear=True)
@@ -58,8 +63,9 @@ class TestOracleSchemaDiscovery:
         # Test discovery without credentials
         result = discover_schemas()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch.dict(
         "os.environ",
         {
@@ -77,8 +83,9 @@ class TestOracleSchemaDiscovery:
         # Test discovery
         result = discover_schemas()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch.dict(
         "os.environ",
         {
@@ -92,8 +99,8 @@ class TestOracleSchemaDiscovery:
     @patch("gruponos_meltano_native.oracle.discover_and_save_schemas.Path")
     def test_discover_schemas_with_custom_page_size(
         self,
-        mock_path: Any,
-        mock_tap: Any,
+        mock_path: object,
+        mock_tap: object,
     ) -> None:
         """Test schema discovery with custom page size."""
         # Mock directory creation
@@ -125,10 +132,13 @@ class TestOracleSchemaDiscovery:
         # Test discovery
         result = discover_schemas()
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
         # Verify TapOracleWMS was called with custom page size
         call_args = mock_tap.call_args[1]["config"]
-        assert call_args["page_size"] == 500
+        if call_args["page_size"] != 500:
+            raise AssertionError(f"Expected {500}, got {call_args["page_size"]}")
 
     @patch.dict(
         "os.environ",
@@ -142,8 +152,8 @@ class TestOracleSchemaDiscovery:
     @patch("gruponos_meltano_native.oracle.discover_and_save_schemas.Path")
     def test_discover_schemas_file_creation(
         self,
-        mock_path: Any,
-        mock_tap: Any,
+        mock_path: object,
+        mock_tap: object,
     ) -> None:
         """Test that schema discovery creates the expected file structure."""
         # Mock Path and file operations
@@ -180,9 +190,12 @@ class TestOracleSchemaDiscovery:
         # Test discovery
         result = discover_schemas()
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
         # Verify Path was called for directory creation and file opening
-        assert mock_path.call_count == 2
+        if mock_path.call_count != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {mock_path.call_count}")
 
     def test_discover_schemas_entities_configuration(self) -> None:
         """Test that the function uses the correct entities configuration."""
@@ -210,8 +223,10 @@ class TestOracleSchemaDiscovery:
             # Verify configuration includes expected entities
             call_args = mock_tap.call_args[1]["config"]
             expected_entities = ["allocation", "order_hdr", "order_dtl"]
-            assert call_args["entities"] == expected_entities
-            assert call_args["force_full_table"] is True
+            if call_args["entities"] != expected_entities:
+                raise AssertionError(f"Expected {expected_entities}, got {call_args["entities"]}")
+            if not (call_args["force_full_table"]):
+                raise AssertionError(f"Expected True, got {call_args["force_full_table"]}")
 
     @patch.dict(
         "os.environ",
@@ -246,7 +261,9 @@ class TestOracleSchemaDiscovery:
         # Test discovery
         result = discover_schemas()
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
 
     def test_discover_schemas_integration_functionality(self) -> None:
         """Test the integration aspects of schema discovery."""

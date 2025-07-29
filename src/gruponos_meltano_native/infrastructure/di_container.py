@@ -11,13 +11,13 @@ from __future__ import annotations
 
 from flext_core import (
     FlextContainer,
-    FlextLoggerFactory,
-    FlextLoggerName,
+    FlextCoreSettings,
+    FlextResult,
     get_flext_container,
+    get_logger,
 )
 
-logger_factory = FlextLoggerFactory()
-logger = logger_factory.create_logger(FlextLoggerName(__name__))
+logger = get_logger(__name__)
 
 _container_instance: FlextContainer | None = None
 
@@ -33,8 +33,6 @@ def get_gruponos_meltano_container() -> FlextContainer:
 
 def _configure_dependencies(container: FlextContainer) -> None:
     """Configure core dependencies for GrupoNOS Meltano."""
-    from flext_core import FlextCoreSettings, FlextResult
-
     # Register core FLEXT components
     result = container.register("flext_result", FlextResult)
     if not result.is_success:

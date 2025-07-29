@@ -28,9 +28,14 @@ class TestBasicIntegration:
             password="test_pass",
         )
 
-        assert oracle_config.host == "localhost"
+        if oracle_config.host != "localhost":
+
+            msg = f"Expected {"localhost"}, got {oracle_config.host}"
+            raise AssertionError(msg)
         assert oracle_config.port == 1521
-        assert oracle_config.service_name == "TEST"
+        if oracle_config.service_name != "TEST":
+            msg = f"Expected {"TEST"}, got {oracle_config.service_name}"
+            raise AssertionError(msg)
 
     def test_wms_source_config(self) -> None:
         """Test WMS source configuration."""
@@ -45,7 +50,10 @@ class TestBasicIntegration:
             oracle=oracle_config,
         )
 
-        assert wms_config.oracle.host == "wms.local"
+        if wms_config.oracle.host != "wms.local":
+
+            msg = f"Expected {"wms.local"}, got {wms_config.oracle.host}"
+            raise AssertionError(msg)
         assert wms_config.api_enabled is False  # default value
 
     @pytest.mark.asyncio
@@ -90,7 +98,9 @@ class TestBasicIntegration:
         # Test validation
         result = await orchestrator.validate_configuration()
         assert result.success
-        assert result.data is True
+        if not (result.data):
+            msg = f"Expected True, got {result.data}"
+            raise AssertionError(msg)
 
     @pytest.mark.asyncio
     async def test_orchestrator_pipeline_run(self) -> None:
@@ -134,7 +144,9 @@ class TestBasicIntegration:
         result = await orchestrator.run_pipeline("test_pipeline")
         assert result.success
         assert result.data is not None
-        assert result.data["pipeline"] == "test_pipeline"
+        if result.data["pipeline"] != "test_pipeline":
+            msg = f"Expected {"test_pipeline"}, got {result.data["pipeline"]}"
+            raise AssertionError(msg)
         assert result.data["status"] == "success"
 
     def test_service_result_pattern(self) -> None:
@@ -142,11 +154,15 @@ class TestBasicIntegration:
         # Test success
         success_result = FlextResult.ok(data="test_value")
         assert success_result.success
-        assert success_result.data == "test_value"
+        if success_result.data != "test_value":
+            msg = f"Expected {"test_value"}, got {success_result.data}"
+            raise AssertionError(msg)
         assert success_result.error is None
 
         # Test failure
         failure_result: FlextResult[str] = FlextResult.fail("test_error")
         assert not failure_result.success
         assert failure_result.data is None
-        assert failure_result.error == "test_error"
+        if failure_result.error != "test_error":
+            msg = f"Expected {"test_error"}, got {failure_result.error}"
+            raise AssertionError(msg)

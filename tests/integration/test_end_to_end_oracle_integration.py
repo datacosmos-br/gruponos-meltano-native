@@ -49,7 +49,8 @@ class TestOracleConnectionIntegration:
 
     @pytest.fixture
     def connection_manager(
-        self, oracle_config: GruponosMeltanoOracleConnectionConfig,
+        self,
+        oracle_config: GruponosMeltanoOracleConnectionConfig,
     ) -> GruponosMeltanoOracleConnectionManager:
         """Create connection manager with real Oracle config."""
         return GruponosMeltanoOracleConnectionManager(oracle_config)
@@ -67,8 +68,10 @@ class TestOracleConnectionIntegration:
 
         # Validate result data
         assert result.data is not None
-        assert result.data["success"] is True
-        assert "oracle_version" in result.data
+        if not (result.data["success"]):
+            raise AssertionError(f"Expected True, got {result.data["success"]}")
+        if "oracle_version" not in result.data:
+            raise AssertionError(f"Expected {"oracle_version"} in {result.data}")
 
     @pytest.mark.integration
     @pytest.mark.slow
@@ -83,9 +86,12 @@ class TestOracleConnectionIntegration:
 
         # Validate result structure
         assert result.data is not None
-        assert len(result.data) == 1
-        assert "test_col" in result.data[0]
-        assert result.data[0]["test_col"] == 1
+        if len(result.data) != 1:
+            raise AssertionError(f"Expected {1}, got {len(result.data)}")
+        if "test_col" not in result.data[0]:
+            raise AssertionError(f"Expected {"test_col"} in {result.data[0]}")
+        if result.data[0]["test_col"] != 1:
+            raise AssertionError(f"Expected {1}, got {result.data[0]["test_col"]}")
 
     @pytest.mark.integration
     @pytest.mark.slow
@@ -111,14 +117,16 @@ class TestOracleConnectionIntegration:
                 "INSERT INTO test_flext_table VALUES (1, 'test')",
             )
             assert insert_result.is_success, f"Insert failed: {insert_result.error}"
-            assert insert_result.data == 1  # 1 row affected
+            if insert_result.data != 1  # 1 row affected:
+                raise AssertionError(f"Expected {1  # 1 row affected}, got {insert_result.data}")
 
             # Query the data back
             query_result = connection_manager.execute_query(
                 "SELECT * FROM test_flext_table WHERE id = 1",
             )
             assert query_result.is_success, f"Query failed: {query_result.error}"
-            assert len(query_result.data) == 1
+            if len(query_result.data) != 1:
+                raise AssertionError(f"Expected {1}, got {len(query_result.data)}")
             assert query_result.data[0]["TEST_DATA"] == "test"
 
         finally:
@@ -154,12 +162,16 @@ class TestOracleConnectionIntegration:
 
         # Get connection info
         info = connection_manager.get_connection_info()
-        assert info["is_connected"] is True
-        assert info["host"] == connection_manager.config.host
+        if not (info["is_connected"]):
+            raise AssertionError(f"Expected True, got {info["is_connected"]}")
+        if info["host"] != connection_manager.config.host:
+            raise AssertionError(f"Expected {connection_manager.config.host}, got {info["host"]}")
 
         # Disconnect
         disconnect_result = connection_manager.disconnect()
-        assert disconnect_result.is_success, f"Disconnection failed: {disconnect_result.error}"
+        assert disconnect_result.is_success, (
+            f"Disconnection failed: {disconnect_result.error}"
+        )
 
         # Verify disconnection
         assert not connection_manager.is_connected()
@@ -173,7 +185,8 @@ class TestSettingsIntegration:
         settings = GruponosMeltanoSettings()
 
         # Basic validation
-        assert settings.app_name == "gruponos-meltano-native"
+        if settings.app_name != "gruponos-meltano-native":
+            raise AssertionError(f"Expected {"gruponos-meltano-native"}, got {settings.app_name}")
         assert settings.version == "0.7.0"
         assert hasattr(settings, "oracle")
         assert hasattr(settings, "meltano_project_root")
@@ -192,4 +205,5 @@ class TestSettingsIntegration:
 
         # Test connection string generation
         conn_str = config.get_connection_string()
-        assert conn_str == "testuser/testpass@test.oracle.com:1522/TESTDB"
+        if conn_str != "testuser/testpass@test.oracle.com:1522/TESTDB":
+            raise AssertionError(f"Expected {"testuser/testpass@test.oracle.com:1522/TESTDB"}, got {conn_str}")

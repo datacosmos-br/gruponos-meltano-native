@@ -7,6 +7,9 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
+from email.mime.text import MIMEText
+
+
 from __future__ import annotations
 
 from enum import StrEnum
@@ -15,14 +18,13 @@ from typing import TYPE_CHECKING, Any
 import requests
 
 # FLEXT Core Standards
-from flext_core import FlextLoggerFactory, FlextResult, FlextValueObject
-from flext_core.patterns.typedefs import FlextLoggerName
+from flext_core import get_logger, FlextResult, FlextValueObject
+
 
 if TYPE_CHECKING:
     from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
 
-logger_factory = FlextLoggerFactory()
-logger = logger_factory.create_logger(FlextLoggerName(__name__))
+logger = get_logger(__name__)
 
 
 class GruponosMeltanoAlertSeverity(StrEnum):
@@ -143,7 +145,7 @@ class GruponosMeltanoAlertService:
             combined_error = "; ".join(error_messages)
             return FlextResult.fail(f"Failed to send alert: {combined_error}")
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception(f"Alert sending failed with unexpected error: {e}")
             return FlextResult.fail(f"Alert sending error: {e}")
 
@@ -180,7 +182,7 @@ class GruponosMeltanoAlertService:
     def _send_email(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
         """Send alert via email using SMTP configuration."""
         try:
-            from email.mime.text import MIMEText
+
 
             if not self.config.email_recipients:
                 return FlextResult.fail("No email recipients configured")
@@ -200,7 +202,7 @@ class GruponosMeltanoAlertService:
             )
             return FlextResult.ok(True)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.warning(f"Email alert failed: {e}")
             return FlextResult.fail(f"Email failed: {e}")
 

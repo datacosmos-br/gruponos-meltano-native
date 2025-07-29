@@ -10,8 +10,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import TYPE_CHECKING, Any
 
-from flext_core import FlextLoggerFactory
-from flext_core.patterns.typedefs import FlextLoggerName
+from flext_core import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -19,8 +18,7 @@ if TYPE_CHECKING:
 # Use dependency injection instead of direct imports for Clean Architecture compliance
 
 # Get dependencies via DI
-logger_factory = FlextLoggerFactory()
-logger = logger_factory.create_logger(FlextLoggerName(__name__))
+logger = get_logger(__name__)
 
 
 class ValidationError(Exception):
@@ -156,7 +154,7 @@ class DataValidator:
     def _validate_decimal(
         self,
         rule: ValidationRule,
-        value: Any,
+        value: object,
         errors: list[str],
     ) -> None:
         """Validate decimal field."""
@@ -173,7 +171,7 @@ class DataValidator:
     def _validate_string(
         self,
         rule: ValidationRule,
-        value: Any,
+        value: object,
         errors: list[str],
     ) -> None:
         """Validate string field."""
@@ -193,14 +191,14 @@ class DataValidator:
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name)
                 logger.warning(
-                    f"Validation failed: {error_msg} (field: {rule.field_name})"
+                    f"Validation failed: {error_msg} (field: {rule.field_name})",
                 )
                 errors.append(error_msg)
 
     def _validate_number(
         self,
         rule: ValidationRule,
-        value: Any,
+        value: object,
         errors: list[str],
     ) -> None:
         """Validate number field."""
@@ -219,7 +217,7 @@ class DataValidator:
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name)
                 logger.warning(
-                    f"Validation failed: {error_msg} (field: {rule.field_name})"
+                    f"Validation failed: {error_msg} (field: {rule.field_name})",
                 )
                 errors.append(error_msg)
             if max_value is not None and value > max_value:
@@ -229,14 +227,14 @@ class DataValidator:
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name)
                 logger.warning(
-                    f"Validation failed: {error_msg} (field: {rule.field_name})"
+                    f"Validation failed: {error_msg} (field: {rule.field_name})",
                 )
                 errors.append(error_msg)
 
     def _validate_date(
         self,
         rule: ValidationRule,
-        value: Any,
+        value: object,
         errors: list[str],
     ) -> None:
         """Validate date field."""
@@ -252,7 +250,7 @@ class DataValidator:
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name) from None
                 logger.warning(
-                    f"Validation failed: {error_msg} (field: {rule.field_name})"
+                    f"Validation failed: {error_msg} (field: {rule.field_name})",
                 )
                 errors.append(error_msg)
         elif not isinstance(value, datetime):
@@ -265,7 +263,7 @@ class DataValidator:
     def _validate_boolean(
         self,
         rule: ValidationRule,
-        value: Any,
+        value: object,
         errors: list[str],
     ) -> None:
         """Validate boolean field."""
@@ -279,7 +277,7 @@ class DataValidator:
     def _validate_email(
         self,
         rule: ValidationRule,
-        value: Any,
+        value: object,
         errors: list[str],
     ) -> None:
         """Validate email field."""
@@ -294,7 +292,7 @@ class DataValidator:
     def _validate_enum(
         self,
         rule: ValidationRule,
-        value: Any,
+        value: object,
         errors: list[str],
     ) -> None:
         """Validate enum field."""

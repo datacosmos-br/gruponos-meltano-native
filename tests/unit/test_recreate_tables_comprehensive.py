@@ -1,5 +1,8 @@
 """Comprehensive tests for recreate_tables_and_sync module targeting 100% coverage.
 
+# Constants
+EXPECTED_DATA_COUNT = 3
+
 Tests all functionality including table recreation, syncing, and validation.
 """
 
@@ -54,11 +57,15 @@ class TestDropAllWMSTables:
 
         result = drop_all_wms_tables()
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
         mock_cursor.execute.assert_any_call(
             "\n            SELECT table_name\n            FROM user_tables\n            WHERE table_name IN (\n                'WMS_ALLOCATION', 'WMS_ORDER_HDR', 'WMS_ORDER_DTL',\n                'ALLOCATION', 'ORDER_HDR', 'ORDER_DTL'\n            )\n            ",
         )
-        assert mock_cursor.execute.call_count == 4  # 1 select + 3 drops
+        if mock_cursor.execute.call_count != 4  # 1 select + 3 drops:
+            raise AssertionError(f"Expected {4
+            # 1 select + 3 drops}, got {mock_cursor.execute.call_count}")
         mock_connection.commit.assert_called_once()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
@@ -69,8 +76,8 @@ class TestDropAllWMSTables:
         mock_get_config.return_value = mock_config
 
         result = drop_all_wms_tables()
-        assert result is False
-
+        if result:
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
     @patch(
         "gruponos_meltano_native.oracle.recreate_tables_and_sync.GruponosMeltanoOracleConnectionManager",
@@ -98,7 +105,9 @@ class TestDropAllWMSTables:
 
         result = drop_all_wms_tables()
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
         mock_cursor.execute.assert_called_once()  # Only the SELECT
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
@@ -154,8 +163,9 @@ class TestDropAllWMSTables:
 
         result = drop_all_wms_tables()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
     @patch(
         "gruponos_meltano_native.oracle.recreate_tables_and_sync.GruponosMeltanoOracleConnectionManager",
@@ -179,8 +189,9 @@ class TestDropAllWMSTables:
 
         result = drop_all_wms_tables()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
 
 class TestListCurrentTables:
     """Test list_current_tables function."""
@@ -484,7 +495,9 @@ class TestCreateTablesWithDDL:
 
         result = create_tables_with_ddl("", [])
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
         mock_subprocess.assert_called_once()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
@@ -509,8 +522,9 @@ class TestCreateTablesWithDDL:
 
         result = create_tables_with_ddl("", [])
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
     def test_create_tables_with_ddl_timeout(
@@ -529,8 +543,9 @@ class TestCreateTablesWithDDL:
 
         result = create_tables_with_ddl("", [])
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
     def test_create_tables_with_ddl_os_error(
@@ -549,8 +564,9 @@ class TestCreateTablesWithDDL:
 
         result = create_tables_with_ddl("", [])
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
     def test_create_tables_with_ddl_runtime_error(
@@ -569,8 +585,9 @@ class TestCreateTablesWithDDL:
 
         result = create_tables_with_ddl("", [])
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
 
 class TestRunFullSync:
     """Test run_full_sync function."""
@@ -600,7 +617,9 @@ class TestRunFullSync:
 
         result = run_full_sync()
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
         mock_subprocess.assert_called_once()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
@@ -628,8 +647,9 @@ class TestRunFullSync:
 
         result = run_full_sync()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.time.time")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
@@ -655,8 +675,9 @@ class TestRunFullSync:
 
         result = run_full_sync()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
     def test_run_full_sync_timeout(
@@ -673,8 +694,9 @@ class TestRunFullSync:
 
         result = run_full_sync()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
     def test_run_full_sync_os_error(
@@ -691,8 +713,9 @@ class TestRunFullSync:
 
         result = run_full_sync()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
     def test_run_full_sync_runtime_error(
@@ -709,8 +732,9 @@ class TestRunFullSync:
 
         result = run_full_sync()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
 
 class TestValidateSyncResults:
     """Test validate_sync_results function."""
@@ -722,7 +746,9 @@ class TestValidateSyncResults:
 
         result = validate_sync_results()
 
-        assert result is True
+        if not (result):
+
+            raise AssertionError(f"Expected True, got {result}")
         mock_validate_sync.assert_called_once()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync")
@@ -732,8 +758,9 @@ class TestValidateSyncResults:
 
         result = validate_sync_results()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync")
     def test_validate_sync_results_os_error(self, mock_validate_sync: Mock) -> None:
         """Test sync validation OS error."""
@@ -741,8 +768,9 @@ class TestValidateSyncResults:
 
         result = validate_sync_results()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync")
     def test_validate_sync_results_runtime_error(
         self,
@@ -753,8 +781,9 @@ class TestValidateSyncResults:
 
         result = validate_sync_results()
 
-        assert result is False
+        if result:
 
+            raise AssertionError(f"Expected False, got {result}")\ n
 
 class TestMainFunction:
     """Test main function."""
@@ -798,11 +827,14 @@ class TestMainFunction:
 
         result = main()
 
-        assert result == 0
+        if result != 0:
+
+            raise AssertionError(f"Expected {0}, got {result}")
         mock_list_tables.assert_called_once()
         mock_drop_tables.assert_called_once()
         mock_create_tables.assert_called_once()
-        assert mock_check_structure.call_count == 3  # Called for each table
+        if mock_check_structure.call_count != EXPECTED_DATA_COUNT  # Called for each table:
+            raise AssertionError(f"Expected {3  # Called for each table}, got {mock_check_structure.call_count}")
         mock_sync.assert_called_once()
         mock_validate.assert_called_once()
 
@@ -822,7 +854,9 @@ class TestMainFunction:
 
         result = main()
 
-        assert result == 1
+        if result != 1:
+
+            raise AssertionError(f"Expected {1}, got {result}")
         mock_list_tables.assert_called_once()
         mock_drop_tables.assert_called_once()
 
@@ -847,7 +881,9 @@ class TestMainFunction:
 
         result = main()
 
-        assert result == 1
+        if result != 1:
+
+            raise AssertionError(f"Expected {1}, got {result}")
         mock_create_tables.assert_called_once()
 
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.run_full_sync")
@@ -878,7 +914,9 @@ class TestMainFunction:
 
         result = main()
 
-        assert result == 1
+        if result != 1:
+
+            raise AssertionError(f"Expected {1}, got {result}")
         mock_sync.assert_called_once()
 
     @patch(
@@ -914,7 +952,9 @@ class TestMainFunction:
 
         result = main()
 
-        assert result == 1
+        if result != 1:
+
+            raise AssertionError(f"Expected {1}, got {result}")
         mock_validate.assert_called_once()
 
 

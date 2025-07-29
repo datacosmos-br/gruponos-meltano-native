@@ -7,6 +7,9 @@ from flext_core import FlextLoggerFactory
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
 # Configure logger
+# Constants
+EXPECTED_DATA_COUNT = 3
+
 logger_factory = FlextLoggerFactory()
 logger = logger_factory.create_logger(__name__)
 
@@ -40,9 +43,14 @@ class TestOracleConnections:
             protocol="tcps",
         )
 
-        assert config.host == "oracle.example.com"
+        if config.host != "oracle.example.com":
+
+            msg = f"Expected {"oracle.example.com"}, got {config.host}"
+            raise AssertionError(msg)
         assert config.port == 1521
-        assert config.protocol == "tcps"
+        if config.protocol != "tcps":
+            msg = f"Expected {"tcps"}, got {config.protocol}"
+            raise AssertionError(msg)
 
     def test_oracle_connection_config_defaults(self) -> None:
         """Test Oracle connection configuration defaults."""
@@ -54,9 +62,13 @@ class TestOracleConnections:
         )
 
         # Check defaults
-        assert config.port == 1522
+        if config.port != 1522:
+            msg = f"Expected {1522}, got {config.port}"
+            raise AssertionError(msg)
         assert config.protocol == "tcps"
-        assert config.retry_attempts == 3
+        if config.retry_attempts != EXPECTED_DATA_COUNT:
+            msg = f"Expected {3}, got {config.retry_attempts}"
+            raise AssertionError(msg)
         assert config.connection_timeout == 60
 
     def test_oracle_connection_manager_initialization(self) -> None:
@@ -69,7 +81,9 @@ class TestOracleConnections:
         )
 
         manager = GruponosMeltanoOracleConnectionManager(config)
-        assert manager.config == config
+        if manager.config != config:
+            msg = f"Expected {config}, got {manager.config}"
+            raise AssertionError(msg)
         assert hasattr(manager, "test_connection")
         assert hasattr(manager, "connect")
 
@@ -86,7 +100,9 @@ class TestOracleConnections:
         manager = GruponosMeltanoOracleConnectionManager(config)
 
         # Test basic manager functionality - the connection functionality is mocked
-        assert manager.config == config
+        if manager.config != config:
+            msg = f"Expected {config}, got {manager.config}"
+            raise AssertionError(msg)
         assert hasattr(manager, "test_connection")
         assert hasattr(manager, "connect")
 
@@ -100,7 +116,7 @@ class TestOracleConnections:
         except (AttributeError, ValueError, RuntimeError, OSError) as e:
             # If mocked dependencies cause specific issues, log and continue
             logger.debug(f"Expected error in test_connection: {e}")
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             # If unexpected error occurs, log it but continue (interface test)
             logger.warning(f"Unexpected error in test_connection: {e}")
 
@@ -115,8 +131,13 @@ class TestOracleConnections:
             ssl_server_dn_match=True,
         )
 
-        assert config.protocol == "tcps"
-        assert config.ssl_server_dn_match is True
+        if config.protocol != "tcps":
+
+            msg = f"Expected {"tcps"}, got {config.protocol}"
+            raise AssertionError(msg)
+        if not (config.ssl_server_dn_match):
+            msg = f"Expected True, got {config.ssl_server_dn_match}"
+            raise AssertionError(msg)
 
     def test_oracle_connection_pool_settings(self) -> None:
         """Test Oracle connection pool configuration."""
@@ -129,7 +150,10 @@ class TestOracleConnections:
             batch_size=5000,
         )
 
-        assert config.connection_pool_size == 10
+        if config.connection_pool_size != 10:
+
+            msg = f"Expected {10}, got {config.connection_pool_size}"
+            raise AssertionError(msg)
         assert config.batch_size == 5000
 
     def test_oracle_connection_retry_settings(self) -> None:
@@ -143,5 +167,8 @@ class TestOracleConnections:
             retry_delay=10,
         )
 
-        assert config.retry_attempts == 5
+        if config.retry_attempts != 5:
+
+            msg = f"Expected {5}, got {config.retry_attempts}"
+            raise AssertionError(msg)
         assert config.retry_delay == 10

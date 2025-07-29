@@ -18,12 +18,14 @@ class TestDataValidator:
         """Test data validator initialization."""
         validator = DataValidator()
         assert validator is not None
-        assert validator.rules == []
-        assert validator.strict_mode is False
-
+        if validator.rules != []:
+            raise AssertionError(f"Expected {[]}, got {validator.rules}")
+        if validator.strict_mode:
+            raise AssertionError(f"Expected False, got {validator.strict_mode}")\ n
         # Test with parameters
         validator_strict = DataValidator(strict_mode=True)
-        assert validator_strict.strict_mode is True
+        if not (validator_strict.strict_mode):
+            raise AssertionError(f"Expected True, got {validator_strict.strict_mode}")
 
     def test_data_validator_has_required_methods(self) -> None:
         """Test that required methods exist."""
@@ -85,7 +87,8 @@ class TestDataValidator:
         # Get initial stats
         stats = validator.get_conversion_stats()
         assert isinstance(stats, dict)
-        assert "strings_converted_to_numbers" in stats
+        if "strings_converted_to_numbers" not in stats:
+            raise AssertionError(f"Expected {"strings_converted_to_numbers"} in {stats}")
 
         # Reset stats
         validator.reset_stats()
@@ -105,7 +108,8 @@ class TestDataValidator:
         """Test ValidationError class."""
         # Test basic error
         error = ValidationError("Test error")
-        assert str(error) == "Test error"
+        if str(error) != "Test error":
+            raise AssertionError(f"Expected {"Test error"}, got {str(error)}")
 
         # Test error with field name
         error_with_field = ValidationError("Field error", "test_field")

@@ -11,14 +11,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import sys
 
 import click
 import yaml
 
 # FLEXT Core Standards
-from flext_core import FlextLoggerFactory
-from flext_core.patterns.typedefs import FlextLoggerName
+from flext_core import get_logger
 
 from gruponos_meltano_native.config import (
     GruponosMeltanoSettings,
@@ -28,14 +28,11 @@ from gruponos_meltano_native.orchestrator import (
     create_gruponos_meltano_orchestrator,
 )
 
-logger_factory = FlextLoggerFactory()
-logger = logger_factory.create_logger(FlextLoggerName(__name__))
+logger = get_logger(__name__)
 
 
 def setup_logging(debug: bool = False) -> None:
     """Setup logging configuration using FLEXT logging standards."""
-    import logging
-
     level = logging.DEBUG if debug else logging.INFO
 
     logging.basicConfig(
@@ -105,7 +102,12 @@ def health(ctx: click.Context) -> None:
         click.echo("✅ Orchestrator initialized successfully")
 
         # Run comprehensive health check
-        if config.oracle and config.oracle.host and config.oracle.username and config.oracle.password:
+        if (
+            config.oracle
+            and config.oracle.host
+            and config.oracle.username
+            and config.oracle.password
+        ):
             click.echo("✅ Oracle connection configured")
         else:
             click.echo("⚠️  Oracle connection not fully configured")
@@ -118,7 +120,7 @@ def health(ctx: click.Context) -> None:
         logger.info("Health check completed successfully")
         click.echo("✅ Pipeline health check: PASSED")
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.exception(f"Health check failed: {e}")
         click.echo(f"❌ Pipeline health check: FAILED - {e}")
         sys.exit(1)
@@ -194,7 +196,7 @@ def run(
         # Run the pipeline
         asyncio.run(run_pipeline())
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.exception(f"Pipeline execution failed: {e}")
         click.echo(f"❌ Pipeline execution failed: {e}")
         sys.exit(1)
@@ -231,7 +233,7 @@ def list_pipelines(ctx: click.Context) -> None:
         # List pipelines
         asyncio.run(list_available_pipelines())
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.exception(f"Failed to list pipelines: {e}")
         click.echo(f"❌ Failed to list pipelines: {e}")
         sys.exit(1)
@@ -281,7 +283,7 @@ def validate(ctx: click.Context, output_format: str) -> None:
         if output_format != "json":
             logger.info("Validation completed successfully")
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.exception(f"Validation failed: {e}")
         click.echo(f"❌ Validation failed: {e}")
         sys.exit(1)
@@ -378,7 +380,7 @@ def show_config(ctx: click.Context, output_format: str, show_secrets: bool) -> N
         if output_format != "json":
             logger.info("Configuration displayed successfully")
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.exception(f"Failed to show configuration: {e}")
         click.echo(f"❌ Failed to show configuration: {e}")
         sys.exit(1)
@@ -446,7 +448,7 @@ def run_with_retry(
         # Run with retry
         asyncio.run(run_with_retry_logic())
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.exception(f"Pipeline execution with retry failed: {e}")
         click.echo(f"❌ Pipeline execution failed: {e}")
         sys.exit(1)

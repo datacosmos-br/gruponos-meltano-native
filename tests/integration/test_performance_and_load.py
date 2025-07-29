@@ -57,7 +57,9 @@ class TestPerformanceBasics:
 
         # Perform multiple connection tests to get meaningful performance data
         for i in range(5):
-            connection_manager = GruponosMeltanoOracleConnectionManager(performance_config)
+            connection_manager = GruponosMeltanoOracleConnectionManager(
+                performance_config,
+            )
 
             start_time = time.time()
             result = connection_manager.test_connection()
@@ -88,7 +90,9 @@ class TestPerformanceBasics:
 
         # Test simple query performance
         start_time = time.time()
-        result = connection_manager.execute_query("SELECT COUNT(*) as row_count FROM DUAL")
+        result = connection_manager.execute_query(
+            "SELECT COUNT(*) as row_count FROM DUAL",
+        )
         end_time = time.time()
 
         assert result.is_success, f"Query failed: {result.error}"
@@ -127,4 +131,6 @@ class TestPerformanceBasics:
 
         # Performance assertions
         assert total_time < 10.0, f"Total time too slow: {total_time:.2f}s"
-        assert avg_per_operation < 2.0, f"Average per operation too slow: {avg_per_operation:.2f}s"
+        assert avg_per_operation < 2.0, (
+            f"Average per operation too slow: {avg_per_operation:.2f}s"
+        )

@@ -1,5 +1,8 @@
 """Comprehensive tests for GrupoNOS Meltano Native exceptions module.
 
+# Constants
+EXPECTED_DATA_COUNT = 3
+
 Tests exception hierarchy, inheritance, and proper FLEXT standards compliance.
 """
 
@@ -36,9 +39,13 @@ class TestGruponosMeltanoBaseException:
     def test_base_exception_creation(self) -> None:
         """Test base exception can be created with message."""
         error = GruponosMeltanoError("Test error message")
-        assert str(error) == "Test error message"
+        if str(error) != "Test error message":
+            msg = f"Expected {"Test error message"}, got {error!s}"
+            raise AssertionError(msg)
         assert error.message == "Test error message"
-        assert error.error_code == "GruponosMeltanoError"
+        if error.error_code != "GruponosMeltanoError":
+            msg = f"Expected {"GruponosMeltanoError"}, got {error.error_code}"
+            raise AssertionError(msg)
         assert error.context == {}
 
     def test_base_exception_with_context(self) -> None:
@@ -49,10 +56,16 @@ class TestGruponosMeltanoBaseException:
             error_code="TEST_001",
             context=context,
         )
-        assert error.message == "Test error"
+        if error.message != "Test error":
+            msg = f"Expected {"Test error"}, got {error.message}"
+            raise AssertionError(msg)
         assert error.error_code == "TEST_001"
-        assert error.context == context
-        assert "Context: {'key': 'value', 'number': 42}" in str(error)
+        if error.context != context:
+            msg = f"Expected {context}, got {error.context}"
+            raise AssertionError(msg)
+        if "Context: {'key': 'value', 'number': 42}" not in str(error):
+            msg = f"Expected {"Context: {'key': 'value', 'number': 42}"} in {error!s}"
+            raise AssertionError(msg)
 
     def test_base_exception_repr(self) -> None:
         """Test exception repr format."""
@@ -62,9 +75,13 @@ class TestGruponosMeltanoBaseException:
             context={"test": True},
         )
         repr_str = repr(error)
-        assert "GruponosMeltanoError" in repr_str
+        if "GruponosMeltanoError" not in repr_str:
+            msg = f"Expected {"GruponosMeltanoError"} in {repr_str}"
+            raise AssertionError(msg)
         assert "Test message" in repr_str
-        assert "TEST_001" in repr_str
+        if "TEST_001" not in repr_str:
+            msg = f"Expected {"TEST_001"} in {repr_str}"
+            raise AssertionError(msg)
         assert "{'test': True}" in repr_str
 
     def test_base_exception_inheritance(self) -> None:
@@ -277,11 +294,18 @@ class TestExceptionUsagePatterns:
             context=context,
         )
 
-        assert "Failed to connect to Oracle database" in str(error)
+        if "Failed to connect to Oracle database" not in str(error):
+
+            msg = f"Expected {"Failed to connect to Oracle database"} in {error!s}"
+            raise AssertionError(msg)
         assert "localhost" in str(error)
-        assert "1521" in str(error)
-        assert error.error_code == "ORACLE_CONN_001"
-        assert error.context["retry_count"] == 3
+        if "1521" not in str(error):
+            msg = f"Expected {"1521"} in {error!s}"
+            raise AssertionError(msg)
+        if error.error_code != "ORACLE_CONN_001":
+            msg = f"Expected {"ORACLE_CONN_001"}, got {error.error_code}"
+            raise AssertionError(msg)
+        assert error.context["retry_count"] == EXPECTED_DATA_COUNT
 
     def test_exception_chaining(self) -> None:
         """Test exception chaining with cause."""
@@ -296,4 +320,6 @@ class TestExceptionUsagePatterns:
             )
             # In real code, would use 'raise chain_error from e'
             assert isinstance(chain_error, GruponosMeltanoValidationError)
-            assert chain_error.context["field"] == "database_url"
+            if chain_error.context["field"] != "database_url":
+                msg = f"Expected {"database_url"}, got {chain_error.context["field"]}"
+                raise AssertionError(msg)

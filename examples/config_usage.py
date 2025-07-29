@@ -85,7 +85,7 @@ def demonstrate_config_usage() -> None:
         config.model_validate(config.model_dump())
         logger.info("✅ Manual validation passed")
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.exception("❌ Configuration validation failed", error=str(e))
 
     # 7. Export configuration as JSON
@@ -154,5 +154,5 @@ if __name__ == "__main__":
         demonstrate_config_usage()
         logger.info("\n%s\n", "=" * 50)
         demonstrate_connection_manager_integration()
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.exception("Demo failed", error=str(e))
