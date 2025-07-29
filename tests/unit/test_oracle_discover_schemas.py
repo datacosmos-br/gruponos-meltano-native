@@ -49,8 +49,8 @@ class TestOracleSchemaDiscovery:
         result = discover_schemas()
 
         if not (result):
-
-            raise AssertionError(f"Expected True, got {result}")
+            msg = f"Expected True, got {result}"
+            raise AssertionError(msg)
         mock_tap.assert_called_once()
 
     @patch.dict("os.environ", {}, clear=True)
@@ -64,8 +64,9 @@ class TestOracleSchemaDiscovery:
         result = discover_schemas()
 
         if result:
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
 
-            raise AssertionError(f"Expected False, got {result}")\ n
     @patch.dict(
         "os.environ",
         {
@@ -84,8 +85,9 @@ class TestOracleSchemaDiscovery:
         result = discover_schemas()
 
         if result:
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
 
-            raise AssertionError(f"Expected False, got {result}")\ n
     @patch.dict(
         "os.environ",
         {
@@ -133,12 +135,13 @@ class TestOracleSchemaDiscovery:
         result = discover_schemas()
 
         if not (result):
-
-            raise AssertionError(f"Expected True, got {result}")
+            msg = f"Expected True, got {result}"
+            raise AssertionError(msg)
         # Verify TapOracleWMS was called with custom page size
         call_args = mock_tap.call_args[1]["config"]
         if call_args["page_size"] != 500:
-            raise AssertionError(f"Expected {500}, got {call_args["page_size"]}")
+            msg = f"Expected {500}, got {call_args['page_size']}"
+            raise AssertionError(msg)
 
     @patch.dict(
         "os.environ",
@@ -191,11 +194,12 @@ class TestOracleSchemaDiscovery:
         result = discover_schemas()
 
         if not (result):
-
-            raise AssertionError(f"Expected True, got {result}")
+            msg = f"Expected True, got {result}"
+            raise AssertionError(msg)
         # Verify Path was called for directory creation and file opening
         if mock_path.call_count != EXPECTED_BULK_SIZE:
-            raise AssertionError(f"Expected {2}, got {mock_path.call_count}")
+            msg = f"Expected {2}, got {mock_path.call_count}"
+            raise AssertionError(msg)
 
     def test_discover_schemas_entities_configuration(self) -> None:
         """Test that the function uses the correct entities configuration."""
@@ -224,9 +228,15 @@ class TestOracleSchemaDiscovery:
             call_args = mock_tap.call_args[1]["config"]
             expected_entities = ["allocation", "order_hdr", "order_dtl"]
             if call_args["entities"] != expected_entities:
-                raise AssertionError(f"Expected {expected_entities}, got {call_args["entities"]}")
+                msg = f"Expected {expected_entities}, got {call_args['entities']}"
+                raise AssertionError(
+                    msg,
+                )
             if not (call_args["force_full_table"]):
-                raise AssertionError(f"Expected True, got {call_args["force_full_table"]}")
+                msg = f"Expected True, got {call_args['force_full_table']}"
+                raise AssertionError(
+                    msg,
+                )
 
     @patch.dict(
         "os.environ",
@@ -262,8 +272,8 @@ class TestOracleSchemaDiscovery:
         result = discover_schemas()
 
         if not (result):
-
-            raise AssertionError(f"Expected True, got {result}")
+            msg = f"Expected True, got {result}"
+            raise AssertionError(msg)
 
     def test_discover_schemas_integration_functionality(self) -> None:
         """Test the integration aspects of schema discovery."""

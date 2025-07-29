@@ -108,7 +108,8 @@ class TestDataValidator:
 
             raise AssertionError(f"Expected {[]}, got {validator.rules}")
         if validator.strict_mode:
-            raise AssertionError(f"Expected False, got {validator.strict_mode}")\ n        assert validator.conversion_stats == {
+            raise AssertionError(f"Expected False, got {validator.strict_mode}")
+        assert validator.conversion_stats == {
             "strings_converted_to_numbers": 0,
             "dates_normalized": 0,
             "nulls_handled": 0,
@@ -1262,7 +1263,8 @@ class TestStatisticsAndUtilities:
 
         assert isinstance(validator, DataValidator)
         if validator.strict_mode:
-            raise AssertionError(f"Expected False, got {validator.strict_mode}")\ n
+            raise AssertionError(f"Expected False, got {validator.strict_mode}")
+
     def test_create_validator_for_environment_prod(self) -> None:
         """Test creating validator for production environment."""
         validator = create_validator_for_environment("prod")
@@ -1277,7 +1279,8 @@ class TestStatisticsAndUtilities:
 
         assert isinstance(validator, DataValidator)
         if validator.strict_mode:
-            raise AssertionError(f"Expected False, got {validator.strict_mode}")\ n
+            raise AssertionError(f"Expected False, got {validator.strict_mode}")
+
 
 class TestMainExecution:
     """Test main execution path."""

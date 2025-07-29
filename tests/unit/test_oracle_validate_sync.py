@@ -29,17 +29,31 @@ class TestOracleValidateSync:
         """Test table name validation function."""
         # Valid table names
         if not (_validate_table_name("WMS_ALLOCATION")):
-            raise AssertionError(f"Expected True, got {_validate_table_name("WMS_ALLOCATION")}")
+            msg = f"Expected True, got {_validate_table_name('WMS_ALLOCATION')}"
+            raise AssertionError(
+                msg,
+            )
         assert _validate_table_name("ORDER_HDR") is True
         if not (_validate_table_name("TABLE123")):
-            raise AssertionError(f"Expected True, got {_validate_table_name("TABLE123")}")
+            msg = f"Expected True, got {_validate_table_name('TABLE123')}"
+            raise AssertionError(
+                msg,
+            )
         assert _validate_table_name("USER_DATA_2024") is True
 
         # Invalid table names
         if _validate_table_name("TABLE; DROP TABLE"):
-            raise AssertionError(f"Expected False, got {_validate_table_name("TABLE; DROP TABLE")}")\ n        assert _validate_table_name("TABLE'") is False
+            msg = f"Expected False, got {_validate_table_name('TABLE; DROP TABLE')}"
+            raise AssertionError(
+                msg,
+            )
+        assert _validate_table_name("TABLE'") is False
         if _validate_table_name("TABLE-NAME"):
-            raise AssertionError(f"Expected False, got {_validate_table_name("TABLE-NAME")}")\ n        assert _validate_table_name("TABLE NAME") is False
+            msg = f"Expected False, got {_validate_table_name('TABLE-NAME')}"
+            raise AssertionError(
+                msg,
+            )
+        assert _validate_table_name("TABLE NAME") is False
 
     def test_get_table_list(self) -> None:
         """Test getting the list of tables to validate."""
@@ -59,10 +73,12 @@ class TestOracleValidateSync:
         # Test expected tables are included
         table_names = [table[0] for table in tables]
         if "WMS_ALLOCATION" not in table_names:
-            raise AssertionError(f"Expected {"WMS_ALLOCATION"} in {table_names}")
+            msg = f"Expected {'WMS_ALLOCATION'} in {table_names}"
+            raise AssertionError(msg)
         assert "WMS_ORDER_HDR" in table_names
         if "WMS_ORDER_DTL" not in table_names:
-            raise AssertionError(f"Expected {"WMS_ORDER_DTL"} in {table_names}")
+            msg = f"Expected {'WMS_ORDER_DTL'} in {table_names}"
+            raise AssertionError(msg)
 
     def test_check_table_exists_mock(self) -> None:
         """Test table existence check with mock cursor."""
@@ -78,7 +94,8 @@ class TestOracleValidateSync:
 
         result = _check_table_exists(mock_cursor, "WMS_ALLOCATION")
         if not (result):
-            raise AssertionError(f"Expected True, got {result}")
+            msg = f"Expected True, got {result}"
+            raise AssertionError(msg)
 
         # Mock cursor that returns table doesn't exist
         mock_cursor_no_table = type(
@@ -92,7 +109,9 @@ class TestOracleValidateSync:
 
         result = _check_table_exists(mock_cursor_no_table, "NON_EXISTENT_TABLE")
         if result:
-            raise AssertionError(f"Expected False, got {result}")\ n
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
+
     def test_check_table_exists_with_error(self) -> None:
         """Test table existence check with database error."""
         # Mock cursor that raises exception
@@ -109,7 +128,9 @@ class TestOracleValidateSync:
 
         result = _check_table_exists(mock_cursor_error, "ANY_TABLE")
         if result:
-            raise AssertionError(f"Expected False, got {result}")\ n
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
+
     def test_count_table_records_mock(self) -> None:
         """Test table record counting with mock cursor."""
         # Mock cursor with valid count
@@ -124,12 +145,14 @@ class TestOracleValidateSync:
 
         result = _count_table_records(mock_cursor, "WMS_ALLOCATION")
         if result != 1500:
-            raise AssertionError(f"Expected {1500}, got {result}")
+            msg = f"Expected {1500}, got {result}"
+            raise AssertionError(msg)
 
         # Test with invalid table name
         result = _count_table_records(mock_cursor, "INVALID; TABLE")
         if result != 0:
-            raise AssertionError(f"Expected {0}, got {result}")
+            msg = f"Expected {0}, got {result}"
+            raise AssertionError(msg)
 
     def test_count_table_records_with_error(self) -> None:
         """Test table record counting with database error."""
@@ -147,7 +170,8 @@ class TestOracleValidateSync:
 
         result = _count_table_records(mock_cursor_error, "WMS_ALLOCATION")
         if result != 0:
-            raise AssertionError(f"Expected {0}, got {result}")
+            msg = f"Expected {0}, got {result}"
+            raise AssertionError(msg)
 
     def test_get_table_details_mock(self) -> None:
         """Test getting table details with mock cursor."""
@@ -171,13 +195,16 @@ class TestOracleValidateSync:
 
         assert isinstance(result, dict)
         if "min_date" not in result:
-            raise AssertionError(f"Expected {"min_date"} in {result}")
+            msg = f"Expected {'min_date'} in {result}"
+            raise AssertionError(msg)
         assert "max_date" in result
         if "unique_ids" not in result:
-            raise AssertionError(f"Expected {"unique_ids"} in {result}")
+            msg = f"Expected {'unique_ids'} in {result}"
+            raise AssertionError(msg)
         assert "duplicates" in result
         if result["unique_ids"] != 1000:
-            raise AssertionError(f"Expected {1000}, got {result["unique_ids"]}")
+            msg = f"Expected {1000}, got {result['unique_ids']}"
+            raise AssertionError(msg)
         assert result["duplicates"] == 5
 
     def test_get_table_details_with_invalid_table(self) -> None:
@@ -197,7 +224,8 @@ class TestOracleValidateSync:
         assert result["min_date"] is None
         assert result["max_date"] is None
         if result["unique_ids"] != 0:
-            raise AssertionError(f"Expected {0}, got {result["unique_ids"]}")
+            msg = f"Expected {0}, got {result['unique_ids']}"
+            raise AssertionError(msg)
         assert result["duplicates"] == 0
 
     def test_validate_single_table_mock(self) -> None:
@@ -227,7 +255,8 @@ class TestOracleValidateSync:
 
         result = _validate_single_table(mock_cursor, "WMS_ALLOCATION", "allocation")
         if result != 1000:
-            raise AssertionError(f"Expected {1000}, got {result}")
+            msg = f"Expected {1000}, got {result}"
+            raise AssertionError(msg)
 
     def test_validate_single_table_nonexistent(self) -> None:
         """Test validating a table that doesn't exist."""
@@ -243,7 +272,8 @@ class TestOracleValidateSync:
 
         result = _validate_single_table(mock_cursor, "NONEXISTENT_TABLE", "nonexistent")
         if result != 0:
-            raise AssertionError(f"Expected {0}, got {result}")
+            msg = f"Expected {0}, got {result}"
+            raise AssertionError(msg)
 
     def test_validate_single_table_empty(self) -> None:
         """Test validating a table that exists but is empty."""
@@ -268,7 +298,8 @@ class TestOracleValidateSync:
 
         result = _validate_single_table(mock_cursor, "EMPTY_TABLE", "empty")
         if result != 0:
-            raise AssertionError(f"Expected {0}, got {result}")
+            msg = f"Expected {0}, got {result}"
+            raise AssertionError(msg)
 
     @patch("gruponos_meltano_native.oracle.validate_sync.get_config")
     @patch(
@@ -286,7 +317,9 @@ class TestOracleValidateSync:
 
         result = validate_sync()
         if result:
-            raise AssertionError(f"Expected False, got {result}")\ n
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
+
     @patch("gruponos_meltano_native.oracle.validate_sync.get_config")
     @patch(
         "gruponos_meltano_native.oracle.validate_sync.GruponosMeltanoOracleConnectionManager",
@@ -320,7 +353,9 @@ class TestOracleValidateSync:
 
         result = validate_sync()
         if result:
-            raise AssertionError(f"Expected False, got {result}")\ n
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
+
     @patch("gruponos_meltano_native.oracle.validate_sync.get_config")
     @patch(
         "gruponos_meltano_native.oracle.validate_sync.GruponosMeltanoOracleConnectionManager",
@@ -382,7 +417,8 @@ class TestOracleValidateSync:
 
         result = validate_sync()
         if not (result):
-            raise AssertionError(f"Expected True, got {result}")
+            msg = f"Expected True, got {result}"
+            raise AssertionError(msg)
 
     def test_validate_sync_function_exists(self) -> None:
         """Test that validate_sync function exists and is callable."""

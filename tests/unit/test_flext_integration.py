@@ -59,7 +59,8 @@ class TestFlextConfig:
             api_enabled=False,
         )
         if config.api_enabled:
-            raise AssertionError(f"Expected False, got {config.api_enabled}")\ n        assert config.api_base_url is None
+            raise AssertionError(f"Expected False, got {config.api_enabled}")
+        assert config.api_base_url is None
         # Invalid config - API enabled but no URL
         with pytest.raises(
             ValidationError,

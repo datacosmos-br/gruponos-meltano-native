@@ -27,14 +27,16 @@ class TestConfiguration:
         )
 
         if config.host != "oracle.example.com":
-
-            raise AssertionError(f"Expected {"oracle.example.com"}, got {config.host}")
+            msg = f"Expected {'oracle.example.com'}, got {config.host}"
+            raise AssertionError(msg)
         assert config.port == 1521
         if config.service_name != "PROD":
-            raise AssertionError(f"Expected {"PROD"}, got {config.service_name}")
+            msg = f"Expected {'PROD'}, got {config.service_name}"
+            raise AssertionError(msg)
         assert config.username == "test_user"
         if config.password != "test_pass":
-            raise AssertionError(f"Expected {"test_pass"}, got {config.password}")
+            msg = f"Expected {'test_pass'}, got {config.password}"
+            raise AssertionError(msg)
         assert config.protocol == "tcps"
 
     def test_oracle_connection_config_defaults(self) -> None:
@@ -48,13 +50,16 @@ class TestConfiguration:
 
         # Check defaults
         if config.port != 1522:
-            raise AssertionError(f"Expected {1522}, got {config.port}")
+            msg = f"Expected {1522}, got {config.port}"
+            raise AssertionError(msg)
         assert config.protocol == "tcps"
         if config.wallet_location != "":
-            raise AssertionError(f"Expected {""}, got {config.wallet_location}")
+            msg = f"Expected {''}, got {config.wallet_location}"
+            raise AssertionError(msg)
         assert config.trust_store_location == ""
         if config.key_store_location != "":
-            raise AssertionError(f"Expected {""}, got {config.key_store_location}")
+            msg = f"Expected {''}, got {config.key_store_location}"
+            raise AssertionError(msg)
 
     def test_wms_source_config_creation(self) -> None:
         """Test WMS source configuration creation."""
@@ -74,12 +79,16 @@ class TestConfiguration:
         )
 
         if wms_config.oracle != oracle_config:
-
-            raise AssertionError(f"Expected {oracle_config}, got {wms_config.oracle}")
+            msg = f"Expected {oracle_config}, got {wms_config.oracle}"
+            raise AssertionError(msg)
         if not (wms_config.api_enabled):
-            raise AssertionError(f"Expected True, got {wms_config.api_enabled}")
+            msg = f"Expected True, got {wms_config.api_enabled}"
+            raise AssertionError(msg)
         if wms_config.api_base_url != "https://wms.example.com/api":
-            raise AssertionError(f"Expected {"https://wms.example.com/api"}, got {wms_config.api_base_url}")
+            msg = f"Expected {'https://wms.example.com/api'}, got {wms_config.api_base_url}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_wms_source_config_validation(self) -> None:
         """Test WMS source configuration validation."""
@@ -114,12 +123,21 @@ class TestConfiguration:
         )
 
         if target_config.target_schema != "WMS_SYNC":
-
-            raise AssertionError(f"Expected {"WMS_SYNC"}, got {target_config.target_schema}")
+            msg = f"Expected {'WMS_SYNC'}, got {target_config.target_schema}"
+            raise AssertionError(
+                msg,
+            )
         if not (target_config.drop_target_tables):
-            raise AssertionError(f"Expected True, got {target_config.drop_target_tables}")
+            msg = f"Expected True, got {target_config.drop_target_tables}"
+            raise AssertionError(
+                msg,
+            )
         if target_config.enable_compression:
-            raise AssertionError(f"Expected False, got {target_config.enable_compression}")\ n
+            msg = f"Expected False, got {target_config.enable_compression}"
+            raise AssertionError(
+                msg,
+            )
+
     def test_meltano_settings_creation(self) -> None:
         """Test main Meltano settings creation."""
         settings = GruponosMeltanoSettings(
@@ -131,10 +149,14 @@ class TestConfiguration:
 
         assert settings.meltano_project_root.endswith("test-project")
         if settings.meltano_environment != "prod":
-            raise AssertionError(f"Expected {"prod"}, got {settings.meltano_environment}")
+            msg = f"Expected {'prod'}, got {settings.meltano_environment}"
+            raise AssertionError(
+                msg,
+            )
         assert settings.meltano_state_backend == "s3"
         if not (settings.debug):
-            raise AssertionError(f"Expected True, got {settings.debug}")
+            msg = f"Expected True, got {settings.debug}"
+            raise AssertionError(msg)
 
     def test_alert_config_creation(self) -> None:
         """Test alert configuration creation."""
@@ -147,14 +169,21 @@ class TestConfiguration:
         )
 
         if not (config.webhook_enabled):
-
-            raise AssertionError(f"Expected True, got {config.webhook_enabled}")
+            msg = f"Expected True, got {config.webhook_enabled}"
+            raise AssertionError(msg)
         if config.webhook_url != "https://hooks.slack.com/webhook":
-            raise AssertionError(f"Expected {"https://hooks.slack.com/webhook"}, got {config.webhook_url}")
+            msg = f"Expected {'https://hooks.slack.com/webhook'}, got {config.webhook_url}"
+            raise AssertionError(
+                msg,
+            )
         if not (config.email_enabled):
-            raise AssertionError(f"Expected True, got {config.email_enabled}")
+            msg = f"Expected True, got {config.email_enabled}"
+            raise AssertionError(msg)
         if config.email_recipients != ["admin@example.com"]:
-            raise AssertionError(f"Expected {["admin@example.com"]}, got {config.email_recipients}")
+            msg = f"Expected {['admin@example.com']}, got {config.email_recipients}"
+            raise AssertionError(
+                msg,
+            )
         assert config.alert_threshold == 10
 
     def test_gruponos_config_creation(self) -> None:
@@ -185,13 +214,15 @@ class TestConfiguration:
         )
 
         if config.wms_source != wms_source:
-
-            raise AssertionError(f"Expected {wms_source}, got {config.wms_source}")
+            msg = f"Expected {wms_source}, got {config.wms_source}"
+            raise AssertionError(msg)
         assert config.target_oracle == target_oracle
         if config.alerts != alerts:
-            raise AssertionError(f"Expected {alerts}, got {config.alerts}")
+            msg = f"Expected {alerts}, got {config.alerts}"
+            raise AssertionError(msg)
         if not (config.debug):
-            raise AssertionError(f"Expected True, got {config.debug}")
+            msg = f"Expected True, got {config.debug}"
+            raise AssertionError(msg)
 
     def test_config_oracle_connection_string(self) -> None:
         """Test Oracle connection string generation."""
@@ -208,4 +239,5 @@ class TestConfiguration:
         connection_string = config.get_oracle_connection_string()
         expected = "wms_user/wms_pass@wms.local:1521/WMS"
         if connection_string != expected:
-            raise AssertionError(f"Expected {expected}, got {connection_string}")
+            msg = f"Expected {expected}, got {connection_string}"
+            raise AssertionError(msg)

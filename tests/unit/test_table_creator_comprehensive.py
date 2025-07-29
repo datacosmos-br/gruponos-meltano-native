@@ -708,7 +708,8 @@ class TestOracleTableCreatorComprehensive:
 
             if result:
 
-                raise AssertionError(f"Expected False, got {result}")\ n            mock_unlink.assert_called_once()
+                raise AssertionError(f"Expected False, got {result}")
+            mock_unlink.assert_called_once()
 
     def test_execute_ddl_os_error(self) -> None:
         """Test DDL execution OS error."""
@@ -740,7 +741,8 @@ class TestOracleTableCreatorComprehensive:
 
             if result:
 
-                raise AssertionError(f"Expected False, got {result}")\ n            mock_unlink.assert_called_once()
+                raise AssertionError(f"Expected False, got {result}")
+            mock_unlink.assert_called_once()
 
     def test_execute_ddl_value_error(self) -> None:
         """Test DDL execution ValueError."""
@@ -772,7 +774,8 @@ class TestOracleTableCreatorComprehensive:
 
             if result:
 
-                raise AssertionError(f"Expected False, got {result}")\ n            mock_unlink.assert_called_once()
+                raise AssertionError(f"Expected False, got {result}")
+            mock_unlink.assert_called_once()
 
     def test_execute_ddl_runtime_error(self) -> None:
         """Test DDL execution RuntimeError."""
@@ -804,7 +807,8 @@ class TestOracleTableCreatorComprehensive:
 
             if result:
 
-                raise AssertionError(f"Expected False, got {result}")\ n            mock_unlink.assert_called_once()
+                raise AssertionError(f"Expected False, got {result}")
+            mock_unlink.assert_called_once()
 
     def test_execute_ddl_unexpected_error(self) -> None:
         """Test DDL execution with unexpected error."""
@@ -836,7 +840,8 @@ class TestOracleTableCreatorComprehensive:
 
             if result:
 
-                raise AssertionError(f"Expected False, got {result}")\ n            mock_unlink.assert_called_once()
+                raise AssertionError(f"Expected False, got {result}")
+            mock_unlink.assert_called_once()
 
     def test_execute_ddl_cleanup_on_unlink_error(self) -> None:
         """Test DDL execution cleanup when unlink fails."""

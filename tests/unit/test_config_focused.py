@@ -58,7 +58,8 @@ class TestConfigFocused:
         if config.protocol != "tcps":
             raise AssertionError(f"Expected {"tcps"}, got {config.protocol}")
         if config.ssl_server_dn_match:
-            raise AssertionError(f"Expected False, got {config.ssl_server_dn_match}")\ n        assert config.connection_timeout == 60
+            raise AssertionError(f"Expected False, got {config.ssl_server_dn_match}")
+        assert config.connection_timeout == 60
         if config.retry_attempts != EXPECTED_DATA_COUNT:
             raise AssertionError(f"Expected {3}, got {config.retry_attempts}")
         assert config.retry_delay == 5
@@ -170,7 +171,8 @@ class TestConfigFocused:
             api_password=None,
         )
         if config.api_enabled:
-            raise AssertionError(f"Expected False, got {config.api_enabled}")\ n        assert config.api_base_url is None
+            raise AssertionError(f"Expected False, got {config.api_enabled}")
+        assert config.api_base_url is None
 
         # Test API enabled with valid fields
         config_api = GruponosMeltanoWMSSourceConfig(
@@ -242,7 +244,8 @@ class TestConfigFocused:
 
         # Test defaults
         if config.api_enabled:
-            raise AssertionError(f"Expected False, got {config.api_enabled}")\ n        assert config.api_base_url is None
+            raise AssertionError(f"Expected False, got {config.api_enabled}")
+        assert config.api_base_url is None
         assert config.api_username is None
         assert config.api_password is None
         assert config.start_date is None
@@ -270,7 +273,8 @@ class TestConfigFocused:
 
         # Test defaults
         if config.truncate_before_load:
-            raise AssertionError(f"Expected False, got {config.truncate_before_load}")\ n        if not (config.analyze_after_load):
+            raise AssertionError(f"Expected False, got {config.truncate_before_load}")
+        if not (config.analyze_after_load):
             raise AssertionError(f"Expected True, got {config.analyze_after_load}")
         assert config.create_indexes is True
         if config.parallel_degree != 4:
@@ -325,11 +329,14 @@ class TestConfigFocused:
         if config.max_cpu_usage_percent != 85.0:
             raise AssertionError(f"Expected {85.0}, got {config.max_cpu_usage_percent}")
         if config.webhook_enabled:
-            raise AssertionError(f"Expected False, got {config.webhook_enabled}")\ n        assert config.webhook_url is None
+            raise AssertionError(f"Expected False, got {config.webhook_enabled}")
+        assert config.webhook_url is None
         if config.email_enabled:
-            raise AssertionError(f"Expected False, got {config.email_enabled}")\ n        assert config.alert_email is None
+            raise AssertionError(f"Expected False, got {config.email_enabled}")
+        assert config.alert_email is None
         if config.slack_enabled:
-            raise AssertionError(f"Expected False, got {config.slack_enabled}")\ n        assert config.slack_webhook is None
+            raise AssertionError(f"Expected False, got {config.slack_enabled}")
+        assert config.slack_webhook is None
 
         # Test custom values
         config_custom = GruponosMeltanoAlertConfig(
@@ -443,7 +450,8 @@ class TestConfigFocused:
             raise AssertionError(f"Expected {"gruponos-meltano-native"}, got {config.project_name}")
         assert config.company == "GrupoNOS"
         if config.debug_mode:
-            raise AssertionError(f"Expected False, got {config.debug_mode}")\ n        assert config.dry_run is False
+            raise AssertionError(f"Expected False, got {config.debug_mode}")
+        assert config.dry_run is False
 
     def test_gruponos_config_with_subconfigs(self) -> None:
         """Test GruponosMeltanoSettings with sub-configurations."""
@@ -537,8 +545,8 @@ class TestConfigFocused:
 
         config_repr = repr(config)
         # Password should not appear in repr
-        if "secret_password" not not in config_repr:
-            raise AssertionError(f"Expected {"secret_password" not} in {config_repr}")
+        if "secret_password" not in config_repr:
+            raise AssertionError(f"Expected {"secret_password" not in {config_repr}")
         assert "password=" not in config_repr or "password=***" in config_repr
 
     def test_config_validation_info_usage(self) -> None:
@@ -582,4 +590,5 @@ class TestConfigFocused:
             raise AssertionError(f"Expected {"GRUPONOS_"}, got {config.model_config["env_prefix"]}")
         assert config.model_config["env_nested_delimiter"] == "__"
         if config.model_config["case_sensitive"]:
-            raise AssertionError(f"Expected False, got {config.model_config["case_sensitive"]}")\ n
+            raise AssertionError(f"Expected False, got {config.model_config["case_sensitive"]}")
+

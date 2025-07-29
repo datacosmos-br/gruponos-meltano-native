@@ -77,7 +77,8 @@ class TestDropAllWMSTables:
 
         result = drop_all_wms_tables()
         if result:
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
     @patch(
         "gruponos_meltano_native.oracle.recreate_tables_and_sync.GruponosMeltanoOracleConnectionManager",
@@ -165,7 +166,8 @@ class TestDropAllWMSTables:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.get_config")
     @patch(
         "gruponos_meltano_native.oracle.recreate_tables_and_sync.GruponosMeltanoOracleConnectionManager",
@@ -191,7 +193,8 @@ class TestDropAllWMSTables:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
 
 class TestListCurrentTables:
     """Test list_current_tables function."""
@@ -524,7 +527,8 @@ class TestCreateTablesWithDDL:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
     def test_create_tables_with_ddl_timeout(
@@ -545,7 +549,8 @@ class TestCreateTablesWithDDL:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
     def test_create_tables_with_ddl_os_error(
@@ -566,7 +571,8 @@ class TestCreateTablesWithDDL:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.Path")
     def test_create_tables_with_ddl_runtime_error(
@@ -587,7 +593,8 @@ class TestCreateTablesWithDDL:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
 
 class TestRunFullSync:
     """Test run_full_sync function."""
@@ -649,7 +656,8 @@ class TestRunFullSync:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.time.time")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
@@ -677,7 +685,8 @@ class TestRunFullSync:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
     def test_run_full_sync_timeout(
@@ -696,7 +705,8 @@ class TestRunFullSync:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
     def test_run_full_sync_os_error(
@@ -715,7 +725,8 @@ class TestRunFullSync:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.subprocess.run")
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.os.environ")
     def test_run_full_sync_runtime_error(
@@ -734,7 +745,8 @@ class TestRunFullSync:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
 
 class TestValidateSyncResults:
     """Test validate_sync_results function."""
@@ -760,7 +772,8 @@ class TestValidateSyncResults:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync")
     def test_validate_sync_results_os_error(self, mock_validate_sync: Mock) -> None:
         """Test sync validation OS error."""
@@ -770,7 +783,8 @@ class TestValidateSyncResults:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
     @patch("gruponos_meltano_native.oracle.recreate_tables_and_sync.validate_sync")
     def test_validate_sync_results_runtime_error(
         self,
@@ -783,7 +797,8 @@ class TestValidateSyncResults:
 
         if result:
 
-            raise AssertionError(f"Expected False, got {result}")\ n
+            raise AssertionError(f"Expected False, got {result}")
+
 
 class TestMainFunction:
     """Test main function."""

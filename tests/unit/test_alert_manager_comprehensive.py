@@ -82,7 +82,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
             if result:
 
-                raise AssertionError(f"Expected False, got {result}")\ n
+                raise AssertionError(f"Expected False, got {result}")
+
     def test_send_alert_webhook_exception_os_error(self) -> None:
         """Test webhook alert sending OSError exception."""
         config = GruponosMeltanoAlertConfig(
@@ -96,7 +97,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
                 "Test message", GruponosMeltanoAlertSeverity.HIGH,
             )
             if result:
-                raise AssertionError(f"Expected False, got {result}")\ n
+                raise AssertionError(f"Expected False, got {result}")
+
     def test_send_alert_webhook_exception_value_error(self) -> None:
         """Test webhook alert sending ValueError exception."""
         config = GruponosMeltanoAlertConfig(
@@ -110,7 +112,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
                 "Test message", GruponosMeltanoAlertSeverity.HIGH,
             )
             if result:
-                raise AssertionError(f"Expected False, got {result}")\ n
+                raise AssertionError(f"Expected False, got {result}")
+
     def test_send_alert_webhook_exception_runtime_error(self) -> None:
         """Test webhook alert sending RuntimeError exception."""
         config = GruponosMeltanoAlertConfig(
@@ -124,7 +127,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
                 "Test message", GruponosMeltanoAlertSeverity.HIGH,
             )
             if result:
-                raise AssertionError(f"Expected False, got {result}")\ n
+                raise AssertionError(f"Expected False, got {result}")
+
     def test_send_alert_webhook_disabled(self) -> None:
         """Test alert sending when webhook is disabled."""
         config = GruponosMeltanoAlertConfig(webhook_enabled=False)
