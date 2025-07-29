@@ -7,19 +7,16 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-from email.mime.text import MIMEText
-
-
 from __future__ import annotations
 
+from email.mime.text import MIMEText
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
 import requests
 
 # FLEXT Core Standards
-from flext_core import get_logger, FlextResult, FlextValueObject
-
+from flext_core import FlextResult, FlextValueObject, get_logger
 
 if TYPE_CHECKING:
     from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
@@ -154,7 +151,7 @@ class GruponosMeltanoAlertService:
         try:
             if not self.config.webhook_url:
                 return FlextResult.fail("Webhook URL not configured")
-                
+
             payload = {
                 "message": alert.message,
                 "severity": alert.severity,
@@ -211,7 +208,7 @@ class GruponosMeltanoAlertService:
         try:
             if not self.config.slack_webhook_url:
                 return FlextResult.fail("Slack webhook URL not configured")
-                
+
             # Determine color based on severity
             color_map = {
                 GruponosMeltanoAlertSeverity.LOW: "good",
