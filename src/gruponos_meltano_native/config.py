@@ -24,7 +24,9 @@ class GruponosMeltanoOracleConnectionConfig(FlextBaseSettings):
     service_name: str | None = Field(default=None, description="Oracle service name")
     sid: str | None = Field(default=None, description="Oracle SID")
     username: str = Field(default="user", description="Database username")
-    password: SecretStr = Field(default=SecretStr("password"), description="Database password")
+    password: SecretStr = Field(
+        default=SecretStr("password"), description="Database password",
+    )
     protocol: str = Field(default="TCP", description="Connection protocol")
 
     class Config:
@@ -37,15 +39,24 @@ class GruponosMeltanoOracleConnectionConfig(FlextBaseSettings):
 class GruponosMeltanoWMSSourceConfig(FlextBaseSettings):
     """Oracle WMS source configuration for GrupoNOS."""
 
-    oracle: GruponosMeltanoOracleConnectionConfig | None = Field(default=None, description="Oracle connection config")
+    oracle: GruponosMeltanoOracleConnectionConfig | None = Field(
+        default=None, description="Oracle connection config",
+    )
     api_enabled: bool = Field(default=True, description="Enable API access")
     api_base_url: str | None = Field(default=None, description="WMS API base URL")
-    base_url: str = Field(default="https://example.com", description="WMS API base URL (legacy)")
+    base_url: str = Field(
+        default="https://example.com", description="WMS API base URL (legacy)",
+    )
     username: str = Field(default="user", description="WMS username")
-    password: SecretStr = Field(default=SecretStr("password"), description="WMS password")
+    password: SecretStr = Field(
+        default=SecretStr("password"), description="WMS password",
+    )
     company_code: str = Field(default="*", description="Company code")
     facility_code: str = Field(default="*", description="Facility code")
-    entities: list[str] = Field(default=["allocation", "order_hdr", "order_dtl"], description="WMS entities to extract")
+    entities: list[str] = Field(
+        default=["allocation", "order_hdr", "order_dtl"],
+        description="WMS entities to extract",
+    )
     organization_id: str = Field(default="*", description="Organization ID")
     source_schema: str = Field(default="WMS", description="Source schema name")
     batch_size: int = Field(default=1000, description="Processing batch size")
@@ -54,8 +65,12 @@ class GruponosMeltanoWMSSourceConfig(FlextBaseSettings):
     page_size: int = Field(default=500, description="API page size")
     timeout: int = Field(default=600, description="Request timeout in seconds")
     max_retries: int = Field(default=3, description="Maximum retry attempts")
-    enable_incremental: bool = Field(default=False, description="Enable incremental extraction")
-    start_date: str = Field(default="2024-01-01T00:00:00Z", description="Start date for extraction")
+    enable_incremental: bool = Field(
+        default=False, description="Enable incremental extraction",
+    )
+    start_date: str = Field(
+        default="2024-01-01T00:00:00Z", description="Start date for extraction",
+    )
 
     def model_post_init(self, /, __context: Any) -> None:
         """Post-init validation for WMS source configuration."""
@@ -84,7 +99,9 @@ class GruponosMeltanoTargetOracleConfig(FlextBaseSettings):
     drop_target_tables: bool = Field(default=False, description="Drop target tables")
     enable_compression: bool = Field(default=True, description="Enable compression")
     batch_size: int = Field(default=5000, description="Batch size for loading")
-    load_method: str = Field(default="append_only", description="Load method (append_only/upsert)")
+    load_method: str = Field(
+        default="append_only", description="Load method (append_only/upsert)",
+    )
     add_record_metadata: bool = Field(default=False, description="Add record metadata")
 
     class Config:
@@ -98,13 +115,19 @@ class GruponosMeltanoJobConfig(FlextBaseSettings):
     """Meltano job configuration for GrupoNOS."""
 
     job_name: str = Field(default="gruponos-etl-pipeline", description="Job name")
-    extractor: str = Field(default="tap-oracle-wms", description="Extractor plugin name")
+    extractor: str = Field(
+        default="tap-oracle-wms", description="Extractor plugin name",
+    )
     loader: str = Field(default="target-oracle", description="Loader plugin name")
     schedule: str = Field(default="0 0 * * *", description="Job schedule (cron format)")
-    transform: bool | None = Field(default=False, description="Enable DBT transformation")
+    transform: bool | None = Field(
+        default=False, description="Enable DBT transformation",
+    )
     timeout_minutes: int = Field(default=60, description="Job timeout in minutes")
     retry_attempts: int = Field(default=3, description="Number of retry attempts")
-    retry_delay_seconds: int = Field(default=30, description="Delay between retries in seconds")
+    retry_delay_seconds: int = Field(
+        default=30, description="Delay between retries in seconds",
+    )
 
     class Config:
         """Pydantic configuration for job settings."""
@@ -117,13 +140,17 @@ class GruponosMeltanoAlertConfig(FlextBaseSettings):
     """Alert configuration for GrupoNOS."""
 
     enabled: bool = Field(default=True, description="Enable alerts")
-    email_recipients: list[str] = Field(default_factory=list, description="Email recipients")
+    email_recipients: list[str] = Field(
+        default_factory=list, description="Email recipients",
+    )
     webhook_url: str | None = Field(default=None, description="Webhook URL for alerts")
     slack_webhook_url: str | None = Field(default=None, description="Slack webhook URL")
     webhook_enabled: bool = Field(default=False, description="Enable webhook alerts")
     email_enabled: bool = Field(default=False, description="Enable email alerts")
     slack_enabled: bool = Field(default=False, description="Enable Slack alerts")
-    alert_threshold: int = Field(default=1, description="Number of failures before alerting")
+    alert_threshold: int = Field(
+        default=1, description="Number of failures before alerting",
+    )
     alert_on_failure: bool = Field(default=True, description="Alert on job failure")
     alert_on_success: bool = Field(default=False, description="Alert on job success")
 
@@ -137,9 +164,13 @@ class GruponosMeltanoAlertConfig(FlextBaseSettings):
 class GruponosMeltanoSettings(FlextBaseSettings):
     """Main GrupoNOS Meltano settings."""
 
-    environment: str = Field(default="dev", description="Environment (dev/staging/prod)")
+    environment: str = Field(
+        default="dev", description="Environment (dev/staging/prod)",
+    )
     project_name: str = Field(default="gruponos-meltano", description="Project name")
-    app_name: str = Field(default="gruponos-meltano-native", description="Application name")
+    app_name: str = Field(
+        default="gruponos-meltano-native", description="Application name",
+    )
     version: str = Field(default="0.9.0", description="Application version")
     debug: bool = Field(default=False, description="Debug mode")
     log_level: str = Field(default="INFO", description="Log level")
@@ -147,7 +178,9 @@ class GruponosMeltanoSettings(FlextBaseSettings):
     # Meltano Specific Settings
     meltano_project_root: str = Field(default=".", description="Meltano project root")
     meltano_environment: str = Field(default="dev", description="Meltano environment")
-    meltano_state_backend: str = Field(default="systemdb", description="Meltano state backend")
+    meltano_state_backend: str = Field(
+        default="systemdb", description="Meltano state backend",
+    )
 
     class Config:
         """Pydantic configuration for main settings."""
@@ -202,6 +235,7 @@ class GruponosMeltanoSettings(FlextBaseSettings):
     def is_debug_enabled(self) -> bool:
         """Check if debug mode is enabled."""
         return self.debug
+
 
 # =============================================
 # FACTORY FUNCTIONS

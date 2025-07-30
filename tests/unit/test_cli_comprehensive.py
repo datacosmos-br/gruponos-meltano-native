@@ -80,7 +80,9 @@ class TestCLIComprehensive:
                 msg = f"Expected {0}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "✅ Pipeline health check: PASSED" not in result.output:
-                msg = f"Expected {"✅ Pipeline health check: PASSED"} in {result.output}"
+                msg = (
+                    f"Expected {'✅ Pipeline health check: PASSED'} in {result.output}"
+                )
                 raise AssertionError(msg)
 
     def test_health_command_os_error(self) -> None:
@@ -108,7 +110,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Pipeline health check: FAILED - Invalid config" not in result.output:
-                msg = f"Expected {"❌ Pipeline health check: FAILED - Invalid config"} in {result.output}"
+                msg = f"Expected {'❌ Pipeline health check: FAILED - Invalid config'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_health_command_runtime_error(self) -> None:
@@ -122,7 +124,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Pipeline health check: FAILED - Runtime error" not in result.output:
-                msg = f"Expected {"❌ Pipeline health check: FAILED - Runtime error"} in {result.output}"
+                msg = f"Expected {'❌ Pipeline health check: FAILED - Runtime error'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_health_command_unexpected_error(self) -> None:
@@ -156,7 +158,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {0}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "✅ Data sync completed for: all" not in result.output:
-                msg = f"Expected {"✅ Data sync completed for: all"} in {result.output}"
+                msg = f"Expected {'✅ Data sync completed for: all'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_sync_command_with_entities(self) -> None:
@@ -178,7 +180,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {0}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "✅ Data sync completed for: allocation, order" not in result.output:
-                msg = f"Expected {"✅ Data sync completed for: allocation, order"} in {result.output}"
+                msg = f"Expected {'✅ Data sync completed for: allocation, order'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_sync_command_dry_run(self) -> None:
@@ -197,7 +199,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {0}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "🔍 DRY RUN MODE - No actual changes will be made" not in result.output:
-                msg = f"Expected {"🔍 DRY RUN MODE - No actual changes will be made"} in {result.output}"
+                msg = f"Expected {'🔍 DRY RUN MODE - No actual changes will be made'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_sync_command_os_error(self) -> None:
@@ -211,7 +213,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Data sync failed: Connection failed" not in result.output:
-                msg = f"Expected {"❌ Data sync failed: Connection failed"} in {result.output}"
+                msg = f"Expected {'❌ Data sync failed: Connection failed'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_sync_command_value_error(self) -> None:
@@ -225,7 +227,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Data sync failed: Invalid config" not in result.output:
-                msg = f"Expected {"❌ Data sync failed: Invalid config"} in {result.output}"
+                msg = f"Expected {'❌ Data sync failed: Invalid config'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_sync_command_runtime_error(self) -> None:
@@ -239,7 +241,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Data sync failed: Runtime error" not in result.output:
-                msg = f"Expected {"❌ Data sync failed: Runtime error"} in {result.output}"
+                msg = f"Expected {'❌ Data sync failed: Runtime error'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_sync_command_unexpected_error(self) -> None:
@@ -273,7 +275,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {0}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "📋 Validation Results:" not in result.output:
-                msg = f"Expected {"📋 Validation Results:"} in {result.output}"
+                msg = f"Expected {'📋 Validation Results:'} in {result.output}"
                 raise AssertionError(msg)
             assert "config         : ✅ Valid" in result.output
 
@@ -305,7 +307,7 @@ class TestCLIComprehensive:
             json_output = "\n".join(json_lines)
             parsed = json.loads(json_output)
             if "config" not in parsed:
-                msg = f"Expected {"config"} in {parsed}"
+                msg = f"Expected {'config'} in {parsed}"
                 raise AssertionError(msg)
 
     def test_validate_command_yaml_format(self) -> None:
@@ -325,7 +327,7 @@ class TestCLIComprehensive:
                 raise AssertionError(msg)
             # Output should contain YAML content
             if "config:" not in result.output:
-                msg = f"Expected {"config:"} in {result.output}"
+                msg = f"Expected {'config:'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_validate_command_os_error(self) -> None:
@@ -339,7 +341,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Validation failed: Connection failed" not in result.output:
-                msg = f"Expected {"❌ Validation failed: Connection failed"} in {result.output}"
+                msg = f"Expected {'❌ Validation failed: Connection failed'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_validate_command_value_error(self) -> None:
@@ -353,7 +355,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Validation failed: Invalid config" not in result.output:
-                msg = f"Expected {"❌ Validation failed: Invalid config"} in {result.output}"
+                msg = f"Expected {'❌ Validation failed: Invalid config'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_validate_command_runtime_error(self) -> None:
@@ -367,7 +369,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Validation failed: Runtime error" not in result.output:
-                msg = f"Expected {"❌ Validation failed: Runtime error"} in {result.output}"
+                msg = f"Expected {'❌ Validation failed: Runtime error'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_validate_command_unexpected_error(self) -> None:
@@ -406,7 +408,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {0}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "project_name:" not in result.output:
-                msg = f"Expected {"project_name:"} in {result.output}"
+                msg = f"Expected {'project_name:'} in {result.output}"
                 raise AssertionError(msg)
             assert "environment:" in result.output
 
@@ -443,10 +445,10 @@ class TestCLIComprehensive:
             json_output = "\n".join(json_lines)
             parsed = json.loads(json_output)
             if "project_name" not in parsed:
-                msg = f"Expected {"project_name"} in {parsed}"
+                msg = f"Expected {'project_name'} in {parsed}"
                 raise AssertionError(msg)
             if parsed["environment"] != "development":
-                msg = f"Expected {"development"}, got {parsed["environment"]}"
+                msg = f"Expected {'development'}, got {parsed['environment']}"
                 raise AssertionError(msg)
 
     def test_show_config_command_missing_attributes(self) -> None:
@@ -465,7 +467,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {0}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "project_name:" not in result.output:
-                msg = f"Expected {"project_name:"} in {result.output}"
+                msg = f"Expected {'project_name:'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_show_config_command_os_error(self) -> None:
@@ -478,8 +480,11 @@ class TestCLIComprehensive:
             if result.exit_code != 1:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
-            if "❌ Failed to show configuration: Connection failed" not in result.output:
-                msg = f"Expected {"❌ Failed to show configuration: Connection failed"} in {result.output}"
+            if (
+                "❌ Failed to show configuration: Connection failed"
+                not in result.output
+            ):
+                msg = f"Expected {'❌ Failed to show configuration: Connection failed'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_show_config_command_value_error(self) -> None:
@@ -493,7 +498,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Failed to show configuration: Invalid config" not in result.output:
-                msg = f"Expected {"❌ Failed to show configuration: Invalid config"} in {result.output}"
+                msg = f"Expected {'❌ Failed to show configuration: Invalid config'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_show_config_command_runtime_error(self) -> None:
@@ -507,7 +512,7 @@ class TestCLIComprehensive:
                 msg = f"Expected {1}, got {result.exit_code}"
                 raise AssertionError(msg)
             if "❌ Failed to show configuration: Runtime error" not in result.output:
-                msg = f"Expected {"❌ Failed to show configuration: Runtime error"} in {result.output}"
+                msg = f"Expected {'❌ Failed to show configuration: Runtime error'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_show_config_command_unexpected_error(self) -> None:

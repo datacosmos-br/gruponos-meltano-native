@@ -4,14 +4,14 @@ from decimal import Decimal
 from typing import Any
 
 from gruponos_meltano_native.validators.data_validator import (
-# Constants
-EXPECTED_BULK_SIZE = 2
-EXPECTED_DATA_COUNT = 3
-
     DataValidator,
     ValidationError,
     ValidationRule,
 )
+
+# Constants
+EXPECTED_BULK_SIZE = 2
+EXPECTED_DATA_COUNT = 3
 
 
 class TestDataValidators:
@@ -26,11 +26,12 @@ class TestDataValidators:
         )
 
         if rule.field_name != "test_field":
-
-            raise AssertionError(f"Expected {"test_field"}, got {rule.field_name}")
+            msg = f"Expected {'test_field'}, got {rule.field_name}"
+            raise AssertionError(msg)
         assert rule.rule_type == "required"
         if rule.parameters != {}:
-            raise AssertionError(f"Expected {{}}, got {rule.parameters}")
+            msg = f"Expected {{}}, got {rule.parameters}"
+            raise AssertionError(msg)
 
     def test_data_validator_initialization(self) -> None:
         """Test DataValidator initialization."""
@@ -49,7 +50,8 @@ class TestDataValidators:
 
         validator = DataValidator(rules)
         if len(validator.rules) != EXPECTED_BULK_SIZE:
-            raise AssertionError(f"Expected {2}, got {len(validator.rules)}")
+            msg = f"Expected {2}, got {len(validator.rules)}"
+            raise AssertionError(msg)
         assert validator.rules[0].field_name == "id"
 
     def test_required_field_validation(self) -> None:
@@ -68,8 +70,11 @@ class TestDataValidators:
         data: dict[str, Any] = {}
         errors = validator.validate(data)
         assert len(errors) > 0
-        if any("required_field" in str(error) for error not in errors):
-            raise AssertionError(f"Expected {any("required_field" in str(error) for error} in {errors)}")
+        if any("required_field" in str(error) for error in errors):
+            msg = f"Expected {any('required_field' in str(error) for error in errors)} in {errors}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_string_validation(self) -> None:
         """Test string field validation."""
@@ -87,7 +92,8 @@ class TestDataValidators:
         data = {"name": "ValidName"}
         errors = validator.validate(data)
         if len(errors) != 0:
-            raise AssertionError(f"Expected {0}, got {len(errors)}")
+            msg = f"Expected {0}, got {len(errors)}"
+            raise AssertionError(msg)
 
     def test_number_validation(self) -> None:
         """Test numeric field validation."""
@@ -105,7 +111,8 @@ class TestDataValidators:
         data = {"quantity": 100}
         errors = validator.validate(data)
         if len(errors) != 0:
-            raise AssertionError(f"Expected {0}, got {len(errors)}")
+            msg = f"Expected {0}, got {len(errors)}"
+            raise AssertionError(msg)
 
     def test_date_validation(self) -> None:
         """Test date field validation."""
@@ -123,15 +130,16 @@ class TestDataValidators:
         data = {"created_date": "2023-01-01"}
         errors = validator.validate(data)
         if len(errors) != 0:
-            raise AssertionError(f"Expected {0}, got {len(errors)}")
+            msg = f"Expected {0}, got {len(errors)}"
+            raise AssertionError(msg)
 
     def test_validation_error(self) -> None:
         """Test ValidationError exception."""
         error = ValidationError("Test validation error", "test_field")
 
         if str(error) != "Test validation error":
-
-            raise AssertionError(f"Expected {"Test validation error"}, got {str(error)}")
+            msg = f"Expected {'Test validation error'}, got {error!s}"
+            raise AssertionError(msg)
         assert error.field_name == "test_field"
 
     def test_multiple_validation_rules(self) -> None:
@@ -156,7 +164,8 @@ class TestDataValidators:
 
         validator = DataValidator(rules)
         if len(validator.rules) != EXPECTED_DATA_COUNT:
-            raise AssertionError(f"Expected {3}, got {len(validator.rules)}")
+            msg = f"Expected {3}, got {len(validator.rules)}"
+            raise AssertionError(msg)
 
     def test_decimal_number_validation(self) -> None:
         """Test decimal number validation."""
@@ -174,7 +183,8 @@ class TestDataValidators:
         data = {"price": Decimal("19.99")}
         errors = validator.validate(data)
         if len(errors) != 0:
-            raise AssertionError(f"Expected {0}, got {len(errors)}")
+            msg = f"Expected {0}, got {len(errors)}"
+            raise AssertionError(msg)
 
     def test_boolean_validation(self) -> None:
         """Test boolean field validation."""
@@ -192,7 +202,8 @@ class TestDataValidators:
         data = {"is_active": True}
         errors = validator.validate(data)
         if len(errors) != 0:
-            raise AssertionError(f"Expected {0}, got {len(errors)}")
+            msg = f"Expected {0}, got {len(errors)}"
+            raise AssertionError(msg)
 
     def test_custom_validation_rule(self) -> None:
         """Test custom validation rule."""
@@ -210,4 +221,5 @@ class TestDataValidators:
         data = {"status": "active"}
         errors = validator.validate(data)
         if len(errors) != 0:
-            raise AssertionError(f"Expected {0}, got {len(errors)}")
+            msg = f"Expected {0}, got {len(errors)}"
+            raise AssertionError(msg)

@@ -225,7 +225,9 @@ class TestConfiguration:
         # Test the connection string method directly on the oracle config
         conn = oracle_config
         if conn.service_name:
-            connection_string = f"{conn.username}@{conn.host}:{conn.port}/{conn.service_name}"
+            connection_string = (
+                f"{conn.username}@{conn.host}:{conn.port}/{conn.service_name}"
+            )
         elif conn.sid:
             connection_string = f"{conn.username}@{conn.host}:{conn.port}:{conn.sid}"
         else:

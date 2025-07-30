@@ -3,9 +3,6 @@
 Tests DDL generation, index creation, SQL execution, and all error handling paths.
 """
 
-import gruponos_meltano_native.oracle.table_creator
-
-
 from __future__ import annotations
 
 import json
@@ -18,6 +15,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+import gruponos_meltano_native.oracle.table_creator
 from gruponos_meltano_native.oracle.table_creator import (
     OracleTableCreator,
     main,
@@ -45,14 +43,16 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         if creator.host != "localhost":
-
-            raise AssertionError(f"Expected {"localhost"}, got {creator.host}")
+            msg = f"Expected {'localhost'}, got {creator.host}"
+            raise AssertionError(msg)
         assert creator.port == 1521  # Default port
         if creator.service_name != "XEPDB1":
-            raise AssertionError(f"Expected {"XEPDB1"}, got {creator.service_name}")
+            msg = f"Expected {'XEPDB1'}, got {creator.service_name}"
+            raise AssertionError(msg)
         assert creator.username == "test_user"
         if creator.password != "test_pass":
-            raise AssertionError(f"Expected {"test_pass"}, got {creator.password}")
+            msg = f"Expected {'test_pass'}, got {creator.password}"
+            raise AssertionError(msg)
         assert creator.schema == "TEST_USER"  # Username uppercased
         assert creator.type_mappings is not None
 
@@ -70,14 +70,16 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         if creator.host != "oracle.company.com":
-
-            raise AssertionError(f"Expected {"oracle.company.com"}, got {creator.host}")
+            msg = f"Expected {'oracle.company.com'}, got {creator.host}"
+            raise AssertionError(msg)
         assert creator.port == 1522
         if creator.service_name != "PROD":
-            raise AssertionError(f"Expected {"PROD"}, got {creator.service_name}")
+            msg = f"Expected {'PROD'}, got {creator.service_name}"
+            raise AssertionError(msg)
         assert creator.username == "wms_user"
         if creator.password != "secret123":
-            raise AssertionError(f"Expected {"secret123"}, got {creator.password}")
+            msg = f"Expected {'secret123'}, got {creator.password}"
+            raise AssertionError(msg)
         assert creator.schema == "WMS_SCHEMA"
 
     def test_get_oracle_type_mappings(self) -> None:
@@ -94,13 +96,20 @@ class TestOracleTableCreatorComprehensive:
 
         # Test key mappings
         if mappings["integer"] != "NUMBER(10)":
-            raise AssertionError(f"Expected {"NUMBER(10)"}, got {mappings["integer"]}")
+            msg = f"Expected {'NUMBER(10)'}, got {mappings['integer']}"
+            raise AssertionError(msg)
         assert mappings["string"] == "VARCHAR2(4000)"
         if mappings["date-time"] != "TIMESTAMP WITH TIME ZONE":
-            raise AssertionError(f"Expected {"TIMESTAMP WITH TIME ZONE"}, got {mappings["date-time"]}")
+            msg = f"Expected {'TIMESTAMP WITH TIME ZONE'}, got {mappings['date-time']}"
+            raise AssertionError(
+                msg,
+            )
         assert mappings["boolean"] == "NUMBER(1) CHECK (VALUE IN (0,1))"
         if mappings["object"] != "CLOB CHECK (VALUE IS JSON)":
-            raise AssertionError(f"Expected {"CLOB CHECK (VALUE IS JSON)"}, got {mappings["object"]}")
+            msg = f"Expected {'CLOB CHECK (VALUE IS JSON)'}, got {mappings['object']}"
+            raise AssertionError(
+                msg,
+            )
         assert mappings["array"] == "CLOB CHECK (VALUE IS JSON ARRAY)"
 
     def test_create_table_from_schema_success(self) -> None:
@@ -127,17 +136,24 @@ class TestOracleTableCreatorComprehensive:
         ddl = creator.create_table_from_schema("test_table", singer_schema)
 
         if "CREATE TABLE TEST_USER.TEST_TABLE" not in ddl:
-
-            raise AssertionError(f"Expected {"CREATE TABLE TEST_USER.TEST_TABLE"} in {ddl}")
+            msg = f"Expected {'CREATE TABLE TEST_USER.TEST_TABLE'} in {ddl}"
+            raise AssertionError(
+                msg,
+            )
         assert "ID NUMBER(10) NOT NULL" in ddl
         if "NAME VARCHAR2(100) NOT NULL" not in ddl:
-            raise AssertionError(f"Expected {"NAME VARCHAR2(100) NOT NULL"} in {ddl}")
+            msg = f"Expected {'NAME VARCHAR2(100) NOT NULL'} in {ddl}"
+            raise AssertionError(msg)
         assert "CREATED_AT TIMESTAMP WITH TIME ZONE NOT NULL" in ddl
         if "ACTIVE NUMBER(1) CHECK (VALUE IN (0,1))" not in ddl:
-            raise AssertionError(f"Expected {"ACTIVE NUMBER(1) CHECK (VALUE IN (0,1))"} in {ddl}")
+            msg = f"Expected {'ACTIVE NUMBER(1) CHECK (VALUE IN (0,1))'} in {ddl}"
+            raise AssertionError(
+                msg,
+            )
         assert "CONSTRAINT PK_TEST_TABLE PRIMARY KEY (ID)" in ddl
         if "TABLESPACE USERS" not in ddl:
-            raise AssertionError(f"Expected {"TABLESPACE USERS"} in {ddl}")
+            msg = f"Expected {'TABLESPACE USERS'} in {ddl}"
+            raise AssertionError(msg)
         assert "WMS data synchronized via Singer tap" in ddl
 
     def test_create_table_from_schema_no_properties(self) -> None:
@@ -181,11 +197,14 @@ class TestOracleTableCreatorComprehensive:
         ddl = creator.create_table_from_schema("test_table", singer_schema)
 
         if "CREATE TABLE TEST_USER.TEST_TABLE" not in ddl:
-
-            raise AssertionError(f"Expected {"CREATE TABLE TEST_USER.TEST_TABLE"} in {ddl}")
+            msg = f"Expected {'CREATE TABLE TEST_USER.TEST_TABLE'} in {ddl}"
+            raise AssertionError(
+                msg,
+            )
         assert "NAME VARCHAR2(4000) NOT NULL" in ddl
         if "VALUE NUMBER NOT NULL" not in ddl:
-            raise AssertionError(f"Expected {"VALUE NUMBER NOT NULL"} in {ddl}")
+            msg = f"Expected {'VALUE NUMBER NOT NULL'} in {ddl}"
+            raise AssertionError(msg)
         assert "CONSTRAINT PK_" not in ddl  # No primary key constraint
 
     def test_create_column_ddl_string_type(self) -> None:
@@ -203,7 +222,10 @@ class TestOracleTableCreatorComprehensive:
         column_schema = {"type": "string"}
         ddl = creator._create_column_ddl("name", column_schema, is_primary_key=False)
         if ddl != "NAME VARCHAR2(4000) NOT NULL":
-            raise AssertionError(f"Expected {"NAME VARCHAR2(4000) NOT NULL"}, got {ddl}")
+            msg = f"Expected {'NAME VARCHAR2(4000) NOT NULL'}, got {ddl}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_create_column_ddl_string_with_max_length(self) -> None:
         """Test column DDL creation for string with maxLength."""
@@ -219,7 +241,8 @@ class TestOracleTableCreatorComprehensive:
         column_schema = {"type": "string", "maxLength": 50}
         ddl = creator._create_column_ddl("code", column_schema, is_primary_key=False)
         if ddl != "CODE VARCHAR2(50) NOT NULL":
-            raise AssertionError(f"Expected {"CODE VARCHAR2(50) NOT NULL"}, got {ddl}")
+            msg = f"Expected {'CODE VARCHAR2(50) NOT NULL'}, got {ddl}"
+            raise AssertionError(msg)
 
     def test_create_column_ddl_string_max_length_capped(self) -> None:
         """Test column DDL creation for string with maxLength > 4000."""
@@ -239,7 +262,10 @@ class TestOracleTableCreatorComprehensive:
             is_primary_key=False,
         )
         if ddl != "DESCRIPTION VARCHAR2(4000) NOT NULL":
-            raise AssertionError(f"Expected {"DESCRIPTION VARCHAR2(4000) NOT NULL"}, got {ddl}")
+            msg = f"Expected {'DESCRIPTION VARCHAR2(4000) NOT NULL'}, got {ddl}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_create_column_ddl_nullable(self) -> None:
         """Test column DDL creation for nullable column."""
@@ -260,7 +286,10 @@ class TestOracleTableCreatorComprehensive:
         )
         # Should not have NOT NULL constraint
         if ddl != "OPTIONAL_FIELD VARCHAR2(4000)":
-            raise AssertionError(f"Expected {"OPTIONAL_FIELD VARCHAR2(4000)"}, got {ddl}")
+            msg = f"Expected {'OPTIONAL_FIELD VARCHAR2(4000)'}, got {ddl}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_create_column_ddl_primary_key_nullable(self) -> None:
         """Test column DDL creation for primary key (forces NOT NULL)."""
@@ -277,7 +306,8 @@ class TestOracleTableCreatorComprehensive:
         ddl = creator._create_column_ddl("id", column_schema, is_primary_key=True)
         # Primary key should force NOT NULL even if type allows null
         if ddl != "ID NUMBER(10) NOT NULL":
-            raise AssertionError(f"Expected {"ID NUMBER(10) NOT NULL"}, got {ddl}")
+            msg = f"Expected {'ID NUMBER(10) NOT NULL'}, got {ddl}"
+            raise AssertionError(msg)
 
     def test_create_column_ddl_with_default(self) -> None:
         """Test column DDL creation with default value."""
@@ -293,7 +323,10 @@ class TestOracleTableCreatorComprehensive:
         column_schema = {"type": ["string", "null"], "default": "ACTIVE"}
         ddl = creator._create_column_ddl("status", column_schema, is_primary_key=False)
         if ddl != "STATUS VARCHAR2(4000) DEFAULT 'ACTIVE'":
-            raise AssertionError(f"Expected {"STATUS VARCHAR2(4000) DEFAULT 'ACTIVE'"}, got {ddl}")
+            msg = f"Expected {"STATUS VARCHAR2(4000) DEFAULT 'ACTIVE'"}, got {ddl}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_create_column_ddl_number_with_multiple_of(self) -> None:
         """Test column DDL creation for number with multipleOf."""
@@ -309,7 +342,8 @@ class TestOracleTableCreatorComprehensive:
         column_schema = {"type": "number", "multipleOf": 0.01}
         ddl = creator._create_column_ddl("price", column_schema, is_primary_key=False)
         if ddl != "PRICE NUMBER(18,4) NOT NULL":
-            raise AssertionError(f"Expected {"PRICE NUMBER(18,4) NOT NULL"}, got {ddl}")
+            msg = f"Expected {'PRICE NUMBER(18,4) NOT NULL'}, got {ddl}"
+            raise AssertionError(msg)
 
     def test_create_column_ddl_list_type(self) -> None:
         """Test column DDL creation when type is a list."""
@@ -325,7 +359,8 @@ class TestOracleTableCreatorComprehensive:
         column_schema = {"type": ["integer"]}  # Type as list
         ddl = creator._create_column_ddl("count", column_schema, is_primary_key=False)
         if ddl != "COUNT NUMBER(10) NOT NULL":
-            raise AssertionError(f"Expected {"COUNT NUMBER(10) NOT NULL"}, got {ddl}")
+            msg = f"Expected {'COUNT NUMBER(10) NOT NULL'}, got {ddl}"
+            raise AssertionError(msg)
 
     def test_calculate_precision_large_number(self) -> None:
         """Test precision calculation for large numbers."""
@@ -339,8 +374,9 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         precision = creator._calculate_precision(100.0)
-        if precision != 18  # Large integers:
-            raise AssertionError(f"Expected {18  # Large integers}, got {precision}")
+        if precision != 18:  # Large integers:
+            msg = f"Expected {18}, got {precision}"
+            raise AssertionError(msg)
 
     def test_calculate_precision_decimal(self) -> None:
         """Test precision calculation for decimal numbers."""
@@ -354,8 +390,9 @@ class TestOracleTableCreatorComprehensive:
         creator = OracleTableCreator(config)
 
         precision = creator._calculate_precision(0.001)
-        if precision != 18  # Conservative precision:
-            raise AssertionError(f"Expected {18  # Conservative precision}, got {precision}")
+        if precision != 18:  # Conservative precision:
+            msg = f"Expected {18}, got {precision}"
+            raise AssertionError(msg)
 
     def test_format_default_value_null(self) -> None:
         """Test default value formatting for null."""
@@ -370,7 +407,8 @@ class TestOracleTableCreatorComprehensive:
 
         result = creator._format_default_value(default_value=None, data_type="string")
         if result != "NULL":
-            raise AssertionError(f"Expected {"NULL"}, got {result}")
+            msg = f"Expected {'NULL'}, got {result}"
+            raise AssertionError(msg)
 
     def test_format_default_value_string(self) -> None:
         """Test default value formatting for string."""
@@ -388,7 +426,8 @@ class TestOracleTableCreatorComprehensive:
             data_type="string",
         )
         if result != "'active'":
-            raise AssertionError(f"Expected {"'active'"}, got {result}")
+            msg = f"Expected {"'active'"}, got {result}"
+            raise AssertionError(msg)
 
     def test_format_default_value_boolean_true(self) -> None:
         """Test default value formatting for boolean true."""
@@ -403,7 +442,8 @@ class TestOracleTableCreatorComprehensive:
 
         result = creator._format_default_value(default_value=True, data_type="boolean")
         if result != "1":
-            raise AssertionError(f"Expected {"1"}, got {result}")
+            msg = f"Expected {'1'}, got {result}"
+            raise AssertionError(msg)
 
     def test_format_default_value_boolean_false(self) -> None:
         """Test default value formatting for boolean false."""
@@ -418,7 +458,8 @@ class TestOracleTableCreatorComprehensive:
 
         result = creator._format_default_value(default_value=False, data_type="boolean")
         if result != "0":
-            raise AssertionError(f"Expected {"0"}, got {result}")
+            msg = f"Expected {'0'}, got {result}"
+            raise AssertionError(msg)
 
     def test_format_default_value_current_timestamp(self) -> None:
         """Test default value formatting for CURRENT_TIMESTAMP."""
@@ -436,7 +477,8 @@ class TestOracleTableCreatorComprehensive:
             data_type="date-time",
         )
         if result != "SYSTIMESTAMP":
-            raise AssertionError(f"Expected {"SYSTIMESTAMP"}, got {result}")
+            msg = f"Expected {'SYSTIMESTAMP'}, got {result}"
+            raise AssertionError(msg)
 
     def test_format_default_value_timestamp(self) -> None:
         """Test default value formatting for custom timestamp."""
@@ -454,7 +496,10 @@ class TestOracleTableCreatorComprehensive:
             data_type="date-time",
         )
         if result != "TIMESTAMP '2025-01-01 00:00:00'":
-            raise AssertionError(f"Expected {"TIMESTAMP '2025-01-01 00:00:00'"}, got {result}")
+            msg = f"Expected {"TIMESTAMP '2025-01-01 00:00:00'"}, got {result}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_format_default_value_numeric(self) -> None:
         """Test default value formatting for numeric values."""
@@ -469,7 +514,8 @@ class TestOracleTableCreatorComprehensive:
 
         result = creator._format_default_value(default_value=100, data_type="integer")
         if result != "100":
-            raise AssertionError(f"Expected {"100"}, got {result}")
+            msg = f"Expected {'100'}, got {result}"
+            raise AssertionError(msg)
 
     def test_build_create_table_ddl_with_primary_key(self) -> None:
         """Test complete DDL building with primary key."""
@@ -488,20 +534,26 @@ class TestOracleTableCreatorComprehensive:
         ddl = creator._build_create_table_ddl("test_table", columns, primary_keys)
 
         if "CREATE TABLE TEST_USER.TEST_TABLE (" not in ddl:
-
-            raise AssertionError(f"Expected {"CREATE TABLE TEST_USER.TEST_TABLE ("} in {ddl}")
+            msg = f"Expected {'CREATE TABLE TEST_USER.TEST_TABLE ('} in {ddl}"
+            raise AssertionError(
+                msg,
+            )
         assert "ID NUMBER(10) NOT NULL," in ddl
         if "NAME VARCHAR2(100) NOT NULL" not in ddl:
-            raise AssertionError(f"Expected {"NAME VARCHAR2(100) NOT NULL"} in {ddl}")
+            msg = f"Expected {'NAME VARCHAR2(100) NOT NULL'} in {ddl}"
+            raise AssertionError(msg)
         assert "CONSTRAINT PK_TEST_TABLE PRIMARY KEY (ID)" in ddl
         if "TABLESPACE USERS" not in ddl:
-            raise AssertionError(f"Expected {"TABLESPACE USERS"} in {ddl}")
+            msg = f"Expected {'TABLESPACE USERS'} in {ddl}"
+            raise AssertionError(msg)
         assert "PCTFREE 10" in ddl
         if "STORAGE (" not in ddl:
-            raise AssertionError(f"Expected {"STORAGE ("} in {ddl}")
+            msg = f"Expected {'STORAGE ('} in {ddl}"
+            raise AssertionError(msg)
         assert "INITIAL 64K" in ddl
         if "DBMS_STATS.GATHER_TABLE_STATS" not in ddl:
-            raise AssertionError(f"Expected {"DBMS_STATS.GATHER_TABLE_STATS"} in {ddl}")
+            msg = f"Expected {'DBMS_STATS.GATHER_TABLE_STATS'} in {ddl}"
+            raise AssertionError(msg)
         assert "WMS data synchronized via Singer tap" in ddl
 
     def test_build_create_table_ddl_no_primary_key(self) -> None:
@@ -521,11 +573,14 @@ class TestOracleTableCreatorComprehensive:
         ddl = creator._build_create_table_ddl("test_table", columns, primary_keys)
 
         if "CREATE TABLE TEST_USER.TEST_TABLE (" not in ddl:
-
-            raise AssertionError(f"Expected {"CREATE TABLE TEST_USER.TEST_TABLE ("} in {ddl}")
+            msg = f"Expected {'CREATE TABLE TEST_USER.TEST_TABLE ('} in {ddl}"
+            raise AssertionError(
+                msg,
+            )
         assert "NAME VARCHAR2(100) NOT NULL," in ddl
         if "VALUE NUMBER" not in ddl:
-            raise AssertionError(f"Expected {"VALUE NUMBER"} in {ddl}")
+            msg = f"Expected {'VALUE NUMBER'} in {ddl}"
+            raise AssertionError(msg)
         assert "CONSTRAINT PK_" not in ddl  # No primary key constraint
 
     def test_create_indexes_for_table_success(self) -> None:
@@ -560,21 +615,32 @@ class TestOracleTableCreatorComprehensive:
         # Check specific index patterns
         index_texts = " ".join(indexes)
         if "IDX_ALLOCATION_ORDER_DATE" not in index_texts:
-            raise AssertionError(f"Expected {"IDX_ALLOCATION_ORDER_DATE"} in {index_texts}")
+            msg = f"Expected {'IDX_ALLOCATION_ORDER_DATE'} in {index_texts}"
+            raise AssertionError(
+                msg,
+            )
         assert "IDX_ALLOCATION_CREATED_TIME" in index_texts
         if "IDX_ALLOCATION_ALLOCATION_ID" not in index_texts:
-            raise AssertionError(f"Expected {"IDX_ALLOCATION_ALLOCATION_ID"} in {index_texts}")
+            msg = f"Expected {'IDX_ALLOCATION_ALLOCATION_ID'} in {index_texts}"
+            raise AssertionError(
+                msg,
+            )
         assert "IDX_ALLOCATION_STATUS" in index_texts
         if "IDX_ALLOCATION_ITEM_CODE" not in index_texts:
-            raise AssertionError(f"Expected {"IDX_ALLOCATION_ITEM_CODE"} in {index_texts}")
+            msg = f"Expected {'IDX_ALLOCATION_ITEM_CODE'} in {index_texts}"
+            raise AssertionError(
+                msg,
+            )
         assert "IDX_ALLOCATION_ORDER_NUMBER" in index_texts
         if "IDX_ALLOCATION_STATE" not in index_texts:
-            raise AssertionError(f"Expected {"IDX_ALLOCATION_STATE"} in {index_texts}")
+            msg = f"Expected {'IDX_ALLOCATION_STATE'} in {index_texts}"
+            raise AssertionError(msg)
         assert "IDX_ALLOCATION_ID" in index_texts
 
         # Check index types
-        if "UNIQUE INDEX" not in index_texts  # For ID columns:
-            raise AssertionError(f"Expected {"UNIQUE INDEX"} in {index_texts  # For ID columns}")
+        if "UNIQUE INDEX" not in index_texts:  # For ID columns:
+            msg = f"Expected {'UNIQUE INDEX'} in {index_texts}"
+            raise AssertionError(msg)
         assert "CREATE INDEX" in index_texts  # Regular indexes
 
     def test_create_indexes_for_table_no_properties(self) -> None:
@@ -593,8 +659,8 @@ class TestOracleTableCreatorComprehensive:
         indexes = creator.create_indexes_for_table("test_table", singer_schema)
 
         if len(indexes) != 0:
-
-            raise AssertionError(f"Expected {0}, got {len(indexes)}")
+            msg = f"Expected {0}, got {len(indexes)}"
+            raise AssertionError(msg)
 
     def test_execute_ddl_success(self) -> None:
         """Test successful DDL execution."""
@@ -632,8 +698,8 @@ class TestOracleTableCreatorComprehensive:
             result = creator.execute_ddl(ddl_statements)
 
             if not (result):
-
-                raise AssertionError(f"Expected True, got {result}")
+                msg = f"Expected True, got {result}"
+                raise AssertionError(msg)
             mock_run.assert_called_once()
             mock_unlink.assert_called_once()
 
@@ -707,8 +773,8 @@ class TestOracleTableCreatorComprehensive:
             result = creator.execute_ddl(ddl_statements)
 
             if result:
-
-                raise AssertionError(f"Expected False, got {result}")
+                msg = f"Expected False, got {result}"
+                raise AssertionError(msg)
             mock_unlink.assert_called_once()
 
     def test_execute_ddl_os_error(self) -> None:
@@ -740,8 +806,8 @@ class TestOracleTableCreatorComprehensive:
             result = creator.execute_ddl(ddl_statements)
 
             if result:
-
-                raise AssertionError(f"Expected False, got {result}")
+                msg = f"Expected False, got {result}"
+                raise AssertionError(msg)
             mock_unlink.assert_called_once()
 
     def test_execute_ddl_value_error(self) -> None:
@@ -773,8 +839,8 @@ class TestOracleTableCreatorComprehensive:
             result = creator.execute_ddl(ddl_statements)
 
             if result:
-
-                raise AssertionError(f"Expected False, got {result}")
+                msg = f"Expected False, got {result}"
+                raise AssertionError(msg)
             mock_unlink.assert_called_once()
 
     def test_execute_ddl_runtime_error(self) -> None:
@@ -806,8 +872,8 @@ class TestOracleTableCreatorComprehensive:
             result = creator.execute_ddl(ddl_statements)
 
             if result:
-
-                raise AssertionError(f"Expected False, got {result}")
+                msg = f"Expected False, got {result}"
+                raise AssertionError(msg)
             mock_unlink.assert_called_once()
 
     def test_execute_ddl_unexpected_error(self) -> None:
@@ -839,8 +905,8 @@ class TestOracleTableCreatorComprehensive:
             result = creator.execute_ddl(ddl_statements)
 
             if result:
-
-                raise AssertionError(f"Expected False, got {result}")
+                msg = f"Expected False, got {result}"
+                raise AssertionError(msg)
             mock_unlink.assert_called_once()
 
     def test_execute_ddl_cleanup_on_unlink_error(self) -> None:
@@ -880,7 +946,8 @@ class TestOracleTableCreatorComprehensive:
 
             # Should still succeed despite cleanup error
             if not (result):
-                raise AssertionError(f"Expected True, got {result}")
+                msg = f"Expected True, got {result}"
+                raise AssertionError(msg)
 
     def test_generate_table_from_singer_catalog_success(self) -> None:
         """Test generating table DDL from Singer catalog."""
@@ -915,11 +982,16 @@ class TestOracleTableCreatorComprehensive:
             ddl = creator.generate_table_from_singer_catalog(catalog_path, "allocation")
 
             if "CREATE TABLE TEST_USER.ALLOCATION" not in ddl:
-
-                raise AssertionError(f"Expected {"CREATE TABLE TEST_USER.ALLOCATION"} in {ddl}")
+                msg = f"Expected {'CREATE TABLE TEST_USER.ALLOCATION'} in {ddl}"
+                raise AssertionError(
+                    msg,
+                )
             assert "ID NUMBER(10) NOT NULL" in ddl
             if "NAME VARCHAR2(4000) NOT NULL" not in ddl:
-                raise AssertionError(f"Expected {"NAME VARCHAR2(4000) NOT NULL"} in {ddl}")
+                msg = f"Expected {'NAME VARCHAR2(4000) NOT NULL'} in {ddl}"
+                raise AssertionError(
+                    msg,
+                )
 
     def test_generate_table_from_singer_catalog_stream_not_found(self) -> None:
         """Test generating table DDL when stream is not in catalog."""
@@ -1040,8 +1112,8 @@ class TestMainFunction:
             result = main()
 
             if result != 0:
-
-                raise AssertionError(f"Expected {0}, got {result}")
+                msg = f"Expected {0}, got {result}"
+                raise AssertionError(msg)
             mock_creator.assert_called_once()
 
     def test_main_with_password_env_var(self) -> None:
@@ -1090,12 +1162,15 @@ class TestMainFunction:
             result = main()
 
             if result != 0:
-
-                raise AssertionError(f"Expected {0}, got {result}")
+                msg = f"Expected {0}, got {result}"
+                raise AssertionError(msg)
             # Verify password from environment was used
             call_args = mock_creator.call_args[0][0]
             if call_args["password"] != "env_password":
-                raise AssertionError(f"Expected {"env_password"}, got {call_args["password"]}")
+                msg = f"Expected {'env_password'}, got {call_args['password']}"
+                raise AssertionError(
+                    msg,
+                )
 
     def test_main_missing_password(self) -> None:
         """Test main function with missing password."""
@@ -1168,12 +1243,15 @@ class TestMainFunction:
             result = main()
 
             if result != 0:
-
-                raise AssertionError(f"Expected {0}, got {result}")
+                msg = f"Expected {0}, got {result}"
+                raise AssertionError(msg)
             # Verify custom schema was used
             call_args = mock_creator.call_args[0][0]
             if call_args["schema"] != "CUSTOM_SCHEMA":
-                raise AssertionError(f"Expected {"CUSTOM_SCHEMA"}, got {call_args["schema"]}")
+                msg = f"Expected {'CUSTOM_SCHEMA'}, got {call_args['schema']}"
+                raise AssertionError(
+                    msg,
+                )
 
     def test_main_with_indexes(self) -> None:
         """Test main function with index generation."""
@@ -1228,8 +1306,8 @@ class TestMainFunction:
             result = main()
 
             if result != 0:
-
-                raise AssertionError(f"Expected {0}, got {result}")
+                msg = f"Expected {0}, got {result}"
+                raise AssertionError(msg)
             mock_creator_instance.create_indexes_for_table.assert_called_once_with(
                 "allocation",
                 catalog_data["streams"][0]["schema"],
@@ -1283,8 +1361,8 @@ class TestMainFunction:
             result = main()
 
             if result != 0:
-
-                raise AssertionError(f"Expected {0}, got {result}")
+                msg = f"Expected {0}, got {result}"
+                raise AssertionError(msg)
             mock_creator_instance.execute_ddl.assert_called_once_with(
                 [
                     "CREATE TABLE test;",
@@ -1346,8 +1424,8 @@ class TestMainFunction:
             result = main()
 
             if result != 0:
-
-                raise AssertionError(f"Expected {0}, got {result}")
+                msg = f"Expected {0}, got {result}"
+                raise AssertionError(msg)
             # Should execute both table DDL and index DDL
             mock_creator_instance.execute_ddl.assert_called_once_with(
                 [
@@ -1403,9 +1481,9 @@ class TestMainFunction:
 
             result = main()
 
-            if result != 1  # Exit code 1 for failure:
-
-                raise AssertionError(f"Expected {1  # Exit code 1 for failure}, got {result}")
+            if result != 1:  # Exit code 1 for failure:
+                msg = f"Expected {1}, got {result}"
+                raise AssertionError(msg)
 
 
 class TestMainExecution:
@@ -1413,8 +1491,6 @@ class TestMainExecution:
 
     def test_main_execution_path(self) -> None:
         """Test the main execution path when module is run directly."""
-
-
         # The actual main execution would happen here if __name__ == "__main__"
         # We're testing that the functions exist and can be called
         assert callable(gruponos_meltano_native.oracle.table_creator.main)

@@ -1,8 +1,5 @@
 """Comprehensive tests for GrupoNOS Meltano Native exceptions module.
 
-# Constants
-EXPECTED_DATA_COUNT = 3
-
 Tests exception hierarchy, inheritance, and proper FLEXT standards compliance.
 """
 
@@ -32,6 +29,9 @@ from gruponos_meltano_native.exceptions import (
     GruponosMeltanoValidationError,
 )
 
+# Constants
+EXPECTED_DATA_COUNT = 3
+
 
 class TestGruponosMeltanoBaseException:
     """Test base exception class."""
@@ -40,11 +40,11 @@ class TestGruponosMeltanoBaseException:
         """Test base exception can be created with message."""
         error = GruponosMeltanoError("Test error message")
         if str(error) != "Test error message":
-            msg = f"Expected {"Test error message"}, got {error!s}"
+            msg = f"Expected {'Test error message'}, got {error!s}"
             raise AssertionError(msg)
         assert error.message == "Test error message"
         if error.error_code != "GruponosMeltanoError":
-            msg = f"Expected {"GruponosMeltanoError"}, got {error.error_code}"
+            msg = f"Expected {'GruponosMeltanoError'}, got {error.error_code}"
             raise AssertionError(msg)
         assert error.context == {}
 
@@ -57,7 +57,7 @@ class TestGruponosMeltanoBaseException:
             context=context,
         )
         if error.message != "Test error":
-            msg = f"Expected {"Test error"}, got {error.message}"
+            msg = f"Expected {'Test error'}, got {error.message}"
             raise AssertionError(msg)
         assert error.error_code == "TEST_001"
         if error.context != context:
@@ -76,11 +76,11 @@ class TestGruponosMeltanoBaseException:
         )
         repr_str = repr(error)
         if "GruponosMeltanoError" not in repr_str:
-            msg = f"Expected {"GruponosMeltanoError"} in {repr_str}"
+            msg = f"Expected {'GruponosMeltanoError'} in {repr_str}"
             raise AssertionError(msg)
         assert "Test message" in repr_str
         if "TEST_001" not in repr_str:
-            msg = f"Expected {"TEST_001"} in {repr_str}"
+            msg = f"Expected {'TEST_001'} in {repr_str}"
             raise AssertionError(msg)
         assert "{'test': True}" in repr_str
 
@@ -295,15 +295,14 @@ class TestExceptionUsagePatterns:
         )
 
         if "Failed to connect to Oracle database" not in str(error):
-
-            msg = f"Expected {"Failed to connect to Oracle database"} in {error!s}"
+            msg = f"Expected {'Failed to connect to Oracle database'} in {error!s}"
             raise AssertionError(msg)
         assert "localhost" in str(error)
         if "1521" not in str(error):
-            msg = f"Expected {"1521"} in {error!s}"
+            msg = f"Expected {'1521'} in {error!s}"
             raise AssertionError(msg)
         if error.error_code != "ORACLE_CONN_001":
-            msg = f"Expected {"ORACLE_CONN_001"}, got {error.error_code}"
+            msg = f"Expected {'ORACLE_CONN_001'}, got {error.error_code}"
             raise AssertionError(msg)
         assert error.context["retry_count"] == EXPECTED_DATA_COUNT
 
@@ -321,5 +320,5 @@ class TestExceptionUsagePatterns:
             # In real code, would use 'raise chain_error from e'
             assert isinstance(chain_error, GruponosMeltanoValidationError)
             if chain_error.context["field"] != "database_url":
-                msg = f"Expected {"database_url"}, got {chain_error.context["field"]}"
+                msg = f"Expected {'database_url'}, got {chain_error.context['field']}"
                 raise AssertionError(msg)

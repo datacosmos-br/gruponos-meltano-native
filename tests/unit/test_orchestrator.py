@@ -34,19 +34,20 @@ class TestOrchestrator:
         return GruponosMeltanoSettings(
             wms_source=GruponosMeltanoWMSSourceConfig(oracle=oracle_wms),
             target_oracle=GruponosMeltanoTargetOracleConfig(
-                oracle=oracle_target, schema_name="SYNC",
+                oracle=oracle_target,
+                schema_name="SYNC",
             ),
             meltano=GruponosMeltanoSettings(project_id="test", environment="dev"),
         )
 
     def test_orchestrator_initialization(
-        self, valid_config: GruponosMeltanoSettings,
+        self,
+        valid_config: GruponosMeltanoSettings,
     ) -> None:
         """Test orchestrator initialization."""
         orchestrator = GruponosMeltanoOrchestrator(valid_config)
 
         if orchestrator.config != valid_config:
-
             msg = f"Expected {valid_config}, got {orchestrator.config}"
             raise AssertionError(msg)
         # Basic orchestrator should have basic methods
@@ -85,7 +86,7 @@ class TestOrchestrator:
         assert not result.success
         assert result.error is not None
         if "WMS source not configured" not in result.error:
-            msg = f"Expected {"WMS source not configured"} in {result.error}"
+            msg = f"Expected {'WMS source not configured'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.asyncio
@@ -111,7 +112,7 @@ class TestOrchestrator:
         assert not result.success
         assert result.error is not None
         if "Target Oracle not configured" not in result.error:
-            msg = f"Expected {"Target Oracle not configured"} in {result.error}"
+            msg = f"Expected {'Target Oracle not configured'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.asyncio
@@ -127,15 +128,17 @@ class TestOrchestrator:
         assert result.success
         assert result.value is not None
         if result.value["pipeline"] != "test_pipeline":
-            msg = f"Expected {"test_pipeline"}, got {result.value["pipeline"]}"
+            msg = f"Expected {'test_pipeline'}, got {result.value['pipeline']}"
             raise AssertionError(msg)
         assert result.value["status"] == "success"
         if "records_processed" not in result.value:
-            msg = f"Expected {"records_processed"} in {result.value}"
+            msg = f"Expected {'records_processed'} in {result.value}"
             raise AssertionError(msg)
         assert "errors" in result.value
 
-    def test_orchestrator_job_status(self, valid_config: GruponosMeltanoSettings) -> None:
+    def test_orchestrator_job_status(
+        self, valid_config: GruponosMeltanoSettings,
+    ) -> None:
         """Test orchestrator job status functionality."""
         orchestrator = GruponosMeltanoOrchestrator(valid_config)
 

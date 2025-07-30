@@ -10,11 +10,9 @@ from __future__ import annotations
 
 from flext_core.exceptions import (
     FlextConfigurationError,
-    FlextConnectionError,
     FlextError,
     FlextOperationError,
     FlextProcessingError,
-    FlextTimeoutError,
     FlextValidationError,
 )
 
@@ -23,7 +21,9 @@ from flext_core.exceptions import (
 class GruponosMeltanoError(FlextError):
     """Base GrupoNOS Meltano error."""
 
-    def __init__(self, message: str = "GrupoNOS Meltano error", **kwargs: object) -> None:
+    def __init__(
+        self, message: str = "GrupoNOS Meltano error", **kwargs: object,
+    ) -> None:
         """Initialize GrupoNOS Meltano error with context."""
         super().__init__(message, error_code="GRUPONOS_MELTANO_ERROR", context=kwargs)
 
@@ -56,7 +56,12 @@ class GruponosMeltanoOrchestrationError(FlextOperationError):
         **kwargs: object,
     ) -> None:
         """Initialize GrupoNOS orchestration error with context."""
-        super().__init__(f"GrupoNOS orchestration: {message}", operation=operation, stage=stage, context=kwargs)
+        super().__init__(
+            f"GrupoNOS orchestration: {message}",
+            operation=operation,
+            stage=stage,
+            context=kwargs,
+        )
 
 
 class GruponosMeltanoPipelineError(FlextProcessingError):

@@ -1,10 +1,5 @@
 """Focused tests for config module to achieve 90%+ coverage.
 
-# Constants
-EXPECTED_BULK_SIZE = 2
-EXPECTED_TOTAL_PAGES = 8
-EXPECTED_DATA_COUNT = 3
-
 REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests all configuration classes and validation logic comprehensively.
 """
@@ -29,6 +24,11 @@ from gruponos_meltano_native.config import (
     GruponosMeltanoWMSSourceConfig,
 )
 
+# Constants
+EXPECTED_BULK_SIZE = 2
+EXPECTED_TOTAL_PAGES = 8
+EXPECTED_DATA_COUNT = 3
+
 
 class TestConfigFocused:
     """Focused configuration testing for comprehensive coverage."""
@@ -45,26 +45,32 @@ class TestConfigFocused:
         )
 
         if config.host != "localhost":
-
-            raise AssertionError(f"Expected {"localhost"}, got {config.host}")
+            msg = f"Expected {'localhost'}, got {config.host}"
+            raise AssertionError(msg)
         assert config.port == 1521
         if config.service_name != "XEPDB1":
-            raise AssertionError(f"Expected {"XEPDB1"}, got {config.service_name}")
+            msg = f"Expected {'XEPDB1'}, got {config.service_name}"
+            raise AssertionError(msg)
         assert config.username == "test_user"
         if config.password != "test_pass":
-            raise AssertionError(f"Expected {"test_pass"}, got {config.password}")
+            msg = f"Expected {'test_pass'}, got {config.password}"
+            raise AssertionError(msg)
 
         # Test default values
         if config.protocol != "tcps":
-            raise AssertionError(f"Expected {"tcps"}, got {config.protocol}")
+            msg = f"Expected {'tcps'}, got {config.protocol}"
+            raise AssertionError(msg)
         if config.ssl_server_dn_match:
-            raise AssertionError(f"Expected False, got {config.ssl_server_dn_match}")
+            msg = f"Expected False, got {config.ssl_server_dn_match}"
+            raise AssertionError(msg)
         assert config.connection_timeout == 60
         if config.retry_attempts != EXPECTED_DATA_COUNT:
-            raise AssertionError(f"Expected {3}, got {config.retry_attempts}")
+            msg = f"Expected {3}, got {config.retry_attempts}"
+            raise AssertionError(msg)
         assert config.retry_delay == 5
         if config.batch_size != 1000:
-            raise AssertionError(f"Expected {1000}, got {config.batch_size}")
+            msg = f"Expected {1000}, got {config.batch_size}"
+            raise AssertionError(msg)
         assert config.connection_pool_size == 5
 
     def test_oracle_connection_config_validation(self) -> None:
@@ -79,7 +85,8 @@ class TestConfigFocused:
                 password="test_pass",
             )
         if "less than or equal to 65535" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"less than or equal to 65535"} in {exc_info.value!s}")
+            msg = f"Expected {'less than or equal to 65535'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
         # Test invalid protocol
         with pytest.raises(ValidationError) as exc_info:
@@ -92,7 +99,8 @@ class TestConfigFocused:
                 protocol="invalid",
             )
         if "pattern" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"pattern"} in {exc_info.value!s}")
+            msg = f"Expected {'pattern'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
         # Test negative values
         with pytest.raises(ValidationError) as exc_info:
@@ -105,7 +113,8 @@ class TestConfigFocused:
                 connection_timeout=-1,
             )
         if "greater than or equal to 1" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"greater than or equal to 1"} in {exc_info.value!s}")
+            msg = f"Expected {'greater than or equal to 1'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
     def test_oracle_connection_config_edge_values(self) -> None:
         """Test GruponosMeltanoOracleConnectionConfig with edge values."""
@@ -124,14 +133,16 @@ class TestConfigFocused:
         )
 
         if config.port != 1:
-
-            raise AssertionError(f"Expected {1}, got {config.port}")
+            msg = f"Expected {1}, got {config.port}"
+            raise AssertionError(msg)
         assert config.connection_timeout == 1
         if config.retry_attempts != 1:
-            raise AssertionError(f"Expected {1}, got {config.retry_attempts}")
+            msg = f"Expected {1}, got {config.retry_attempts}"
+            raise AssertionError(msg)
         assert config.retry_delay == 1
         if config.batch_size != 100:
-            raise AssertionError(f"Expected {100}, got {config.batch_size}")
+            msg = f"Expected {100}, got {config.batch_size}"
+            raise AssertionError(msg)
         assert config.connection_pool_size == 1
 
         # Test maximum valid values
@@ -146,11 +157,12 @@ class TestConfigFocused:
         )
 
         if config_max.port != 65535:
-
-            raise AssertionError(f"Expected {65535}, got {config_max.port}")
+            msg = f"Expected {65535}, got {config_max.port}"
+            raise AssertionError(msg)
         assert config_max.batch_size == 10000
         if config_max.connection_pool_size != 20:
-            raise AssertionError(f"Expected {20}, got {config_max.connection_pool_size}")
+            msg = f"Expected {20}, got {config_max.connection_pool_size}"
+            raise AssertionError(msg)
 
     def test_wms_source_config_api_validation(self) -> None:
         """Test GruponosMeltanoWMSSourceConfig API field validation."""
@@ -171,7 +183,8 @@ class TestConfigFocused:
             api_password=None,
         )
         if config.api_enabled:
-            raise AssertionError(f"Expected False, got {config.api_enabled}")
+            msg = f"Expected False, got {config.api_enabled}"
+            raise AssertionError(msg)
         assert config.api_base_url is None
 
         # Test API enabled with valid fields
@@ -183,12 +196,15 @@ class TestConfigFocused:
             api_password="api_pass",
         )
         if not (config_api.api_enabled):
-            raise AssertionError(f"Expected True, got {config_api.api_enabled}")
+            msg = f"Expected True, got {config_api.api_enabled}"
+            raise AssertionError(msg)
         if config_api.api_base_url != "https://api.example.com":
-            raise AssertionError(f"Expected {"https://api.example.com"}, got {config_api.api_base_url}")
+            msg = f"Expected {'https://api.example.com'}, got {config_api.api_base_url}"
+            raise AssertionError(msg)
         assert config_api.api_username == "api_user"
         if config_api.api_password != "api_pass":
-            raise AssertionError(f"Expected {"api_pass"}, got {config_api.api_password}")
+            msg = f"Expected {'api_pass'}, got {config_api.api_password}"
+            raise AssertionError(msg)
 
         # Test API enabled but missing required fields
         with pytest.raises(ValidationError) as exc_info:
@@ -199,8 +215,11 @@ class TestConfigFocused:
                 api_username="api_user",
                 api_password="api_pass",
             )
-        if "api_base_url is required when api_enabled is True" not in str(exc_info.value):
-            raise AssertionError(f"Expected 'api_base_url is required when api_enabled is True' in {exc_info.value!s}")
+        if "api_base_url is required when api_enabled is True" not in str(
+            exc_info.value,
+        ):
+            msg = f"Expected 'api_base_url is required when api_enabled is True' in {exc_info.value!s}"
+            raise AssertionError(msg)
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoWMSSourceConfig(
@@ -210,8 +229,11 @@ class TestConfigFocused:
                 api_username=None,  # Missing required field
                 api_password="api_pass",
             )
-        if "api_username is required when api_enabled is True" not in str(exc_info.value):
-            raise AssertionError(f"Expected 'api_username is required when api_enabled is True' in {exc_info.value!s}")
+        if "api_username is required when api_enabled is True" not in str(
+            exc_info.value,
+        ):
+            msg = f"Expected 'api_username is required when api_enabled is True' in {exc_info.value!s}"
+            raise AssertionError(msg)
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoWMSSourceConfig(
@@ -221,8 +243,11 @@ class TestConfigFocused:
                 api_username="api_user",
                 api_password=None,  # Missing required field
             )
-        if "api_password is required when api_enabled is True" not in str(exc_info.value):
-            raise AssertionError(f"Expected 'api_password is required when api_enabled is True' in {exc_info.value!s}")
+        if "api_password is required when api_enabled is True" not in str(
+            exc_info.value,
+        ):
+            msg = f"Expected 'api_password is required when api_enabled is True' in {exc_info.value!s}"
+            raise AssertionError(msg)
 
     def test_wms_source_config_defaults(self) -> None:
         """Test GruponosMeltanoWMSSourceConfig default values."""
@@ -238,13 +263,15 @@ class TestConfigFocused:
 
         # Test defaults
         if config.api_enabled:
-            raise AssertionError(f"Expected False, got {config.api_enabled}")
+            msg = f"Expected False, got {config.api_enabled}"
+            raise AssertionError(msg)
         assert config.api_base_url is None
         assert config.api_username is None
         assert config.api_password is None
         assert config.start_date is None
         if config.lookback_days != 7:
-            raise AssertionError(f"Expected {7}, got {config.lookback_days}")
+            msg = f"Expected {7}, got {config.lookback_days}"
+            raise AssertionError(msg)
 
     def test_target_oracle_config_creation(self) -> None:
         """Test GruponosMeltanoTargetOracleConfig creation and defaults."""
@@ -257,22 +284,26 @@ class TestConfigFocused:
         )
 
         config = GruponosMeltanoTargetOracleConfig(
-            oracle=oracle_config, schema_name="TARGET_SCHEMA",
+            oracle=oracle_config,
+            schema_name="TARGET_SCHEMA",
         )
 
         if config.oracle != oracle_config:
-
-            raise AssertionError(f"Expected {oracle_config}, got {config.oracle}")
+            msg = f"Expected {oracle_config}, got {config.oracle}"
+            raise AssertionError(msg)
         assert config.schema_name == "TARGET_SCHEMA"
 
         # Test defaults
         if config.truncate_before_load:
-            raise AssertionError(f"Expected False, got {config.truncate_before_load}")
+            msg = f"Expected False, got {config.truncate_before_load}"
+            raise AssertionError(msg)
         if not (config.analyze_after_load):
-            raise AssertionError(f"Expected True, got {config.analyze_after_load}")
+            msg = f"Expected True, got {config.analyze_after_load}"
+            raise AssertionError(msg)
         assert config.create_indexes is True
         if config.parallel_degree != 4:
-            raise AssertionError(f"Expected {4}, got {config.parallel_degree}")
+            msg = f"Expected {4}, got {config.parallel_degree}"
+            raise AssertionError(msg)
         assert config.commit_interval == 1000
 
     def test_target_oracle_config_validation(self) -> None:
@@ -293,7 +324,8 @@ class TestConfigFocused:
                 parallel_degree=20,  # Too high
             )
         if "less than or equal to 16" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"less than or equal to 16"} in {exc_info.value!s}")
+            msg = f"Expected {'less than or equal to 16'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
         # Test invalid commit interval
         with pytest.raises(ValidationError) as exc_info:
@@ -303,7 +335,8 @@ class TestConfigFocused:
                 commit_interval=50,  # Too low
             )
         if "greater than or equal to 100" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"greater than or equal to 100"} in {exc_info.value!s}")
+            msg = f"Expected {'greater than or equal to 100'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
     def test_alert_config_comprehensive(self) -> None:
         """Test GruponosMeltanoAlertConfig comprehensive validation."""
@@ -311,25 +344,31 @@ class TestConfigFocused:
         config = GruponosMeltanoAlertConfig()
 
         if config.max_sync_duration_minutes != 60:
-
-            raise AssertionError(f"Expected {60}, got {config.max_sync_duration_minutes}")
+            msg = f"Expected {60}, got {config.max_sync_duration_minutes}"
+            raise AssertionError(msg)
         assert config.max_error_rate_percent == 5.0
         if config.min_records_threshold != 100:
-            raise AssertionError(f"Expected {100}, got {config.min_records_threshold}")
+            msg = f"Expected {100}, got {config.min_records_threshold}"
+            raise AssertionError(msg)
         assert config.max_connection_time_seconds == 30.0
         if config.max_connection_failures != EXPECTED_DATA_COUNT:
-            raise AssertionError(f"Expected {3}, got {config.max_connection_failures}")
+            msg = f"Expected {3}, got {config.max_connection_failures}"
+            raise AssertionError(msg)
         assert config.max_memory_usage_percent == 80.0
         if config.max_cpu_usage_percent != 85.0:
-            raise AssertionError(f"Expected {85.0}, got {config.max_cpu_usage_percent}")
+            msg = f"Expected {85.0}, got {config.max_cpu_usage_percent}"
+            raise AssertionError(msg)
         if config.webhook_enabled:
-            raise AssertionError(f"Expected False, got {config.webhook_enabled}")
+            msg = f"Expected False, got {config.webhook_enabled}"
+            raise AssertionError(msg)
         assert config.webhook_url is None
         if config.email_enabled:
-            raise AssertionError(f"Expected False, got {config.email_enabled}")
+            msg = f"Expected False, got {config.email_enabled}"
+            raise AssertionError(msg)
         assert config.alert_email is None
         if config.slack_enabled:
-            raise AssertionError(f"Expected False, got {config.slack_enabled}")
+            msg = f"Expected False, got {config.slack_enabled}"
+            raise AssertionError(msg)
         assert config.slack_webhook is None
 
         # Test custom values
@@ -350,13 +389,15 @@ class TestConfigFocused:
         )
 
         if config_custom.max_sync_duration_minutes != 120:
-
-            raise AssertionError(f"Expected {120}, got {config_custom.max_sync_duration_minutes}")
+            msg = f"Expected {120}, got {config_custom.max_sync_duration_minutes}"
+            raise AssertionError(msg)
         assert config_custom.max_error_rate_percent == 10.0
         if not (config_custom.webhook_enabled):
-            raise AssertionError(f"Expected True, got {config_custom.webhook_enabled}")
+            msg = f"Expected True, got {config_custom.webhook_enabled}"
+            raise AssertionError(msg)
         if config_custom.webhook_url != "https://webhook.example.com":
-            raise AssertionError(f"Expected {"https://webhook.example.com"}, got {config_custom.webhook_url}")
+            msg = f"Expected {'https://webhook.example.com'}, got {config_custom.webhook_url}"
+            raise AssertionError(msg)
 
         # Test validation errors
         with pytest.raises(ValidationError) as exc_info:
@@ -364,12 +405,14 @@ class TestConfigFocused:
                 max_error_rate_percent=150.0,
             )  # Invalid percentage
         if "less than or equal to 100" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"less than or equal to 100"} in {exc_info.value!s}")
+            msg = f"Expected {'less than or equal to 100'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoAlertConfig(max_connection_failures=0)  # Invalid minimum
         if "greater than or equal to 1" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"greater than or equal to 1"} in {exc_info.value!s}")
+            msg = f"Expected {'greater than or equal to 1'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
     def test_meltano_config_comprehensive(self) -> None:
         """Test GruponosMeltanoSettings comprehensive validation."""
@@ -377,18 +420,22 @@ class TestConfigFocused:
         config = GruponosMeltanoSettings(project_id="test-project")
 
         if config.project_id != "test-project":
-
-            raise AssertionError(f"Expected {"test-project"}, got {config.project_id}")
+            msg = f"Expected {'test-project'}, got {config.project_id}"
+            raise AssertionError(msg)
         assert config.environment == "dev"
         if config.state_backend != "file":
-            raise AssertionError(f"Expected {"file"}, got {config.state_backend}")
+            msg = f"Expected {'file'}, got {config.state_backend}"
+            raise AssertionError(msg)
         assert config.state_backend_uri is None
         if config.log_level != "INFO":
-            raise AssertionError(f"Expected {"INFO"}, got {config.log_level}")
+            msg = f"Expected {'INFO'}, got {config.log_level}"
+            raise AssertionError(msg)
         if not (config.log_structured):
-            raise AssertionError(f"Expected True, got {config.log_structured}")
+            msg = f"Expected True, got {config.log_structured}"
+            raise AssertionError(msg)
         if config.parallelism != 1:
-            raise AssertionError(f"Expected {1}, got {config.parallelism}")
+            msg = f"Expected {1}, got {config.parallelism}"
+            raise AssertionError(msg)
         assert config.timeout_seconds == 3600
 
         # Test custom values
@@ -404,31 +451,36 @@ class TestConfigFocused:
         )
 
         if config_custom.project_id != "production-project":
-
-            raise AssertionError(f"Expected {"production-project"}, got {config_custom.project_id}")
+            msg = f"Expected {'production-project'}, got {config_custom.project_id}"
+            raise AssertionError(msg)
         assert config_custom.environment == "production"
         if config_custom.state_backend != "s3":
-            raise AssertionError(f"Expected {"s3"}, got {config_custom.state_backend}")
+            msg = f"Expected {'s3'}, got {config_custom.state_backend}"
+            raise AssertionError(msg)
         assert config_custom.state_backend_uri == "s3://bucket/state"
         if config_custom.log_level != "WARNING":
-            raise AssertionError(f"Expected {"WARNING"}, got {config_custom.log_level}")
+            msg = f"Expected {'WARNING'}, got {config_custom.log_level}"
+            raise AssertionError(msg)
         assert config_custom.parallelism == 5
 
         # Test validation errors
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoSettings(project_id="test", environment="invalid")
         if "pattern" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"pattern"} in {exc_info.value!s}")
+            msg = f"Expected {'pattern'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoSettings(project_id="test", log_level="INVALID")
         if "pattern" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"pattern"} in {exc_info.value!s}")
+            msg = f"Expected {'pattern'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoSettings(project_id="test", parallelism=15)  # Too high
         if "less than or equal to 10" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"less than or equal to 10"} in {exc_info.value!s}")
+            msg = f"Expected {'less than or equal to 10'} in {exc_info.value!s}"
+            raise AssertionError(msg)
 
     def test_gruponos_config_creation(self) -> None:
         """Test GruponosMeltanoSettings creation and defaults."""
@@ -441,10 +493,12 @@ class TestConfigFocused:
         assert isinstance(config.alerts, GruponosMeltanoAlertConfig)
         assert config.meltano is None
         if config.project_name != "gruponos-meltano-native":
-            raise AssertionError(f"Expected {"gruponos-meltano-native"}, got {config.project_name}")
+            msg = f"Expected {'gruponos-meltano-native'}, got {config.project_name}"
+            raise AssertionError(msg)
         assert config.company == "GrupoNOS"
         if config.debug_mode:
-            raise AssertionError(f"Expected False, got {config.debug_mode}")
+            msg = f"Expected False, got {config.debug_mode}"
+            raise AssertionError(msg)
         assert config.dry_run is False
 
     def test_gruponos_config_with_subconfigs(self) -> None:
@@ -459,7 +513,8 @@ class TestConfigFocused:
 
         wms_config = GruponosMeltanoWMSSourceConfig(oracle=oracle_config)
         target_config = GruponosMeltanoTargetOracleConfig(
-            oracle=oracle_config, schema_name="TARGET",
+            oracle=oracle_config,
+            schema_name="TARGET",
         )
         meltano_config = GruponosMeltanoSettings(project_id="test-project")
 
@@ -472,13 +527,15 @@ class TestConfigFocused:
         )
 
         if config.wms_source != wms_config:
-
-            raise AssertionError(f"Expected {wms_config}, got {config.wms_source}")
+            msg = f"Expected {wms_config}, got {config.wms_source}"
+            raise AssertionError(msg)
         assert config.target_oracle == target_config
         if config.meltano != meltano_config:
-            raise AssertionError(f"Expected {meltano_config}, got {config.meltano}")
+            msg = f"Expected {meltano_config}, got {config.meltano}"
+            raise AssertionError(msg)
         if not (config.debug_mode):
-            raise AssertionError(f"Expected True, got {config.debug_mode}")
+            msg = f"Expected True, got {config.debug_mode}"
+            raise AssertionError(msg)
         assert config.dry_run is True
 
     @patch.dict(
@@ -540,7 +597,8 @@ class TestConfigFocused:
         config_repr = repr(config)
         # Password should not appear in repr
         if "secret_password" in config_repr:
-            raise AssertionError(f"Expected 'secret_password' not in {config_repr}")
+            msg = f"Expected 'secret_password' not in {config_repr}"
+            raise AssertionError(msg)
         assert "password=" not in config_repr or "password=***" in config_repr
 
     def test_config_validation_info_usage(self) -> None:
@@ -565,7 +623,8 @@ class TestConfigFocused:
 
         error_msg = str(exc_info.value)
         if "api_password is required when api_enabled is True" not in error_msg:
-            raise AssertionError(f"Expected {"api_password is required when api_enabled is True"} in {error_msg}")
+            msg = f"Expected {'api_password is required when api_enabled is True'} in {error_msg}"
+            raise AssertionError(msg)
 
     def test_config_class_config_attributes(self) -> None:
         """Test model_config attributes (Pydantic v2)."""
@@ -574,15 +633,17 @@ class TestConfigFocused:
         # Test that model_config is properly set (Pydantic v2 pattern)
         assert hasattr(config, "model_config")
         if "env_prefix" not in config.model_config:
-            raise AssertionError(f"Expected {"env_prefix"} in {config.model_config}")
+            msg = f"Expected {'env_prefix'} in {config.model_config}"
+            raise AssertionError(msg)
         assert "env_nested_delimiter" in config.model_config
         if "case_sensitive" not in config.model_config:
-            raise AssertionError(f"Expected {"case_sensitive"} in {config.model_config}")
+            msg = f"Expected {'case_sensitive'} in {config.model_config}"
+            raise AssertionError(msg)
 
         if config.model_config["env_prefix"] != "GRUPONOS_":
-
-            raise AssertionError(f"Expected {"GRUPONOS_"}, got {config.model_config["env_prefix"]}")
+            msg = f"Expected {'GRUPONOS_'}, got {config.model_config['env_prefix']}"
+            raise AssertionError(msg)
         assert config.model_config["env_nested_delimiter"] == "__"
         if config.model_config["case_sensitive"]:
-            raise AssertionError(f"Expected False, got {config.model_config["case_sensitive"]}")
-
+            msg = f"Expected False, got {config.model_config['case_sensitive']}"
+            raise AssertionError(msg)

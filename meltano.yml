@@ -91,7 +91,7 @@ schedules:
   - name: full-sync-weekly
     job: full-sync-job
     interval: "@weekly"
-    
-  - name: incremental-sync-every-2-hours  
+
+  - name: incremental-sync-every-2-hours
     job: incremental-sync-job
     interval: "0 */2 * * *"

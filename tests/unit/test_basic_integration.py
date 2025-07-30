@@ -29,12 +29,11 @@ class TestBasicIntegration:
         )
 
         if oracle_config.host != "localhost":
-
-            msg = f"Expected {"localhost"}, got {oracle_config.host}"
+            msg = f"Expected {'localhost'}, got {oracle_config.host}"
             raise AssertionError(msg)
         assert oracle_config.port == 1521
         if oracle_config.service_name != "TEST":
-            msg = f"Expected {"TEST"}, got {oracle_config.service_name}"
+            msg = f"Expected {'TEST'}, got {oracle_config.service_name}"
             raise AssertionError(msg)
 
     def test_wms_source_config(self) -> None:
@@ -51,8 +50,7 @@ class TestBasicIntegration:
         )
 
         if wms_config.oracle.host != "wms.local":
-
-            msg = f"Expected {"wms.local"}, got {wms_config.oracle.host}"
+            msg = f"Expected {'wms.local'}, got {wms_config.oracle.host}"
             raise AssertionError(msg)
         assert wms_config.api_enabled is False  # default value
 
@@ -145,7 +143,7 @@ class TestBasicIntegration:
         assert result.success
         assert result.data is not None
         if result.data["pipeline"] != "test_pipeline":
-            msg = f"Expected {"test_pipeline"}, got {result.data["pipeline"]}"
+            msg = f"Expected {'test_pipeline'}, got {result.data['pipeline']}"
             raise AssertionError(msg)
         assert result.data["status"] == "success"
 
@@ -155,7 +153,7 @@ class TestBasicIntegration:
         success_result = FlextResult.ok(data="test_value")
         assert success_result.success
         if success_result.data != "test_value":
-            msg = f"Expected {"test_value"}, got {success_result.data}"
+            msg = f"Expected {'test_value'}, got {success_result.data}"
             raise AssertionError(msg)
         assert success_result.error is None
 
@@ -164,5 +162,5 @@ class TestBasicIntegration:
         assert not failure_result.success
         assert failure_result.data is None
         if failure_result.error != "test_error":
-            msg = f"Expected {"test_error"}, got {failure_result.error}"
+            msg = f"Expected {'test_error'}, got {failure_result.error}"
             raise AssertionError(msg)

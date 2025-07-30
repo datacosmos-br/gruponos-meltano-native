@@ -12,7 +12,7 @@ oracle_wms:
       threads: "{{ env_var('DBT_THREADS', 4) | int }}"
       keepalives_idle: 0
       search_path_prefix: "{{ env_var('TARGET_ORACLE_SCHEMA', 'WMS_SYNC') }}"
-      
+
     staging:
       type: oracle
       host: "{{ env_var('STAGING_TARGET_ORACLE_HOST') }}"
@@ -24,7 +24,7 @@ oracle_wms:
       threads: "{{ env_var('DBT_THREADS', 4) | int }}"
       keepalives_idle: 0
       search_path_prefix: "{{ env_var('STAGING_TARGET_ORACLE_SCHEMA', 'WMS_SYNC_STG') }}"
-      
+
     prod:
       type: oracle
       host: "{{ env_var('PROD_TARGET_ORACLE_HOST') }}"

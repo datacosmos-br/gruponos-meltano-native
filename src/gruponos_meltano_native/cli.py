@@ -50,7 +50,7 @@ def setup_logging(debug: bool = False) -> None:
 
 
 @click.group()
-@click.version_option(version="0.7.0")
+@click.version_option(version="0.9.0")
 @click.option(
     "--debug",
     is_flag=True,
@@ -420,7 +420,9 @@ def run_with_retry(
                 if result.output:
                     click.echo(f"   Output: {result.output[:200]}...")
             else:
-                click.echo(f"❌ Pipeline failed after retries: {result.error or 'Unknown error'}")
+                click.echo(
+                    f"❌ Pipeline failed after retries: {result.error or 'Unknown error'}",
+                )
                 click.echo(f"   Job: {result.job_name}")
                 click.echo(f"   Execution time: {result.execution_time:.2f}s")
                 sys.exit(1)

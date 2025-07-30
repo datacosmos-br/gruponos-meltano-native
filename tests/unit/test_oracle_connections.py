@@ -44,12 +44,11 @@ class TestOracleConnections:
         )
 
         if config.host != "oracle.example.com":
-
-            msg = f"Expected {"oracle.example.com"}, got {config.host}"
+            msg = f"Expected {'oracle.example.com'}, got {config.host}"
             raise AssertionError(msg)
         assert config.port == 1521
         if config.protocol != "tcps":
-            msg = f"Expected {"tcps"}, got {config.protocol}"
+            msg = f"Expected {'tcps'}, got {config.protocol}"
             raise AssertionError(msg)
 
     def test_oracle_connection_config_defaults(self) -> None:
@@ -132,8 +131,7 @@ class TestOracleConnections:
         )
 
         if config.protocol != "tcps":
-
-            msg = f"Expected {"tcps"}, got {config.protocol}"
+            msg = f"Expected {'tcps'}, got {config.protocol}"
             raise AssertionError(msg)
         if not (config.ssl_server_dn_match):
             msg = f"Expected True, got {config.ssl_server_dn_match}"
@@ -151,7 +149,6 @@ class TestOracleConnections:
         )
 
         if config.connection_pool_size != 10:
-
             msg = f"Expected {10}, got {config.connection_pool_size}"
             raise AssertionError(msg)
         assert config.batch_size == 5000
@@ -168,7 +165,6 @@ class TestOracleConnections:
         )
 
         if config.retry_attempts != 5:
-
             msg = f"Expected {5}, got {config.retry_attempts}"
             raise AssertionError(msg)
         assert config.retry_delay == 10

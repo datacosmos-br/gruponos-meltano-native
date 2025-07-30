@@ -59,10 +59,10 @@ class GruponosMeltanoAlert(FlextValueObject):
         """Validate alert domain rules."""
         if not self.message.strip():
             return FlextResult.fail("Alert message cannot be empty")
-        
+
         if len(self.message) > 1000:
             return FlextResult.fail("Alert message too long (max 1000 characters)")
-            
+
         return FlextResult.ok(None)
 
 
@@ -180,8 +180,6 @@ class GruponosMeltanoAlertService:
     def _send_email(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
         """Send alert via email using SMTP configuration."""
         try:
-
-
             if not self.config.email_recipients:
                 return FlextResult.fail("No email recipients configured")
 

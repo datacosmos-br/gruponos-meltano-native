@@ -4,14 +4,15 @@
 This replaces the private _connection access with public method access.
 """
 
-from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
-from gruponos_meltano_native.oracle.connection_manager_enhanced import (
-
-
 from unittest.mock import MagicMock, patch
 
 from flext_db_oracle.connection.resilient_connection import (
     FlextDbOracleResilientConnection,
+)
+
+from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
+from gruponos_meltano_native.oracle.connection_manager_enhanced import (
+    GruponosMeltanoOracleConnectionManager,
 )
 
 
@@ -52,15 +53,20 @@ def test_execute_with_metadata_method() -> None:
         # Verify structure
         assert isinstance(result, dict)
         if "columns" not in result:
-            raise AssertionError(f"Expected {"columns"} in {result}")
+            msg = f"Expected {'columns'} in {result}"
+            raise AssertionError(msg)
         assert "rows" in result
         if "affected_rows" not in result:
-            raise AssertionError(f"Expected {"affected_rows"} in {result}")
+            msg = f"Expected {'affected_rows'} in {result}"
+            raise AssertionError(msg)
 
         # Verify column names extraction
         expected_columns = ["ID", "NAME", "EMAIL"]
         if result["columns"] != expected_columns:
-            raise AssertionError(f"Expected {expected_columns}, got {result["columns"]}")
+            msg = f"Expected {expected_columns}, got {result['columns']}"
+            raise AssertionError(
+                msg,
+            )
 
         # Verify rows
         expected_rows = [
@@ -68,20 +74,17 @@ def test_execute_with_metadata_method() -> None:
             (2, "Jane Smith", "jane@example.com"),
         ]
         if result["rows"] != expected_rows:
-            raise AssertionError(f"Expected {expected_rows}, got {result["rows"]}")
+            msg = f"Expected {expected_rows}, got {result['rows']}"
+            raise AssertionError(msg)
 
         # For SELECT statements, affected_rows should be 0
         if result["affected_rows"] != 0:
-            raise AssertionError(f"Expected {0}, got {result["affected_rows"]}")
+            msg = f"Expected {0}, got {result['affected_rows']}"
+            raise AssertionError(msg)
 
 
 def test_connection_manager_usage() -> None:
     """Test that connection manager can use the new method without private access."""
-
-
-        GruponosMeltanoOracleConnectionManager,
-    )
-
     # Create a connection config
     config = GruponosMeltanoOracleConnectionConfig(
         host="localhost",
@@ -97,7 +100,8 @@ def test_connection_manager_usage() -> None:
     # Verify the manager was created successfully
     assert manager is not None
     if manager.config.host != "localhost":
-        raise AssertionError(f"Expected {"localhost"}, got {manager.config.host}")
+        msg = f"Expected {'localhost'}, got {manager.config.host}"
+        raise AssertionError(msg)
 
 
 if __name__ == "__main__":

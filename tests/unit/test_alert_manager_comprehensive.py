@@ -1,8 +1,5 @@
 """Comprehensive alert manager tests targeting 100% coverage.
 
-# Constants
-EXPECTED_BULK_SIZE = 2
-
 Tests alert service, alert manager, webhook functionality, and error handling.
 """
 
@@ -17,6 +14,9 @@ from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlertSeverity,
     GruponosMeltanoAlertType,
 )
+
+# Constants
+EXPECTED_BULK_SIZE = 2
 
 
 class TestGruponosMeltanoAlertServiceComprehensive:
@@ -52,11 +52,11 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             mock_post.return_value = mock_response
 
             result = service.send_alert(
-                "Test message", GruponosMeltanoAlertSeverity.HIGH,
+                "Test message",
+                GruponosMeltanoAlertSeverity.HIGH,
             )
 
             if not (result):
-
                 msg = f"Expected True, got {result}"
                 raise AssertionError(msg)
             mock_post.assert_called_once_with(
@@ -79,11 +79,11 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             mock_post.return_value = mock_response
 
             result = service.send_alert(
-                "Test message", GruponosMeltanoAlertSeverity.HIGH,
+                "Test message",
+                GruponosMeltanoAlertSeverity.HIGH,
             )
 
             if result:
-
                 msg = f"Expected False, got {result}"
                 raise AssertionError(msg)
 
@@ -97,7 +97,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
         with patch("requests.post", side_effect=OSError("Network error")):
             result = service.send_alert(
-                "Test message", GruponosMeltanoAlertSeverity.HIGH,
+                "Test message",
+                GruponosMeltanoAlertSeverity.HIGH,
             )
             if result:
                 msg = f"Expected False, got {result}"
@@ -113,7 +114,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
         with patch("requests.post", side_effect=ValueError("Invalid JSON")):
             result = service.send_alert(
-                "Test message", GruponosMeltanoAlertSeverity.HIGH,
+                "Test message",
+                GruponosMeltanoAlertSeverity.HIGH,
             )
             if result:
                 msg = f"Expected False, got {result}"
@@ -129,7 +131,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
         with patch("requests.post", side_effect=RuntimeError("Runtime error")):
             result = service.send_alert(
-                "Test message", GruponosMeltanoAlertSeverity.HIGH,
+                "Test message",
+                GruponosMeltanoAlertSeverity.HIGH,
             )
             if result:
                 msg = f"Expected False, got {result}"
@@ -158,7 +161,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
     def test_check_thresholds_error_rate_violation(self) -> None:
         """Test threshold checking for error rate violations."""
         config = GruponosMeltanoAlertConfig(
-            max_error_rate_percent=5.0, min_records_threshold=100,
+            max_error_rate_percent=5.0,
+            min_records_threshold=100,
         )
         service = GruponosMeltanoAlertService(config)
 
@@ -166,17 +170,17 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         violations = service.check_thresholds(metrics)
 
         if len(violations) != 1:
-
             msg = f"Expected {1}, got {len(violations)}"
             raise AssertionError(msg)
         if "Error rate 10.0% exceeds threshold 5.0%" not in violations[0]:
-            msg = f"Expected {"Error rate 10.0% exceeds threshold 5.0%"} in {violations[0]}"
+            msg = f"Expected {'Error rate 10.0% exceeds threshold 5.0%'} in {violations[0]}"
             raise AssertionError(msg)
 
     def test_check_thresholds_records_violation(self) -> None:
         """Test threshold checking for records processed violations."""
         config = GruponosMeltanoAlertConfig(
-            max_error_rate_percent=5.0, min_records_threshold=100,
+            max_error_rate_percent=5.0,
+            min_records_threshold=100,
         )
         service = GruponosMeltanoAlertService(config)
 
@@ -184,17 +188,17 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         violations = service.check_thresholds(metrics)
 
         if len(violations) != 1:
-
             msg = f"Expected {1}, got {len(violations)}"
             raise AssertionError(msg)
         if "Records processed 50 below threshold 100" not in violations[0]:
-            msg = f"Expected {"Records processed 50 below threshold 100"} in {violations[0]}"
+            msg = f"Expected {'Records processed 50 below threshold 100'} in {violations[0]}"
             raise AssertionError(msg)
 
     def test_check_thresholds_multiple_violations(self) -> None:
         """Test threshold checking with multiple violations."""
         config = GruponosMeltanoAlertConfig(
-            max_error_rate_percent=5.0, min_records_threshold=100,
+            max_error_rate_percent=5.0,
+            min_records_threshold=100,
         )
         service = GruponosMeltanoAlertService(config)
 
@@ -202,7 +206,6 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         violations = service.check_thresholds(metrics)
 
         if len(violations) != EXPECTED_BULK_SIZE:
-
             msg = f"Expected {2}, got {len(violations)}"
             raise AssertionError(msg)
         if not any("Error rate 10.0%" in v for v in violations):
@@ -213,7 +216,8 @@ class TestGruponosMeltanoAlertServiceComprehensive:
     def test_check_thresholds_no_violations(self) -> None:
         """Test threshold checking with no violations."""
         config = GruponosMeltanoAlertConfig(
-            max_error_rate_percent=5.0, min_records_threshold=100,
+            max_error_rate_percent=5.0,
+            min_records_threshold=100,
         )
         service = GruponosMeltanoAlertService(config)
 
@@ -221,27 +225,31 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         violations = service.check_thresholds(metrics)
 
         if len(violations) != 0:
-
             msg = f"Expected {0}, got {len(violations)}"
             raise AssertionError(msg)
 
     def test_check_thresholds_missing_metrics(self) -> None:
         """Test threshold checking with missing metrics."""
         config = GruponosMeltanoAlertConfig(
-            max_error_rate_percent=5.0, min_records_threshold=100,
+            max_error_rate_percent=5.0,
+            min_records_threshold=100,
         )
         service = GruponosMeltanoAlertService(config)
 
         # Test with empty metrics
         violations = service.check_thresholds({})
         if len(violations) != 1:  # Only records_processed violation (default 0)
-            msg = f"Expected 1 (only records_processed violation), got {len(violations)}"
+            msg = (
+                f"Expected 1 (only records_processed violation), got {len(violations)}"
+            )
             raise AssertionError(msg)
 
         # Test with partial metrics
         violations = service.check_thresholds({"error_rate": 2.0})
         if len(violations) != 1:  # Only records_processed violation
-            msg = f"Expected 1 (only records_processed violation), got {len(violations)}"
+            msg = (
+                f"Expected 1 (only records_processed violation), got {len(violations)}"
+            )
             raise AssertionError(msg)
 
 
@@ -254,7 +262,6 @@ class TestGruponosMeltanoAlertManagerComprehensive:
         manager = GruponosMeltanoAlertManager(config=config)
 
         if manager.config != config:
-
             msg = f"Expected {config}, got {manager.config}"
             raise AssertionError(msg)
         assert isinstance(manager.alert_service, GruponosMeltanoAlertService)
@@ -318,7 +325,6 @@ class TestGruponosMeltanoAlertManagerComprehensive:
         violations = manager.check_thresholds(metrics)
 
         if len(violations) < 1:
-
             msg = f"Expected {len(violations)} >= {1}"
             raise AssertionError(msg)
         if not any("Error rate" in v for v in violations):
@@ -368,10 +374,10 @@ class TestGruponosMeltanoAlertManagerComprehensive:
         mock_alerts.trigger_alert.assert_called_once()
         call_args = mock_alerts.trigger_alert.call_args
         if "GrupoNOS Pipeline: data_quality_issue" not in call_args[1]["title"]:
-            msg = f"Expected {"GrupoNOS Pipeline: data_quality_issue"} in {call_args[1]["title"]}"
+            msg = f"Expected {'GrupoNOS Pipeline: data_quality_issue'} in {call_args[1]['title']}"
             raise AssertionError(msg)
         if call_args[1]["message"] != "Test data quality issue":
-            msg = f"Expected {"Test data quality issue"}, got {call_args[1]["message"]}"
+            msg = f"Expected {'Test data quality issue'}, got {call_args[1]['message']}"
             raise AssertionError(msg)
         assert call_args[1]["severity"] == GruponosMeltanoAlertSeverity.MEDIUM
 
@@ -422,11 +428,11 @@ class TestAlertTypeEnum:
             == "connectivity_failure"
         )
         if GruponosMeltanoAlertType.DATA_QUALITY_ISSUE.value != "data_quality_issue":
-            msg = f"Expected {"data_quality_issue"}, got {GruponosMeltanoAlertType.DATA_QUALITY_ISSUE.value}"
+            msg = f"Expected {'data_quality_issue'}, got {GruponosMeltanoAlertType.DATA_QUALITY_ISSUE.value}"
             raise AssertionError(msg)
         assert GruponosMeltanoAlertType.SYNC_TIMEOUT.value == "sync_timeout"
         if GruponosMeltanoAlertType.THRESHOLD_BREACH.value != "threshold_breach":
-            msg = f"Expected {"threshold_breach"}, got {GruponosMeltanoAlertType.THRESHOLD_BREACH.value}"
+            msg = f"Expected {'threshold_breach'}, got {GruponosMeltanoAlertType.THRESHOLD_BREACH.value}"
             raise AssertionError(msg)
         assert (
             GruponosMeltanoAlertType.CONFIGURATION_ERROR.value == "configuration_error"

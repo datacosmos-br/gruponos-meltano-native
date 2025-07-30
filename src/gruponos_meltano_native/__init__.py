@@ -3,7 +3,7 @@
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 
-Version 0.8.0 - FLEXT-standardized GrupoNOS Meltano Native:
+Version 0.9.0 - FLEXT-standardized GrupoNOS Meltano Native:
 - Pure FLEXT naming conventions (GruponosMeltano prefix)
 - Built on flext-core foundation for enterprise integration
 - Root-level direct imports - NO legacy aliases or wrappers

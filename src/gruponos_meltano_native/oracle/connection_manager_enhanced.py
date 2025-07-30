@@ -26,7 +26,9 @@ if TYPE_CHECKING:
 class GruponosMeltanoOracleConnectionManager:
     """GrupoNOS-specific Oracle connection manager."""
 
-    def __init__(self, config: GruponosMeltanoOracleConnectionConfig | None = None) -> None:
+    def __init__(
+        self, config: GruponosMeltanoOracleConnectionConfig | None = None,
+    ) -> None:
         """Initialize Oracle connection manager for GrupoNOS."""
         self.config = config or GruponosMeltanoOracleConnectionConfig()
         self._connection: FlextDbOracleApi | None = None
@@ -85,6 +87,7 @@ class GruponosMeltanoOracleConnectionManager:
         except Exception as e:
             return FlextResult.fail(f"Error closing connection: {e}")
 
+
 # =============================================
 # FACTORY FUNCTIONS
 # =============================================
@@ -95,6 +98,7 @@ def create_gruponos_meltano_oracle_connection_manager(
 ) -> GruponosMeltanoOracleConnectionManager:
     """Create GrupoNOS Oracle connection manager instance."""
     return GruponosMeltanoOracleConnectionManager(config)
+
 
 # =============================================
 # EXPORTS

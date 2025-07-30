@@ -60,7 +60,7 @@ class TestCLI:
             msg = f"Expected {0}, got {result.exit_code}"
             raise AssertionError(msg)
         if "GrupoNOS Meltano Native" not in result.stdout:
-            msg = f"Expected {"GrupoNOS Meltano Native"} in {result.stdout}"
+            msg = f"Expected {'GrupoNOS Meltano Native'} in {result.stdout}"
             raise AssertionError(msg)
 
     def test_invalid_command(self) -> None:

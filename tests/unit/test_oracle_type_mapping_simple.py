@@ -21,21 +21,27 @@ class TestOracleTypeMappingSimple:
 
         # Test basic mappings exist
         if "pk" not in mappings:
-            raise AssertionError(f"Expected {"pk"} in {mappings}")
+            msg = f"Expected {'pk'} in {mappings}"
+            raise AssertionError(msg)
         assert "varchar" in mappings
         if "number" not in mappings:
-            raise AssertionError(f"Expected {"number"} in {mappings}")
+            msg = f"Expected {'number'} in {mappings}"
+            raise AssertionError(msg)
         assert "datetime" in mappings
 
         # Test mapping values
         if mappings["pk"] != "NUMBER":
-            raise AssertionError(f"Expected {"NUMBER"}, got {mappings["pk"]}")
+            msg = f"Expected {'NUMBER'}, got {mappings['pk']}"
+            raise AssertionError(msg)
         if "VARCHAR2" not in mappings["varchar"]:
-            raise AssertionError(f"Expected {"VARCHAR2"} in {mappings["varchar"]}")
+            msg = f"Expected {'VARCHAR2'} in {mappings['varchar']}"
+            raise AssertionError(msg)
         if mappings["number"] != "NUMBER":
-            raise AssertionError(f"Expected {"NUMBER"}, got {mappings["number"]}")
+            msg = f"Expected {'NUMBER'}, got {mappings['number']}"
+            raise AssertionError(msg)
         if "TIMESTAMP" not in mappings["datetime"]:
-            raise AssertionError(f"Expected {"TIMESTAMP"} in {mappings["datetime"]}")
+            msg = f"Expected {'TIMESTAMP'} in {mappings['datetime']}"
+            raise AssertionError(msg)
 
     def test_oracle_type_constants(self) -> None:
         """Test Oracle type constants."""
@@ -57,19 +63,25 @@ class TestOracleTypeMappingSimple:
 
         # Test primary key mapping
         if mappings.get("pk") != "NUMBER":
-            raise AssertionError(f"Expected {"NUMBER"}, got {mappings.get("pk")}")
+            msg = f"Expected {'NUMBER'}, got {mappings.get('pk')}"
+            raise AssertionError(msg)
 
         # Test boolean mapping
         if mappings.get("boolean") != "NUMBER(1,0)":
-            raise AssertionError(f"Expected {"NUMBER(1,0)"}, got {mappings.get("boolean")}")
+            msg = f"Expected {'NUMBER(1,0)'}, got {mappings.get('boolean')}"
+            raise AssertionError(
+                msg,
+            )
 
         # Test text mapping
         if "VARCHAR2" not in mappings.get("text", ""):
-            raise AssertionError(f"Expected {"VARCHAR2"} in {mappings.get("text", "")}")
+            msg = f"Expected {'VARCHAR2'} in {mappings.get('text', '')}"
+            raise AssertionError(msg)
 
         # Test CLOB mapping
         if mappings.get("clob") != "CLOB":
-            raise AssertionError(f"Expected {"CLOB"}, got {mappings.get("clob")}")
+            msg = f"Expected {'CLOB'}, got {mappings.get('clob')}"
+            raise AssertionError(msg)
 
     def test_mapping_completeness(self) -> None:
         """Test mapping completeness for WMS data types."""
@@ -89,5 +101,11 @@ class TestOracleTypeMappingSimple:
         ]
 
         for required_type in required_types:
-            if required_type not in mappings, f"Missing mapping for {required_type}":
-                raise AssertionError(f"Expected {required_type} in {mappings, f"Missing mapping for {required_type}"}")
+            if required_type not in mappings:
+                msg = (
+                    f"Expected {required_type} in {mappings}"
+                    f"Missing mapping for {required_type}"
+                )
+                raise AssertionError(
+                    msg,
+                )

@@ -45,15 +45,15 @@ class TestOracleTableCreatorSimple:
 
         # Check that creator has necessary attributes based on actual implementation
         if creator.host != "localhost":
-            msg = f"Expected {"localhost"}, got {creator.host}"
+            msg = f"Expected {'localhost'}, got {creator.host}"
             raise AssertionError(msg)
         assert creator.port == 1521
         if creator.service_name != "XEPDB1":
-            msg = f"Expected {"XEPDB1"}, got {creator.service_name}"
+            msg = f"Expected {'XEPDB1'}, got {creator.service_name}"
             raise AssertionError(msg)
         assert creator.username == "test_user"
         if creator.password != "test_pass":
-            msg = f"Expected {"test_pass"}, got {creator.password}"
+            msg = f"Expected {'test_pass'}, got {creator.password}"
             raise AssertionError(msg)
 
     def test_table_creator_config_validation(self) -> None:
@@ -111,6 +111,6 @@ class TestOracleTableCreatorSimple:
 
         # Verify initialization completed
         if creator.host != "localhost":
-            msg = f"Expected {"localhost"}, got {creator.host}"
+            msg = f"Expected {'localhost'}, got {creator.host}"
             raise AssertionError(msg)
         assert creator.port == 1521

@@ -4,6 +4,9 @@ import os
 from unittest.mock import patch
 
 import pytest
+from flext_oracle_wms.config import (
+    GruponosMeltanoWMSSourceConfig,
+)
 from pydantic import ValidationError
 
 import gruponos_meltano_native.monitoring.alert_manager as am_module
@@ -11,15 +14,6 @@ from gruponos_meltano_native.config import (
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoSettings,
     GruponosMeltanoTargetOracleConfig,
-)
-from gruponos_meltano_native.infrastructure.di_container import (
-    get_gruponos_meltano_native_container,
-)
-from flext_oracle_wms.config import (
-    FlextOracleWmsConfig,
-)
-from flext_target_oracle import (
-    FlextTargetOracleConfig,
 )
 
 # Constants
@@ -41,14 +35,19 @@ class TestFlextConfig:
             batch_size=1000,
         )
         if config.host != "localhost":
-            raise AssertionError(f"Expected {"localhost"}, got {config.host}")
+            msg = f"Expected {'localhost'}, got {config.host}"
+            raise AssertionError(msg)
         assert config.port == 1522
         if config.protocol != "tcps":
-            raise AssertionError(f"Expected {"tcps"}, got {config.protocol}")
+            msg = f"Expected {'tcps'}, got {config.protocol}"
+            raise AssertionError(msg)
         assert config.batch_size == 1000
         expected_retry_attempts = EXPECTED_DATA_COUNT  # default
         if config.retry_attempts != expected_retry_attempts:
-            raise AssertionError(f"Expected {expected_retry_attempts}, got {config.retry_attempts}")
+            msg = f"Expected {expected_retry_attempts}, got {config.retry_attempts}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_wms_source_config_validation(self) -> None:
         """Test WMS source configuration validation."""
@@ -64,7 +63,8 @@ class TestFlextConfig:
             api_enabled=False,
         )
         if config.api_enabled:
-            raise AssertionError(f"Expected False, got {config.api_enabled}")
+            msg = f"Expected False, got {config.api_enabled}"
+            raise AssertionError(msg)
         assert config.api_base_url is None
         # Invalid config - API enabled but no URL
         with pytest.raises(
@@ -79,9 +79,6 @@ class TestFlextConfig:
 
     def test_config_from_env(self) -> None:
         """Test configuration loading from environment variables."""
-
-
-
         # Test environment variables using the correct format that from_env() expects
         test_env = {
             # Use the same keys that from_env() looks for
@@ -104,7 +101,10 @@ class TestFlextConfig:
             # required fields)
             assert isinstance(config, GruponosMeltanoSettings)
             if config.project_name != "gruponos-meltano-native":
-                raise AssertionError(f"Expected {"gruponos-meltano-native"}, got {config.project_name}")
+                msg = f"Expected {'gruponos-meltano-native'}, got {config.project_name}"
+                raise AssertionError(
+                    msg,
+                )
             # The from_env() method should successfully create a basic config
             # Even if some sub-configs are None due to incomplete environment setup
 
@@ -138,10 +138,16 @@ class TestFlextConfig:
         legacy_env = config.to_legacy_env()
         # Verify mappings
         if legacy_env["TAP_ORACLE_WMS_HOST"] != "wms.local":
-            raise AssertionError(f"Expected {"wms.local"}, got {legacy_env["TAP_ORACLE_WMS_HOST"]}")
+            msg = f"Expected {'wms.local'}, got {legacy_env['TAP_ORACLE_WMS_HOST']}"
+            raise AssertionError(
+                msg,
+            )
         assert legacy_env["FLEXT_TARGET_ORACLE_HOST"] == "target.local"
         if legacy_env["FLEXT_TARGET_ORACLE_SCHEMA"] != "WMS_SYNC":
-            raise AssertionError(f"Expected {"WMS_SYNC"}, got {legacy_env["FLEXT_TARGET_ORACLE_SCHEMA"]}")
+            msg = f"Expected {'WMS_SYNC'}, got {legacy_env['FLEXT_TARGET_ORACLE_SCHEMA']}"
+            raise AssertionError(
+                msg,
+            )
         assert legacy_env["MELTANO_PROJECT_ID"] == "test-project"
 
 
@@ -187,7 +193,8 @@ class TestGrupoNOSOrchestrator:
         # Verify basic properties
         assert hasattr(orchestrator, "config")
         if orchestrator.config != mock_config:
-            raise AssertionError(f"Expected {mock_config}, got {orchestrator.config}")
+            msg = f"Expected {mock_config}, got {orchestrator.config}"
+            raise AssertionError(msg)
         # Verify essential methods exist
         assert hasattr(orchestrator, "validate_configuration")
         assert hasattr(orchestrator, "run_pipeline")
@@ -206,18 +213,16 @@ class TestConnectionManagerIntegration:
             # 🚨 ARCHITECTURAL VIOLATION FIXED: Level 6 cannot import flext-core
             # ✅ Use DI container for FlextResult access
 
+            from flext_core.result import (
                 get_service_result,
             )
 
             service_result = get_service_result()
 
-                OracleWMSConfig,
-            )
+            from flext_tap_oracle_wms.config import OracleWMSConfig
 
             # Test flext-target-oracle imports
-
-                OracleTarget,
-            )
+            from flext_target_oracle.config import OracleTarget
 
             # Test WMS client configuration creation using actual config class
             wms_config = OracleWMSConfig(
@@ -260,7 +265,12 @@ class TestGruponosMeltanoAlertManagerIntegration:
         # Should not raise import errors
         # Verify module uses flext logging (by checking imports in the module)
         try:
+            from flext_core.logging import get_logger
 
+            from gruponos_meltano_native.monitoring.alert_manager import (
+                GruponosMeltanoAlertService,
+                GruponosMeltanoAlertSeverity,
+            )
         except ImportError as e:
             pytest.skip(f"Alert manager module not available: {e}")
         # Should use structlog (FLEXT standard) and GruponosMeltanoAlertService
