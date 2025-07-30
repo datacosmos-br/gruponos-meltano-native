@@ -2,24 +2,28 @@
 
 import os
 from unittest.mock import patch
-from gruponos_meltano_native.infrastructure.di_container import (
-from flext_oracle_wms.config import (
-from flext_target_oracle import (
-import gruponos_meltano_native.monitoring.alert_manager as am_module
-
 
 import pytest
 from pydantic import ValidationError
 
+import gruponos_meltano_native.monitoring.alert_manager as am_module
 from gruponos_meltano_native.config import (
-# Constants
-EXPECTED_DATA_COUNT = 3
-
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoSettings,
     GruponosMeltanoTargetOracleConfig,
-    GruponosMeltanoWMSSourceConfig,
 )
+from gruponos_meltano_native.infrastructure.di_container import (
+    get_gruponos_meltano_native_container,
+)
+from flext_oracle_wms.config import (
+    FlextOracleWmsConfig,
+)
+from flext_target_oracle import (
+    FlextTargetOracleConfig,
+)
+
+# Constants
+EXPECTED_DATA_COUNT = 3
 
 
 class TestFlextConfig:
@@ -42,8 +46,9 @@ class TestFlextConfig:
         if config.protocol != "tcps":
             raise AssertionError(f"Expected {"tcps"}, got {config.protocol}")
         assert config.batch_size == 1000
-        if config.retry_attempts != EXPECTED_DATA_COUNT  # default:
-            raise AssertionError(f"Expected {3  # default}, got {config.retry_attempts}")
+        expected_retry_attempts = EXPECTED_DATA_COUNT  # default
+        if config.retry_attempts != expected_retry_attempts:
+            raise AssertionError(f"Expected {expected_retry_attempts}, got {config.retry_attempts}")
 
     def test_wms_source_config_validation(self) -> None:
         """Test WMS source configuration validation."""

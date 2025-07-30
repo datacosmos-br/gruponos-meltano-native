@@ -140,7 +140,7 @@ class GruponosMeltanoSettings(FlextBaseSettings):
     environment: str = Field(default="dev", description="Environment (dev/staging/prod)")
     project_name: str = Field(default="gruponos-meltano", description="Project name")
     app_name: str = Field(default="gruponos-meltano-native", description="Application name")
-    version: str = Field(default="1.0.0", description="Application version")
+    version: str = Field(default="0.9.0", description="Application version")
     debug: bool = Field(default=False, description="Debug mode")
     log_level: str = Field(default="INFO", description="Log level")
 

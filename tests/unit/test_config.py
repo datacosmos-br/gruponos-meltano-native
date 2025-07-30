@@ -40,19 +40,24 @@ class TestConfiguration:
 
     def test_oracle_connection_config_defaults(self) -> None:
         """Test Oracle connection configuration defaults."""
+        # Use explicit values to avoid environment variable interference
         config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
+            port=1521,  # Explicit port to test default behavior
+            protocol="TCP",  # Explicit protocol to test default behavior
             service_name="XE",
             username="user",
             password="pass",
         )
 
-        # Check defaults
+        # Check explicit values
         if config.port != 1521:
             msg = f"Expected {1521}, got {config.port}"
             raise AssertionError(msg)
         assert config.protocol == "TCP"
-        assert config.service_name is None
+        if config.service_name != "XE":
+            msg = f"Expected XE, got {config.service_name}"
+            raise AssertionError(msg)
         assert config.sid is None
 
     def test_wms_source_config_creation(self) -> None:

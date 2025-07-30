@@ -79,7 +79,7 @@ class TestConfigFocused:
                 password="test_pass",
             )
         if "less than or equal to 65535" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"less than or equal to 65535"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"less than or equal to 65535"} in {exc_info.value!s}")
 
         # Test invalid protocol
         with pytest.raises(ValidationError) as exc_info:
@@ -92,7 +92,7 @@ class TestConfigFocused:
                 protocol="invalid",
             )
         if "pattern" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"pattern"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"pattern"} in {exc_info.value!s}")
 
         # Test negative values
         with pytest.raises(ValidationError) as exc_info:
@@ -105,7 +105,7 @@ class TestConfigFocused:
                 connection_timeout=-1,
             )
         if "greater than or equal to 1" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"greater than or equal to 1"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"greater than or equal to 1"} in {exc_info.value!s}")
 
     def test_oracle_connection_config_edge_values(self) -> None:
         """Test GruponosMeltanoOracleConnectionConfig with edge values."""
@@ -200,7 +200,7 @@ class TestConfigFocused:
                 api_password="api_pass",
             )
         if "api_base_url is required when api_enabled is True" not in str(exc_info.value):
-            raise AssertionError(f"Expected 'api_base_url is required when api_enabled is True' in {str(exc_info.value)}")
+            raise AssertionError(f"Expected 'api_base_url is required when api_enabled is True' in {exc_info.value!s}")
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoWMSSourceConfig(
@@ -211,7 +211,7 @@ class TestConfigFocused:
                 api_password="api_pass",
             )
         if "api_username is required when api_enabled is True" not in str(exc_info.value):
-            raise AssertionError(f"Expected 'api_username is required when api_enabled is True' in {str(exc_info.value)}")
+            raise AssertionError(f"Expected 'api_username is required when api_enabled is True' in {exc_info.value!s}")
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoWMSSourceConfig(
@@ -222,7 +222,7 @@ class TestConfigFocused:
                 api_password=None,  # Missing required field
             )
         if "api_password is required when api_enabled is True" not in str(exc_info.value):
-            raise AssertionError(f"Expected 'api_password is required when api_enabled is True' in {str(exc_info.value)}")
+            raise AssertionError(f"Expected 'api_password is required when api_enabled is True' in {exc_info.value!s}")
 
     def test_wms_source_config_defaults(self) -> None:
         """Test GruponosMeltanoWMSSourceConfig default values."""
@@ -293,7 +293,7 @@ class TestConfigFocused:
                 parallel_degree=20,  # Too high
             )
         if "less than or equal to 16" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"less than or equal to 16"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"less than or equal to 16"} in {exc_info.value!s}")
 
         # Test invalid commit interval
         with pytest.raises(ValidationError) as exc_info:
@@ -303,7 +303,7 @@ class TestConfigFocused:
                 commit_interval=50,  # Too low
             )
         if "greater than or equal to 100" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"greater than or equal to 100"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"greater than or equal to 100"} in {exc_info.value!s}")
 
     def test_alert_config_comprehensive(self) -> None:
         """Test GruponosMeltanoAlertConfig comprehensive validation."""
@@ -364,12 +364,12 @@ class TestConfigFocused:
                 max_error_rate_percent=150.0,
             )  # Invalid percentage
         if "less than or equal to 100" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"less than or equal to 100"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"less than or equal to 100"} in {exc_info.value!s}")
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoAlertConfig(max_connection_failures=0)  # Invalid minimum
         if "greater than or equal to 1" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"greater than or equal to 1"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"greater than or equal to 1"} in {exc_info.value!s}")
 
     def test_meltano_config_comprehensive(self) -> None:
         """Test GruponosMeltanoSettings comprehensive validation."""
@@ -418,17 +418,17 @@ class TestConfigFocused:
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoSettings(project_id="test", environment="invalid")
         if "pattern" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"pattern"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"pattern"} in {exc_info.value!s}")
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoSettings(project_id="test", log_level="INVALID")
         if "pattern" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"pattern"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"pattern"} in {exc_info.value!s}")
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoSettings(project_id="test", parallelism=15)  # Too high
         if "less than or equal to 10" not in str(exc_info.value):
-            raise AssertionError(f"Expected {"less than or equal to 10"} in {str(exc_info.value)}")
+            raise AssertionError(f"Expected {"less than or equal to 10"} in {exc_info.value!s}")
 
     def test_gruponos_config_creation(self) -> None:
         """Test GruponosMeltanoSettings creation and defaults."""
@@ -539,8 +539,8 @@ class TestConfigFocused:
 
         config_repr = repr(config)
         # Password should not appear in repr
-        if "secret_password" not in config_repr:
-            raise AssertionError(f"Expected {"secret_password" not in {config_repr}")
+        if "secret_password" in config_repr:
+            raise AssertionError(f"Expected 'secret_password' not in {config_repr}")
         assert "password=" not in config_repr or "password=***" in config_repr
 
     def test_config_validation_info_usage(self) -> None:

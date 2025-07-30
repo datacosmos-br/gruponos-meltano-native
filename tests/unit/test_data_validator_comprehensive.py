@@ -7,9 +7,6 @@ EXPECTED_DATA_COUNT = 3
 Tests all validation rules, conversion paths, error handling, and edge cases.
 """
 
-import gruponos_meltano_native.validators.data_validator
-
-
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
@@ -19,6 +16,7 @@ from unittest.mock import patch
 
 import pytest
 
+import gruponos_meltano_native.validators.data_validator
 from gruponos_meltano_native.validators.data_validator import (
     DataValidator,
     ValidationError,
@@ -34,14 +32,14 @@ class TestValidationError:
         """Test ValidationError with field name."""
         error = ValidationError("Test message", "test_field")
         if str(error) != "Test message":
-            raise AssertionError(f"Expected {"Test message"}, got {str(error)}")
+            raise AssertionError(f"Expected {"Test message"}, got {error!s}")
         assert error.field_name == "test_field"
 
     def test_validation_error_without_field_name(self) -> None:
         """Test ValidationError without field name."""
         error = ValidationError("Test message")
         if str(error) != "Test message":
-            raise AssertionError(f"Expected {"Test message"}, got {str(error)}")
+            raise AssertionError(f"Expected {"Test message"}, got {error!s}")
         assert error.field_name is None
 
 
@@ -82,7 +80,7 @@ class TestValidationRule:
             raise AssertionError(f"Expected {"test_field"}, got {rule.field_name}")
         assert rule.rule_type == "number"
         if rule.parameters != {"max_value": 1000, "min_value": 1}:
-            raise AssertionError(f"Expected {{"max_value": 1000, "min_value": 1}}, got {rule.parameters}")
+            raise AssertionError(f"Expected {{'max_value': 1000, 'min_value': 1}}, got {rule.parameters}")
 
     def test_validation_rule_with_parameters_and_kwargs(self) -> None:
         """Test validation rule with both parameters dict and kwargs (merged)."""
@@ -94,7 +92,7 @@ class TestValidationRule:
             raise AssertionError(f"Expected {"test_field"}, got {rule.field_name}")
         assert rule.rule_type == "string"
         if rule.parameters != {"max_length": 100, "min_length": 5}:
-            raise AssertionError(f"Expected {{"max_length": 100, "min_length": 5}}, got {rule.parameters}")
+            raise AssertionError(f"Expected {{'max_length': 100, 'min_length': 5}}, got {rule.parameters}")
 
 
 class TestDataValidator:
@@ -557,8 +555,8 @@ class TestDataValidator:
         for email in valid_emails:
             data = {"email": email}
             errors = validator.validate(data)
-            if len(errors) != 0, f"Email {email} should be valid":
-                raise AssertionError(f"Expected {0, f"Email {email} should be valid"}, got {len(errors)}")
+            if len(errors) != 0:
+                raise AssertionError(f"Expected 0 errors for email {email}, got {len(errors)}")
 
     def test_validate_email_invalid_non_strict(self) -> None:
         """Test email validation with invalid emails in non-strict mode."""
@@ -577,8 +575,8 @@ class TestDataValidator:
         for email in invalid_emails:
             data = {"email": email}
             errors = validator.validate(data)
-            if len(errors) != 1, f"Email {email} should be invalid":
-                raise AssertionError(f"Expected {1, f"Email {email} should be invalid"}, got {len(errors)}")
+            if len(errors) != 1:
+                raise AssertionError(f"Expected 1 error for email {email}, got {len(errors)}")
             if "Field 'email' must be a valid email address" not in errors[0]:
                 raise AssertionError(f"Expected {"Field 'email' must be a valid email address"} in {errors[0]}")
 
@@ -604,8 +602,8 @@ class TestDataValidator:
         for value in allowed_values:
             data = {"status": value}
             errors = validator.validate(data)
-            if len(errors) != 0, f"Status {value} should be valid":
-                raise AssertionError(f"Expected {0, f"Status {value} should be valid"}, got {len(errors)}")
+            if len(errors) != 0:
+                raise AssertionError(f"Expected 0 errors for status {value}, got {len(errors)}")
 
     def test_validate_enum_invalid_non_strict(self) -> None:
         """Test enum validation with invalid value in non-strict mode."""
@@ -672,9 +670,8 @@ class TestRecordValidationAndConversion:
 
         result = validator.validate_and_convert_record(record, schema)
 
-        if result != record  # Should return unchanged:
-
-            raise AssertionError(f"Expected {record  # Should return unchanged}, got {result}")
+        if result != record:  # Should return unchanged
+            raise AssertionError(f"Expected record unchanged, got {result}")
 
     def test_validate_and_convert_record_basic(self) -> None:
         """Test basic record conversion."""
@@ -1287,8 +1284,6 @@ class TestMainExecution:
 
     def test_main_execution_path(self) -> None:
         """Test the main execution path when module is run directly."""
-
-
         # The actual main execution would happen here if __name__ == "__main__"
         # We're testing that the functions exist and can be called
         assert callable(gruponos_meltano_native.validators.data_validator.DataValidator)
@@ -1335,7 +1330,6 @@ class TestMainExecution:
                 raise AssertionError(f"Expected {"2025-07-02T10:00:00"}, got {result["created_date"]}")
 
             # Verify stats were updated
-            if stats["strings_converted_to_numbers"] != EXPECTED_DATA_COUNT  # id, amount and count:
-                raise AssertionError(f"Expected {3  # id, amount and (
-                    count}, got {stats["strings_converted_to_numbers"]}"))
+            if stats["strings_converted_to_numbers"] != EXPECTED_DATA_COUNT:  # id, amount and count
+                raise AssertionError(f"Expected {EXPECTED_DATA_COUNT} (id, amount and count), got {stats['strings_converted_to_numbers']}")
             assert stats["dates_normalized"] == 1  # created_date
