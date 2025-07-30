@@ -55,14 +55,15 @@ class GruponosMeltanoAlert(FlextValueObject):
     timestamp: str
     pipeline_name: str | None = None
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate alert domain rules."""
         if not self.message.strip():
-            msg = "Alert message cannot be empty"
-            raise ValueError(msg)
-        if not self.timestamp.strip():
-            msg = "Alert timestamp cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Alert message cannot be empty")
+        
+        if len(self.message) > 1000:
+            return FlextResult.fail("Alert message too long (max 1000 characters)")
+            
+        return FlextResult.ok(None)
 
 
 class GruponosMeltanoAlertService:

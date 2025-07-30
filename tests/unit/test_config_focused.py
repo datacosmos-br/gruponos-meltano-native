@@ -199,10 +199,8 @@ class TestConfigFocused:
                 api_username="api_user",
                 api_password="api_pass",
             )
-        if "api_base_url is required when api_enabled is True" not in str(:
-            raise AssertionError(f"Expected {"api_base_url is required when api_enabled is True"} in {str(}")
-            exc_info.value,
-        )
+        if "api_base_url is required when api_enabled is True" not in str(exc_info.value):
+            raise AssertionError(f"Expected 'api_base_url is required when api_enabled is True' in {str(exc_info.value)}")
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoWMSSourceConfig(
@@ -212,10 +210,8 @@ class TestConfigFocused:
                 api_username=None,  # Missing required field
                 api_password="api_pass",
             )
-        if "api_username is required when api_enabled is True" not in str(:
-            raise AssertionError(f"Expected {"api_username is required when api_enabled is True"} in {str(}")
-            exc_info.value,
-        )
+        if "api_username is required when api_enabled is True" not in str(exc_info.value):
+            raise AssertionError(f"Expected 'api_username is required when api_enabled is True' in {str(exc_info.value)}")
 
         with pytest.raises(ValidationError) as exc_info:
             GruponosMeltanoWMSSourceConfig(
@@ -225,10 +221,8 @@ class TestConfigFocused:
                 api_username="api_user",
                 api_password=None,  # Missing required field
             )
-        if "api_password is required when api_enabled is True" not in str(:
-            raise AssertionError(f"Expected {"api_password is required when api_enabled is True"} in {str(}")
-            exc_info.value,
-        )
+        if "api_password is required when api_enabled is True" not in str(exc_info.value):
+            raise AssertionError(f"Expected 'api_password is required when api_enabled is True' in {str(exc_info.value)}")
 
     def test_wms_source_config_defaults(self) -> None:
         """Test GruponosMeltanoWMSSourceConfig default values."""

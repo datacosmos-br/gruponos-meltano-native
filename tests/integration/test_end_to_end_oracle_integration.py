@@ -69,9 +69,11 @@ class TestOracleConnectionIntegration:
         # Validate result data
         assert result.data is not None
         if not (result.data["success"]):
-            raise AssertionError(f"Expected True, got {result.data["success"]}")
+            msg = f"Expected True, got {result.data["success"]}"
+            raise AssertionError(msg)
         if "oracle_version" not in result.data:
-            raise AssertionError(f"Expected {"oracle_version"} in {result.data}")
+            msg = f"Expected {"oracle_version"} in {result.data}"
+            raise AssertionError(msg)
 
     @pytest.mark.integration
     @pytest.mark.slow
@@ -87,11 +89,14 @@ class TestOracleConnectionIntegration:
         # Validate result structure
         assert result.data is not None
         if len(result.data) != 1:
-            raise AssertionError(f"Expected {1}, got {len(result.data)}")
+            msg = f"Expected {1}, got {len(result.data)}"
+            raise AssertionError(msg)
         if "test_col" not in result.data[0]:
-            raise AssertionError(f"Expected {"test_col"} in {result.data[0]}")
+            msg = f"Expected {"test_col"} in {result.data[0]}"
+            raise AssertionError(msg)
         if result.data[0]["test_col"] != 1:
-            raise AssertionError(f"Expected {1}, got {result.data[0]["test_col"]}")
+            msg = f"Expected {1}, got {result.data[0]["test_col"]}"
+            raise AssertionError(msg)
 
     @pytest.mark.integration
     @pytest.mark.slow
@@ -117,8 +122,9 @@ class TestOracleConnectionIntegration:
                 "INSERT INTO test_flext_table VALUES (1, 'test')",
             )
             assert insert_result.is_success, f"Insert failed: {insert_result.error}"
-            if insert_result.data != 1  # 1 row affected:
-                raise AssertionError(f"Expected {1  # 1 row affected}, got {insert_result.data}")
+            if insert_result.data != 1:  # 1 row affected
+                msg = f"Expected 1 row affected, got {insert_result.data}"
+                raise AssertionError(msg)
 
             # Query the data back
             query_result = connection_manager.execute_query(
@@ -126,7 +132,8 @@ class TestOracleConnectionIntegration:
             )
             assert query_result.is_success, f"Query failed: {query_result.error}"
             if len(query_result.data) != 1:
-                raise AssertionError(f"Expected {1}, got {len(query_result.data)}")
+                msg = f"Expected {1}, got {len(query_result.data)}"
+                raise AssertionError(msg)
             assert query_result.data[0]["TEST_DATA"] == "test"
 
         finally:
@@ -163,9 +170,11 @@ class TestOracleConnectionIntegration:
         # Get connection info
         info = connection_manager.get_connection_info()
         if not (info["is_connected"]):
-            raise AssertionError(f"Expected True, got {info["is_connected"]}")
+            msg = f"Expected True, got {info["is_connected"]}"
+            raise AssertionError(msg)
         if info["host"] != connection_manager.config.host:
-            raise AssertionError(f"Expected {connection_manager.config.host}, got {info["host"]}")
+            msg = f"Expected {connection_manager.config.host}, got {info["host"]}"
+            raise AssertionError(msg)
 
         # Disconnect
         disconnect_result = connection_manager.disconnect()
@@ -186,7 +195,8 @@ class TestSettingsIntegration:
 
         # Basic validation
         if settings.app_name != "gruponos-meltano-native":
-            raise AssertionError(f"Expected {"gruponos-meltano-native"}, got {settings.app_name}")
+            msg = f"Expected {"gruponos-meltano-native"}, got {settings.app_name}"
+            raise AssertionError(msg)
         assert settings.version == "0.7.0"
         assert hasattr(settings, "oracle")
         assert hasattr(settings, "meltano_project_root")
@@ -206,4 +216,5 @@ class TestSettingsIntegration:
         # Test connection string generation
         conn_str = config.get_connection_string()
         if conn_str != "testuser/testpass@test.oracle.com:1522/TESTDB":
-            raise AssertionError(f"Expected {"testuser/testpass@test.oracle.com:1522/TESTDB"}, got {conn_str}")
+            msg = f"Expected {"testuser/testpass@test.oracle.com:1522/TESTDB"}, got {conn_str}"
+            raise AssertionError(msg)

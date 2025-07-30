@@ -11,13 +11,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from flext_core import FlextBaseSettings, FlextResult
-
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
 # =============================================
 # GRUPONOS PIPELINE RESULTS
 # =============================================
+
 
 @dataclass
 class GruponosMeltanoPipelineResult:
@@ -33,6 +32,7 @@ class GruponosMeltanoPipelineResult:
 # =============================================
 # GRUPONOS PIPELINE RUNNER
 # =============================================
+
 
 class GruponosMeltanoPipelineRunner:
     """GrupoNOS-specific Meltano pipeline runner."""
@@ -61,7 +61,7 @@ class GruponosMeltanoPipelineRunner:
                 capture_output=True,
                 text=True,
                 env=env,
-                timeout=3600  # 1 hour timeout
+                timeout=3600,  # 1 hour timeout
             )
 
             execution_time = time.time() - start_time
@@ -72,7 +72,7 @@ class GruponosMeltanoPipelineRunner:
                     job_name=job_name,
                     execution_time=execution_time,
                     output=result.stdout,
-                    metadata={"return_code": result.returncode}
+                    metadata={"return_code": result.returncode},
                 )
             return GruponosMeltanoPipelineResult(
                 success=False,
@@ -80,7 +80,7 @@ class GruponosMeltanoPipelineRunner:
                 execution_time=execution_time,
                 output=result.stdout,
                 error=result.stderr,
-                metadata={"return_code": result.returncode}
+                metadata={"return_code": result.returncode},
             )
 
         except subprocess.TimeoutExpired:
@@ -91,7 +91,7 @@ class GruponosMeltanoPipelineRunner:
                 execution_time=execution_time,
                 output="",
                 error="Pipeline execution timed out",
-                metadata={"timeout": True}
+                metadata={"timeout": True},
             )
         except Exception as e:
             execution_time = time.time() - start_time
@@ -101,7 +101,7 @@ class GruponosMeltanoPipelineRunner:
                 execution_time=execution_time,
                 output="",
                 error=str(e),
-                metadata={"exception": type(e).__name__}
+                metadata={"exception": type(e).__name__},
             )
 
     def _build_environment(self) -> dict[str, str]:
@@ -126,7 +126,7 @@ class GruponosMeltanoPipelineRunner:
             "FLEXT_TARGET_ORACLE_PORT": str(self.settings.oracle_connection.port),
             "FLEXT_TARGET_ORACLE_USERNAME": self.settings.oracle_connection.username,
             "FLEXT_TARGET_ORACLE_PASSWORD": self.settings.oracle_connection.password.get_secret_value(),
-            "FLEXT_TARGET_ORACLE_SCHEMA": self.settings.target_oracle.default_target_schema,
+            "FLEXT_TARGET_ORACLE_SCHEMA": self.settings.target_oracle.target_schema,
         })
 
         # Add service name or SID
@@ -137,9 +137,50 @@ class GruponosMeltanoPipelineRunner:
 
         return env
 
+    async def run_with_retry(self, job_name: str, max_retries: int = 3, **kwargs: Any) -> GruponosMeltanoPipelineResult:
+        """Run pipeline with retry logic."""
+        import asyncio
+
+        last_result = None
+        for attempt in range(max_retries + 1):
+            try:
+                # Execute in thread pool to avoid blocking
+                loop = asyncio.get_event_loop()
+                result = await loop.run_in_executor(None, self.run_pipeline, job_name, **kwargs)
+
+                if result.success:
+                    return result
+
+                last_result = result
+                if attempt < max_retries:
+                    await asyncio.sleep(2 ** attempt)  # Exponential backoff
+
+            except Exception as e:
+                last_result = GruponosMeltanoPipelineResult(
+                    success=False,
+                    job_name=job_name,
+                    execution_time=0.0,
+                    output="",
+                    error=str(e),
+                    metadata={"attempt": attempt + 1, "exception": type(e).__name__},
+                )
+
+                if attempt < max_retries:
+                    await asyncio.sleep(2 ** attempt)
+
+        return last_result or GruponosMeltanoPipelineResult(
+            success=False,
+            job_name=job_name,
+            execution_time=0.0,
+            output="",
+            error="All retry attempts failed",
+            metadata={"max_retries": max_retries},
+        )
+
 # =============================================
 # GRUPONOS ORCHESTRATOR
 # =============================================
+
 
 class GruponosMeltanoOrchestrator:
     """Main GrupoNOS Meltano orchestrator."""
@@ -166,26 +207,40 @@ class GruponosMeltanoOrchestrator:
         # Based on meltano.yml configuration
         return ["full-sync-job", "incremental-sync-job"]
 
+    def list_pipelines(self) -> list[str]:
+        """List available pipelines (alias for list_jobs)."""
+        return self.list_jobs()
+
+    async def run_pipeline(self, pipeline_name: str, **kwargs: Any) -> GruponosMeltanoPipelineResult:
+        """Run pipeline asynchronously (compatibility method)."""
+        import asyncio
+        # Execute in thread pool to avoid blocking
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.pipeline_runner.run_pipeline, pipeline_name, **kwargs)
+
     def get_job_status(self, job_name: str) -> dict[str, Any]:
         """Get status of a specific job."""
         return {
             "job_name": job_name,
             "available": job_name in self.list_jobs(),
-            "settings": self.settings.dict()
+            "settings": self.settings.dict(),
         }
 
 # =============================================
 # FACTORY FUNCTIONS
 # =============================================
 
+
 def create_gruponos_meltano_orchestrator(settings: GruponosMeltanoSettings | None = None) -> GruponosMeltanoOrchestrator:
     """Create GrupoNOS Meltano orchestrator instance."""
     return GruponosMeltanoOrchestrator(settings)
+
 
 def create_gruponos_meltano_pipeline_runner(settings: GruponosMeltanoSettings | None = None) -> GruponosMeltanoPipelineRunner:
     """Create GrupoNOS pipeline runner instance."""
     pipeline_settings = settings or GruponosMeltanoSettings()
     return GruponosMeltanoPipelineRunner(pipeline_settings)
+
 
 # Re-export for backward compatibility
 __all__ = [

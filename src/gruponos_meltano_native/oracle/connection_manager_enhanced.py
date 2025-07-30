@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING
 
 from flext_core import FlextResult
 
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 # =============================================
 # GRUPONOS ORACLE CONNECTION MANAGER
 # =============================================
+
 
 class GruponosMeltanoOracleConnectionManager:
     """GrupoNOS-specific Oracle connection manager."""
@@ -44,7 +45,7 @@ class GruponosMeltanoOracleConnectionManager:
                 password=self.config.password,
                 service_name=self.config.service_name,
                 sid=self.config.sid,
-                protocol=self.config.protocol
+                protocol=self.config.protocol,
             )
 
             # Create connection
@@ -62,6 +63,9 @@ class GruponosMeltanoOracleConnectionManager:
             return FlextResult.fail(f"Connection failed: {connection_result.error}")
 
         connection = connection_result.data
+        if connection is None:
+            return FlextResult.fail("Connection is None")
+
         test_result = connection.test_connection()
 
         if test_result.is_success:
@@ -72,11 +76,10 @@ class GruponosMeltanoOracleConnectionManager:
         """Close Oracle connection."""
         try:
             if self._connection:
-                disconnect_result = self._connection.disconnect()
-                if disconnect_result.is_success:
-                    self._connection = None
-                    return FlextResult.ok(True)
-                return FlextResult.fail(f"Failed to disconnect: {disconnect_result.error}")
+                # disconnect() returns the API instance, not a FlextResult
+                self._connection.disconnect()
+                self._connection = None
+                return FlextResult.ok(True)
             return FlextResult.ok(True)
 
         except Exception as e:
@@ -86,8 +89,9 @@ class GruponosMeltanoOracleConnectionManager:
 # FACTORY FUNCTIONS
 # =============================================
 
+
 def create_gruponos_meltano_oracle_connection_manager(
-    config: GruponosMeltanoOracleConnectionConfig | None = None
+    config: GruponosMeltanoOracleConnectionConfig | None = None,
 ) -> GruponosMeltanoOracleConnectionManager:
     """Create GrupoNOS Oracle connection manager instance."""
     return GruponosMeltanoOracleConnectionManager(config)
@@ -95,6 +99,7 @@ def create_gruponos_meltano_oracle_connection_manager(
 # =============================================
 # EXPORTS
 # =============================================
+
 
 __all__ = [
     "GruponosMeltanoOracleConnectionManager",

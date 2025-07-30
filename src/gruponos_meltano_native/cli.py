@@ -168,29 +168,18 @@ def run(
             """Run the pipeline asynchronously."""
             result = await orchestrator.run_pipeline(pipeline_name)
 
-            if result.is_success and result.data:
-                pipeline_result = result.data
+            if result.success:
                 click.echo("✅ Pipeline completed successfully!")
-                click.echo(f"   Records processed: {pipeline_result.records_processed}")
-                click.echo(
-                    f"   Execution time: {pipeline_result.execution_time_seconds:.2f}s",
-                )
-
-                if pipeline_result.has_warnings():
-                    click.echo("⚠️  Warnings:")
-                    for warning in pipeline_result.warnings:
-                        click.echo(f"   - {warning}")
+                click.echo(f"   Job: {result.job_name}")
+                click.echo(f"   Execution time: {result.execution_time:.2f}s")
+                if result.output:
+                    click.echo(f"   Output: {result.output[:200]}...")
             else:
-                click.echo(f"❌ Pipeline failed: {result.error}")
-                if result.data:
-                    pipeline_result = result.data
-                    click.echo(
-                        f"   Execution time: {pipeline_result.execution_time_seconds:.2f}s",
-                    )
-                    if pipeline_result.errors:
-                        click.echo("   Errors:")
-                        for error in pipeline_result.errors:
-                            click.echo(f"   - {error}")
+                click.echo(f"❌ Pipeline failed: {result.error or 'Unknown error'}")
+                click.echo(f"   Job: {result.job_name}")
+                click.echo(f"   Execution time: {result.execution_time:.2f}s")
+                if result.output:
+                    click.echo(f"   Output: {result.output[:200]}...")
                 sys.exit(1)
 
         # Run the pipeline
@@ -214,24 +203,19 @@ def list_pipelines(ctx: click.Context) -> None:
         config = create_gruponos_meltano_settings()
         orchestrator = create_gruponos_meltano_orchestrator(config)
 
-        async def list_available_pipelines() -> None:
-            """List pipelines asynchronously."""
-            result = await orchestrator.list_pipelines()
+        def list_available_pipelines() -> None:
+            """List pipelines."""
+            pipelines = orchestrator.list_pipelines()
 
-            if result.is_success:
-                pipelines = result.data
-                if pipelines:
-                    click.echo("Available pipelines:")
-                    for pipeline in pipelines:
-                        click.echo(f"  - {pipeline}")
-                else:
-                    click.echo("No pipelines found")
+            if pipelines:
+                click.echo("Available pipelines:")
+                for pipeline in pipelines:
+                    click.echo(f"  - {pipeline}")
             else:
-                click.echo(f"❌ Failed to list pipelines: {result.error}")
-                sys.exit(1)
+                click.echo("No pipelines found")
 
         # List pipelines
-        asyncio.run(list_available_pipelines())
+        list_available_pipelines()
 
     except (RuntimeError, ValueError, TypeError) as e:
         logger.exception(f"Failed to list pipelines: {e}")
@@ -429,20 +413,16 @@ def run_with_retry(
                 max_retries=max_retries,
             )
 
-            if result.is_success and result.data:
-                pipeline_result = result.data
-                click.echo("✅ Pipeline completed successfully!")
-                click.echo(f"   Records processed: {pipeline_result.records_processed}")
-                click.echo(
-                    f"   Execution time: {pipeline_result.execution_time_seconds:.2f}s",
-                )
-
-                if pipeline_result.has_warnings():
-                    click.echo("⚠️  Warnings:")
-                    for warning in pipeline_result.warnings:
-                        click.echo(f"   - {warning}")
+            if result.success:
+                click.echo("✅ Pipeline completed successfully after retries!")
+                click.echo(f"   Job: {result.job_name}")
+                click.echo(f"   Execution time: {result.execution_time:.2f}s")
+                if result.output:
+                    click.echo(f"   Output: {result.output[:200]}...")
             else:
-                click.echo(f"❌ Pipeline failed after retries: {result.error}")
+                click.echo(f"❌ Pipeline failed after retries: {result.error or 'Unknown error'}")
+                click.echo(f"   Job: {result.job_name}")
+                click.echo(f"   Execution time: {result.execution_time:.2f}s")
                 sys.exit(1)
 
         # Run with retry

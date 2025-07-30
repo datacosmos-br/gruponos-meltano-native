@@ -1,7 +1,6 @@
-"""GrupoNOS Meltano Native Exceptions - consolidated in flext-meltano.
+"""GrupoNOS Meltano Native Exceptions.
 
-This module is now a compatibility layer that imports from flext-meltano.
-All new development should use flext_meltano.exceptions directly.
+All GrupoNOS-specific exceptions extending FLEXT core patterns.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,33 +10,25 @@ from __future__ import annotations
 
 from flext_core.exceptions import FlextError
 
-# Import consolidated components from flext-meltano and create local aliases
-from flext_meltano.exceptions import (
-    FlextMeltanoConfigurationError,
-    FlextMeltanoOrchestrationError,
-    FlextMeltanoPipelineError,
-    FlextMeltanoValidationError,
-)
 
-
-# GrupoNOS-specific errors
+# GrupoNOS-specific errors - base hierarchy
 class GruponosMeltanoError(FlextError):
     """Base GrupoNOS Meltano error."""
 
 
-class GruponosMeltanoConfigurationError(FlextMeltanoConfigurationError):
+class GruponosMeltanoConfigurationError(GruponosMeltanoError):
     """GrupoNOS configuration error."""
 
 
-class GruponosMeltanoOrchestrationError(FlextMeltanoOrchestrationError):
+class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
     """GrupoNOS orchestration error."""
 
 
-class GruponosMeltanoPipelineError(FlextMeltanoPipelineError):
+class GruponosMeltanoPipelineError(GruponosMeltanoError):
     """GrupoNOS pipeline error."""
 
 
-class GruponosMeltanoValidationError(FlextMeltanoValidationError):
+class GruponosMeltanoValidationError(GruponosMeltanoError):
     """GrupoNOS validation error."""
 
 
