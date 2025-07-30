@@ -16,8 +16,8 @@ import importlib.metadata
 
 # FLEXT Core Foundation - Direct imports only
 from flext_core import (
+    FlextBaseSettings,
     FlextContainer,
-    FlextCoreSettings,
     FlextResult,
     FlextValueObject,
     get_flext_container,
@@ -109,8 +109,8 @@ def create_gruponos_meltano_oracle_manager() -> GruponosMeltanoOracleConnectionM
 # ================================
 
 __all__ = [
+    "FlextBaseSettings",
     "FlextContainer",
-    "FlextCoreSettings",
     "FlextResult",
     "FlextValueObject",
     "GruponosMeltanoAlert",
