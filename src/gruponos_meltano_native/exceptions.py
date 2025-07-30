@@ -22,7 +22,9 @@ class GruponosMeltanoError(FlextError):
     """Base GrupoNOS Meltano error."""
 
     def __init__(
-        self, message: str = "GrupoNOS Meltano error", **kwargs: object,
+        self,
+        message: str = "GrupoNOS Meltano error",
+        **kwargs: object,
     ) -> None:
         """Initialize GrupoNOS Meltano error with context."""
         super().__init__(message, error_code="GRUPONOS_MELTANO_ERROR", context=kwargs)

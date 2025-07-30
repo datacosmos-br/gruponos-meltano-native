@@ -144,7 +144,9 @@ class TestFlextConfig:
             )
         assert legacy_env["FLEXT_TARGET_ORACLE_HOST"] == "target.local"
         if legacy_env["FLEXT_TARGET_ORACLE_SCHEMA"] != "WMS_SYNC":
-            msg = f"Expected {'WMS_SYNC'}, got {legacy_env['FLEXT_TARGET_ORACLE_SCHEMA']}"
+            msg = (
+                f"Expected {'WMS_SYNC'}, got {legacy_env['FLEXT_TARGET_ORACLE_SCHEMA']}"
+            )
             raise AssertionError(
                 msg,
             )

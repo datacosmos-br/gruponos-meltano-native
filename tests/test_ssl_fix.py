@@ -43,7 +43,6 @@ def test_ssl_connection() -> None:
             pass
 
     except (RuntimeError, ValueError, TypeError):
-
         traceback.print_exc()
     finally:
         # Clean up
@@ -64,12 +63,10 @@ def test_env_connection() -> None:
             pass
 
     except (RuntimeError, ValueError, TypeError):
-
         traceback.print_exc()
 
 
 if __name__ == "__main__":
-
     # Test direct configuration
     test_ssl_connection()
 

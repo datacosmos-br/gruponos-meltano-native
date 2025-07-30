@@ -44,7 +44,9 @@ class GruponosMeltanoPipelineRunner:
         self.project_root = Path(settings.meltano_project_root)
 
     def run_pipeline(
-        self, job_name: str, **kwargs: Any,
+        self,
+        job_name: str,
+        **kwargs: Any,
     ) -> GruponosMeltanoPipelineResult:
         """Run a GrupoNOS Meltano pipeline."""
         import time
@@ -146,7 +148,10 @@ class GruponosMeltanoPipelineRunner:
         return env
 
     async def run_with_retry(
-        self, job_name: str, max_retries: int = 3, **kwargs: Any,
+        self,
+        job_name: str,
+        max_retries: int = 3,
+        **kwargs: Any,
     ) -> GruponosMeltanoPipelineResult:
         """Run pipeline with retry logic."""
         import asyncio
@@ -157,7 +162,10 @@ class GruponosMeltanoPipelineRunner:
                 # Execute in thread pool to avoid blocking
                 loop = asyncio.get_event_loop()
                 result = await loop.run_in_executor(
-                    None, self.run_pipeline, job_name, **kwargs,
+                    None,
+                    self.run_pipeline,
+                    job_name,
+                    **kwargs,
                 )
 
                 if result.success:
@@ -225,7 +233,9 @@ class GruponosMeltanoOrchestrator:
         return self.list_jobs()
 
     async def run_pipeline(
-        self, pipeline_name: str, **kwargs: Any,
+        self,
+        pipeline_name: str,
+        **kwargs: Any,
     ) -> GruponosMeltanoPipelineResult:
         """Run pipeline asynchronously (compatibility method)."""
         import asyncio
@@ -233,7 +243,10 @@ class GruponosMeltanoOrchestrator:
         # Execute in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(
-            None, self.pipeline_runner.run_pipeline, pipeline_name, **kwargs,
+            None,
+            self.pipeline_runner.run_pipeline,
+            pipeline_name,
+            **kwargs,
         )
 
     def get_job_status(self, job_name: str) -> dict[str, Any]:

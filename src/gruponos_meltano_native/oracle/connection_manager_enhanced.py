@@ -27,7 +27,8 @@ class GruponosMeltanoOracleConnectionManager:
     """GrupoNOS-specific Oracle connection manager."""
 
     def __init__(
-        self, config: GruponosMeltanoOracleConnectionConfig | None = None,
+        self,
+        config: GruponosMeltanoOracleConnectionConfig | None = None,
     ) -> None:
         """Initialize Oracle connection manager for GrupoNOS."""
         self.config = config or GruponosMeltanoOracleConnectionConfig()

@@ -1,8 +1,5 @@
 """Tests for Oracle schema discovery functionality.
 
-# Constants
-EXPECTED_BULK_SIZE = 2
-
 REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle schema discovery logic with comprehensive error handling.
 """
@@ -11,6 +8,9 @@ from typing import Any
 from unittest.mock import Mock, patch
 
 from gruponos_meltano_native.oracle.discover_and_save_schemas import discover_schemas
+
+# Constants
+EXPECTED_BULK_SIZE = 2
 
 
 class TestOracleSchemaDiscovery:

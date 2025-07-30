@@ -1,9 +1,5 @@
 """Tests for Oracle validation sync functionality.
 
-# Constants
-EXPECTED_BULK_SIZE = 2
-EXPECTED_DATA_COUNT = 3
-
 REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle validation sync logic with comprehensive functionality.
 """
@@ -20,6 +16,10 @@ from gruponos_meltano_native.oracle.validate_sync import (
     _validate_table_name,
     validate_sync,
 )
+
+# Constants
+EXPECTED_BULK_SIZE = 2
+EXPECTED_DATA_COUNT = 3
 
 
 class TestOracleValidateSync:

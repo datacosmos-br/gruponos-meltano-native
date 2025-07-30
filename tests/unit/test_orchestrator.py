@@ -137,7 +137,8 @@ class TestOrchestrator:
         assert "errors" in result.value
 
     def test_orchestrator_job_status(
-        self, valid_config: GruponosMeltanoSettings,
+        self,
+        valid_config: GruponosMeltanoSettings,
     ) -> None:
         """Test orchestrator job status functionality."""
         orchestrator = GruponosMeltanoOrchestrator(valid_config)
