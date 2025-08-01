@@ -1,6 +1,7 @@
 """GrupoNOS Meltano Native Exceptions.
 
 All GrupoNOS-specific exceptions extending FLEXT core patterns.
+Uses flext-core's create_module_exception_classes for DRY compliance.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -8,46 +9,24 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core.exceptions import (
-    FlextConfigurationError,
-    FlextError,
-    FlextOperationError,
-    FlextProcessingError,
-    FlextValidationError,
-)
+from flext_core import create_module_exception_classes
+
+# SOLID DRY: Use flext-core's centralized exception factory to eliminate duplication
+# This replaces 200+ lines of manual exception definitions with systematic generation
+_exceptions = create_module_exception_classes("gruponos_meltano")
+
+# Extract standard exception classes with proper names for backward compatibility
+GruponosMeltanoError = _exceptions["GruponosMeltanoError"]
+GruponosMeltanoValidationError = _exceptions["GruponosMeltanoValidationError"]
+GruponosMeltanoConfigurationError = _exceptions["GruponosMeltanoConfigurationError"]
+GruponosMeltanoConnectionError = _exceptions["GruponosMeltanoConnectionError"]
+GruponosMeltanoProcessingError = _exceptions["GruponosMeltanoProcessingError"]
+GruponosMeltanoAuthenticationError = _exceptions["GruponosMeltanoAuthenticationError"]
+GruponosMeltanoTimeoutError = _exceptions["GruponosMeltanoTimeoutError"]
 
 
-# GrupoNOS-specific errors - base hierarchy
-class GruponosMeltanoError(FlextError):
-    """Base GrupoNOS Meltano error."""
-
-    def __init__(
-        self,
-        message: str = "GrupoNOS Meltano error",
-        **kwargs: object,
-    ) -> None:
-        """Initialize GrupoNOS Meltano error with context."""
-        super().__init__(message, error_code="GRUPONOS_MELTANO_ERROR", context=kwargs)
-
-
-class GruponosMeltanoConfigurationError(FlextConfigurationError):
-    """GrupoNOS configuration error."""
-
-    def __init__(
-        self,
-        message: str = "GrupoNOS configuration error",
-        config_key: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize GrupoNOS configuration error with context."""
-        context = kwargs.copy()
-        if config_key is not None:
-            context["config_key"] = config_key
-
-        super().__init__(f"GrupoNOS config: {message}", **context)
-
-
-class GruponosMeltanoOrchestrationError(FlextOperationError):
+# SOLID SRP: Specialized domain-specific errors extending base classes
+class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
     """GrupoNOS orchestration error."""
 
     def __init__(
@@ -58,15 +37,14 @@ class GruponosMeltanoOrchestrationError(FlextOperationError):
         **kwargs: object,
     ) -> None:
         """Initialize GrupoNOS orchestration error with context."""
-        super().__init__(
-            f"GrupoNOS orchestration: {message}",
-            operation=operation,
-            stage=stage,
-            context=kwargs,
-        )
+        if operation is not None:
+            kwargs["operation"] = operation
+        if stage is not None:
+            kwargs["stage"] = stage
+        super().__init__(f"GrupoNOS orchestration: {message}", **kwargs)
 
 
-class GruponosMeltanoPipelineError(FlextProcessingError):
+class GruponosMeltanoPipelineError(GruponosMeltanoProcessingError):
     """GrupoNOS pipeline error."""
 
     def __init__(
@@ -76,86 +54,22 @@ class GruponosMeltanoPipelineError(FlextProcessingError):
         **kwargs: object,
     ) -> None:
         """Initialize GrupoNOS pipeline error with context."""
-        context = kwargs.copy()
         if pipeline_name is not None:
-            context["pipeline_name"] = pipeline_name
-
-        super().__init__(f"GrupoNOS pipeline: {message}", **context)
-
-
-class GruponosMeltanoValidationError(FlextValidationError):
-    """GrupoNOS validation error."""
-
-    def __init__(
-        self,
-        message: str = "GrupoNOS validation failed",
-        field: str | None = None,
-        value: object = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize GrupoNOS validation error with context."""
-        validation_details = {}
-        if field is not None:
-            validation_details["field"] = field
-        if value is not None:
-            validation_details["value"] = value
-
-        super().__init__(
-            f"GrupoNOS validation: {message}",
-            validation_details=validation_details,
-            context=kwargs,
-        )
+            kwargs["pipeline_name"] = pipeline_name
+        super().__init__(f"GrupoNOS pipeline: {message}", **kwargs)
 
 
+# Domain-specific error classes extending foundation hierarchy
 class GruponosMeltanoAlertError(GruponosMeltanoError):
     """Alert system error."""
-
-    def __init__(
-        self,
-        message: str = "GrupoNOS alert error",
-        alert_type: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize GrupoNOS alert error with context."""
-        context = kwargs.copy()
-        if alert_type is not None:
-            context["alert_type"] = alert_type
-
-        super().__init__(f"GrupoNOS alert: {message}", **context)
 
 
 class GruponosMeltanoAlertDeliveryError(GruponosMeltanoAlertError):
     """Alert delivery error."""
 
-    def __init__(
-        self,
-        message: str = "GrupoNOS alert delivery failed",
-        delivery_channel: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize GrupoNOS alert delivery error with context."""
-        context = kwargs.copy()
-        if delivery_channel is not None:
-            context["delivery_channel"] = delivery_channel
 
-        super().__init__(f"Alert delivery: {message}", **context)
-
-
-class GruponosMeltanoDataError(FlextProcessingError):
+class GruponosMeltanoDataError(GruponosMeltanoProcessingError):
     """Data processing error."""
-
-    def __init__(
-        self,
-        message: str = "GrupoNOS data processing failed",
-        data_source: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize GrupoNOS data error with context."""
-        context = kwargs.copy()
-        if data_source is not None:
-            context["data_source"] = data_source
-
-        super().__init__(f"GrupoNOS data: {message}", **context)
 
 
 class GruponosMeltanoDataQualityError(GruponosMeltanoDataError):
@@ -210,11 +124,12 @@ class GruponosMeltanoTargetError(GruponosMeltanoSingerError):
     """Target execution error."""
 
 
-# Re-export for backward compatibility
 __all__ = [
     "GruponosMeltanoAlertDeliveryError",
     "GruponosMeltanoAlertError",
+    "GruponosMeltanoAuthenticationError",
     "GruponosMeltanoConfigurationError",
+    "GruponosMeltanoConnectionError",
     "GruponosMeltanoDataError",
     "GruponosMeltanoDataQualityError",
     "GruponosMeltanoDataValidationError",
@@ -229,8 +144,10 @@ __all__ = [
     "GruponosMeltanoPipelineError",
     "GruponosMeltanoPipelineTimeoutError",
     "GruponosMeltanoPipelineValidationError",
+    "GruponosMeltanoProcessingError",
     "GruponosMeltanoSingerError",
     "GruponosMeltanoTapError",
     "GruponosMeltanoTargetError",
+    "GruponosMeltanoTimeoutError",
     "GruponosMeltanoValidationError",
 ]
