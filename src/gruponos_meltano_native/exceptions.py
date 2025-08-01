@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from flext_core import create_module_exception_classes
 
-# SOLID DRY: Use flext-core's centralized exception factory to eliminate duplication
+# DRY: Use flext-core's centralized exception factory to eliminate duplication
 # This replaces 200+ lines of manual exception definitions with systematic generation
 _exceptions = create_module_exception_classes("gruponos_meltano")
 
@@ -25,7 +25,7 @@ GruponosMeltanoAuthenticationError = _exceptions["GruponosMeltanoAuthenticationE
 GruponosMeltanoTimeoutError = _exceptions["GruponosMeltanoTimeoutError"]
 
 
-# SOLID SRP: Specialized domain-specific errors extending base classes
+# Specialized domain-specific errors extending base classes
 class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
     """GrupoNOS orchestration error."""
 
