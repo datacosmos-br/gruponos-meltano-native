@@ -72,7 +72,7 @@ class GruponosMeltanoOracleConnectionManager:
         test_result = connection.test_connection()
 
         if test_result.is_success:
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
         return FlextResult.fail(f"Connection test failed: {test_result.error}")
 
     def close_connection(self) -> FlextResult[bool]:
@@ -82,8 +82,8 @@ class GruponosMeltanoOracleConnectionManager:
                 # disconnect() returns the API instance, not a FlextResult
                 self._connection.disconnect()
                 self._connection = None
-                return FlextResult.ok(True)
-            return FlextResult.ok(True)
+                return FlextResult.ok(data=True)
+            return FlextResult.ok(data=True)
 
         except Exception as e:
             return FlextResult.fail(f"Error closing connection: {e}")

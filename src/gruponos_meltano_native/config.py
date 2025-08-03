@@ -6,9 +6,13 @@ with Oracle WMS systems, built on FLEXT foundation patterns.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import ClassVar
 
-from flext_core import FlextBaseSettings
+from flext_core import (
+    FlextBaseSettings,
+    FlextOracleModel,
+    TAnyDict,
+)
 from pydantic import Field, SecretStr
 
 # =============================================
@@ -16,32 +20,25 @@ from pydantic import Field, SecretStr
 # =============================================
 
 
-class GruponosMeltanoOracleConnectionConfig(FlextBaseSettings):
+class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
     """Oracle WMS connection configuration for GrupoNOS."""
 
-    host: str = Field(default="localhost", description="Oracle database host")
-    port: int = Field(default=1521, description="Oracle database port")
-    service_name: str | None = Field(default=None, description="Oracle service name")
-    sid: str | None = Field(default=None, description="Oracle SID")
-    username: str = Field(default="user", description="Database username")
-    password: SecretStr = Field(
-        default=SecretStr("password"),
-        description="Database password",
-    )
+    # Inherited from FlextOracleModel: host, port, service_name, sid, username, password
+    # Additional GrupoNOS-specific configuration
     protocol: str = Field(default="TCP", description="Connection protocol")
 
-    class Config:
-        """Pydantic configuration for Oracle connection."""
-
-        env_prefix = "FLEXT_TARGET_ORACLE_"
-        extra = "ignore"
+    model_config: ClassVar[dict[str, object]] = {
+        "env_prefix": "FLEXT_TARGET_ORACLE_",
+        "extra": "ignore",
+        "validate_assignment": True,
+    }
 
 
 class GruponosMeltanoWMSSourceConfig(FlextBaseSettings):
     """Oracle WMS source configuration for GrupoNOS."""
 
     oracle: GruponosMeltanoOracleConnectionConfig | None = Field(
-        default=None,
+        default_factory=GruponosMeltanoOracleConnectionConfig,
         description="Oracle connection config",
     )
     api_enabled: bool = Field(default=True, description="Enable API access")
@@ -78,7 +75,7 @@ class GruponosMeltanoWMSSourceConfig(FlextBaseSettings):
         description="Start date for extraction",
     )
 
-    def model_post_init(self, /, __context: Any) -> None:
+    def model_post_init(self, /, __context: TAnyDict | None = None) -> None:
         """Post-init validation for WMS source configuration."""
         if self.api_enabled and not self.api_base_url:
             # Use base_url as fallback for api_base_url
@@ -89,11 +86,11 @@ class GruponosMeltanoWMSSourceConfig(FlextBaseSettings):
                 msg = "api_base_url is required when api_enabled is True"
                 raise ValueError(msg)
 
-    class Config:
-        """Pydantic configuration for WMS source."""
-
-        env_prefix = "TAP_ORACLE_WMS_"
-        extra = "ignore"
+    model_config: ClassVar[dict[str, object]] = {
+        "env_prefix": "TAP_ORACLE_WMS_",
+        "extra": "ignore",
+        "validate_assignment": True,
+    }
 
 
 class GruponosMeltanoTargetOracleConfig(FlextBaseSettings):
@@ -111,11 +108,11 @@ class GruponosMeltanoTargetOracleConfig(FlextBaseSettings):
     )
     add_record_metadata: bool = Field(default=False, description="Add record metadata")
 
-    class Config:
-        """Pydantic configuration for Oracle target."""
-
-        env_prefix = "FLEXT_TARGET_ORACLE_"
-        extra = "ignore"
+    model_config: ClassVar[dict[str, object]] = {
+        "env_prefix": "FLEXT_TARGET_ORACLE_",
+        "extra": "ignore",
+        "validate_assignment": True,
+    }
 
 
 class GruponosMeltanoJobConfig(FlextBaseSettings):
@@ -139,11 +136,11 @@ class GruponosMeltanoJobConfig(FlextBaseSettings):
         description="Delay between retries in seconds",
     )
 
-    class Config:
-        """Pydantic configuration for job settings."""
-
-        env_prefix = "GRUPONOS_JOB_"
-        extra = "ignore"
+    model_config: ClassVar[dict[str, object]] = {
+        "env_prefix": "GRUPONOS_JOB_",
+        "extra": "ignore",
+        "validate_assignment": True,
+    }
 
 
 class GruponosMeltanoAlertConfig(FlextBaseSettings):
@@ -166,11 +163,11 @@ class GruponosMeltanoAlertConfig(FlextBaseSettings):
     alert_on_failure: bool = Field(default=True, description="Alert on job failure")
     alert_on_success: bool = Field(default=False, description="Alert on job success")
 
-    class Config:
-        """Pydantic configuration for alert settings."""
-
-        env_prefix = "GRUPONOS_ALERT_"
-        extra = "ignore"
+    model_config: ClassVar[dict[str, object]] = {
+        "env_prefix": "GRUPONOS_ALERT_",
+        "extra": "ignore",
+        "validate_assignment": True,
+    }
 
 
 class GruponosMeltanoSettings(FlextBaseSettings):
@@ -197,11 +194,11 @@ class GruponosMeltanoSettings(FlextBaseSettings):
         description="Meltano state backend",
     )
 
-    class Config:
-        """Pydantic configuration for main settings."""
-
-        env_prefix = "GRUPONOS_"
-        extra = "ignore"  # Ignore extra environment variables
+    model_config: ClassVar[dict[str, object]] = {
+        "env_prefix": "GRUPONOS_",
+        "extra": "ignore",
+        "validate_assignment": True,
+    }
 
     @property
     def oracle_connection(self) -> GruponosMeltanoOracleConnectionConfig:

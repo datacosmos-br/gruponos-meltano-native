@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from flext_core import get_logger
 
@@ -43,7 +43,7 @@ class ValidationRule:
         self,
         field_name: str,
         rule_type: str,
-        parameters: dict[str, Any] | None = None,
+        parameters: dict[str, object] | None = None,
         **kwargs: object,
     ) -> None:
         """Initialize validation rule.
@@ -90,7 +90,7 @@ class DataValidator:
     def _validate_required_field(
         self,
         rule: ValidationRule,
-        data: dict[str, Any],
+        data: dict[str, object],
         errors: list[str],
     ) -> bool:
         """Validate required field presence."""
@@ -113,7 +113,7 @@ class DataValidator:
         """Validate field value based on rule type."""
         validation_methods: dict[
             str,
-            Callable[[ValidationRule, Any, list[str]], None],
+            Callable[[ValidationRule, object, list[str]], None],
         ] = {
             "decimal": self._validate_decimal,
             "string": self._validate_string,
@@ -127,7 +127,7 @@ class DataValidator:
         if validation_method is not None and value is not None:
             validation_method(rule, value, errors)
 
-    def validate(self, data: dict[str, Any]) -> list[str]:
+    def validate(self, data: dict[str, object]) -> list[str]:
         """Validate data against configured rules.
 
         Args:
@@ -306,9 +306,9 @@ class DataValidator:
 
     def validate_and_convert_record(
         self,
-        record: dict[str, Any],
-        schema: dict[str, Any],
-    ) -> dict[str, Any]:
+        record: dict[str, object],
+        schema: dict[str, object],
+    ) -> dict[str, object]:
         """Validate and convert a record according to schema."""
         if not schema.get("properties"):
             return record
@@ -331,7 +331,7 @@ class DataValidator:
         self,
         *,
         value: str | float | bool | None,
-        field_schema: dict[str, Any],
+        field_schema: dict[str, object],
         field_name: str,
         strict: bool = False,
     ) -> str | int | float | bool | None:

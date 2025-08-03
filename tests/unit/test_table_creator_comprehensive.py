@@ -10,7 +10,6 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -654,7 +653,7 @@ class TestOracleTableCreatorComprehensive:
 
         creator = OracleTableCreator(config)
 
-        singer_schema: dict[str, Any] = {"properties": {}}  # No properties
+        singer_schema: dict[str, object] = {"properties": {}}  # No properties
 
         indexes = creator.create_indexes_for_table("test_table", singer_schema)
 

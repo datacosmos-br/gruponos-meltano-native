@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from email.mime.text import MIMEText
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import requests
 
@@ -51,7 +51,7 @@ class GruponosMeltanoAlert(FlextValueObject):
     message: str
     severity: GruponosMeltanoAlertSeverity
     alert_type: GruponosMeltanoAlertType
-    context: dict[str, Any]
+    context: dict[str, object]
     timestamp: str
     pipeline_name: str | None = None
 
@@ -134,7 +134,7 @@ class GruponosMeltanoAlertService:
                 )
                 # Reset counter on successful alert
                 self._failure_count = 0
-                return FlextResult.ok(True)
+                return FlextResult.ok(data=True)
             error_messages = [
                 result.error or "Unknown error"
                 for result in results
@@ -171,7 +171,7 @@ class GruponosMeltanoAlertService:
             response.raise_for_status()
 
             logger.debug("Webhook alert sent successfully")
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except requests.RequestException as e:
             logger.warning(f"Webhook alert failed: {e}")
@@ -196,7 +196,7 @@ class GruponosMeltanoAlertService:
             logger.info(
                 f"Email alert sent to {len(self.config.email_recipients)} recipients for severity: {alert.severity}",
             )
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except (RuntimeError, ValueError, TypeError) as e:
             logger.warning(f"Email alert failed: {e}")
@@ -252,7 +252,7 @@ class GruponosMeltanoAlertService:
             response.raise_for_status()
 
             logger.debug("Slack alert sent successfully")
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except requests.RequestException as e:
             logger.warning(f"Slack alert failed: {e}")
@@ -285,7 +285,7 @@ class GruponosMeltanoAlertManager:
         self,
         pipeline_name: str,
         error_message: str,
-        context: dict[str, Any] | None = None,
+        context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
         """Send pipeline failure alert.
 
@@ -315,7 +315,7 @@ class GruponosMeltanoAlertManager:
         self,
         target: str,
         error_message: str,
-        context: dict[str, Any] | None = None,
+        context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
         """Send connectivity failure alert.
 
@@ -344,7 +344,7 @@ class GruponosMeltanoAlertManager:
         self,
         issue_description: str,
         pipeline_name: str | None = None,
-        context: dict[str, Any] | None = None,
+        context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
         """Send data quality issue alert.
 

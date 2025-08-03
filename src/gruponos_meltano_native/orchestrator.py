@@ -9,7 +9,6 @@ from __future__ import annotations
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
@@ -27,7 +26,7 @@ class GruponosMeltanoPipelineResult:
     execution_time: float
     output: str
     error: str | None = None
-    metadata: dict[str, Any] | None = None
+    metadata: dict[str, object] | None = None
 
 
 # =============================================
@@ -46,7 +45,7 @@ class GruponosMeltanoPipelineRunner:
     def run_pipeline(
         self,
         job_name: str,
-        **kwargs: Any,
+        **kwargs: object,
     ) -> GruponosMeltanoPipelineResult:
         """Run a GrupoNOS Meltano pipeline."""
         import time
@@ -151,7 +150,7 @@ class GruponosMeltanoPipelineRunner:
         self,
         job_name: str,
         max_retries: int = 3,
-        **kwargs: Any,
+        **kwargs: object,
     ) -> GruponosMeltanoPipelineResult:
         """Run pipeline with retry logic."""
         import asyncio
@@ -235,7 +234,7 @@ class GruponosMeltanoOrchestrator:
     async def run_pipeline(
         self,
         pipeline_name: str,
-        **kwargs: Any,
+        **kwargs: object,
     ) -> GruponosMeltanoPipelineResult:
         """Run pipeline asynchronously (compatibility method)."""
         import asyncio
@@ -249,7 +248,7 @@ class GruponosMeltanoOrchestrator:
             **kwargs,
         )
 
-    def get_job_status(self, job_name: str) -> dict[str, Any]:
+    def get_job_status(self, job_name: str) -> dict[str, object]:
         """Get status of a specific job."""
         return {
             "job_name": job_name,

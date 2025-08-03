@@ -1,7 +1,6 @@
 """Unit tests for validation functionality."""
 
 from decimal import Decimal
-from typing import Any
 
 from gruponos_meltano_native.validators.data_validator import (
     DataValidator,
@@ -67,7 +66,7 @@ class TestDataValidators:
         validator = DataValidator(rules)
 
         # Test with missing field
-        data: dict[str, Any] = {}
+        data: dict[str, object] = {}
         errors = validator.validate(data)
         assert len(errors) > 0
         if any("required_field" in str(error) for error in errors):
