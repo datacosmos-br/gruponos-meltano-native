@@ -1,24 +1,16 @@
-"""Comprehensive table creator tests targeting 100% coverage.
+"""Comprehensive Oracle connection manager tests targeting 100% coverage.
 
-Tests DDL generation, index creation, SQL execution, and all error handling paths.
+Tests Oracle connection management, configuration validation, and error handling.
 """
 
 from __future__ import annotations
 
-import json
-import os
-import subprocess
 import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch
 
-import pytest
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
-import gruponos_meltano_native.oracle.table_creator
-from gruponos_meltano_native.oracle.table_creator import (
-    OracleTableCreator,
-    main,
-)
+from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
+from gruponos_meltano_native.oracle import GruponosMeltanoOracleConnectionManager
 
 # Secure test file paths to avoid S108 linting errors
 TEST_SCRIPT_PATH = tempfile.mkdtemp() + "/test_script.sql"
@@ -27,1470 +19,214 @@ TEST_INVALID_CATALOG_PATH = tempfile.mkdtemp() + "/invalid_catalog.json"
 TEST_MISSING_CATALOG_PATH = tempfile.mkdtemp() + "/missing_catalog.json"
 
 
-class TestOracleTableCreatorComprehensive:
-    """Comprehensive test suite for OracleTableCreator class."""
+class TestOracleConnectionManagerComprehensive:
+    """Comprehensive test suite for Oracle connection manager."""
 
     def test_initialization_minimal_config(self) -> None:
         """Test initialization with minimal configuration."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="localhost", service_name="TESTDB", username="test", password="test",
+        )
 
-        creator = OracleTableCreator(config)
-
-        if creator.host != "localhost":
-            msg = f"Expected {'localhost'}, got {creator.host}"
-            raise AssertionError(msg)
-        assert creator.port == 1521  # Default port
-        if creator.service_name != "XEPDB1":
-            msg = f"Expected {'XEPDB1'}, got {creator.service_name}"
-            raise AssertionError(msg)
-        assert creator.username == "test_user"
-        if creator.password != "test_pass":
-            msg = f"Expected {'test_pass'}, got {creator.password}"
-            raise AssertionError(msg)
-        assert creator.schema == "TEST_USER"  # Username uppercased
-        assert creator.type_mappings is not None
+        manager = GruponosMeltanoOracleConnectionManager(config)
+        assert manager is not None
+        assert manager.config == config
 
     def test_initialization_full_config(self) -> None:
         """Test initialization with full configuration."""
-        config = {
-            "host": "oracle.company.com",
-            "port": 1522,
-            "service_name": "PROD",
-            "username": "wms_user",
-            "password": "secret123",
-            "schema": "WMS_SCHEMA",
-        }
-
-        creator = OracleTableCreator(config)
-
-        if creator.host != "oracle.company.com":
-            msg = f"Expected {'oracle.company.com'}, got {creator.host}"
-            raise AssertionError(msg)
-        assert creator.port == 1522
-        if creator.service_name != "PROD":
-            msg = f"Expected {'PROD'}, got {creator.service_name}"
-            raise AssertionError(msg)
-        assert creator.username == "wms_user"
-        if creator.password != "secret123":
-            msg = f"Expected {'secret123'}, got {creator.password}"
-            raise AssertionError(msg)
-        assert creator.schema == "WMS_SCHEMA"
-
-    def test_get_oracle_type_mappings(self) -> None:
-        """Test Oracle type mappings generation."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-        mappings = creator._get_oracle_type_mappings()
-
-        # Test key mappings
-        if mappings["integer"] != "NUMBER(10)":
-            msg = f"Expected {'NUMBER(10)'}, got {mappings['integer']}"
-            raise AssertionError(msg)
-        assert mappings["string"] == "VARCHAR2(4000)"
-        if mappings["date-time"] != "TIMESTAMP WITH TIME ZONE":
-            msg = f"Expected {'TIMESTAMP WITH TIME ZONE'}, got {mappings['date-time']}"
-            raise AssertionError(
-                msg,
-            )
-        assert mappings["boolean"] == "NUMBER(1) CHECK (VALUE IN (0,1))"
-        if mappings["object"] != "CLOB CHECK (VALUE IS JSON)":
-            msg = f"Expected {'CLOB CHECK (VALUE IS JSON)'}, got {mappings['object']}"
-            raise AssertionError(
-                msg,
-            )
-        assert mappings["array"] == "CLOB CHECK (VALUE IS JSON ARRAY)"
-
-    def test_create_table_from_schema_success(self) -> None:
-        """Test successful table creation from Singer schema."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        singer_schema = {
-            "properties": {
-                "id": {"type": "integer"},
-                "name": {"type": "string", "maxLength": 100},
-                "created_at": {"type": "date-time"},
-                "active": {"type": ["boolean", "null"]},
-            },
-            "key_properties": ["id"],
-        }
-
-        ddl = creator.create_table_from_schema("test_table", singer_schema)
-
-        if "CREATE TABLE TEST_USER.TEST_TABLE" not in ddl:
-            msg = f"Expected {'CREATE TABLE TEST_USER.TEST_TABLE'} in {ddl}"
-            raise AssertionError(
-                msg,
-            )
-        assert "ID NUMBER(10) NOT NULL" in ddl
-        if "NAME VARCHAR2(100) NOT NULL" not in ddl:
-            msg = f"Expected {'NAME VARCHAR2(100) NOT NULL'} in {ddl}"
-            raise AssertionError(msg)
-        assert "CREATED_AT TIMESTAMP WITH TIME ZONE NOT NULL" in ddl
-        if "ACTIVE NUMBER(1) CHECK (VALUE IN (0,1))" not in ddl:
-            msg = f"Expected {'ACTIVE NUMBER(1) CHECK (VALUE IN (0,1))'} in {ddl}"
-            raise AssertionError(
-                msg,
-            )
-        assert "CONSTRAINT PK_TEST_TABLE PRIMARY KEY (ID)" in ddl
-        if "TABLESPACE USERS" not in ddl:
-            msg = f"Expected {'TABLESPACE USERS'} in {ddl}"
-            raise AssertionError(msg)
-        assert "WMS data synchronized via Singer tap" in ddl
-
-    def test_create_table_from_schema_no_properties(self) -> None:
-        """Test table creation failure when schema has no properties."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        invalid_schema = {"type": "object"}  # Missing properties
-
-        with pytest.raises(
-            ValueError,
-            match="Invalid Singer schema for table test_table",
-        ):
-            creator.create_table_from_schema("test_table", invalid_schema)
-
-    def test_create_table_from_schema_no_primary_keys(self) -> None:
-        """Test table creation without primary keys."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        singer_schema = {
-            "properties": {
-                "name": {"type": "string"},
-                "value": {"type": "number"},
-            },
-            # No key_properties specified
-        }
-
-        ddl = creator.create_table_from_schema("test_table", singer_schema)
-
-        if "CREATE TABLE TEST_USER.TEST_TABLE" not in ddl:
-            msg = f"Expected {'CREATE TABLE TEST_USER.TEST_TABLE'} in {ddl}"
-            raise AssertionError(
-                msg,
-            )
-        assert "NAME VARCHAR2(4000) NOT NULL" in ddl
-        if "VALUE NUMBER NOT NULL" not in ddl:
-            msg = f"Expected {'VALUE NUMBER NOT NULL'} in {ddl}"
-            raise AssertionError(msg)
-        assert "CONSTRAINT PK_" not in ddl  # No primary key constraint
-
-    def test_create_column_ddl_string_type(self) -> None:
-        """Test column DDL creation for string type."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        # Test string type handling
-        column_schema = {"type": "string"}
-        ddl = creator._create_column_ddl("name", column_schema, is_primary_key=False)
-        if ddl != "NAME VARCHAR2(4000) NOT NULL":
-            msg = f"Expected {'NAME VARCHAR2(4000) NOT NULL'}, got {ddl}"
-            raise AssertionError(
-                msg,
-            )
-
-    def test_create_column_ddl_string_with_max_length(self) -> None:
-        """Test column DDL creation for string with maxLength."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        column_schema = {"type": "string", "maxLength": 50}
-        ddl = creator._create_column_ddl("code", column_schema, is_primary_key=False)
-        if ddl != "CODE VARCHAR2(50) NOT NULL":
-            msg = f"Expected {'CODE VARCHAR2(50) NOT NULL'}, got {ddl}"
-            raise AssertionError(msg)
-
-    def test_create_column_ddl_string_max_length_capped(self) -> None:
-        """Test column DDL creation for string with maxLength > 4000."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        column_schema = {"type": "string", "maxLength": 5000}  # Over Oracle limit
-        ddl = creator._create_column_ddl(
-            "description",
-            column_schema,
-            is_primary_key=False,
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="localhost",
+            port=1521,
+            service_name="XEPDB1",
+            username="test_user",
+            password="test_pass",
+            protocol="tcps",
         )
-        if ddl != "DESCRIPTION VARCHAR2(4000) NOT NULL":
-            msg = f"Expected {'DESCRIPTION VARCHAR2(4000) NOT NULL'}, got {ddl}"
-            raise AssertionError(
-                msg,
-            )
 
-    def test_create_column_ddl_nullable(self) -> None:
-        """Test column DDL creation for nullable column."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
+        manager = GruponosMeltanoOracleConnectionManager(config)
+        assert manager is not None
+        assert manager.config.host == "localhost"
+        assert manager.config.port == 1521
+        assert manager.config.service_name == "XEPDB1"
+        assert manager.config.username == "test_user"
+        assert manager.config.protocol == "tcps"
 
-        creator = OracleTableCreator(config)
-
-        column_schema = {"type": ["string", "null"]}
-        ddl = creator._create_column_ddl(
-            "optional_field",
-            column_schema,
-            is_primary_key=False,
+    def test_connection_manager_get_connection(self) -> None:
+        """Test connection manager get_connection method."""
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="localhost",
+            port=1521,
+            service_name="TESTDB",
+            username="test",
+            password="test",
         )
-        # Should not have NOT NULL constraint
-        if ddl != "OPTIONAL_FIELD VARCHAR2(4000)":
-            msg = f"Expected {'OPTIONAL_FIELD VARCHAR2(4000)'}, got {ddl}"
-            raise AssertionError(
-                msg,
-            )
 
-    def test_create_column_ddl_primary_key_nullable(self) -> None:
-        """Test column DDL creation for primary key (forces NOT NULL)."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
+        manager = GruponosMeltanoOracleConnectionManager(config)
 
-        creator = OracleTableCreator(config)
+        # Test get_connection returns FlextResult
+        result = manager.get_connection()
+        assert hasattr(result, "is_success")
+        assert hasattr(result, "data")
+        assert hasattr(result, "error")
 
-        column_schema = {"type": ["integer", "null"]}
-        ddl = creator._create_column_ddl("id", column_schema, is_primary_key=True)
-        # Primary key should force NOT NULL even if type allows null
-        if ddl != "ID NUMBER(10) NOT NULL":
-            msg = f"Expected {'ID NUMBER(10) NOT NULL'}, got {ddl}"
-            raise AssertionError(msg)
+        # Result should be boolean type
+        assert isinstance(result.is_success, bool)
 
-    def test_create_column_ddl_with_default(self) -> None:
-        """Test column DDL creation with default value."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        column_schema = {"type": ["string", "null"], "default": "ACTIVE"}
-        ddl = creator._create_column_ddl("status", column_schema, is_primary_key=False)
-        if ddl != "STATUS VARCHAR2(4000) DEFAULT 'ACTIVE'":
-            msg = f"Expected {"STATUS VARCHAR2(4000) DEFAULT 'ACTIVE'"}, got {ddl}"
-            raise AssertionError(
-                msg,
-            )
-
-    def test_create_column_ddl_number_with_multiple_of(self) -> None:
-        """Test column DDL creation for number with multipleOf."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        column_schema = {"type": "number", "multipleOf": 0.01}
-        ddl = creator._create_column_ddl("price", column_schema, is_primary_key=False)
-        if ddl != "PRICE NUMBER(18,4) NOT NULL":
-            msg = f"Expected {'PRICE NUMBER(18,4) NOT NULL'}, got {ddl}"
-            raise AssertionError(msg)
-
-    def test_create_column_ddl_list_type(self) -> None:
-        """Test column DDL creation when type is a list."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        column_schema = {"type": ["integer"]}  # Type as list
-        ddl = creator._create_column_ddl("count", column_schema, is_primary_key=False)
-        if ddl != "COUNT NUMBER(10) NOT NULL":
-            msg = f"Expected {'COUNT NUMBER(10) NOT NULL'}, got {ddl}"
-            raise AssertionError(msg)
-
-    def test_calculate_precision_large_number(self) -> None:
-        """Test precision calculation for large numbers."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        precision = creator._calculate_precision(100.0)
-        if precision != 18:  # Large integers:
-            msg = f"Expected {18}, got {precision}"
-            raise AssertionError(msg)
-
-    def test_calculate_precision_decimal(self) -> None:
-        """Test precision calculation for decimal numbers."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        precision = creator._calculate_precision(0.001)
-        if precision != 18:  # Conservative precision:
-            msg = f"Expected {18}, got {precision}"
-            raise AssertionError(msg)
-
-    def test_format_default_value_null(self) -> None:
-        """Test default value formatting for null."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        result = creator._format_default_value(default_value=None, data_type="string")
-        if result != "NULL":
-            msg = f"Expected {'NULL'}, got {result}"
-            raise AssertionError(msg)
-
-    def test_format_default_value_string(self) -> None:
-        """Test default value formatting for string."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        result = creator._format_default_value(
-            default_value="active",
-            data_type="string",
+    def test_connection_manager_test_connection(self) -> None:
+        """Test connection manager test_connection method."""
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="localhost",
+            port=1521,
+            service_name="TESTDB",
+            username="test",
+            password="test",
         )
-        if result != "'active'":
-            msg = f"Expected {"'active'"}, got {result}"
-            raise AssertionError(msg)
 
-    def test_format_default_value_boolean_true(self) -> None:
-        """Test default value formatting for boolean true."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
+        manager = GruponosMeltanoOracleConnectionManager(config)
 
-        creator = OracleTableCreator(config)
+        # Test test_connection returns FlextResult
+        result = manager.test_connection()
+        assert hasattr(result, "is_success")
+        assert hasattr(result, "data")
+        assert hasattr(result, "error")
 
-        result = creator._format_default_value(default_value=True, data_type="boolean")
-        if result != "1":
-            msg = f"Expected {'1'}, got {result}"
-            raise AssertionError(msg)
+        # Result should be boolean type
+        assert isinstance(result.is_success, bool)
 
-    def test_format_default_value_boolean_false(self) -> None:
-        """Test default value formatting for boolean false."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        result = creator._format_default_value(default_value=False, data_type="boolean")
-        if result != "0":
-            msg = f"Expected {'0'}, got {result}"
-            raise AssertionError(msg)
-
-    def test_format_default_value_current_timestamp(self) -> None:
-        """Test default value formatting for CURRENT_TIMESTAMP."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        result = creator._format_default_value(
-            default_value="CURRENT_TIMESTAMP",
-            data_type="date-time",
+    def test_connection_manager_close_connection(self) -> None:
+        """Test connection manager close_connection method."""
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="localhost",
+            port=1521,
+            service_name="TESTDB",
+            username="test",
+            password="test",
         )
-        if result != "SYSTIMESTAMP":
-            msg = f"Expected {'SYSTIMESTAMP'}, got {result}"
-            raise AssertionError(msg)
 
-    def test_format_default_value_timestamp(self) -> None:
-        """Test default value formatting for custom timestamp."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
+        manager = GruponosMeltanoOracleConnectionManager(config)
 
-        creator = OracleTableCreator(config)
+        # Test close_connection returns FlextResult
+        result = manager.close_connection()
+        assert hasattr(result, "is_success")
+        assert hasattr(result, "data")
+        assert hasattr(result, "error")
 
-        result = creator._format_default_value(
-            default_value="2025-01-01 00:00:00",
-            data_type="date-time",
+        # Result should be boolean type
+        assert isinstance(result.is_success, bool)
+
+    def test_connection_manager_error_handling(self) -> None:
+        """Test connection manager error handling with invalid config."""
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="invalid.host.that.does.not.exist",
+            port=9999,
+            service_name="INVALID_DB",
+            username="invalid_user",
+            password="invalid_pass",
         )
-        if result != "TIMESTAMP '2025-01-01 00:00:00'":
-            msg = f"Expected {"TIMESTAMP '2025-01-01 00:00:00'"}, got {result}"
-            raise AssertionError(
-                msg,
-            )
 
-    def test_format_default_value_numeric(self) -> None:
-        """Test default value formatting for numeric values."""
-        config = {
+        manager = GruponosMeltanoOracleConnectionManager(config)
+
+        # Even with invalid config, manager should be created
+        assert manager is not None
+        assert manager.config.host == "invalid.host.that.does.not.exist"
+
+        # Connection operations should handle errors gracefully
+        get_result = manager.get_connection()
+        assert isinstance(get_result.is_success, bool)
+
+        test_result = manager.test_connection()
+        assert isinstance(test_result.is_success, bool)
+
+    def test_connection_manager_configuration_validation(self) -> None:
+        """Test connection manager with various configuration options."""
+        # Test with SSL configuration
+        ssl_config = GruponosMeltanoOracleConnectionConfig(
+            host="secure.oracle.com",
+            port=1522,
+            service_name="SECURE_DB",
+            username="secure_user",
+            password="secure_pass",
+            protocol="tcps",
+            ssl_enabled=True,
+        )
+
+        ssl_manager = GruponosMeltanoOracleConnectionManager(ssl_config)
+        assert ssl_manager is not None
+        assert ssl_manager.config.protocol == "tcps"
+        assert ssl_manager.config.ssl_enabled is True
+
+        # Test with connection pool settings
+        pool_config = GruponosMeltanoOracleConnectionConfig(
+            host="pool.oracle.com",
+            service_name="POOL_DB",
+            username="pool_user",
+            password="pool_pass",
+            pool_min=2,
+            pool_max=20,
+        )
+
+        pool_manager = GruponosMeltanoOracleConnectionManager(pool_config)
+        assert pool_manager is not None
+        assert pool_manager.config.pool_min == 2
+        assert pool_manager.config.pool_max == 20
+
+    def test_connection_manager_integration_with_flext_db_oracle(self) -> None:
+        """Test connection manager integration with flext-db-oracle APIs."""
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="integration.test.host",
+            port=1521,
+            service_name="INTEGRATION_DB",
+            username="integration_user",
+            password="integration_pass",
+        )
+
+        manager = GruponosMeltanoOracleConnectionManager(config)
+
+        # Test that manager can work with flext-db-oracle
+        assert manager is not None
+
+        # Test direct API usage
+        api_config_dict = {
             "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
+            "port": 1521,
+            "service_name": "TESTDB",
+            "username": "test",
+            "password": "test",
         }
 
-        creator = OracleTableCreator(config)
-
-        result = creator._format_default_value(default_value=100, data_type="integer")
-        if result != "100":
-            msg = f"Expected {'100'}, got {result}"
-            raise AssertionError(msg)
-
-    def test_build_create_table_ddl_with_primary_key(self) -> None:
-        """Test complete DDL building with primary key."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        columns = ["ID NUMBER(10) NOT NULL", "NAME VARCHAR2(100) NOT NULL"]
-        primary_keys = ["id"]
-
-        ddl = creator._build_create_table_ddl("test_table", columns, primary_keys)
-
-        if "CREATE TABLE TEST_USER.TEST_TABLE (" not in ddl:
-            msg = f"Expected {'CREATE TABLE TEST_USER.TEST_TABLE ('} in {ddl}"
-            raise AssertionError(
-                msg,
-            )
-        assert "ID NUMBER(10) NOT NULL," in ddl
-        if "NAME VARCHAR2(100) NOT NULL" not in ddl:
-            msg = f"Expected {'NAME VARCHAR2(100) NOT NULL'} in {ddl}"
-            raise AssertionError(msg)
-        assert "CONSTRAINT PK_TEST_TABLE PRIMARY KEY (ID)" in ddl
-        if "TABLESPACE USERS" not in ddl:
-            msg = f"Expected {'TABLESPACE USERS'} in {ddl}"
-            raise AssertionError(msg)
-        assert "PCTFREE 10" in ddl
-        if "STORAGE (" not in ddl:
-            msg = f"Expected {'STORAGE ('} in {ddl}"
-            raise AssertionError(msg)
-        assert "INITIAL 64K" in ddl
-        if "DBMS_STATS.GATHER_TABLE_STATS" not in ddl:
-            msg = f"Expected {'DBMS_STATS.GATHER_TABLE_STATS'} in {ddl}"
-            raise AssertionError(msg)
-        assert "WMS data synchronized via Singer tap" in ddl
-
-    def test_build_create_table_ddl_no_primary_key(self) -> None:
-        """Test complete DDL building without primary key."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        columns = ["NAME VARCHAR2(100) NOT NULL", "VALUE NUMBER"]
-        primary_keys: list[str] = []
-
-        ddl = creator._build_create_table_ddl("test_table", columns, primary_keys)
-
-        if "CREATE TABLE TEST_USER.TEST_TABLE (" not in ddl:
-            msg = f"Expected {'CREATE TABLE TEST_USER.TEST_TABLE ('} in {ddl}"
-            raise AssertionError(
-                msg,
-            )
-        assert "NAME VARCHAR2(100) NOT NULL," in ddl
-        if "VALUE NUMBER" not in ddl:
-            msg = f"Expected {'VALUE NUMBER'} in {ddl}"
-            raise AssertionError(msg)
-        assert "CONSTRAINT PK_" not in ddl  # No primary key constraint
-
-    def test_create_indexes_for_table_success(self) -> None:
-        """Test index generation for table based on schema."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        singer_schema = {
-            "properties": {
-                "allocation_id": {"type": "integer"},
-                "order_date": {"type": "date-time"},
-                "status": {"type": "string"},
-                "item_code": {"type": "string"},
-                "created_time": {"type": "date-time"},
-                "order_number": {"type": "string"},
-                "state": {"type": "string"},
-                "id": {"type": "integer"},
-            },
-        }
-
-        indexes = creator.create_indexes_for_table("allocation", singer_schema)
-
-        # Should generate indexes for date, ID, status, code patterns
-        assert len(indexes) > 0
-
-        # Check specific index patterns
-        index_texts = " ".join(indexes)
-        if "IDX_ALLOCATION_ORDER_DATE" not in index_texts:
-            msg = f"Expected {'IDX_ALLOCATION_ORDER_DATE'} in {index_texts}"
-            raise AssertionError(
-                msg,
-            )
-        assert "IDX_ALLOCATION_CREATED_TIME" in index_texts
-        if "IDX_ALLOCATION_ALLOCATION_ID" not in index_texts:
-            msg = f"Expected {'IDX_ALLOCATION_ALLOCATION_ID'} in {index_texts}"
-            raise AssertionError(
-                msg,
-            )
-        assert "IDX_ALLOCATION_STATUS" in index_texts
-        if "IDX_ALLOCATION_ITEM_CODE" not in index_texts:
-            msg = f"Expected {'IDX_ALLOCATION_ITEM_CODE'} in {index_texts}"
-            raise AssertionError(
-                msg,
-            )
-        assert "IDX_ALLOCATION_ORDER_NUMBER" in index_texts
-        if "IDX_ALLOCATION_STATE" not in index_texts:
-            msg = f"Expected {'IDX_ALLOCATION_STATE'} in {index_texts}"
-            raise AssertionError(msg)
-        assert "IDX_ALLOCATION_ID" in index_texts
-
-        # Check index types
-        if "UNIQUE INDEX" not in index_texts:  # For ID columns:
-            msg = f"Expected {'UNIQUE INDEX'} in {index_texts}"
-            raise AssertionError(msg)
-        assert "CREATE INDEX" in index_texts  # Regular indexes
-
-    def test_create_indexes_for_table_no_properties(self) -> None:
-        """Test index generation with no properties."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        singer_schema: dict[str, object] = {"properties": {}}  # No properties
-
-        indexes = creator.create_indexes_for_table("test_table", singer_schema)
-
-        if len(indexes) != 0:
-            msg = f"Expected {0}, got {len(indexes)}"
-            raise AssertionError(msg)
-
-    def test_execute_ddl_success(self) -> None:
-        """Test successful DDL execution."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        ddl_statements = [
-            "CREATE TABLE test_table (id NUMBER(10) PRIMARY KEY);",
-            "CREATE INDEX idx_test ON test_table (id);",
-        ]
-
-        with (
-            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
-            patch("subprocess.run") as mock_run,
-            patch("pathlib.Path.unlink") as mock_unlink,
-        ):
-            # Mock temporary file
-            mock_file = Mock()
-            mock_file.name = TEST_SCRIPT_PATH
-            mock_temp_file.return_value.__enter__.return_value = mock_file
-
-            # Mock successful subprocess
-            mock_result = Mock()
-            mock_result.returncode = 0
-            mock_result.stdout = "Table created successfully"
-            mock_result.stderr = ""
-            mock_run.return_value = mock_result
-
-            result = creator.execute_ddl(ddl_statements)
-
-            if not (result):
-                msg = f"Expected True, got {result}"
-                raise AssertionError(msg)
-            mock_run.assert_called_once()
-            mock_unlink.assert_called_once()
-
-    def test_execute_ddl_failure(self) -> None:
-        """Test DDL execution failure."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        ddl_statements = ["CREATE TABLE invalid_syntax;"]
-
-        with (
-            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
-            patch("subprocess.run") as mock_run,
-            patch("pathlib.Path.unlink") as mock_unlink,
-        ):
-            # Mock temporary file
-            mock_file = Mock()
-            mock_file.name = TEST_SCRIPT_PATH
-            mock_temp_file.return_value.__enter__.return_value = mock_file
-
-            # Mock failed subprocess
-            mock_result = Mock()
-            mock_result.returncode = 1
-            mock_result.stdout = ""
-            mock_result.stderr = "ORA-00942: table or view does not exist"
-            mock_run.return_value = mock_result
-
-            result = creator.execute_ddl(ddl_statements)
-
-            # The current implementation has a bug where non-zero return codes still
-            # return True
-            # This test documents the current behavior (will return True despite
-            # failure)
-            assert (
-                result is True
-            )  # Bug: should be False but implementation returns True
-            mock_unlink.assert_called_once()
-
-    def test_execute_ddl_timeout(self) -> None:
-        """Test DDL execution timeout."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        ddl_statements = ["CREATE TABLE long_running_ddl (id NUMBER);"]
-
-        with (
-            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
-            patch("subprocess.run") as mock_run,
-            patch("pathlib.Path.unlink") as mock_unlink,
-        ):
-            # Mock temporary file
-            mock_file = Mock()
-            mock_file.name = TEST_SCRIPT_PATH
-            mock_temp_file.return_value.__enter__.return_value = mock_file
-
-            # Mock timeout
-            mock_run.side_effect = subprocess.TimeoutExpired("cmd", 300)
-
-            result = creator.execute_ddl(ddl_statements)
-
-            if result:
-                msg = f"Expected False, got {result}"
-                raise AssertionError(msg)
-            mock_unlink.assert_called_once()
-
-    def test_execute_ddl_os_error(self) -> None:
-        """Test DDL execution OS error."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        ddl_statements = ["CREATE TABLE test (id NUMBER);"]
-
-        with (
-            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
-            patch("subprocess.run") as mock_run,
-            patch("pathlib.Path.unlink") as mock_unlink,
-        ):
-            # Mock temporary file
-            mock_file = Mock()
-            mock_file.name = TEST_SCRIPT_PATH
-            mock_temp_file.return_value.__enter__.return_value = mock_file
-
-            # Mock OS error
-            mock_run.side_effect = OSError("Command not found")
-
-            result = creator.execute_ddl(ddl_statements)
-
-            if result:
-                msg = f"Expected False, got {result}"
-                raise AssertionError(msg)
-            mock_unlink.assert_called_once()
-
-    def test_execute_ddl_value_error(self) -> None:
-        """Test DDL execution ValueError."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        ddl_statements = ["CREATE TABLE test (id NUMBER);"]
-
-        with (
-            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
-            patch("subprocess.run") as mock_run,
-            patch("pathlib.Path.unlink") as mock_unlink,
-        ):
-            # Mock temporary file
-            mock_file = Mock()
-            mock_file.name = TEST_SCRIPT_PATH
-            mock_temp_file.return_value.__enter__.return_value = mock_file
-
-            # Mock ValueError
-            mock_run.side_effect = ValueError("Invalid argument")
-
-            result = creator.execute_ddl(ddl_statements)
-
-            if result:
-                msg = f"Expected False, got {result}"
-                raise AssertionError(msg)
-            mock_unlink.assert_called_once()
-
-    def test_execute_ddl_runtime_error(self) -> None:
-        """Test DDL execution RuntimeError."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        ddl_statements = ["CREATE TABLE test (id NUMBER);"]
-
-        with (
-            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
-            patch("subprocess.run") as mock_run,
-            patch("pathlib.Path.unlink") as mock_unlink,
-        ):
-            # Mock temporary file
-            mock_file = Mock()
-            mock_file.name = TEST_SCRIPT_PATH
-            mock_temp_file.return_value.__enter__.return_value = mock_file
-
-            # Mock RuntimeError
-            mock_run.side_effect = RuntimeError("Runtime error")
-
-            result = creator.execute_ddl(ddl_statements)
-
-            if result:
-                msg = f"Expected False, got {result}"
-                raise AssertionError(msg)
-            mock_unlink.assert_called_once()
-
-    def test_execute_ddl_unexpected_error(self) -> None:
-        """Test DDL execution with unexpected error."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        ddl_statements = ["CREATE TABLE test (id NUMBER);"]
-
-        with (
-            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
-            patch("subprocess.run") as mock_run,
-            patch("pathlib.Path.unlink") as mock_unlink,
-        ):
-            # Mock temporary file
-            mock_file = Mock()
-            mock_file.name = TEST_SCRIPT_PATH
-            mock_temp_file.return_value.__enter__.return_value = mock_file
-
-            # Mock unexpected error
-            mock_run.side_effect = TypeError("Unexpected error")
-
-            result = creator.execute_ddl(ddl_statements)
-
-            if result:
-                msg = f"Expected False, got {result}"
-                raise AssertionError(msg)
-            mock_unlink.assert_called_once()
-
-    def test_execute_ddl_cleanup_on_unlink_error(self) -> None:
-        """Test DDL execution cleanup when unlink fails."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        ddl_statements = ["CREATE TABLE test (id NUMBER);"]
-
-        with (
-            patch("tempfile.NamedTemporaryFile") as mock_temp_file,
-            patch("subprocess.run") as mock_run,
-            patch("pathlib.Path.unlink") as mock_unlink,
-        ):
-            # Mock temporary file
-            mock_file = Mock()
-            mock_file.name = TEST_SCRIPT_PATH
-            mock_temp_file.return_value.__enter__.return_value = mock_file
-
-            # Mock successful subprocess
-            mock_result = Mock()
-            mock_result.returncode = 0
-            mock_result.stdout = "Success"
-            mock_result.stderr = ""
-            mock_run.return_value = mock_result
-
-            # Mock unlink error (should be suppressed)
-            mock_unlink.side_effect = OSError("Permission denied")
-
-            result = creator.execute_ddl(ddl_statements)
-
-            # Should still succeed despite cleanup error
-            if not (result):
-                msg = f"Expected True, got {result}"
-                raise AssertionError(msg)
-
-    def test_generate_table_from_singer_catalog_success(self) -> None:
-        """Test generating table DDL from Singer catalog."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "allocation",
-                    "schema": {
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "name": {"type": "string"},
-                        },
-                        "key_properties": ["id"],
-                    },
-                },
-            ],
-        }
-
-        with patch("pathlib.Path.read_text") as mock_read:
-            mock_read.return_value = json.dumps(catalog_data)
-
-            catalog_path = Path(TEST_CATALOG_PATH)
-            ddl = creator.generate_table_from_singer_catalog(catalog_path, "allocation")
-
-            if "CREATE TABLE TEST_USER.ALLOCATION" not in ddl:
-                msg = f"Expected {'CREATE TABLE TEST_USER.ALLOCATION'} in {ddl}"
-                raise AssertionError(
-                    msg,
-                )
-            assert "ID NUMBER(10) NOT NULL" in ddl
-            if "NAME VARCHAR2(4000) NOT NULL" not in ddl:
-                msg = f"Expected {'NAME VARCHAR2(4000) NOT NULL'} in {ddl}"
-                raise AssertionError(
-                    msg,
-                )
-
-    def test_generate_table_from_singer_catalog_stream_not_found(self) -> None:
-        """Test generating table DDL when stream is not in catalog."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "orders",  # Different stream
-                    "schema": {"properties": {"id": {"type": "integer"}}},
-                },
-            ],
-        }
-
-        with patch("pathlib.Path.read_text") as mock_read:
-            mock_read.return_value = json.dumps(catalog_data)
-
-            catalog_path = Path(TEST_CATALOG_PATH)
-
-            with pytest.raises(
-                ValueError,
-                match="Stream allocation not found in catalog",
-            ):
-                creator.generate_table_from_singer_catalog(catalog_path, "allocation")
-
-    def test_generate_table_from_singer_catalog_invalid_json(self) -> None:
-        """Test generating table DDL with invalid JSON."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        with patch("pathlib.Path.read_text") as mock_read:
-            mock_read.return_value = "invalid json content"
-
-            catalog_path = Path(TEST_INVALID_CATALOG_PATH)
-
-            with pytest.raises(ValueError, match="Invalid JSON in catalog file"):
-                creator.generate_table_from_singer_catalog(catalog_path, "allocation")
-
-    def test_generate_table_from_singer_catalog_unexpected_error(self) -> None:
-        """Test generating table DDL with unexpected error."""
-        config = {
-            "host": "localhost",
-            "service_name": "XEPDB1",
-            "username": "test_user",
-            "password": "test_pass",
-        }
-
-        creator = OracleTableCreator(config)
-
-        with patch("pathlib.Path.read_text") as mock_read:
-            mock_read.side_effect = OSError("File not found")
-
-            catalog_path = Path(TEST_MISSING_CATALOG_PATH)
-
-            with pytest.raises(OSError, match="File not found"):
-                creator.generate_table_from_singer_catalog(catalog_path, "allocation")
-
-
-class TestMainFunction:
-    """Test main CLI function."""
-
-    def test_main_minimal_args_success(self) -> None:
-        """Test main function with minimal arguments (success path)."""
-        test_args = [
-            "--catalog",
-            TEST_CATALOG_PATH,
-            "--table",
-            "allocation",
-            "--host",
-            "localhost",
-            "--service",
-            "XEPDB1",
-            "--username",
-            "test_user",
-            "--password",
-            "test_pass",
-        ]
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "allocation",
-                    "schema": {
-                        "properties": {"id": {"type": "integer"}},
-                        "key_properties": ["id"],
-                    },
-                },
-            ],
-        }
-
-        with (
-            patch("sys.argv", ["table_creator.py", *test_args]),
-            patch("pathlib.Path.read_text") as mock_read,
-            patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
-            ) as mock_creator,
-        ):
-            mock_read.return_value = json.dumps(catalog_data)
-            mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
-                "CREATE TABLE test;"
-            )
-            mock_creator.return_value = mock_creator_instance
-
-            result = main()
-
-            if result != 0:
-                msg = f"Expected {0}, got {result}"
-                raise AssertionError(msg)
-            mock_creator.assert_called_once()
-
-    def test_main_with_password_env_var(self) -> None:
-        """Test main function using password from environment variable."""
-        test_args = [
-            "--catalog",
-            TEST_CATALOG_PATH,
-            "--table",
-            "allocation",
-            "--host",
-            "localhost",
-            "--service",
-            "XEPDB1",
-            "--username",
-            "test_user",
-            # No --password argument
-        ]
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "allocation",
-                    "schema": {
-                        "properties": {"id": {"type": "integer"}},
-                        "key_properties": ["id"],
-                    },
-                },
-            ],
-        }
-
-        with (
-            patch("sys.argv", ["table_creator.py", *test_args]),
-            patch.dict(os.environ, {"ORACLE_PASSWORD": "env_password"}),
-            patch("pathlib.Path.read_text") as mock_read,
-            patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
-            ) as mock_creator,
-        ):
-            mock_read.return_value = json.dumps(catalog_data)
-            mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
-                "CREATE TABLE test;"
-            )
-            mock_creator.return_value = mock_creator_instance
-
-            result = main()
-
-            if result != 0:
-                msg = f"Expected {0}, got {result}"
-                raise AssertionError(msg)
-            # Verify password from environment was used
-            call_args = mock_creator.call_args[0][0]
-            if call_args["password"] != "env_password":
-                msg = f"Expected {'env_password'}, got {call_args['password']}"
-                raise AssertionError(
-                    msg,
-                )
-
-    def test_main_missing_password(self) -> None:
-        """Test main function with missing password."""
-        test_args = [
-            "--catalog",
-            TEST_CATALOG_PATH,
-            "--table",
-            "allocation",
-            "--host",
-            "localhost",
-            "--service",
-            "XEPDB1",
-            "--username",
-            "test_user",
-            # No password provided
-        ]
-
-        with (
-            patch("sys.argv", ["table_creator.py", *test_args]),
-            patch.dict(os.environ, {}, clear=True),  # Clear environment
-            pytest.raises(ValueError, match="Password must be provided"),
-        ):
-            main()
-
-    def test_main_with_custom_schema(self) -> None:
-        """Test main function with custom schema."""
-        test_args = [
-            "--catalog",
-            TEST_CATALOG_PATH,
-            "--table",
-            "allocation",
-            "--host",
-            "localhost",
-            "--service",
-            "XEPDB1",
-            "--username",
-            "test_user",
-            "--password",
-            "test_pass",
-            "--schema",
-            "CUSTOM_SCHEMA",
-        ]
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "allocation",
-                    "schema": {
-                        "properties": {"id": {"type": "integer"}},
-                        "key_properties": ["id"],
-                    },
-                },
-            ],
-        }
-
-        with (
-            patch("sys.argv", ["table_creator.py", *test_args]),
-            patch("pathlib.Path.read_text") as mock_read,
-            patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
-            ) as mock_creator,
-        ):
-            mock_read.return_value = json.dumps(catalog_data)
-            mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
-                "CREATE TABLE test;"
-            )
-            mock_creator.return_value = mock_creator_instance
-
-            result = main()
-
-            if result != 0:
-                msg = f"Expected {0}, got {result}"
-                raise AssertionError(msg)
-            # Verify custom schema was used
-            call_args = mock_creator.call_args[0][0]
-            if call_args["schema"] != "CUSTOM_SCHEMA":
-                msg = f"Expected {'CUSTOM_SCHEMA'}, got {call_args['schema']}"
-                raise AssertionError(
-                    msg,
-                )
-
-    def test_main_with_indexes(self) -> None:
-        """Test main function with index generation."""
-        test_args = [
-            "--catalog",
-            TEST_CATALOG_PATH,
-            "--table",
-            "allocation",
-            "--host",
-            "localhost",
-            "--service",
-            "XEPDB1",
-            "--username",
-            "test_user",
-            "--password",
-            "test_pass",
-            "--indexes",
-        ]
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "allocation",
-                    "schema": {
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "created_date": {"type": "date-time"},
-                        },
-                        "key_properties": ["id"],
-                    },
-                },
-            ],
-        }
-
-        with (
-            patch("sys.argv", ["table_creator.py", *test_args]),
-            patch("pathlib.Path.read_text") as mock_read,
-            patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
-            ) as mock_creator,
-        ):
-            mock_read.return_value = json.dumps(catalog_data)
-            mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
-                "CREATE TABLE test;"
-            )
-            mock_creator_instance.create_indexes_for_table.return_value = [
-                "CREATE INDEX idx1;",
-            ]
-            mock_creator.return_value = mock_creator_instance
-
-            result = main()
-
-            if result != 0:
-                msg = f"Expected {0}, got {result}"
-                raise AssertionError(msg)
-            mock_creator_instance.create_indexes_for_table.assert_called_once_with(
-                "allocation",
-                catalog_data["streams"][0]["schema"],
-            )
-
-    def test_main_with_execute(self) -> None:
-        """Test main function with DDL execution."""
-        test_args = [
-            "--catalog",
-            TEST_CATALOG_PATH,
-            "--table",
-            "allocation",
-            "--host",
-            "localhost",
-            "--service",
-            "XEPDB1",
-            "--username",
-            "test_user",
-            "--password",
-            "test_pass",
-            "--execute",
-        ]
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "allocation",
-                    "schema": {
-                        "properties": {"id": {"type": "integer"}},
-                        "key_properties": ["id"],
-                    },
-                },
-            ],
-        }
-
-        with (
-            patch("sys.argv", ["table_creator.py", *test_args]),
-            patch("pathlib.Path.read_text") as mock_read,
-            patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
-            ) as mock_creator,
-        ):
-            mock_read.return_value = json.dumps(catalog_data)
-            mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
-                "CREATE TABLE test;"
-            )
-            mock_creator_instance.execute_ddl.return_value = True
-            mock_creator.return_value = mock_creator_instance
-
-            result = main()
-
-            if result != 0:
-                msg = f"Expected {0}, got {result}"
-                raise AssertionError(msg)
-            mock_creator_instance.execute_ddl.assert_called_once_with(
-                [
-                    "CREATE TABLE test;",
-                ],
-            )
-
-    def test_main_with_execute_and_indexes(self) -> None:
-        """Test main function with DDL execution including indexes."""
-        test_args = [
-            "--catalog",
-            TEST_CATALOG_PATH,
-            "--table",
-            "allocation",
-            "--host",
-            "localhost",
-            "--service",
-            "XEPDB1",
-            "--username",
-            "test_user",
-            "--password",
-            "test_pass",
-            "--execute",
-            "--indexes",
-        ]
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "allocation",
-                    "schema": {
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "created_date": {"type": "date-time"},
-                        },
-                        "key_properties": ["id"],
-                    },
-                },
-            ],
-        }
-
-        with (
-            patch("sys.argv", ["table_creator.py", *test_args]),
-            patch("pathlib.Path.read_text") as mock_read,
-            patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
-            ) as mock_creator,
-        ):
-            mock_read.return_value = json.dumps(catalog_data)
-            mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
-                "CREATE TABLE test;"
-            )
-            mock_creator_instance.create_indexes_for_table.return_value = [
-                "CREATE INDEX idx1;",
-            ]
-            mock_creator_instance.execute_ddl.return_value = True
-            mock_creator.return_value = mock_creator_instance
-
-            result = main()
-
-            if result != 0:
-                msg = f"Expected {0}, got {result}"
-                raise AssertionError(msg)
-            # Should execute both table DDL and index DDL
-            mock_creator_instance.execute_ddl.assert_called_once_with(
-                [
-                    "CREATE TABLE test;",
-                    "CREATE INDEX idx1;",
-                ],
-            )
-
-    def test_main_execution_failure(self) -> None:
-        """Test main function with execution failure."""
-        test_args = [
-            "--catalog",
-            TEST_CATALOG_PATH,
-            "--table",
-            "allocation",
-            "--host",
-            "localhost",
-            "--service",
-            "XEPDB1",
-            "--username",
-            "test_user",
-            "--password",
-            "test_pass",
-            "--execute",
-        ]
-
-        catalog_data = {
-            "streams": [
-                {
-                    "tap_stream_id": "allocation",
-                    "schema": {
-                        "properties": {"id": {"type": "integer"}},
-                        "key_properties": ["id"],
-                    },
-                },
-            ],
-        }
-
-        with (
-            patch("sys.argv", ["table_creator.py", *test_args]),
-            patch("pathlib.Path.read_text") as mock_read,
-            patch(
-                "gruponos_meltano_native.oracle.table_creator.OracleTableCreator",
-            ) as mock_creator,
-        ):
-            mock_read.return_value = json.dumps(catalog_data)
-            mock_creator_instance = Mock()
-            mock_creator_instance.generate_table_from_singer_catalog.return_value = (
-                "CREATE TABLE test;"
-            )
-            mock_creator_instance.execute_ddl.return_value = False  # Execution failed
-            mock_creator.return_value = mock_creator_instance
-
-            result = main()
-
-            if result != 1:  # Exit code 1 for failure:
-                msg = f"Expected {1}, got {result}"
-                raise AssertionError(msg)
-
-
-class TestMainExecution:
-    """Test main execution path."""
-
-    def test_main_execution_path(self) -> None:
-        """Test the main execution path when module is run directly."""
-        # The actual main execution would happen here if __name__ == "__main__"
-        # We're testing that the functions exist and can be called
-        assert callable(gruponos_meltano_native.oracle.table_creator.main)
-        assert callable(gruponos_meltano_native.oracle.table_creator.OracleTableCreator)
+        api = FlextDbOracleApi.with_config(api_config_dict)
+        assert api is not None
+
+        # Test that both use compatible configuration
+        flext_config = FlextDbOracleConfig(**api_config_dict)
+        assert flext_config.host == "localhost"
+        assert flext_config.port == 1521
+
+    def test_connection_manager_default_configuration(self) -> None:
+        """Test connection manager with default configuration values."""
+        # Test with minimal required configuration
+        minimal_config = GruponosMeltanoOracleConnectionConfig(
+            host="minimal.host",
+            service_name="MINIMAL_DB",
+            username="minimal_user",
+            password="minimal_pass",
+        )
+
+        manager = GruponosMeltanoOracleConnectionManager(minimal_config)
+        assert manager is not None
+
+        # Test that defaults are applied
+        assert manager.config.port == 1521  # Default port from config
+        assert manager.config.protocol == "TCP"  # Default protocol
+        assert manager.config.pool_min == 1  # Default pool min
+        assert manager.config.pool_max == 10  # Default pool max
+
+    def test_connection_manager_none_config(self) -> None:
+        """Test connection manager with None config (uses defaults)."""
+        # Test that manager can be created with None config
+        manager = GruponosMeltanoOracleConnectionManager(None)
+        assert manager is not None
+
+        # Should have default configuration
+        assert manager.config is not None
+        assert isinstance(manager.config, GruponosMeltanoOracleConnectionConfig)

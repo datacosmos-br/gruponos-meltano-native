@@ -37,20 +37,23 @@ This project follows FLEXT standards with Clean Architecture principles:
 ```bash
 # Setup and installation
 make install-dev          # Install all dependencies including dev tools
-make dev-setup            # Complete development environment setup
+make setup                # Complete project setup including pre-commit hooks
 
 # Quality gates (run before committing)
 make validate             # Complete validation: lint + type + security + test
 make check                # Quick check: lint + type + security
-make test                 # Run all tests with 85% minimum coverage
+make test                 # Run all tests with 90% minimum coverage
 make lint                 # Run ruff linting with maximum rigor
 make type-check           # Run mypy strict type checking
 make format               # Auto-format code with ruff
+make fix                  # Auto-fix linting issues
+make security             # Run bandit security scan and pip-audit
 
 # Testing variations
 make test-unit            # Unit tests only (fast feedback)
 make test-integration     # Integration tests only
-make test-coverage        # Generate HTML coverage reports
+make test-fast            # Run tests without coverage (for development)
+make coverage-html        # Generate HTML coverage reports
 ```
 
 ### Meltano Operations
@@ -70,6 +73,31 @@ make oracle-test          # Test Oracle WMS connection
 make enterprise-validate  # Validate all enterprise operations
 ```
 
+### Diagnostic and Maintenance Commands
+
+```bash
+# Project diagnostics and health
+make diagnose             # Show Python/Poetry/Meltano versions and env info
+make doctor               # Full health check (diagnose + check)
+
+# Dependency management
+make deps-update          # Update all dependencies
+make deps-show            # Show dependency tree
+make deps-audit           # Security audit of dependencies
+
+# Environment and connection testing
+make env-setup            # Setup environment variables from template
+make env-validate         # Validate environment configuration
+make oracle-test          # Test Oracle WMS connection
+make ldap-test            # Test LDAP connection (if available)
+make validate-schemas     # Validate database schemas
+
+# Cleanup and maintenance
+make clean                # Clean build artifacts
+make clean-all            # Deep clean including virtual environment
+make reset                # Reset project (clean-all + setup)
+```
+
 ### CLI Usage
 
 ```bash
@@ -77,16 +105,15 @@ make enterprise-validate  # Validate all enterprise operations
 poetry run python -m gruponos_meltano_native.cli --help
 poetry run python -m gruponos_meltano_native.cli --dev
 
-# Via Make shortcuts
-make dev                  # Run in development mode
-make dev-test             # Quick development test cycle
+# Open Python shell with project context
+make shell                # Start Python shell with dependencies loaded
 ```
 
 ## Testing Strategy
 
 The project uses pytest with comprehensive testing requirements:
 
-- **Minimum 85% test coverage** enforced via `--cov-fail-under=85`
+- **Minimum 90% test coverage** enforced via `--cov-fail-under=90` (corrected from documented 85% to actual pyproject.toml setting)
 - **Test markers**: `unit`, `integration`, `slow`, `smoke`, `e2e`, `wms`, `oracle`, `performance`, `destructive`, `memory`
 - **Strict configuration**: `--strict-markers`, `--strict-config`, `--maxfail=1`
 
@@ -99,12 +126,39 @@ pytest -m integration             # Integration tests only
 pytest -m "not slow"              # Exclude slow tests
 pytest -m "wms or oracle"         # WMS or Oracle tests
 
-# Specific test files
-pytest tests/unit/test_cli.py -v
-pytest tests/integration/ -xvs
+# Single test file or test function
+pytest tests/unit/test_cli.py -v                                    # Single test file
+pytest tests/unit/test_cli.py::test_cli_help -v                    # Single test function
+pytest tests/integration/test_end_to_end_oracle_integration.py -xvs # Integration test with stop-on-fail
 
-# With coverage
-pytest --cov=src/gruponos_meltano_native --cov-report=html
+# Development testing patterns
+pytest --lf                       # Run only last failed tests (fast debugging)
+pytest -x --tb=short             # Stop on first failure with short traceback
+pytest --collect-only            # Show available tests without running
+pytest --cov=src/gruponos_meltano_native --cov-report=html         # Coverage with HTML report
+```
+
+### Make Command Aliases
+
+The Makefile provides single-letter aliases for common commands:
+
+```bash
+# Quick aliases for common operations
+make t        # test
+make l        # lint
+make f        # format
+make tc       # type-check
+make c        # clean
+make i        # install
+make v        # validate
+
+# Meltano aliases
+make mi       # meltano-install
+make mt       # meltano-test
+make mr       # meltano-run
+make mv       # meltano-validate
+make md       # meltano-discover
+make me       # meltano-elt
 ```
 
 ## Configuration Management
@@ -121,18 +175,21 @@ The project uses layered configuration with Pydantic models:
 ### Key Environment Variables
 
 ```bash
-# Oracle WMS Configuration
-TAP_ORACLE_WMS_BASE_URL=...
-TAP_ORACLE_WMS_USERNAME=...
-TAP_ORACLE_WMS_PASSWORD=...
-TAP_ORACLE_WMS_COMPANY_CODE=...
-TAP_ORACLE_WMS_FACILITY_CODE=...
+# Oracle WMS REST API Configuration (Source)
+TAP_ORACLE_WMS_BASE_URL=...           # WMS REST API endpoint
+TAP_ORACLE_WMS_USERNAME=...           # API authentication username
+TAP_ORACLE_WMS_PASSWORD=...           # API authentication password
+TAP_ORACLE_WMS_COMPANY_CODE=...       # WMS company identifier
+TAP_ORACLE_WMS_FACILITY_CODE=...      # WMS facility identifier
 
-# Target Oracle Database
-FLEXT_TARGET_ORACLE_HOST=...
-FLEXT_TARGET_ORACLE_SERVICE_NAME=...
-FLEXT_TARGET_ORACLE_USERNAME=...
-FLEXT_TARGET_ORACLE_PASSWORD=...
+# Target Oracle Database Configuration
+FLEXT_TARGET_ORACLE_HOST=...          # Oracle database host
+FLEXT_TARGET_ORACLE_PORT=...          # Oracle database port (typically 1521 or 1522)
+FLEXT_TARGET_ORACLE_SERVICE_NAME=...  # Oracle service name or SID
+FLEXT_TARGET_ORACLE_USERNAME=...      # Database connection username
+FLEXT_TARGET_ORACLE_PASSWORD=...      # Database connection password
+FLEXT_TARGET_ORACLE_PROTOCOL=...      # Connection protocol (tcp or tcps)
+FLEXT_TARGET_ORACLE_SCHEMA=...        # Default target schema name
 ```
 
 ## Meltano Pipeline Architecture
@@ -163,7 +220,7 @@ The project defines two main job patterns:
 - **Ruff**: Maximum rigor with `ALL` rules enabled, specific ignores for practical development
 - **MyPy**: Strict mode with comprehensive type checking
 - **Bandit**: Security analysis for vulnerability detection
-- **Coverage**: Minimum 85% test coverage enforced
+- **Coverage**: Minimum 90% test coverage enforced
 
 ### Pre-commit Hooks
 
@@ -229,14 +286,31 @@ pytest --collect-only          # Show available tests without running
 4. **Full Validation**: `make validate` before pull requests
 5. **Testing**: Focus on unit tests (`make test-unit`) for speed, integration tests for completeness
 
-## Integration with FLEXT Ecosystem
+## Architecture Details
 
-This project depends on several FLEXT framework components:
+### Key Configuration Files
+
+- **pyproject.toml**: Python 3.13 with strict type checking and comprehensive tool configuration
+- **meltano.yml**: Two-pipeline architecture (full sync + incremental sync)
+- **transform/dbt_project.yml**: DBT transformations with Oracle-specific optimizations
+- **Makefile**: 40+ commands for development, testing, and operations
+
+### FLEXT Framework Integration
+
+This project depends on several FLEXT framework components managed as local path dependencies:
 
 - **flext-core**: Foundation patterns, logging, result handling
-- **flext-observability**: Monitoring and metrics
+- **flext-observability**: Monitoring and metrics  
 - **flext-db-oracle**: Oracle database connectivity
 - **flext-tap-oracle-wms**: Oracle WMS data extraction
 - **flext-target-oracle**: Oracle data loading
+- **flext-ldap**: LDAP connectivity (development dependency)
+- **flext-ldif**: LDIF processing (development dependency)
 
-These are managed as local path dependencies and should be available in the parent FLEXT workspace.
+### Development Environment Requirements
+
+- **Python 3.13 (exact version)**: Required for async/typing features
+- **Poetry**: Dependency management with lock file integrity
+- **Parent FLEXT workspace**: Local path dependencies must be available
+- **Oracle connections**: WMS source and target database access
+- **Environment variables**: All secrets externalized

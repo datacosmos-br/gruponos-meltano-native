@@ -82,20 +82,48 @@ class TestOracleConnectionIntegration:
         connection_manager: GruponosMeltanoOracleConnectionManager,
     ) -> None:
         """Test Oracle query execution."""
-        # Test simple query
-        result = connection_manager.execute_query("SELECT 1 as test_col FROM DUAL")
-        assert result.is_success, f"Query execution failed: {result.error}"
+        # Get real Oracle API connection
+        connection_result = connection_manager.get_connection()
+        assert connection_result.is_success, f"Failed to get connection: {connection_result.error}"
 
-        # Validate result structure
+        oracle_api = connection_result.data
+        assert oracle_api is not None, "Oracle API connection is None"
+
+        # Connect to database before executing queries
+        oracle_api.connect()
+
+        try:
+            # Test simple query using real API
+            result = oracle_api.query("SELECT 1 as test_col FROM DUAL")
+            assert result.is_success, f"Query execution failed: {result.error}"
+        finally:
+            oracle_api.disconnect()
+
+        # Validate result structure using real TDbOracleQueryResult format
         assert result.data is not None
-        if len(result.data) != 1:
-            msg = f"Expected {1}, got {len(result.data)}"
+        query_result = result.data
+        assert hasattr(query_result, "rows"), "Query result should have rows attribute"
+        assert hasattr(query_result, "columns"), "Query result should have columns attribute"
+
+        # TDbOracleQueryResult.rows are TUPLES, not dicts: list[tuple[object, ...]]
+        rows = query_result.rows
+        if len(rows) != 1:
+            msg = f"Expected {1}, got {len(rows)}"
             raise AssertionError(msg)
-        if "test_col" not in result.data[0]:
-            msg = f"Expected {'test_col'} in {result.data[0]}"
+
+        # Access tuple data by index, not key: rows[0][0] for first column
+        first_row = rows[0]
+        if len(first_row) < 1:
+            msg = f"Expected at least 1 column, got {len(first_row)}"
             raise AssertionError(msg)
-        if result.data[0]["test_col"] != 1:
-            msg = f"Expected {1}, got {result.data[0]['test_col']}"
+        if first_row[0] != 1:
+            msg = f"Expected {1}, got {first_row[0]}"
+            raise AssertionError(msg)
+
+        # Verify column name is available in columns list
+        columns = query_result.columns
+        if len(columns) < 1 or "TEST_COL" not in [col.upper() for col in columns]:
+            msg = f"Expected TEST_COL in columns {columns}"
             raise AssertionError(msg)
 
     @pytest.mark.integration
@@ -105,43 +133,77 @@ class TestOracleConnectionIntegration:
         connection_manager: GruponosMeltanoOracleConnectionManager,
     ) -> None:
         """Test Oracle command execution."""
-        # Create a test table
-        create_result = connection_manager.execute_command(
-            """
-            CREATE TABLE test_flext_table (
-                id NUMBER PRIMARY KEY,
-                test_data VARCHAR2(100)
-            )
-            """,
-        )
-        assert create_result.is_success, f"Table creation failed: {create_result.error}"
+        # Get real Oracle API connection
+        connection_result = connection_manager.get_connection()
+        assert connection_result.is_success, f"Failed to get connection: {connection_result.error}"
+
+        oracle_api = connection_result.data
+        assert oracle_api is not None, "Oracle API connection is None"
+
+        # Connect to database before executing operations
+        oracle_api.connect()
 
         try:
-            # Insert test data
-            insert_result = connection_manager.execute_command(
-                "INSERT INTO test_flext_table VALUES (1, 'test')",
+            # Create a test table using real execute_ddl API
+            create_result = oracle_api.execute_ddl(
+                """
+                CREATE TABLE test_flext_table (
+                    id NUMBER PRIMARY KEY,
+                    test_data VARCHAR2(100)
+                )
+                """,
             )
-            assert insert_result.is_success, f"Insert failed: {insert_result.error}"
-            if insert_result.data != 1:  # 1 row affected
-                msg = f"Expected 1 row affected, got {insert_result.data}"
-                raise AssertionError(msg)
+            assert create_result.is_success, f"Table creation failed: {create_result.error}"
 
-            # Query the data back
-            query_result = connection_manager.execute_query(
-                "SELECT * FROM test_flext_table WHERE id = 1",
-            )
-            assert query_result.is_success, f"Query failed: {query_result.error}"
-            if len(query_result.data) != 1:
-                msg = f"Expected {1}, got {len(query_result.data)}"
-                raise AssertionError(msg)
-            assert query_result.data[0]["TEST_DATA"] == "test"
+            try:
+                # Insert test data using real execute_ddl API for DML
+                insert_result = oracle_api.execute_ddl(
+                    "INSERT INTO test_flext_table VALUES (1, 'test')",
+                )
+                assert insert_result.is_success, f"Insert failed: {insert_result.error}"
 
+                # Query the data back using real query API
+                query_result = oracle_api.query(
+                    "SELECT * FROM test_flext_table WHERE id = 1",
+                )
+                assert query_result.is_success, f"Query failed: {query_result.error}"
+
+                # Validate result structure using real TDbOracleQueryResult format
+                assert query_result.data is not None
+                result_data = query_result.data
+                assert hasattr(result_data, "rows"), "Query result should have rows attribute"
+                assert hasattr(result_data, "columns"), "Query result should have columns attribute"
+
+                # TDbOracleQueryResult.rows are TUPLES: list[tuple[object, ...]]
+                rows = result_data.rows
+                if len(rows) != 1:
+                    msg = f"Expected {1}, got {len(rows)}"
+                    raise AssertionError(msg)
+
+                # Convert to dict for easier validation using built-in method
+                dict_rows = result_data.to_dict_list()
+                if len(dict_rows) != 1:
+                    msg = f"Expected {1}, got {len(dict_rows)}"
+                    raise AssertionError(msg)
+
+                # Now we can access by column name (Oracle returns uppercase)
+                row_dict = dict_rows[0]
+                if "TEST_DATA" not in row_dict:
+                    msg = f"Expected TEST_DATA column in {row_dict.keys()}"
+                    raise AssertionError(msg)
+                if row_dict["TEST_DATA"] != "test":
+                    msg = f"Expected 'test', got {row_dict['TEST_DATA']}"
+                    raise AssertionError(msg)
+
+            finally:
+                # Clean up - drop test table using real execute_ddl API
+                drop_result = oracle_api.execute_ddl(
+                    "DROP TABLE test_flext_table",
+                )
+                assert drop_result.is_success, f"Table cleanup failed: {drop_result.error}"
         finally:
-            # Clean up - drop test table
-            drop_result = connection_manager.execute_command(
-                "DROP TABLE test_flext_table",
-            )
-            assert drop_result.is_success, f"Table cleanup failed: {drop_result.error}"
+            # Always disconnect
+            oracle_api.disconnect()
 
     @pytest.mark.integration
     @pytest.mark.slow

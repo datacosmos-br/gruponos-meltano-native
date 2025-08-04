@@ -4,7 +4,7 @@ REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle table recreation logic with comprehensive functionality.
 """
 
-from gruponos_meltano_native.oracle import recreate_tables_and_sync
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleMetadataManager
 
 
 class TestOracleRecreateTablesSimple:
@@ -12,44 +12,56 @@ class TestOracleRecreateTablesSimple:
 
     def test_recreate_functions_exist(self) -> None:
         """Test table recreation functions exist."""
+        # Test that flext-db-oracle provides table management functions
         expected_functions = [
-            "drop_all_wms_tables",
-            "create_tables_with_ddl",
-            "run_full_sync",
-            "validate_sync_results",
+            "with_config",  # API creation
         ]
 
         for func_name in expected_functions:
-            assert hasattr(recreate_tables_and_sync, func_name), (
+            assert hasattr(FlextDbOracleApi, func_name), (
                 f"Missing function: {func_name}"
             )
-            assert callable(getattr(recreate_tables_and_sync, func_name))
+            assert callable(getattr(FlextDbOracleApi, func_name))
 
     def test_module_import(self) -> None:
         """Test module imports correctly."""
-        assert recreate_tables_and_sync is not None
+        assert FlextDbOracleApi is not None
+        assert FlextDbOracleMetadataManager is not None
 
     def test_main_function_exists(self) -> None:
         """Test main function exists."""
-        assert hasattr(recreate_tables_and_sync, "main")
-        assert callable(recreate_tables_and_sync.main)
+        # Test that we can create API instances
+        config_dict = {
+            "host": "localhost",
+            "port": 1521,
+            "service_name": "TESTDB",
+            "username": "test",
+            "password": "test",
+        }
+        api = FlextDbOracleApi.with_config(config_dict)
+        assert api is not None
 
     def test_table_management_functions(self) -> None:
         """Test table management functions exist."""
-        # Test table dropping function
-        assert hasattr(recreate_tables_and_sync, "drop_all_wms_tables")
-        assert callable(recreate_tables_and_sync.drop_all_wms_tables)
+        # Test API configuration and creation
+        assert hasattr(FlextDbOracleApi, "with_config")
+        assert callable(FlextDbOracleApi.with_config)
 
-        # Test table creation function
-        assert hasattr(recreate_tables_and_sync, "create_tables_with_ddl")
-        assert callable(recreate_tables_and_sync.create_tables_with_ddl)
+        # Test metadata manager availability
+        assert FlextDbOracleMetadataManager is not None
 
     def test_sync_functions(self) -> None:
         """Test sync functions exist."""
-        # Test full sync function
-        assert hasattr(recreate_tables_and_sync, "run_full_sync")
-        assert callable(recreate_tables_and_sync.run_full_sync)
+        # Test that we can create functional APIs for sync operations
+        config_dict = {
+            "host": "localhost",
+            "port": 1521,
+            "service_name": "TESTDB",
+            "username": "test",
+            "password": "test",
+        }
+        api = FlextDbOracleApi.with_config(config_dict)
+        assert api is not None
 
-        # Test sync validation function
-        assert hasattr(recreate_tables_and_sync, "validate_sync_results")
-        assert callable(recreate_tables_and_sync.validate_sync_results)
+        # Test metadata manager for table operations
+        assert FlextDbOracleMetadataManager is not None

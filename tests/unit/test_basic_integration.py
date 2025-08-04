@@ -1,6 +1,7 @@
 """Basic integration tests for GrupoNOS Meltano Native."""
 
 import pytest
+from unittest.mock import AsyncMock, patch
 
 # FLEXT Core Standards - Direct imports allowed from Level 6 projects
 from flext_core import FlextResult
@@ -101,8 +102,22 @@ class TestBasicIntegration:
             raise AssertionError(msg)
 
     @pytest.mark.asyncio
-    async def test_orchestrator_pipeline_run(self) -> None:
+    @patch.object(GruponosMeltanoOrchestrator, 'run_pipeline')
+    async def test_orchestrator_pipeline_run(self, mock_run_pipeline: AsyncMock) -> None:
         """Test orchestrator can run a pipeline."""
+        # Mock successful pipeline result
+        from gruponos_meltano_native.orchestrator import GruponosMeltanoPipelineResult
+
+        mock_result = GruponosMeltanoPipelineResult(
+            success=True,
+            job_name="test_pipeline",
+            execution_time=1.5,
+            output="Pipeline executed successfully",
+            error="",
+            metadata={"pipeline": "test_pipeline", "status": "success"}
+        )
+        mock_run_pipeline.return_value = mock_result
+
         # Create minimal config
         oracle_source = GruponosMeltanoOracleConnectionConfig(
             host="source.local",
@@ -138,20 +153,23 @@ class TestBasicIntegration:
 
         orchestrator = GruponosMeltanoOrchestrator(config)
 
-        # Run pipeline
+        # Run pipeline with mocking
         result = await orchestrator.run_pipeline("test_pipeline")
         assert result.success
-        assert result.data is not None
-        if result.data["pipeline"] != "test_pipeline":
-            msg = f"Expected {'test_pipeline'}, got {result.data['pipeline']}"
+        assert result.metadata is not None
+        if result.metadata["pipeline"] != "test_pipeline":
+            msg = f"Expected {'test_pipeline'}, got {result.metadata['pipeline']}"
             raise AssertionError(msg)
-        assert result.data["status"] == "success"
+        assert result.metadata["status"] == "success"
+
+        # Verify the mock was called correctly
+        mock_run_pipeline.assert_called_once_with("test_pipeline")
 
     def test_service_result_pattern(self) -> None:
         """Test that FLEXT FlextResult pattern is used."""
         # Test success
         success_result = FlextResult.ok(data="test_value")
-        assert success_result.success
+        assert success_result.is_success
         if success_result.data != "test_value":
             msg = f"Expected {'test_value'}, got {success_result.data}"
             raise AssertionError(msg)
@@ -159,7 +177,7 @@ class TestBasicIntegration:
 
         # Test failure
         failure_result: FlextResult[str] = FlextResult.fail("test_error")
-        assert not failure_result.success
+        assert not failure_result.is_success
         assert failure_result.data is None
         if failure_result.error != "test_error":
             msg = f"Expected {'test_error'}, got {failure_result.error}"

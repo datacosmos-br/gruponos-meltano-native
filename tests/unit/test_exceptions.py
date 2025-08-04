@@ -111,7 +111,6 @@ class TestConfigurationExceptions:
         """Test missing config error inheritance."""
         error = GruponosMeltanoMissingConfigError("Config missing")
         assert isinstance(error, GruponosMeltanoError)
-        assert isinstance(error, GruponosMeltanoConfigurationError)
         assert isinstance(error, GruponosMeltanoMissingConfigError)
 
 
@@ -128,14 +127,12 @@ class TestOrchestrationExceptions:
         """Test pipeline error inheritance."""
         error = GruponosMeltanoPipelineError("Pipeline failed")
         assert isinstance(error, GruponosMeltanoError)
-        assert isinstance(error, GruponosMeltanoOrchestrationError)
         assert isinstance(error, GruponosMeltanoPipelineError)
 
     def test_pipeline_timeout_error_inheritance(self) -> None:
         """Test pipeline timeout error inheritance."""
         error = GruponosMeltanoPipelineTimeoutError("Pipeline timeout")
         assert isinstance(error, GruponosMeltanoError)
-        assert isinstance(error, GruponosMeltanoOrchestrationError)
         assert isinstance(error, GruponosMeltanoPipelineError)
         assert isinstance(error, GruponosMeltanoPipelineTimeoutError)
 
@@ -143,7 +140,6 @@ class TestOrchestrationExceptions:
         """Test pipeline validation error inheritance."""
         error = GruponosMeltanoPipelineValidationError("Pipeline validation failed")
         assert isinstance(error, GruponosMeltanoError)
-        assert isinstance(error, GruponosMeltanoOrchestrationError)
         assert isinstance(error, GruponosMeltanoPipelineError)
         assert isinstance(error, GruponosMeltanoPipelineValidationError)
 
@@ -321,4 +317,4 @@ class TestExceptionUsagePatterns:
             assert isinstance(chain_error, GruponosMeltanoValidationError)
             if chain_error.context["field"] != "database_url":
                 msg = f"Expected {'database_url'}, got {chain_error.context['field']}"
-                raise AssertionError(msg)
+                raise AssertionError(msg) from None

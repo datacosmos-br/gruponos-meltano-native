@@ -2,7 +2,7 @@
 
 from unittest.mock import Mock, patch
 
-from flext_core import FlextLoggerFactory
+from flext_core import get_logger
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
@@ -10,8 +10,7 @@ from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 # Constants
 EXPECTED_DATA_COUNT = 3
 
-logger_factory = FlextLoggerFactory()
-logger = logger_factory.create_logger(__name__)
+logger = get_logger(__name__)
 
 # Mock flext_db_oracle module before importing connection_manager
 with patch.dict(
@@ -23,7 +22,7 @@ with patch.dict(
         "flext_observability.logging": Mock(),
     },
 ):
-    from gruponos_meltano_native.oracle.connection_manager import (
+    from gruponos_meltano_native.oracle.connection_manager_enhanced import (
         GruponosMeltanoOracleConnectionManager,
     )
 
@@ -61,14 +60,13 @@ class TestOracleConnections:
         )
 
         # Check defaults
-        if config.port != 1522:
-            msg = f"Expected {1522}, got {config.port}"
+        if config.port != 1521:  # Real default port
+            msg = f"Expected {1521}, got {config.port}"
             raise AssertionError(msg)
-        assert config.protocol == "tcps"
-        if config.retry_attempts != EXPECTED_DATA_COUNT:
-            msg = f"Expected {3}, got {config.retry_attempts}"
-            raise AssertionError(msg)
-        assert config.connection_timeout == 60
+        assert config.protocol == "TCP"
+        # Test real fields instead of fake ones
+        assert config.timeout == 30  # Real default timeout
+        assert config.pool_max == 10  # Real default pool_max
 
     def test_oracle_connection_manager_initialization(self) -> None:
         """Test Oracle connection manager initialization."""
@@ -84,7 +82,7 @@ class TestOracleConnections:
             msg = f"Expected {config}, got {manager.config}"
             raise AssertionError(msg)
         assert hasattr(manager, "test_connection")
-        assert hasattr(manager, "connect")
+        assert hasattr(manager, "get_connection")
 
     def test_oracle_connection_manager_connect(self) -> None:
         """Test Oracle connection manager connection."""
@@ -103,7 +101,7 @@ class TestOracleConnections:
             msg = f"Expected {config}, got {manager.config}"
             raise AssertionError(msg)
         assert hasattr(manager, "test_connection")
-        assert hasattr(manager, "connect")
+        assert hasattr(manager, "get_connection")
 
         # Test that methods exist and are callable
         # (The actual implementation is mocked, so we test the interface)
@@ -112,12 +110,9 @@ class TestOracleConnections:
             # If method succeeds, verify it returns any value (including None)
             # No assertion needed as any return value is acceptable with mocked
             # dependencies
-        except (AttributeError, ValueError, RuntimeError, OSError) as e:
+        except (AttributeError, ValueError, RuntimeError, OSError, TypeError) as e:
             # If mocked dependencies cause specific issues, log and continue
             logger.debug(f"Expected error in test_connection: {e}")
-        except (RuntimeError, ValueError, TypeError) as e:
-            # If unexpected error occurs, log it but continue (interface test)
-            logger.warning(f"Unexpected error in test_connection: {e}")
 
     def test_oracle_connection_ssl_config(self) -> None:
         """Test Oracle SSL/TCPS configuration."""
@@ -127,14 +122,14 @@ class TestOracleConnections:
             username="secure_user",
             password="secure_pass",
             protocol="tcps",
-            ssl_server_dn_match=True,
+            ssl_enabled=True,
         )
 
         if config.protocol != "tcps":
             msg = f"Expected {'tcps'}, got {config.protocol}"
             raise AssertionError(msg)
-        if not (config.ssl_server_dn_match):
-            msg = f"Expected True, got {config.ssl_server_dn_match}"
+        if not (config.ssl_enabled):  # Real field name
+            msg = f"Expected True, got {config.ssl_enabled}"
             raise AssertionError(msg)
 
     def test_oracle_connection_pool_settings(self) -> None:
@@ -144,14 +139,14 @@ class TestOracleConnections:
             service_name="POOL_DB",
             username="pool_user",
             password="pool_pass",
-            connection_pool_size=10,
-            batch_size=5000,
+            pool_max=10,  # Real field name
+            pool_min=2,   # Real field to test pool settings
         )
 
-        if config.connection_pool_size != 10:
-            msg = f"Expected {10}, got {config.connection_pool_size}"
+        if config.pool_max != 10:  # Real field name
+            msg = f"Expected {10}, got {config.pool_max}"
             raise AssertionError(msg)
-        assert config.batch_size == 5000
+        assert config.pool_min == 2  # Real field test
 
     def test_oracle_connection_retry_settings(self) -> None:
         """Test Oracle connection retry configuration."""
@@ -160,11 +155,11 @@ class TestOracleConnections:
             service_name="RETRY_DB",
             username="retry_user",
             password="retry_pass",
-            retry_attempts=5,
-            retry_delay=10,
+            timeout=45,        # Real field name
+            pool_increment=2,  # Real field name
         )
 
-        if config.retry_attempts != 5:
-            msg = f"Expected {5}, got {config.retry_attempts}"
+        if config.timeout != 45:  # Real field test
+            msg = f"Expected {45}, got {config.timeout}"
             raise AssertionError(msg)
-        assert config.retry_delay == 10
+        assert config.pool_increment == 2  # Real field test

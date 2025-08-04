@@ -9,20 +9,47 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from flext_core import create_module_exception_classes
 
-# DRY: Use flext-core's centralized exception factory to eliminate duplication
-# This replaces 200+ lines of manual exception definitions with systematic generation
-_exceptions = create_module_exception_classes("gruponos_meltano")
+if TYPE_CHECKING:
+    # Define base classes for type checking purposes
+    class GruponosMeltanoError(Exception):
+        """Base GrupoNOS Meltano error for type checking."""
 
-# Extract standard exception classes with proper names for backward compatibility
-GruponosMeltanoError = _exceptions["GruponosMeltanoError"]
-GruponosMeltanoValidationError = _exceptions["GruponosMeltanoValidationError"]
-GruponosMeltanoConfigurationError = _exceptions["GruponosMeltanoConfigurationError"]
-GruponosMeltanoConnectionError = _exceptions["GruponosMeltanoConnectionError"]
-GruponosMeltanoProcessingError = _exceptions["GruponosMeltanoProcessingError"]
-GruponosMeltanoAuthenticationError = _exceptions["GruponosMeltanoAuthenticationError"]
-GruponosMeltanoTimeoutError = _exceptions["GruponosMeltanoTimeoutError"]
+    class GruponosMeltanoValidationError(Exception):
+        """Validation error for type checking."""
+
+    class GruponosMeltanoConfigurationError(Exception):
+        """Configuration error for type checking."""
+
+    class GruponosMeltanoConnectionError(Exception):
+        """Connection error for type checking."""
+
+    class GruponosMeltanoProcessingError(Exception):
+        """Processing error for type checking."""
+
+    class GruponosMeltanoAuthenticationError(Exception):
+        """Authentication error for type checking."""
+
+    class GruponosMeltanoTimeoutError(Exception):
+        """Timeout error for type checking."""
+else:
+    # Runtime: Use flext-core's centralized exception factory
+    # This replaces 200+ lines of manual exception definitions with systematic generation
+    _exceptions = create_module_exception_classes("gruponos_meltano")
+
+    # Extract standard exception classes for backward compatibility
+    GruponosMeltanoError = _exceptions["GruponosMeltanoError"]
+    GruponosMeltanoValidationError = _exceptions["GruponosMeltanoValidationError"]
+    GruponosMeltanoConfigurationError = _exceptions["GruponosMeltanoConfigurationError"]
+    GruponosMeltanoConnectionError = _exceptions["GruponosMeltanoConnectionError"]
+    GruponosMeltanoProcessingError = _exceptions["GruponosMeltanoProcessingError"]
+    GruponosMeltanoAuthenticationError = _exceptions[
+        "GruponosMeltanoAuthenticationError"
+    ]
+    GruponosMeltanoTimeoutError = _exceptions["GruponosMeltanoTimeoutError"]
 
 
 # Specialized domain-specific errors extending base classes
@@ -44,7 +71,7 @@ class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
         super().__init__(f"GrupoNOS orchestration: {message}", **kwargs)
 
 
-class GruponosMeltanoPipelineError(GruponosMeltanoProcessingError):
+class GruponosMeltanoPipelineError(GruponosMeltanoError):
     """GrupoNOS pipeline error."""
 
     def __init__(
@@ -68,7 +95,7 @@ class GruponosMeltanoAlertDeliveryError(GruponosMeltanoAlertError):
     """Alert delivery error."""
 
 
-class GruponosMeltanoDataError(GruponosMeltanoProcessingError):
+class GruponosMeltanoDataError(GruponosMeltanoError):
     """Data processing error."""
 
 
@@ -80,7 +107,7 @@ class GruponosMeltanoDataValidationError(GruponosMeltanoDataError):
     """Data validation error."""
 
 
-class GruponosMeltanoMissingConfigError(GruponosMeltanoConfigurationError):
+class GruponosMeltanoMissingConfigError(GruponosMeltanoError):
     """Missing configuration error."""
 
 

@@ -4,7 +4,7 @@ REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle schema discovery logic with basic functionality.
 """
 
-from gruponos_meltano_native.oracle import discover_and_save_schemas
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleMetadataManager
 
 
 class TestOracleSchemaDiscoverySimple:
@@ -12,28 +12,44 @@ class TestOracleSchemaDiscoverySimple:
 
     def test_schema_discovery_functions_exist(self) -> None:
         """Test schema discovery functions exist."""
-        assert hasattr(discover_and_save_schemas, "discover_schemas")
-        assert callable(discover_and_save_schemas.discover_schemas)
+        # Test flext-db-oracle API exists
+        assert FlextDbOracleApi is not None
+        assert hasattr(FlextDbOracleApi, "with_config")
+        assert callable(FlextDbOracleApi.with_config)
 
     def test_schema_discovery_module_import(self) -> None:
         """Test schema discovery module imports correctly."""
-        assert discover_and_save_schemas is not None
+        # Test that flext-db-oracle components are available
+        assert FlextDbOracleApi is not None
+        assert FlextDbOracleMetadataManager is not None
 
     def test_discovery_function_callable(self) -> None:
         """Test discovery function is callable."""
-        # Test that the main function exists and is callable
-        assert hasattr(discover_and_save_schemas, "discover_schemas")
-        assert callable(discover_and_save_schemas.discover_schemas)
+        # Test that the main API function exists and is callable
+        assert hasattr(FlextDbOracleApi, "with_config")
+        assert callable(FlextDbOracleApi.with_config)
+
+        # Test basic API usage
+        config_dict = {
+            "host": "localhost",
+            "port": 1521,
+            "service_name": "TESTDB",
+            "username": "test",
+            "password": "test",
+        }
+        api = FlextDbOracleApi.with_config(config_dict)
+        assert api is not None
 
     def test_module_has_logger(self) -> None:
         """Test module has logger configured."""
-        # Check module imports and basic structure
-        assert hasattr(discover_and_save_schemas, "logger")
+        # Test flext-core logger integration
+        from flext_core import get_logger
+
+        logger = get_logger(__name__)
+        assert logger is not None
 
     def test_module_structure(self) -> None:
         """Test module has expected structure."""
-        # Test basic module functionality exists
-        assert (
-            discover_and_save_schemas.__name__
-            == "gruponos_meltano_native.oracle.discover_and_save_schemas"
-        )
+        # Test flext-db-oracle module structure
+        assert FlextDbOracleApi.__module__ == "flext_db_oracle.api"
+        assert FlextDbOracleMetadataManager.__module__ == "flext_db_oracle.metadata"

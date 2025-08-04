@@ -1,6 +1,7 @@
 """Unit tests for configuration functionality."""
 
 import pytest
+from pydantic import ValidationError
 
 from gruponos_meltano_native.config import (
     GruponosMeltanoAlertConfig,
@@ -98,13 +99,13 @@ class TestConfiguration:
             password="pass",
         )
 
-        # Should fail when API enabled but no URL provided
-        with pytest.raises(ValueError):  # Our validation raises ValueError
+        # Should fail when base_url is None (Pydantic validation)
+        with pytest.raises(ValidationError, match="Input should be a valid string"):
             GruponosMeltanoWMSSourceConfig(
                 oracle=oracle_config,
                 api_enabled=True,
                 api_base_url=None,
-                base_url=None,  # Also disable fallback
+                base_url=None,  # This triggers Pydantic validation error
             )
 
     def test_target_oracle_config_creation(self) -> None:

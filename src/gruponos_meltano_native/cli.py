@@ -32,7 +32,34 @@ logger = get_logger(__name__)
 
 
 def setup_logging(debug: bool = False) -> None:
-    """Setup logging configuration using FLEXT logging standards."""
+    """
+    Setup logging configuration using FLEXT logging standards.
+    
+    This function configures the Python logging system with enterprise-grade
+    logging patterns, including structured formatting, appropriate log levels,
+    and suppression of verbose third-party library logs.
+    
+    Args:
+        debug: If True, enables DEBUG level logging for detailed troubleshooting.
+               If False, uses INFO level logging for production operations.
+    
+    Configuration:
+        - Format: ISO timestamp, logger name, level, and message
+        - Debug Mode: DEBUG level with detailed output
+        - Production Mode: INFO level with essential information only
+        - Third-party Suppression: urllib3 and requests set to WARNING level
+    
+    Example:
+        >>> # Enable debug logging for development
+        >>> setup_logging(debug=True)
+        
+        >>> # Use production logging
+        >>> setup_logging(debug=False)
+    
+    Integration:
+        Uses FLEXT core logging patterns for consistency across the
+        FLEXT ecosystem and enterprise logging standards.
+    """
     level = logging.DEBUG if debug else logging.INFO
 
     logging.basicConfig(

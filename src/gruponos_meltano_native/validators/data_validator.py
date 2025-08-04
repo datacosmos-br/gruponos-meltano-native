@@ -107,7 +107,7 @@ class DataValidator:
         self,
         rule: ValidationRule,
         *,
-        value: str | float | bool | datetime | None,
+        value: object,
         errors: list[str],
     ) -> None:
         """Validate field value based on rule type."""
@@ -182,9 +182,13 @@ class DataValidator:
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
         else:
-            # Check string length constraints
+            # Check string length constraints - value is now confirmed to be str
             max_length = rule.parameters.get("max_length")
-            if max_length and len(value) > max_length:
+            if (
+                max_length is not None
+                and isinstance(max_length, int)
+                and len(value) > max_length
+            ):
                 error_msg = (
                     f"Field '{rule.field_name}' exceeds maximum length {max_length}"
                 )
@@ -209,10 +213,14 @@ class DataValidator:
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
         else:
-            # Check numeric range constraints
+            # Check numeric range constraints - value is now confirmed to be int | float
             min_value = rule.parameters.get("min_value")
             max_value = rule.parameters.get("max_value")
-            if min_value is not None and value < min_value:
+            if (
+                min_value is not None
+                and isinstance(min_value, (int, float))
+                and value < min_value
+            ):
                 error_msg = f"Field '{rule.field_name}' below minimum value {min_value}"
                 if self.strict_mode:
                     raise ValidationError(error_msg, rule.field_name)
@@ -220,7 +228,11 @@ class DataValidator:
                     f"Validation failed: {error_msg} (field: {rule.field_name})",
                 )
                 errors.append(error_msg)
-            if max_value is not None and value > max_value:
+            if (
+                max_value is not None
+                and isinstance(max_value, (int, float))
+                and value > max_value
+            ):
                 error_msg = (
                     f"Field '{rule.field_name}' exceeds maximum value {max_value}"
                 )
@@ -239,7 +251,10 @@ class DataValidator:
     ) -> None:
         """Validate date field."""
         if isinstance(value, str):
-            date_format = rule.parameters.get("format", "%Y-%m-%d")
+            date_format_raw = rule.parameters.get("format", "%Y-%m-%d")
+            date_format = (
+                date_format_raw if isinstance(date_format_raw, str) else "%Y-%m-%d"
+            )
             try:
                 datetime.strptime(value, date_format).replace(tzinfo=UTC)
             except ValueError:
@@ -296,7 +311,12 @@ class DataValidator:
         errors: list[str],
     ) -> None:
         """Validate enum field."""
-        allowed_values = rule.parameters.get("allowed_values", [])
+        allowed_values_raw = rule.parameters.get("allowed_values", [])
+        allowed_values = (
+            allowed_values_raw
+            if isinstance(allowed_values_raw, (list, tuple, set))
+            else []
+        )
         if value not in allowed_values:
             error_msg = f"Field '{rule.field_name}' must be one of {allowed_values}"
             if self.strict_mode:
@@ -310,12 +330,13 @@ class DataValidator:
         schema: dict[str, object],
     ) -> dict[str, object]:
         """Validate and convert a record according to schema."""
-        if not schema.get("properties"):
+        properties = schema.get("properties")
+        if not properties or not isinstance(properties, dict):
             return record
-        converted_record = {}
+        converted_record: dict[str, object] = {}
         for field_name, field_value in record.items():
-            if field_name in schema["properties"]:
-                field_schema = schema["properties"][field_name]
+            if field_name in properties:
+                field_schema = properties[field_name]
                 converted_record[field_name] = self._convert_field(
                     value=field_value,
                     field_schema=field_schema,
@@ -330,15 +351,20 @@ class DataValidator:
     def _convert_field(
         self,
         *,
-        value: str | float | bool | None,
-        field_schema: dict[str, object],
+        value: object,
+        field_schema: object,
         field_name: str,
         strict: bool = False,
-    ) -> str | int | float | bool | None:
+    ) -> object:
         """Convert a single field according to its schema."""
         if value is None or value == "":
             self.conversion_stats["nulls_handled"] += 1
             return None
+
+        # Type check field_schema
+        if not isinstance(field_schema, dict):
+            return value  # Pass through if schema is not a dict
+
         expected_type = field_schema.get("type", "string")
         # Handle type arrays (nullable types)
         if isinstance(expected_type, list):
@@ -371,10 +397,10 @@ class DataValidator:
 
     def _convert_to_number(
         self,
-        value: str | float | None,
-        expected_type: str,
+        value: object,
+        expected_type: object,
         _field_name: str,
-    ) -> int | float | None:
+    ) -> object:
         """Convert value to number (int or float)."""
         if isinstance(value, (int, float)):
             return value
@@ -384,10 +410,12 @@ class DataValidator:
 
     def _convert_string_to_number(
         self,
-        value: str,
-        expected_type: str,
-    ) -> int | float | None:
+        value: object,
+        expected_type: object,
+    ) -> object:
         """Convert string value to number."""
+        if not isinstance(value, str):
+            return value  # Pass through non-string values
         cleaned_value = self._clean_numeric_string(value)
         if not cleaned_value:
             return None
@@ -418,16 +446,16 @@ class DataValidator:
 
     def _convert_other_to_number(
         self,
-        value: str | float | None,
-        expected_type: str,
-    ) -> int | float | None:
+        value: object,
+        expected_type: object,
+    ) -> object:
         """Convert non-string types to number."""
         if value is None:
             return None
         try:
             if expected_type == "integer":
-                return int(value)
-            return float(value)
+                return int(value)  # type: ignore[call-overload]
+            return float(value)  # type: ignore[arg-type]
         except (ValueError, TypeError) as e:
             msg = f"Cannot convert {type(value)} '{value}' to {expected_type}"
             raise ValueError(msg) from e
@@ -435,7 +463,7 @@ class DataValidator:
     def _convert_to_boolean(
         self,
         *,
-        value: str | float | bool,
+        value: object,
         _field_name: str,
         _strict: bool = False,
     ) -> bool:
@@ -455,10 +483,10 @@ class DataValidator:
 
     def _convert_to_date(
         self,
-        value: str | datetime | date | None,
-        _date_format: str,
+        value: object,
+        _date_format: object,
         _field_name: str,
-    ) -> str | None:
+    ) -> object:
         """Convert value to date string."""
         if isinstance(value, (datetime, date)):
             self.conversion_stats["dates_normalized"] += 1
@@ -499,14 +527,14 @@ def create_validator_for_environment(environment: str = "dev") -> DataValidator:
 if __name__ == "__main__":
     # Test the validator
     validator = DataValidator(strict_mode=False)
-    test_record = {
+    test_record: dict[str, object] = {
         "id": "123",
         "amount": "540.50",
         "count": "42",
         "active": "true",
         "created_date": "2025-07-02T10:00:00",
     }
-    test_schema = {
+    test_schema: dict[str, object] = {
         "properties": {
             "id": {"type": "integer"},
             "amount": {"type": "number"},

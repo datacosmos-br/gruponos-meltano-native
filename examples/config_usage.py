@@ -11,69 +11,58 @@ Example files are exempt from architectural constraints for educational purposes
 
 # NOTE: Example files can show direct imports for educational purposes
 # In production code, use DI container instead
-from flext_observability.structured_logging import get_logger
+from flext_core import get_logger
 
-from gruponos_meltano_native.config import GrupoNOSConfig, get_config
+from gruponos_meltano_native.config import (
+    GruponosMeltanoSettings,
+    create_gruponos_meltano_settings,
+)
 
 logger = get_logger(__name__)
 
 
 def demonstrate_config_usage() -> None:
     """Demonstrate various ways to use the configuration."""
-    # Get configuration singleton
-    config = get_config()
+    # Create configuration instance using real API
+    config = create_gruponos_meltano_settings()
 
     logger.info("=== GrupoNOS Configuration Demo ===")
 
-    # 1. Access nested configuration
-    if config.wms_source is not None:
-        logger.info(
-            "WMS Source Database",
-            host=config.wms_source.oracle.host,
-            port=config.wms_source.oracle.port,
-            service=config.wms_source.oracle.service_name,
-            batch_size=config.wms_source.oracle.batch_size,
-        )
-    else:
-        logger.info("WMS Source Database not configured")
-
-    # 2. Access target configuration
-    if config.target_oracle is not None:
-        logger.info(
-            "Target Oracle Database",
-            host=config.target_oracle.oracle.host,
-            schema=config.target_oracle.schema,
-            parallel_degree=config.target_oracle.parallel_degree,
-        )
-    else:
-        logger.info("Target Oracle Database not configured")
-
-    # 3. Check alert configuration
-    if config.alerts.webhook_enabled:
-        logger.info(
-            "Webhook alerts enabled",
-            url=config.alerts.webhook_url,
-            max_error_rate=config.alerts.max_error_rate_percent,
-        )
-
-    # 4. Environment-specific settings
-    environment = "unknown"
-    if config.meltano is not None:
-        environment = config.meltano.environment
-
+    # 1. Access basic configuration using real properties
     logger.info(
-        "Environment Configuration",
-        environment=environment,
-        debug_mode=config.debug_mode,
-        dry_run=config.dry_run,
+        "Application Configuration",
+        app_name=config.app_name,
+        version=config.version,
+        environment=config.environment,
+        project_name=config.project_name,
     )
 
-    # 5. Convert to legacy environment variables (for backward compatibility)
-    legacy_env = config.to_legacy_env()
+    # 2. Access Meltano-specific settings using real properties
     logger.info(
-        "Legacy environment variables generated",
-        count=len(legacy_env),
-        sample_keys=list(legacy_env.keys())[:5],
+        "Meltano Configuration",
+        project_root=config.meltano_project_root,
+        meltano_environment=config.meltano_environment,
+        state_backend=config.meltano_state_backend,
+    )
+
+    # 3. Access logging configuration using real properties
+    logger.info(
+        "System Configuration",
+        debug_mode=config.debug,
+        log_level=config.log_level,
+    )
+
+    # 5. Show environment variable mapping (based on real config)
+    logger.info(
+        "Environment Variables",
+        env_prefix="GRUPONOS_",
+        example_vars=[
+            "GRUPONOS_ENVIRONMENT",
+            "GRUPONOS_PROJECT_NAME",
+            "GRUPONOS_APP_NAME",
+            "GRUPONOS_VERSION",
+            "GRUPONOS_DEBUG",
+        ],
     )
 
     # 6. Validate configuration
@@ -92,61 +81,68 @@ def demonstrate_config_usage() -> None:
     config_json = config.model_dump_json(indent=2, exclude={"password", "api_password"})
     logger.info("Configuration (passwords excluded):", json_length=len(config_json))
 
-    # 8. Create a modified configuration
+    # 8. Create a modified configuration using real class
     modified_config_data = config.model_dump()
-    modified_config_data["debug_mode"] = True
-    if (
-        "meltano" in modified_config_data
-        and modified_config_data["meltano"] is not None
-    ):
-        modified_config_data["meltano"]["environment"] = "staging"
+    modified_config_data["debug"] = True  # Use real field name
+    modified_config_data["environment"] = "staging"  # Use real field name
 
-    modified_config = GrupoNOSConfig.model_validate(modified_config_data)
-
-    modified_env = "unknown"
-    if modified_config.meltano is not None:
-        modified_env = modified_config.meltano.environment
+    modified_config = GruponosMeltanoSettings.model_validate(modified_config_data)
 
     logger.info(
         "Modified configuration created",
-        debug=modified_config.debug_mode,
-        env=modified_env,
+        debug=modified_config.debug,
+        env=modified_config.environment,
     )
 
 
 def demonstrate_connection_manager_integration() -> None:
     """Show how configuration integrates with connection manager."""
-    config = get_config()
+    config = create_gruponos_meltano_settings()
 
-    # Create connection manager from environment (the available pattern)
-    # The OracleConnectionManager is created from environment variables
-    # rather than from a separate config object
-
-    # Access connection configuration safely
-    target_host = "not configured"
-    target_port = 0
-    wms_host = "not configured"
-
-    if config.target_oracle is not None:
-        target_host = config.target_oracle.oracle.host
-        target_port = config.target_oracle.oracle.port
-
-    if config.wms_source is not None:
-        wms_host = config.wms_source.oracle.host
-
+    # Show how to create Oracle connection manager using real APIs
     logger.info(
-        "Connection manager configuration available",
-        target_host=target_host,
-        target_port=target_port,
-        wms_host=wms_host,
+        "Connection Manager Integration",
+        project_root=config.meltano_project_root,
+        environment=config.environment,
     )
 
-    # Note: Connection manager would be created from environment in actual usage
-    # This example shows how configuration values are accessed
-    if not config.dry_run:
-        logger.info("Connection configuration ready for production use")
+    # Demonstrate how Oracle connection manager would be created
+    # Using the real Oracle connection manager from the project
+    try:
+        from gruponos_meltano_native.oracle import (
+            create_gruponos_meltano_oracle_connection_manager,
+        )
+        from gruponos_meltano_native.config import (
+            GruponosMeltanoOracleConnectionConfig,
+        )
+
+        # Create a sample Oracle config
+        oracle_config = GruponosMeltanoOracleConnectionConfig(
+            host="localhost",
+            port=1521,
+            service_name="TESTDB",
+            username="test",
+            password="test",
+        )
+
+        # Create connection manager using real factory function
+        connection_manager = create_gruponos_meltano_oracle_connection_manager(
+            oracle_config
+        )
+
+        logger.info(
+            "Oracle Connection Manager created successfully",
+            manager_type=type(connection_manager).__name__,
+        )
+
+    except ImportError as e:
+        logger.warning("Oracle connection manager not available", error=str(e))
+
+    # Show production readiness
+    if not config.debug:
+        logger.info("Configuration ready for production use")
     else:
-        logger.info("Connection test would be run in production mode")
+        logger.info("Configuration in debug mode for development")
 
 
 if __name__ == "__main__":
@@ -154,5 +150,5 @@ if __name__ == "__main__":
         demonstrate_config_usage()
         logger.info("\n%s\n", "=" * 50)
         demonstrate_connection_manager_integration()
-    except (RuntimeError, ValueError, TypeError) as e:
+    except (RuntimeError, ValueError, TypeError, ImportError) as e:
         logger.exception("Demo failed", error=str(e))

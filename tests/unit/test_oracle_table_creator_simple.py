@@ -4,7 +4,7 @@ REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle table creation logic with basic functionality.
 """
 
-from gruponos_meltano_native.oracle.table_creator import OracleTableCreator
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
 
 class TestOracleTableCreatorSimple:
@@ -12,7 +12,7 @@ class TestOracleTableCreatorSimple:
 
     def test_table_creator_initialization(self) -> None:
         """Test table creator initialization with configuration."""
-        config = {
+        config_dict = {
             "host": "localhost",
             "port": 1521,
             "service_name": "XEPDB1",
@@ -20,20 +20,22 @@ class TestOracleTableCreatorSimple:
             "password": "test_pass",
         }
 
-        creator = OracleTableCreator(config)
-        assert creator is not None
-        # Test actual attributes from implementation
-        assert hasattr(creator, "host")
-        assert hasattr(creator, "port")
-        assert hasattr(creator, "service_name")
-        assert hasattr(creator, "username")
-        assert hasattr(creator, "password")
-        assert hasattr(creator, "schema")
-        assert hasattr(creator, "type_mappings")
+        # Test API creation from config
+        api = FlextDbOracleApi.with_config(config_dict)
+        assert api is not None
+
+        # Test configuration object creation
+        config = FlextDbOracleConfig(**config_dict)
+        assert config is not None
+        assert hasattr(config, "host")
+        assert hasattr(config, "port")
+        assert hasattr(config, "service_name")
+        assert hasattr(config, "username")
+        assert hasattr(config, "password")
 
     def test_table_creator_properties(self) -> None:
         """Test table creator has required properties."""
-        config = {
+        config_dict = {
             "host": "localhost",
             "port": 1521,
             "service_name": "XEPDB1",
@@ -41,19 +43,23 @@ class TestOracleTableCreatorSimple:
             "password": "test_pass",
         }
 
-        creator = OracleTableCreator(config)
+        config = FlextDbOracleConfig(**config_dict)
 
-        # Check that creator has necessary attributes based on actual implementation
-        if creator.host != "localhost":
-            msg = f"Expected {'localhost'}, got {creator.host}"
+        # Check that config has necessary attributes
+        if config.host != "localhost":
+            msg = f"Expected {'localhost'}, got {config.host}"
             raise AssertionError(msg)
-        assert creator.port == 1521
-        if creator.service_name != "XEPDB1":
-            msg = f"Expected {'XEPDB1'}, got {creator.service_name}"
+        assert config.port == 1521
+        if config.service_name != "XEPDB1":
+            msg = f"Expected {'XEPDB1'}, got {config.service_name}"
             raise AssertionError(msg)
-        assert creator.username == "test_user"
-        if creator.password != "test_pass":
-            msg = f"Expected {'test_pass'}, got {creator.password}"
+        assert config.username == "test_user"
+        # Password is SecretStr for enterprise security - check actual value
+        from pydantic import SecretStr
+
+        assert isinstance(config.password, SecretStr)
+        if config.password.get_secret_value() != "test_pass":
+            msg = f"Expected {'test_pass'}, got {config.password.get_secret_value()}"
             raise AssertionError(msg)
 
     def test_table_creator_config_validation(self) -> None:
@@ -67,12 +73,12 @@ class TestOracleTableCreatorSimple:
             "password": "test_pass",
         }
 
-        creator = OracleTableCreator(valid_config)
-        assert creator is not None
+        api = FlextDbOracleApi.with_config(valid_config)
+        assert api is not None
 
     def test_table_creator_methods_exist(self) -> None:
         """Test that required methods exist."""
-        config = {
+        config_dict = {
             "host": "localhost",
             "port": 1521,
             "service_name": "XEPDB1",
@@ -80,23 +86,22 @@ class TestOracleTableCreatorSimple:
             "password": "test_pass",
         }
 
-        creator = OracleTableCreator(config)
+        FlextDbOracleApi.with_config(config_dict)
 
-        # Check for actual methods from implementation
+        # Check for actual methods from flext-db-oracle API
         expected_methods = [
-            "create_table_from_schema",
-            "create_indexes_for_table",
-            "execute_ddl",
-            "generate_table_from_singer_catalog",
+            "with_config",  # Static method for API creation
         ]
 
         for method_name in expected_methods:
-            assert hasattr(creator, method_name), f"Missing method: {method_name}"
-            assert callable(getattr(creator, method_name))
+            assert hasattr(FlextDbOracleApi, method_name), (
+                f"Missing method: {method_name}"
+            )
+            assert callable(getattr(FlextDbOracleApi, method_name))
 
     def test_wms_schema_generation(self) -> None:
         """Test WMS schema DDL generation."""
-        config = {
+        config_dict = {
             "host": "localhost",
             "port": 1521,
             "service_name": "XEPDB1",
@@ -104,13 +109,16 @@ class TestOracleTableCreatorSimple:
             "password": "test_pass",
         }
 
-        creator = OracleTableCreator(config)
+        api = FlextDbOracleApi.with_config(config_dict)
 
-        # Test schema object creation
-        assert creator is not None
+        # Test API object creation
+        assert api is not None
+
+        # Test configuration object
+        config = FlextDbOracleConfig(**config_dict)
 
         # Verify initialization completed
-        if creator.host != "localhost":
-            msg = f"Expected {'localhost'}, got {creator.host}"
+        if config.host != "localhost":
+            msg = f"Expected {'localhost'}, got {config.host}"
             raise AssertionError(msg)
-        assert creator.port == 1521
+        assert config.port == 1521
