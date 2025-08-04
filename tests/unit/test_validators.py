@@ -25,11 +25,11 @@ class TestDataValidators:
         )
 
         if rule.field_name != "test_field":
-            msg = f"Expected {'test_field'}, got {rule.field_name}"
+            msg: str = f"Expected {'test_field'}, got {rule.field_name}"
             raise AssertionError(msg)
         assert rule.rule_type == "required"
         if rule.parameters != {}:
-            msg = f"Expected {{}}, got {rule.parameters}"
+            msg: str = f"Expected {{}}, got {rule.parameters}"
             raise AssertionError(msg)
 
     def test_data_validator_initialization(self) -> None:
@@ -49,7 +49,7 @@ class TestDataValidators:
 
         validator = DataValidator(rules)
         if len(validator.rules) != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {len(validator.rules)}"
+            msg: str = f"Expected {2}, got {len(validator.rules)}"
             raise AssertionError(msg)
         assert validator.rules[0].field_name == "id"
 
@@ -69,11 +69,11 @@ class TestDataValidators:
         data: dict[str, object] = {}
         errors = validator.validate(data)
         assert len(errors) > 0
-        if any("required_field" in str(error) for error in errors):
-            msg = f"Expected {any('required_field' in str(error) for error in errors)} in {errors}"
-            raise AssertionError(
-                msg,
+        if not any("required_field" in str(error) for error in errors):
+            msg: str = (
+                f"Expected 'required_field' to be found in error messages: {errors}"
             )
+            raise AssertionError(msg)
 
     def test_string_validation(self) -> None:
         """Test string field validation."""
@@ -91,7 +91,7 @@ class TestDataValidators:
         data = {"name": "ValidName"}
         errors = validator.validate(data)
         if len(errors) != 0:
-            msg = f"Expected {0}, got {len(errors)}"
+            msg: str = f"Expected {0}, got {len(errors)}"
             raise AssertionError(msg)
 
     def test_number_validation(self) -> None:
@@ -110,7 +110,7 @@ class TestDataValidators:
         data = {"quantity": 100}
         errors = validator.validate(data)
         if len(errors) != 0:
-            msg = f"Expected {0}, got {len(errors)}"
+            msg: str = f"Expected {0}, got {len(errors)}"
             raise AssertionError(msg)
 
     def test_date_validation(self) -> None:
@@ -129,17 +129,17 @@ class TestDataValidators:
         data = {"created_date": "2023-01-01"}
         errors = validator.validate(data)
         if len(errors) != 0:
-            msg = f"Expected {0}, got {len(errors)}"
+            msg: str = f"Expected {0}, got {len(errors)}"
             raise AssertionError(msg)
 
     def test_validation_error(self) -> None:
         """Test ValidationError exception."""
-        error = ValidationError("Test validation error", "test_field")
+        error = ValidationError("Test validation error", validation_details={"field": "test_field"})
 
-        if str(error) != "Test validation error":
-            msg = f"Expected {'Test validation error'}, got {error!s}"
+        if "[VALIDATION_ERROR] Test validation error" not in str(error):
+            msg: str = f"Expected '[VALIDATION_ERROR] Test validation error', got {error!s}"
             raise AssertionError(msg)
-        assert error.field_name == "test_field"
+        assert error.context.get("field") == "test_field"
 
     def test_multiple_validation_rules(self) -> None:
         """Test multiple validation rules on same field."""
@@ -163,7 +163,7 @@ class TestDataValidators:
 
         validator = DataValidator(rules)
         if len(validator.rules) != EXPECTED_DATA_COUNT:
-            msg = f"Expected {3}, got {len(validator.rules)}"
+            msg: str = f"Expected {3}, got {len(validator.rules)}"
             raise AssertionError(msg)
 
     def test_decimal_number_validation(self) -> None:
@@ -182,7 +182,7 @@ class TestDataValidators:
         data = {"price": Decimal("19.99")}
         errors = validator.validate(data)
         if len(errors) != 0:
-            msg = f"Expected {0}, got {len(errors)}"
+            msg: str = f"Expected {0}, got {len(errors)}"
             raise AssertionError(msg)
 
     def test_boolean_validation(self) -> None:
@@ -201,7 +201,7 @@ class TestDataValidators:
         data = {"is_active": True}
         errors = validator.validate(data)
         if len(errors) != 0:
-            msg = f"Expected {0}, got {len(errors)}"
+            msg: str = f"Expected {0}, got {len(errors)}"
             raise AssertionError(msg)
 
     def test_custom_validation_rule(self) -> None:
@@ -220,5 +220,5 @@ class TestDataValidators:
         data = {"status": "active"}
         errors = validator.validate(data)
         if len(errors) != 0:
-            msg = f"Expected {0}, got {len(errors)}"
+            msg: str = f"Expected {0}, got {len(errors)}"
             raise AssertionError(msg)

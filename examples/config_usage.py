@@ -109,11 +109,11 @@ def demonstrate_connection_manager_integration() -> None:
     # Demonstrate how Oracle connection manager would be created
     # Using the real Oracle connection manager from the project
     try:
-        from gruponos_meltano_native.oracle import (
-            create_gruponos_meltano_oracle_connection_manager,
-        )
         from gruponos_meltano_native.config import (
             GruponosMeltanoOracleConnectionConfig,
+        )
+        from gruponos_meltano_native.oracle import (
+            create_gruponos_meltano_oracle_connection_manager,
         )
 
         # Create a sample Oracle config
@@ -127,7 +127,7 @@ def demonstrate_connection_manager_integration() -> None:
 
         # Create connection manager using real factory function
         connection_manager = create_gruponos_meltano_oracle_connection_manager(
-            oracle_config
+            oracle_config,
         )
 
         logger.info(

@@ -20,7 +20,7 @@ from gruponos_meltano_native.monitoring.alert_manager import (
 )
 
 # Public API exports - FLEXT standard only
-__all__ = [
+__all__: list[str] = [
     # FLEXT Standard Classes
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertManager",

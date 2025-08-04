@@ -66,7 +66,7 @@ class TestPerformanceBasics:
             result = connection_manager.test_connection()
             end_time = time.time()
 
-            assert result.is_success, f"Connection {i + 1} failed: {result.error}"
+            assert result.success, f"Connection {i + 1} failed: {result.error}"
 
             connection_time = end_time - start_time
             connection_times.append(connection_time)
@@ -96,7 +96,7 @@ class TestPerformanceBasics:
 
         # Test that connection manager can create API instances
         # (actual connection requires real database, so we test API creation)
-        if connection_result.is_success:
+        if connection_result.success:
             connection = connection_result.data
             assert connection is not None
             # Test that the API object has expected methods
@@ -133,7 +133,9 @@ class TestPerformanceBasics:
 
         # Get real Oracle API connection
         connection_result = connection_manager.get_connection()
-        assert connection_result.is_success, f"Failed to get connection: {connection_result.error}"
+        assert connection_result.success, (
+            f"Failed to get connection: {connection_result.error}"
+        )
 
         oracle_api = connection_result.data
         assert oracle_api is not None, "Oracle API connection is None"
@@ -146,7 +148,7 @@ class TestPerformanceBasics:
         try:
             for query in operations:
                 result = oracle_api.query(query)
-                assert result.is_success, f"Query failed: {query} - {result.error}"
+                assert result.success, f"Query failed: {query} - {result.error}"
         finally:
             # Always disconnect after operations
             oracle_api.disconnect()

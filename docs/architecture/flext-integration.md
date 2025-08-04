@@ -58,7 +58,7 @@ async def execute_pipeline() -> FlextResult[PipelineResult]:
         facility_code="DC01"
     )
     
-    if result.is_success():
+    if result.success():
         print(f"Pipeline completed: {result.value.records_processed}")
         return result
     else:
@@ -344,21 +344,25 @@ class GruponosMeltanoSettings(FlextBaseSettings):
 ## Benefits of FLEXT Integration
 
 ### 1. Consistency Across Ecosystem
+
 - Standardized error handling with FlextResult
 - Consistent logging and monitoring patterns
 - Unified configuration management
 
 ### 2. Enterprise Features
+
 - Built-in observability and metrics
 - Comprehensive health checks
 - Production-ready patterns
 
 ### 3. Maintainability
+
 - Shared patterns reduce code duplication
 - Standardized interfaces improve testability
 - Clear separation of concerns
 
 ### 4. Scalability
+
 - Proven patterns for enterprise environments
 - Built-in performance monitoring
 - Horizontal scaling capabilities

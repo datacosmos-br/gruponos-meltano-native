@@ -19,16 +19,16 @@ class TestDataValidator:
         validator = DataValidator()
         assert validator is not None
         if validator.rules != []:
-            msg = f"Expected {[]}, got {validator.rules}"
+            msg: str = f"Expected {[]}, got {validator.rules}"
             raise AssertionError(msg)
         if validator.strict_mode:
-            msg = f"Expected False, got {validator.strict_mode}"
+            msg: str = f"Expected False, got {validator.strict_mode}"
             raise AssertionError(msg)
 
         # Test with parameters
         validator_strict = DataValidator(strict_mode=True)
         if not (validator_strict.strict_mode):
-            msg = f"Expected True, got {validator_strict.strict_mode}"
+            msg: str = f"Expected True, got {validator_strict.strict_mode}"
             raise AssertionError(msg)
 
     def test_data_validator_has_required_methods(self) -> None:
@@ -92,7 +92,7 @@ class TestDataValidator:
         stats = validator.get_conversion_stats()
         assert isinstance(stats, dict)
         if "strings_converted_to_numbers" not in stats:
-            msg = f"Expected {'strings_converted_to_numbers'} in {stats}"
+            msg: str = f"Expected {'strings_converted_to_numbers'} in {stats}"
             raise AssertionError(
                 msg,
             )
@@ -115,12 +115,14 @@ class TestDataValidator:
         """Test ValidationError class."""
         # Test basic error
         error = ValidationError("Test error")
-        if str(error) != "Test error":
-            msg = f"Expected {'Test error'}, got {error!s}"
+        if str(error) != "[VALIDATION_ERROR] Test error":
+            msg: str = f"Expected {'[VALIDATION_ERROR] Test error'}, got {error!s}"
             raise AssertionError(msg)
 
         # Test error with field name
-        error_with_field = ValidationError("Field error", "test_field")
+        error_with_field = ValidationError(
+            "Field error", validation_details={"field": "test_field"},
+        )
         assert isinstance(error_with_field, ValidationError)
 
     def test_validation_rule_class(self) -> None:

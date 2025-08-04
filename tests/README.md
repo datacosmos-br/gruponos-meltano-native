@@ -30,6 +30,7 @@ tests/
 ## Testing Standards
 
 ### Coverage Requirements
+
 - **Minimum Coverage**: 90% across all modules
 - **Branch Coverage**: Comprehensive branch coverage for business logic
 - **Integration Coverage**: Real system integration validation
@@ -38,18 +39,21 @@ tests/
 ### Test Categories
 
 #### Unit Tests (`unit/`)
+
 - **Scope**: Individual components in isolation
 - **Speed**: Fast execution (< 1 second per test)
 - **Dependencies**: Mocked external dependencies
 - **Coverage**: Business logic, error handling, edge cases
 
 #### Integration Tests (`integration/`)
+
 - **Scope**: Real system integration with databases and external APIs
 - **Speed**: Moderate execution (< 30 seconds per test)
 - **Dependencies**: Real Oracle databases, test environments
 - **Coverage**: End-to-end workflows, system integration
 
 #### End-to-End Tests
+
 - **Scope**: Complete pipeline execution from source to target
 - **Speed**: Slower execution (< 5 minutes per test)
 - **Dependencies**: Full system stack with real data
@@ -58,6 +62,7 @@ tests/
 ## Test Execution
 
 ### Standard Test Commands
+
 ```bash
 # Run all tests with coverage
 make test
@@ -82,6 +87,7 @@ pytest --cov=src/gruponos_meltano_native --cov-report=html --cov-report=term
 ```
 
 ### Test Markers
+
 ```python
 # Available test markers
 @pytest.mark.unit          # Fast unit tests
@@ -97,9 +103,11 @@ pytest --cov=src/gruponos_meltano_native --cov-report=html --cov-report=term
 ## Key Test Components
 
 ### `conftest.py` - Shared Test Configuration
+
 Centralized test configuration with reusable fixtures for consistent testing.
 
 #### Key Fixtures
+
 - **`mock_settings`**: Mock application settings for controlled testing
 - **`mock_oracle_connection`**: Mock Oracle database connections
 - **`test_data_fixtures`**: Standardized test data for validation
@@ -108,42 +116,49 @@ Centralized test configuration with reusable fixtures for consistent testing.
 ### Unit Test Categories
 
 #### Configuration Testing (`test_config.py`)
+
 - **Settings Validation**: Environment-specific configuration validation
 - **Business Rule Validation**: Configuration business rule enforcement
 - **Error Handling**: Configuration error scenarios and recovery
 - **Environment Loading**: Multi-environment configuration testing
 
 #### CLI Testing (`test_cli.py`)
+
 - **Command Execution**: All CLI commands with various parameters
 - **Error Handling**: CLI error scenarios and user feedback
 - **Interactive Mode**: User interaction and input validation
 - **Output Formatting**: CLI output formatting and presentation
 
 #### Orchestrator Testing (`test_orchestrator.py`)
+
 - **Pipeline Execution**: Full and incremental sync workflows
 - **Error Propagation**: Railway-oriented error handling validation
 - **Business Logic**: ETL orchestration business rules
 - **Performance**: Pipeline performance and optimization
 
 #### Exception Testing (`test_exceptions.py`)
+
 - **Exception Hierarchy**: Complete exception inheritance validation
 - **Context Handling**: Rich exception context and error information
 - **Error Propagation**: Exception propagation through pipeline layers
 - **Recovery Scenarios**: Error recovery and retry mechanisms
 
 #### Data Validation Testing (`test_data_validator.py`)
+
 - **Schema Validation**: Data structure and type validation
 - **Business Rules**: WMS-specific business rule enforcement
 - **Data Quality**: Quality metrics and threshold validation
 - **Performance**: Large dataset validation performance
 
 #### Alert Management Testing (`test_alert_manager_comprehensive.py`)
+
 - **Multi-Channel Delivery**: Email, Slack, webhook delivery testing
 - **Severity Routing**: Alert routing based on severity levels
 - **Rate Limiting**: Alert rate limiting and flood prevention
 - **Template Rendering**: Alert template customization and rendering
 
 #### Oracle Integration Testing (`test_oracle_connections.py`)
+
 - **Connection Management**: Connection pooling and lifecycle management
 - **Query Optimization**: Oracle-specific query optimization validation
 - **Transaction Handling**: Transaction management and rollback scenarios
@@ -152,12 +167,14 @@ Centralized test configuration with reusable fixtures for consistent testing.
 ### Integration Test Categories
 
 #### End-to-End Oracle Integration (`test_end_to_end_oracle_integration.py`)
+
 - **Complete Pipeline**: Full ETL pipeline with real Oracle systems
 - **Data Validation**: End-to-end data integrity validation
 - **Performance**: Real-world performance under load
 - **Error Recovery**: System failure and recovery scenarios
 
 #### Performance and Load Testing (`test_performance_and_load.py`)
+
 - **Scalability**: System behavior under increasing load
 - **Resource Usage**: Memory and connection usage monitoring
 - **Throughput**: Data processing throughput validation
@@ -166,6 +183,7 @@ Centralized test configuration with reusable fixtures for consistent testing.
 ## Test Data Management
 
 ### Test Data Fixtures
+
 ```python
 # Standard test data patterns
 @pytest.fixture
@@ -194,6 +212,7 @@ def invalid_allocation_data():
 ```
 
 ### Mock Data Factories
+
 ```python
 class TestDataFactory:
     @staticmethod
@@ -221,6 +240,7 @@ class TestDataFactory:
 ## Testing Patterns
 
 ### Railway-Oriented Testing
+
 ```python
 def test_etl_pipeline_success_path():
     """Test successful ETL pipeline execution."""
@@ -230,8 +250,8 @@ def test_etl_pipeline_success_path():
     # When: Execute pipeline
     result = await orchestrator.execute_full_sync("GNOS", "DC01")
     
-    # Then: Verify success
-    assert result.is_success
+    # Then: Verify success:
+    assert result.success
     assert result.data.records_processed == 100
     assert result.data.errors_count == 0
 
@@ -249,6 +269,7 @@ def test_etl_pipeline_failure_propagation():
 ```
 
 ### Mock Integration Testing
+
 ```python
 @patch('gruponos_meltano_native.oracle.connection_manager_enhanced.FlextDbOracleApi')
 def test_oracle_integration_with_mocks(mock_oracle_api):
@@ -262,11 +283,12 @@ def test_oracle_integration_with_mocks(mock_oracle_api):
     result = await manager.get_connection()
     
     # Verify behavior
-    assert result.is_success
+    assert result.success
     mock_oracle_api.assert_called_once()
 ```
 
 ### Performance Testing Patterns
+
 ```python
 @pytest.mark.performance
 async def test_large_dataset_processing():
@@ -280,7 +302,7 @@ async def test_large_dataset_processing():
     processing_time = time.time() - start_time
     
     # Then: Verify performance requirements
-    assert result.is_success
+    assert result.success
     assert processing_time < 30  # Max 30 seconds for 10k records
     assert len(result.data) == 10000
 ```
@@ -288,6 +310,7 @@ async def test_large_dataset_processing():
 ## Continuous Integration
 
 ### Test Automation
+
 ```yaml
 # GitHub Actions test workflow
 name: Test Suite
@@ -319,6 +342,7 @@ jobs:
 ```
 
 ### Quality Gates
+
 ```bash
 # Quality gate validation
 poetry run pytest --cov=src/gruponos_meltano_native --cov-fail-under=90 --maxfail=1
@@ -330,6 +354,7 @@ poetry run bandit -r src/
 ## Development Guidelines
 
 ### Test Development Standards
+
 1. **Arrange-Act-Assert**: Clear test structure with AAA pattern
 2. **Single Responsibility**: Each test validates one specific behavior
 3. **Descriptive Names**: Test names clearly describe the scenario
@@ -337,6 +362,7 @@ poetry run bandit -r src/
 5. **Coverage**: Aim for 95%+ coverage with meaningful tests
 
 ### Mock Usage Guidelines
+
 1. **External Dependencies**: Mock all external system dependencies
 2. **Consistent Behavior**: Predictable mock behavior across tests
 3. **Verification**: Verify interactions with mocked dependencies

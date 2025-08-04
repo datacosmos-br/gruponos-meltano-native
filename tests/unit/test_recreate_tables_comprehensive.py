@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from unittest.mock import Mock, patch
 
+import pytest
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+
 from gruponos_meltano_native.config import (
     GruponosMeltanoOracleConnectionConfig,
     create_gruponos_meltano_settings,
@@ -56,18 +58,18 @@ class TestOracleTableRecreationReal:
         """Test that FlextDbOracleApi has required methods for table recreation."""
         # Test that API has DDL execution capabilities
         assert hasattr(FlextDbOracleApi, "execute_ddl")
-        assert callable(getattr(FlextDbOracleApi, "execute_ddl"))
+        assert callable(FlextDbOracleApi.execute_ddl)
 
         # Test that API has query capabilities
         assert hasattr(FlextDbOracleApi, "query")
-        assert callable(getattr(FlextDbOracleApi, "query"))
+        assert callable(FlextDbOracleApi.query)
 
         # Test that API has connection management
         assert hasattr(FlextDbOracleApi, "connect")
-        assert callable(getattr(FlextDbOracleApi, "connect"))
+        assert callable(FlextDbOracleApi.connect)
 
         assert hasattr(FlextDbOracleApi, "disconnect")
-        assert callable(getattr(FlextDbOracleApi, "disconnect"))
+        assert callable(FlextDbOracleApi.disconnect)
 
     def test_gruponos_settings_creation(self) -> None:
         """Test GrupoNOS settings creation using real API."""
@@ -103,6 +105,7 @@ class TestOracleTableRecreationReal:
         """Test DDL execution for table recreation using mock."""
         # Mock successful DDL execution
         from flext_core import FlextResult
+
         mock_execute_ddl.return_value = FlextResult.ok("DDL executed successfully")
 
         # Create a mock API instance
@@ -118,7 +121,7 @@ class TestOracleTableRecreationReal:
         ddl_sql = "CREATE TABLE test_table (id NUMBER, name VARCHAR2(100))"
         result = api.execute_ddl(ddl_sql)
 
-        assert result.is_success
+        assert result.success
         mock_execute_ddl.assert_called_once_with(ddl_sql)
 
     @patch("flext_db_oracle.FlextDbOracleApi.query")
@@ -145,10 +148,12 @@ class TestOracleTableRecreationReal:
         api = FlextDbOracleApi(config)
 
         # Test table validation query
-        validation_sql = "SELECT table_name, status FROM user_tables WHERE table_name = 'TEST_TABLE'"
+        validation_sql = (
+            "SELECT table_name, status FROM user_tables WHERE table_name = 'TEST_TABLE'"
+        )
         result = api.query(validation_sql)
 
-        assert result.is_success
+        assert result.success
         assert result.data.row_count == 1
         assert result.data.rows[0][0] == "TEST_TABLE"
 
@@ -167,7 +172,7 @@ class TestOracleTableRecreationReal:
 
         # Configuration should validate successfully
         validation_result = valid_config.validate_semantic_rules()
-        assert validation_result.is_success
+        assert validation_result.success
 
     def test_connection_manager_methods_availability(self) -> None:
         """Test that connection manager has required methods."""
@@ -182,13 +187,13 @@ class TestOracleTableRecreationReal:
 
         # Test required methods exist
         assert hasattr(manager, "get_connection")
-        assert callable(getattr(manager, "get_connection"))
+        assert callable(manager.get_connection)
 
         assert hasattr(manager, "test_connection")
-        assert callable(getattr(manager, "test_connection"))
+        assert callable(manager.test_connection)
 
         assert hasattr(manager, "close_connection")
-        assert callable(getattr(manager, "close_connection"))
+        assert callable(manager.close_connection)
 
     def test_table_recreation_workflow_components(self) -> None:
         """Test that all components needed for table recreation exist."""
@@ -211,7 +216,7 @@ class TestOracleTableRecreationReal:
 
         # Test FlextDbOracleApi creation capability
         assert hasattr(FlextDbOracleApi, "with_config")
-        assert callable(getattr(FlextDbOracleApi, "with_config"))
+        assert callable(FlextDbOracleApi.with_config)
 
 
 class TestTableRecreationErrorHandling:
@@ -232,11 +237,8 @@ class TestTableRecreationErrorHandling:
         }
 
         # Test that exception is properly raised
-        try:
+        with pytest.raises(OSError, match="Connection failed"):
             FlextDbOracleApi.with_config(config_dict)
-            assert False, "Expected OSError to be raised"
-        except OSError as e:
-            assert str(e) == "Connection failed"
 
     @patch("flext_db_oracle.FlextDbOracleApi.execute_ddl")
     def test_ddl_execution_failure(self, mock_execute_ddl: Mock) -> None:
@@ -281,7 +283,7 @@ class TestTableRecreationErrorHandling:
             )
             validation_result = config.validate_semantic_rules()
             assert validation_result.is_failure
-        except Exception:
+        except Exception:  # noqa: S110
             # Expected - invalid configuration should raise exception
             pass
 
@@ -311,7 +313,7 @@ class TestTableRecreationIntegration:
         connection_result = manager.get_connection()
         # We expect this to fail in test environment (no real DB)
         # but it should return a proper FlextResult
-        assert hasattr(connection_result, "is_success")
+        assert hasattr(connection_result, "success")
         assert hasattr(connection_result, "is_failure")
 
     def test_configuration_validation_workflow(self) -> None:
@@ -326,7 +328,7 @@ class TestTableRecreationIntegration:
 
         # Validate configuration using real method
         validation_result = config.validate_semantic_rules()
-        assert validation_result.is_success
+        assert validation_result.success
 
         # Create connection manager with validated config
         manager = create_gruponos_meltano_oracle_connection_manager(config)
@@ -334,10 +336,11 @@ class TestTableRecreationIntegration:
 
         # Test manager validation
         manager_validation = manager.test_connection()
-        assert hasattr(manager_validation, "is_success")
+        assert hasattr(manager_validation, "success")
 
 
 # Test execution entrypoint
 if __name__ == "__main__":
     import pytest
+
     pytest.main([__file__, "-v"])

@@ -67,7 +67,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
             result = service.send_alert(alert)
 
-            assert result.is_success
+            assert result.success
             assert result.data is True
             mock_post.assert_called_once()
             call_args = mock_post.call_args
@@ -100,7 +100,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
             result = service.send_alert(alert)
 
-            assert not result.is_success
+            assert not result.success
             assert "Webhook failed" in result.error
 
     def test_send_alert_webhook_exception_os_error(self) -> None:
@@ -127,7 +127,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             mock_post.side_effect = requests.RequestException("Network error")
 
             result = service.send_alert(alert)
-            assert not result.is_success
+            assert not result.success
             assert "Webhook failed" in result.error
 
     def test_send_alert_webhook_exception_value_error(self) -> None:
@@ -150,7 +150,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
         with patch("requests.post", side_effect=ValueError("Invalid JSON")):
             result = service.send_alert(alert)
-            assert not result.is_success
+            assert not result.success
             assert "Alert sending error" in result.error
 
     def test_send_alert_webhook_exception_runtime_error(self) -> None:
@@ -173,7 +173,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
         with patch("requests.post", side_effect=RuntimeError("Runtime error")):
             result = service.send_alert(alert)
-            assert not result.is_success
+            assert not result.success
             assert "Alert sending error" in result.error
 
     def test_send_alert_webhook_disabled(self) -> None:
@@ -195,7 +195,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
         result = service.send_alert(alert)
         # With no enabled channels, it should return failure
-        assert not result.is_success
+        assert not result.success
         assert "Failed to send alert" in result.error
 
     def test_send_alert_webhook_no_url(self) -> None:
@@ -218,7 +218,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
         result = service.send_alert(alert)
         # Should fail because webhook URL is not configured
-        assert not result.is_success
+        assert not result.success
         assert "Webhook URL not configured" in result.error
 
     def test_failure_count_management(self) -> None:
@@ -245,12 +245,12 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         # First two calls should not send (below threshold)
         with patch("requests.post") as mock_post:
             result1 = service.send_alert(alert)
-            assert result1.is_success
+            assert result1.success
             assert result1.data is False  # Not sent yet
             assert service.get_failure_count() == 1
 
             result2 = service.send_alert(alert)
-            assert result2.is_success
+            assert result2.success
             assert result2.data is False  # Not sent yet
             assert service.get_failure_count() == 2
 
@@ -261,7 +261,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             mock_post.return_value = mock_response
 
             result3 = service.send_alert(alert)
-            assert result3.is_success
+            assert result3.success
             assert result3.data is True  # Sent successfully
             assert service.get_failure_count() == 0  # Reset after success
 
@@ -314,7 +314,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         )
 
         validation_result = empty_alert.validate_domain_rules()
-        assert not validation_result.is_success
+        assert not validation_result.success
         assert "empty" in validation_result.error
 
         # Test too long message validation
@@ -328,7 +328,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         )
 
         validation_result = long_alert.validate_domain_rules()
-        assert not validation_result.is_success
+        assert not validation_result.success
         assert "too long" in validation_result.error
 
     def test_alert_service_email_support(self) -> None:
@@ -351,7 +351,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         # Email sending is mocked in the implementation
         # but the logic should complete successfully
         result = service.send_alert(alert)
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
     def test_alert_service_slack_support(self) -> None:
@@ -379,7 +379,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             mock_post.return_value = mock_response
 
             result = service.send_alert(alert)
-            assert result.is_success
+            assert result.success
             assert result.data is True
 
             # Verify Slack-specific payload structure
@@ -440,10 +440,12 @@ class TestGruponosMeltanoAlertManagerComprehensive:
             mock_post.return_value = mock_response
 
             result = manager.send_pipeline_failure_alert(
-                "test-pipeline", "Connection timeout", {"error_code": "TIMEOUT"},
+                "test-pipeline",
+                "Connection timeout",
+                {"error_code": "TIMEOUT"},
             )
 
-            assert result.is_success
+            assert result.success
             assert result.data is True
 
     def test_connectivity_failure_alert(self) -> None:
@@ -468,7 +470,7 @@ class TestGruponosMeltanoAlertManagerComprehensive:
                 {"host": "db.example.com", "port": 1521},
             )
 
-            assert result.is_success
+            assert result.success
             assert result.data is True
 
     def test_data_quality_alert(self) -> None:
@@ -493,7 +495,7 @@ class TestGruponosMeltanoAlertManagerComprehensive:
                 {"missing_fields": ["order_id", "location_id"]},
             )
 
-            assert result.is_success
+            assert result.success
             assert result.data is True
 
     def test_alert_manager_with_multiple_channels(self) -> None:
@@ -547,7 +549,7 @@ class TestGruponosMeltanoAlertManagerComprehensive:
                     f"Test {severity} alert",
                     {"severity_test": severity.value},
                 )
-                assert result.is_success
+                assert result.success
                 assert result.data is True
 
     def test_alert_types_coverage(self) -> None:
@@ -579,15 +581,18 @@ class TestGruponosMeltanoAlertManagerComprehensive:
             for alert_type in alert_types:
                 if alert_type == GruponosMeltanoAlertType.PIPELINE_FAILURE:
                     result = manager.send_pipeline_failure_alert(
-                        "test-pipeline", f"Test {alert_type.value}",
+                        "test-pipeline",
+                        f"Test {alert_type.value}",
                     )
                 elif alert_type == GruponosMeltanoAlertType.CONNECTIVITY_FAILURE:
                     result = manager.send_connectivity_alert(
-                        "test-service", f"Test {alert_type.value}",
+                        "test-service",
+                        f"Test {alert_type.value}",
                     )
                 elif alert_type == GruponosMeltanoAlertType.DATA_QUALITY_ISSUE:
                     result = manager.send_data_quality_alert(
-                        f"Test {alert_type.value}", "test-pipeline",
+                        f"Test {alert_type.value}",
+                        "test-pipeline",
                     )
                 else:
                     # For other types, create alert directly and send via service
@@ -600,7 +605,7 @@ class TestGruponosMeltanoAlertManagerComprehensive:
                     )
                     result = service.send_alert(alert)
 
-                assert result.is_success
+                assert result.success
                 assert result.data is True
 
     def test_alert_context_data(self) -> None:
@@ -628,10 +633,12 @@ class TestGruponosMeltanoAlertManagerComprehensive:
             mock_post.return_value = mock_response
 
             result = manager.send_pipeline_failure_alert(
-                "allocation-sync", "Pipeline failed with multiple errors", context_data,
+                "allocation-sync",
+                "Pipeline failed with multiple errors",
+                context_data,
             )
 
-            assert result.is_success
+            assert result.success
             assert result.data is True
 
             # Verify context data was included in webhook payload
@@ -652,11 +659,11 @@ class TestAlertTypeEnum:
             == "connectivity_failure"
         )
         if GruponosMeltanoAlertType.DATA_QUALITY_ISSUE.value != "data_quality_issue":
-            msg = f"Expected {'data_quality_issue'}, got {GruponosMeltanoAlertType.DATA_QUALITY_ISSUE.value}"
+            msg: str = f"Expected {'data_quality_issue'}, got {GruponosMeltanoAlertType.DATA_QUALITY_ISSUE.value}"
             raise AssertionError(msg)
         assert GruponosMeltanoAlertType.SYNC_TIMEOUT.value == "sync_timeout"
         if GruponosMeltanoAlertType.THRESHOLD_BREACH.value != "threshold_breach":
-            msg = f"Expected {'threshold_breach'}, got {GruponosMeltanoAlertType.THRESHOLD_BREACH.value}"
+            msg: str = f"Expected {'threshold_breach'}, got {GruponosMeltanoAlertType.THRESHOLD_BREACH.value}"
             raise AssertionError(msg)
         assert (
             GruponosMeltanoAlertType.CONFIGURATION_ERROR.value == "configuration_error"

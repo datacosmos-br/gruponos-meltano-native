@@ -9,6 +9,7 @@ This module provides a complete ETL pipeline implementation for Oracle WMS to Or
 ### Main Application Files
 
 #### `__init__.py` - Public API Gateway
+
 - **Purpose**: Centralized public API with factory functions
 - **Pattern**: Direct FLEXT imports with no legacy wrappers
 - **Exports**: All public classes, factory functions, and FLEXT components
@@ -23,6 +24,7 @@ from gruponos_meltano_native import (
 ```
 
 #### `cli.py` - Command-Line Interface
+
 - **Framework**: Click with comprehensive command structure
 - **Features**: Interactive and non-interactive execution modes
 - **Integration**: Direct orchestrator integration with progress tracking
@@ -33,6 +35,7 @@ from gruponos_meltano_native.cli import gruponos_meltano_cli
 ```
 
 #### `config.py` - Configuration Management
+
 - **Framework**: Pydantic models with environment variable support
 - **Validation**: Business rule validation with detailed error messages
 - **Structure**: Hierarchical configuration with nested models
@@ -47,6 +50,7 @@ from gruponos_meltano_native.config import (
 ```
 
 #### `orchestrator.py` - ETL Pipeline Orchestration
+
 - **Pattern**: Railway-oriented programming with FlextResult
 - **Architecture**: Clean Architecture with clear use case separation
 - **Features**: Full sync, incremental sync, data validation, monitoring
@@ -60,6 +64,7 @@ from gruponos_meltano_native.orchestrator import (
 ```
 
 #### `exceptions.py` - Exception Hierarchy
+
 - **Pattern**: Rich exception hierarchy with contextual information
 - **Integration**: FLEXT standard exception patterns
 - **Context**: Detailed error context for debugging and monitoring
@@ -76,33 +81,41 @@ from gruponos_meltano_native.exceptions import (
 ## Specialized Modules
 
 ### `infrastructure/` - Cross-Cutting Concerns
+
 Enterprise infrastructure patterns for dependency injection and system integration.
 
 #### `di_container.py` - Dependency Injection
+
 - **Pattern**: FLEXT container integration with service location
 - **Features**: Singleton management, lifecycle control, type safety
 - **Usage**: Service registration and resolution throughout the application
 
 ### `monitoring/` - Observability and Alerting
+
 Comprehensive monitoring solution with enterprise alerting capabilities.
 
 #### `alert_manager.py` - Alert Management
+
 - **Features**: Multi-channel alert delivery (email, Slack, webhooks)
 - **Patterns**: Severity-based routing, rate limiting, retry mechanisms
 - **Integration**: FLEXT observability standards with correlation IDs
 
 ### `oracle/` - Database Integration
+
 Oracle database connectivity optimized for ETL operations.
 
 #### `connection_manager_enhanced.py` - Connection Management
+
 - **Features**: Connection pooling, health monitoring, failover handling
 - **Performance**: Optimized for large data volume ETL operations
 - **Integration**: FLEXT database abstraction layer compatibility
 
 ### `validators/` - Data Quality Assurance
+
 Multi-layer data validation with business rule enforcement.
 
 #### `data_validator.py` - Core Validation
+
 - **Layers**: Schema validation, business rules, data quality checks
 - **Pattern**: Railway-oriented validation chains with detailed error reporting
 - **Features**: Configurable thresholds, performance monitoring
@@ -110,6 +123,7 @@ Multi-layer data validation with business rule enforcement.
 ## Architecture Patterns
 
 ### Clean Architecture Implementation
+
 ```
 ┌─────────────────────────────────────┐
 │        Presentation Layer           │  # cli.py
@@ -130,6 +144,7 @@ Multi-layer data validation with business rule enforcement.
 ```
 
 ### Railway-Oriented Programming
+
 ```python
 # ETL pipeline with error propagation
 result = (
@@ -144,6 +159,7 @@ result = (
 ## Integration Examples
 
 ### Basic ETL Execution
+
 ```python
 from gruponos_meltano_native import create_gruponos_meltano_platform
 
@@ -156,7 +172,7 @@ result = await platform.execute_full_sync(
     facility_code="DC01"
 )
 
-if result.is_success:
+if result.success:
     print(f"Records processed: {result.data.records_processed}")
     print(f"Duration: {result.data.duration_seconds}s")
 else:
@@ -164,6 +180,7 @@ else:
 ```
 
 ### Configuration with Validation
+
 ```python
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
@@ -172,13 +189,14 @@ settings = GruponosMeltanoSettings()
 
 # Validate Oracle WMS connection
 wms_validation = settings.oracle_wms.validate_connection()
-if wms_validation.is_success:
+if wms_validation.success:
     print("WMS connection validated successfully")
 else:
     print(f"WMS validation failed: {wms_validation.error}")
 ```
 
 ### Custom Alert Configuration
+
 ```python
 from gruponos_meltano_native.monitoring import create_gruponos_meltano_alert_manager
 
@@ -202,18 +220,21 @@ await alert_manager.send_alert(
 ## Development Standards
 
 ### Code Quality Requirements
+
 - **Type Annotations**: 95%+ coverage with strict MyPy validation
 - **Documentation**: Comprehensive docstrings with examples and integration notes
 - **Testing**: 90% minimum test coverage across unit, integration, and E2E tests
 - **Error Handling**: FlextResult patterns throughout with rich context
 
 ### FLEXT Integration Standards
+
 - **Naming**: GruponosMeltano prefix for all public APIs
 - **Error Handling**: Railway-oriented programming with FlextResult
 - **Configuration**: FlextBaseSettings with environment awareness
 - **Dependencies**: Use FLEXT ecosystem components consistently
 
 ### Testing Patterns
+
 - **Unit Tests**: Fast, isolated tests for business logic
 - **Integration Tests**: Real database and external system integration
 - **E2E Tests**: Complete pipeline validation with monitoring

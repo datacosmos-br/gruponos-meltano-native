@@ -16,7 +16,7 @@ class TestCLI:
         """Test version command."""
         result = self.runner.invoke(app, ["--version"])
         if result.exit_code != 0:
-            msg = f"Expected {0}, got {result.exit_code}"
+            msg: str = f"Expected {0}, got {result.exit_code}"
             raise AssertionError(msg)
 
     def test_show_config_command(self) -> None:
@@ -24,7 +24,7 @@ class TestCLI:
         result = self.runner.invoke(app, ["show-config"])
         # May fail without proper config but should not crash
         if result.exit_code not in {0, 1}:
-            msg = f"Expected {result.exit_code} in {{0, 1}}"
+            msg: str = f"Expected {result.exit_code} in {{0, 1}}"
             raise AssertionError(msg)
 
     def test_validate_command(self) -> None:
@@ -32,7 +32,7 @@ class TestCLI:
         result = self.runner.invoke(app, ["validate"])
         # Should work even without env vars (basic validation)
         if result.exit_code not in {0, 1}:
-            msg = f"Expected {result.exit_code} in {{0, 1}}"
+            msg: str = f"Expected {result.exit_code} in {{0, 1}}"
             raise AssertionError(msg)
 
     def test_health_command(self) -> None:
@@ -40,7 +40,7 @@ class TestCLI:
         result = self.runner.invoke(app, ["health"])
         # Should validate without actual connection
         if result.exit_code not in {0, 1}:
-            msg = f"Expected {result.exit_code} in {{0, 1}}"
+            msg: str = f"Expected {result.exit_code} in {{0, 1}}"
             raise AssertionError(msg)
         # 0 for success, 1 for expected validation error
 
@@ -49,7 +49,7 @@ class TestCLI:
         result = self.runner.invoke(app, ["list-pipelines"])
         # Should work but may fail without proper config
         if result.exit_code not in {0, 1}:
-            msg = f"Expected {result.exit_code} in {{0, 1}}"
+            msg: str = f"Expected {result.exit_code} in {{0, 1}}"
             raise AssertionError(msg)
         # Expected to work even without full config
 
@@ -57,10 +57,10 @@ class TestCLI:
         """Test help command."""
         result = self.runner.invoke(app, ["--help"])
         if result.exit_code != 0:
-            msg = f"Expected {0}, got {result.exit_code}"
+            msg: str = f"Expected {0}, got {result.exit_code}"
             raise AssertionError(msg)
         if "GrupoNOS Meltano Native" not in result.stdout:
-            msg = f"Expected {'GrupoNOS Meltano Native'} in {result.stdout}"
+            msg: str = f"Expected {'GrupoNOS Meltano Native'} in {result.stdout}"
             raise AssertionError(msg)
 
     def test_invalid_command(self) -> None:

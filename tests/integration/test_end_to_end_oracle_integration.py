@@ -64,15 +64,15 @@ class TestOracleConnectionIntegration:
         """Test Oracle connection establishment."""
         # Test connection
         result = connection_manager.test_connection()
-        assert result.is_success, f"Connection test failed: {result.error}"
+        assert result.success, f"Connection test failed: {result.error}"
 
         # Validate result data
         assert result.data is not None
         if not (result.data["success"]):
-            msg = f"Expected True, got {result.data['success']}"
+            msg: str = f"Expected True, got {result.data['success']}"
             raise AssertionError(msg)
         if "oracle_version" not in result.data:
-            msg = f"Expected {'oracle_version'} in {result.data}"
+            msg: str = f"Expected {'oracle_version'} in {result.data}"
             raise AssertionError(msg)
 
     @pytest.mark.integration
@@ -84,7 +84,9 @@ class TestOracleConnectionIntegration:
         """Test Oracle query execution."""
         # Get real Oracle API connection
         connection_result = connection_manager.get_connection()
-        assert connection_result.is_success, f"Failed to get connection: {connection_result.error}"
+        assert connection_result.success, (
+            f"Failed to get connection: {connection_result.error}"
+        )
 
         oracle_api = connection_result.data
         assert oracle_api is not None, "Oracle API connection is None"
@@ -95,7 +97,7 @@ class TestOracleConnectionIntegration:
         try:
             # Test simple query using real API
             result = oracle_api.query("SELECT 1 as test_col FROM DUAL")
-            assert result.is_success, f"Query execution failed: {result.error}"
+            assert result.success, f"Query execution failed: {result.error}"
         finally:
             oracle_api.disconnect()
 
@@ -103,27 +105,29 @@ class TestOracleConnectionIntegration:
         assert result.data is not None
         query_result = result.data
         assert hasattr(query_result, "rows"), "Query result should have rows attribute"
-        assert hasattr(query_result, "columns"), "Query result should have columns attribute"
+        assert hasattr(query_result, "columns"), (
+            "Query result should have columns attribute"
+        )
 
         # TDbOracleQueryResult.rows are TUPLES, not dicts: list[tuple[object, ...]]
         rows = query_result.rows
         if len(rows) != 1:
-            msg = f"Expected {1}, got {len(rows)}"
+            msg: str = f"Expected {1}, got {len(rows)}"
             raise AssertionError(msg)
 
         # Access tuple data by index, not key: rows[0][0] for first column
         first_row = rows[0]
         if len(first_row) < 1:
-            msg = f"Expected at least 1 column, got {len(first_row)}"
+            msg: str = f"Expected at least 1 column, got {len(first_row)}"
             raise AssertionError(msg)
         if first_row[0] != 1:
-            msg = f"Expected {1}, got {first_row[0]}"
+            msg: str = f"Expected {1}, got {first_row[0]}"
             raise AssertionError(msg)
 
         # Verify column name is available in columns list
         columns = query_result.columns
         if len(columns) < 1 or "TEST_COL" not in [col.upper() for col in columns]:
-            msg = f"Expected TEST_COL in columns {columns}"
+            msg: str = f"Expected TEST_COL in columns {columns}"
             raise AssertionError(msg)
 
     @pytest.mark.integration
@@ -135,7 +139,9 @@ class TestOracleConnectionIntegration:
         """Test Oracle command execution."""
         # Get real Oracle API connection
         connection_result = connection_manager.get_connection()
-        assert connection_result.is_success, f"Failed to get connection: {connection_result.error}"
+        assert connection_result.success, (
+            f"Failed to get connection: {connection_result.error}"
+        )
 
         oracle_api = connection_result.data
         assert oracle_api is not None, "Oracle API connection is None"
@@ -153,46 +159,52 @@ class TestOracleConnectionIntegration:
                 )
                 """,
             )
-            assert create_result.is_success, f"Table creation failed: {create_result.error}"
+            assert create_result.success, (
+                f"Table creation failed: {create_result.error}"
+            )
 
             try:
                 # Insert test data using real execute_ddl API for DML
                 insert_result = oracle_api.execute_ddl(
                     "INSERT INTO test_flext_table VALUES (1, 'test')",
                 )
-                assert insert_result.is_success, f"Insert failed: {insert_result.error}"
+                assert insert_result.success, f"Insert failed: {insert_result.error}"
 
                 # Query the data back using real query API
                 query_result = oracle_api.query(
                     "SELECT * FROM test_flext_table WHERE id = 1",
                 )
-                assert query_result.is_success, f"Query failed: {query_result.error}"
+                assert query_result.success, f"Query failed: {query_result.error}"
 
                 # Validate result structure using real TDbOracleQueryResult format
                 assert query_result.data is not None
                 result_data = query_result.data
-                assert hasattr(result_data, "rows"), "Query result should have rows attribute"
-                assert hasattr(result_data, "columns"), "Query result should have columns attribute"
+                assert hasattr(result_data, "rows"), (
+                    "Query result should have rows attribute"
+                )
+                assert hasattr(result_data, "columns"), (
+                    "Query result should have columns attribute"
+                )
 
                 # TDbOracleQueryResult.rows are TUPLES: list[tuple[object, ...]]
                 rows = result_data.rows
                 if len(rows) != 1:
-                    msg = f"Expected {1}, got {len(rows)}"
+                    msg: str = f"Expected {1}, got {len(rows)}"
                     raise AssertionError(msg)
 
                 # Convert to dict for easier validation using built-in method
                 dict_rows = result_data.to_dict_list()
                 if len(dict_rows) != 1:
-                    msg = f"Expected {1}, got {len(dict_rows)}"
+                    msg: str = f"Expected {1}, got {len(dict_rows)}"
                     raise AssertionError(msg)
 
                 # Now we can access by column name (Oracle returns uppercase)
                 row_dict = dict_rows[0]
                 if "TEST_DATA" not in row_dict:
-                    msg = f"Expected TEST_DATA column in {row_dict.keys()}"
+                    msg: str = f"Expected TEST_DATA column in {row_dict.keys()}"
                     raise AssertionError(msg)
                 if row_dict["TEST_DATA"] != "test":
-                    msg = f"Expected 'test', got {row_dict['TEST_DATA']}"
+                    msg: str = f"Expected 'test', got {row_dict['TEST_DATA']}"
                     raise AssertionError(msg)
 
             finally:
@@ -200,7 +212,7 @@ class TestOracleConnectionIntegration:
                 drop_result = oracle_api.execute_ddl(
                     "DROP TABLE test_flext_table",
                 )
-                assert drop_result.is_success, f"Table cleanup failed: {drop_result.error}"
+                assert drop_result.success, f"Table cleanup failed: {drop_result.error}"
         finally:
             # Always disconnect
             oracle_api.disconnect()
@@ -213,7 +225,7 @@ class TestOracleConnectionIntegration:
     ) -> None:
         """Test connection configuration validation."""
         result = connection_manager.validate_configuration()
-        assert result.is_success, f"Configuration validation failed: {result.error}"
+        assert result.success, f"Configuration validation failed: {result.error}"
 
     @pytest.mark.integration
     @pytest.mark.slow
@@ -224,7 +236,7 @@ class TestOracleConnectionIntegration:
         """Test full connection manager lifecycle."""
         # Connect
         connect_result = connection_manager.connect()
-        assert connect_result.is_success, f"Connection failed: {connect_result.error}"
+        assert connect_result.success, f"Connection failed: {connect_result.error}"
 
         # Check connection status
         assert connection_manager.is_connected()
@@ -232,15 +244,15 @@ class TestOracleConnectionIntegration:
         # Get connection info
         info = connection_manager.get_connection_info()
         if not (info["is_connected"]):
-            msg = f"Expected True, got {info['is_connected']}"
+            msg: str = f"Expected True, got {info['is_connected']}"
             raise AssertionError(msg)
         if info["host"] != connection_manager.config.host:
-            msg = f"Expected {connection_manager.config.host}, got {info['host']}"
+            msg: str = f"Expected {connection_manager.config.host}, got {info['host']}"
             raise AssertionError(msg)
 
         # Disconnect
         disconnect_result = connection_manager.disconnect()
-        assert disconnect_result.is_success, (
+        assert disconnect_result.success, (
             f"Disconnection failed: {disconnect_result.error}"
         )
 
@@ -257,7 +269,7 @@ class TestSettingsIntegration:
 
         # Basic validation
         if settings.app_name != "gruponos-meltano-native":
-            msg = f"Expected {'gruponos-meltano-native'}, got {settings.app_name}"
+            msg: str = f"Expected {'gruponos-meltano-native'}, got {settings.app_name}"
             raise AssertionError(msg)
         assert settings.version == "0.9.0"
         assert hasattr(settings, "oracle")
@@ -278,5 +290,5 @@ class TestSettingsIntegration:
         # Test connection string generation
         conn_str = config.get_connection_string()
         if conn_str != "testuser/testpass@test.oracle.com:1522/TESTDB":
-            msg = f"Expected {'testuser/testpass@test.oracle.com:1522/TESTDB'}, got {conn_str}"
+            msg: str = f"Expected {'testuser/testpass@test.oracle.com:1522/TESTDB'}, got {conn_str}"
             raise AssertionError(msg)

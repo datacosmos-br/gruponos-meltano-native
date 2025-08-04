@@ -1,7 +1,7 @@
-"""GrupoNOS Meltano Native CLI - FLEXT standardized.
+"""GrupoNOS Meltano Native CLI - FLEXT CLI Framework Integration.
 
-Command-line interface following FLEXT standards, Clean Architecture
-principles, and proper type safety.
+Command-line interface using FLEXT CLI framework following FLEXT standards,
+Clean Architecture principles, and unified CLI patterns across the ecosystem.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,14 +11,16 @@ from __future__ import annotations
 
 import asyncio
 import json
-import logging
 import sys
 
 import click
 import yaml
 
-# FLEXT Core Standards
-from flext_core import get_logger
+# FLEXT CLI Framework Integration
+from flext_cli import (
+    get_config,
+)
+from flext_core import FlextResult, get_logger
 
 from gruponos_meltano_native.config import (
     GruponosMeltanoSettings,
@@ -31,49 +33,39 @@ from gruponos_meltano_native.orchestrator import (
 logger = get_logger(__name__)
 
 
-def setup_logging(debug: bool = False) -> None:
-    """
-    Setup logging configuration using FLEXT logging standards.
-    
-    This function configures the Python logging system with enterprise-grade
-    logging patterns, including structured formatting, appropriate log levels,
-    and suppression of verbose third-party library logs.
-    
+def initialize_cli_environment(debug: bool = False) -> dict[str, object]:
+    """Initialize CLI environment using FLEXT CLI framework patterns.
+
+    This function sets up the complete CLI environment including logging,
+    configuration, and context management using FLEXT CLI standards.
+
     Args:
-        debug: If True, enables DEBUG level logging for detailed troubleshooting.
-               If False, uses INFO level logging for production operations.
-    
-    Configuration:
-        - Format: ISO timestamp, logger name, level, and message
-        - Debug Mode: DEBUG level with detailed output
-        - Production Mode: INFO level with essential information only
-        - Third-party Suppression: urllib3 and requests set to WARNING level
-    
-    Example:
-        >>> # Enable debug logging for development
-        >>> setup_logging(debug=True)
-        
-        >>> # Use production logging
-        >>> setup_logging(debug=False)
-    
+        debug: If True, enables debug mode for detailed troubleshooting.
+               If False, uses production configuration.
+
+    Returns:
+        dict: CLI environment context with configuration and console.
+
     Integration:
-        Uses FLEXT core logging patterns for consistency across the
-        FLEXT ecosystem and enterprise logging standards.
+        Uses FLEXT CLI framework patterns for consistent environment setup
+        across the FLEXT ecosystem and enterprise CLI standards.
+
     """
-    level = logging.DEBUG if debug else logging.INFO
+    from rich.console import Console
 
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    # Create CLI environment using flext-cli patterns
+    cli_config = get_config()  # Use flext-cli get_config utility
+    from flext_cli.utils.config import get_settings
+    cli_settings = get_settings()
+    console = Console()
 
-    # Suppress overly verbose loggers directly
-    urllib3_logger = logging.getLogger("urllib3")
-    requests_logger = logging.getLogger("requests")
-
-    urllib3_logger.setLevel(logging.WARNING)
-    requests_logger.setLevel(logging.WARNING)
+    # Create a proper CLI context dict
+    return {
+        "config": cli_config,
+        "settings": cli_settings,
+        "console": console,
+        "debug": debug or cli_config.debug,
+    }
 
 
 @click.group()
@@ -100,57 +92,116 @@ def cli(
     A FLEXT-standardized tool for managing Meltano pipelines with Oracle
     integration, comprehensive monitoring, and enterprise-grade reliability.
     """
-    ctx.ensure_object(dict)
+    try:
+        # Initialize CLI environment using FLEXT patterns
+        cli_context = initialize_cli_environment(debug)
 
-    # Setup logging
-    setup_logging(debug)
+        # Note: config_file handling will be implemented in future sprint
+        # Current implementation focuses on core CLI framework integration
 
-    # Store context
-    ctx.obj["debug"] = debug
-    ctx.obj["config_file"] = config_file
+        # Store enhanced context
+        ctx.ensure_object(dict)
+        ctx.obj["cli_context"] = cli_context
+        ctx.obj["debug"] = debug
+        ctx.obj["config_file"] = config_file
 
-    logger.info("GrupoNOS Meltano Native CLI started")
+        logger.info("GrupoNOS Meltano Native CLI started with FLEXT framework")
+
+    except Exception:
+        logger.exception("Failed to initialize CLI")
+        sys.exit(1)
 
 
 @cli.command()
 @click.pass_context
 def health(ctx: click.Context) -> None:
     """Check pipeline health and system connectivity."""
-    click.echo("🔍 Running health check...")
-    logger.info("Starting health check")
-
     try:
-        # Create configuration
-        config = create_gruponos_meltano_settings()
-        click.echo("✅ Configuration loaded successfully")
+        cli_context: dict[str, object] = ctx.obj["cli_context"]
+        console = cli_context["console"]
+        logger.info("Starting health check with FLEXT CLI framework")
 
-        # Create orchestrator
-        _ = create_gruponos_meltano_orchestrator(config)
-        click.echo("✅ Orchestrator initialized successfully")
+        # Create configuration using FLEXT patterns
+        config_result = _create_configuration()
+        if config_result.is_failure:
+            logger.error(f"Configuration creation failed: {config_result.error}")
+            sys.exit(1)
 
-        # Run comprehensive health check
-        if (
-            config.oracle
-            and config.oracle.host
-            and config.oracle.username
-            and config.oracle.password
-        ):
-            click.echo("✅ Oracle connection configured")
+        if config_result.data is None:
+            logger.error("Configuration data is None")
+            sys.exit(1)
+
+        config = config_result.data
+        health_status = {"configuration": "✅ Valid"}
+
+        # Create orchestrator using FLEXT patterns
+        orchestrator_result = _create_orchestrator(config)
+        if orchestrator_result.is_failure:
+            logger.error(f"Orchestrator creation failed: {orchestrator_result.error}")
+            health_status["orchestrator"] = "❌ Failed"
         else:
-            click.echo("⚠️  Oracle connection not fully configured")
+            health_status["orchestrator"] = "✅ Initialized"
 
-        if config.meltano_project_root and config.meltano_environment:
-            click.echo("✅ Meltano project configured")
-        else:
-            click.echo("⚠️  Meltano project not fully configured")
+        # Check Oracle connection
+        oracle_status = _check_oracle_connection(config)
+        health_status["oracle_connection"] = oracle_status
+
+        # Check Meltano configuration
+        meltano_status = _check_meltano_configuration(config)
+        health_status["meltano_project"] = meltano_status
+
+        # Format output using Rich console
+        from rich.console import Console
+        if isinstance(console, Console):
+            console.print("📋 Health Check Results:")
+            for component, status in health_status.items():
+                console.print(f"  {component.ljust(20)}: {status}")
 
         logger.info("Health check completed successfully")
-        click.echo("✅ Pipeline health check: PASSED")
 
-    except (RuntimeError, ValueError, TypeError) as e:
-        logger.exception(f"Health check failed: {e}")
-        click.echo(f"❌ Pipeline health check: FAILED - {e}")
+    except Exception as e:
+        logger.exception("Health check failed")
+        from rich.console import Console
+        console = Console()
+        console.print(f"❌ Health check failed: {e}")
         sys.exit(1)
+
+
+def _create_configuration() -> FlextResult[GruponosMeltanoSettings]:
+    """Create configuration using FLEXT patterns."""
+    try:
+        config = create_gruponos_meltano_settings()
+        return FlextResult.ok(config)
+    except Exception as e:
+        return FlextResult.fail(f"Configuration creation failed: {e}")
+
+
+def _create_orchestrator(config: GruponosMeltanoSettings) -> FlextResult[object]:
+    """Create orchestrator using FLEXT patterns."""
+    try:
+        orchestrator = create_gruponos_meltano_orchestrator(config)
+        return FlextResult.ok(orchestrator)
+    except Exception as e:
+        return FlextResult.fail(f"Orchestrator creation failed: {e}")
+
+
+def _check_oracle_connection(config: GruponosMeltanoSettings) -> str:
+    """Check Oracle connection status."""
+    if (
+        config.oracle
+        and config.oracle.host
+        and config.oracle.username
+        and config.oracle.password
+    ):
+        return "✅ Configured"
+    return "⚠️  Not fully configured"
+
+
+def _check_meltano_configuration(config: GruponosMeltanoSettings) -> str:
+    """Check Meltano configuration status."""
+    if config.meltano_project_root and config.meltano_environment:
+        return "✅ Found"
+    return "⚠️  Missing"
 
 
 @cli.command()

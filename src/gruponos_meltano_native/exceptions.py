@@ -36,20 +36,38 @@ if TYPE_CHECKING:
     class GruponosMeltanoTimeoutError(Exception):
         """Timeout error for type checking."""
 else:
-    # Runtime: Use flext-core's centralized exception factory
-    # This replaces 200+ lines of manual exception definitions with systematic generation
-    _exceptions = create_module_exception_classes("gruponos_meltano")
+    # Runtime: Create exception hierarchy with proper inheritance using flext-core patterns
+    from flext_core.exceptions import FlextError
 
-    # Extract standard exception classes for backward compatibility
-    GruponosMeltanoError = _exceptions["GruponosMeltanoError"]
-    GruponosMeltanoValidationError = _exceptions["GruponosMeltanoValidationError"]
-    GruponosMeltanoConfigurationError = _exceptions["GruponosMeltanoConfigurationError"]
-    GruponosMeltanoConnectionError = _exceptions["GruponosMeltanoConnectionError"]
-    GruponosMeltanoProcessingError = _exceptions["GruponosMeltanoProcessingError"]
-    GruponosMeltanoAuthenticationError = _exceptions[
-        "GruponosMeltanoAuthenticationError"
-    ]
-    GruponosMeltanoTimeoutError = _exceptions["GruponosMeltanoTimeoutError"]
+    # Base GrupoNOS error extending FLEXT foundation
+    class GruponosMeltanoError(FlextError):
+        """Base GrupoNOS Meltano error extending FLEXT foundation."""
+
+
+    # Standard exception hierarchy extending base
+    class GruponosMeltanoConfigurationError(GruponosMeltanoError):
+        """GrupoNOS configuration error."""
+
+
+    class GruponosMeltanoValidationError(GruponosMeltanoConfigurationError):
+        """GrupoNOS validation error extending configuration error."""
+
+
+    class GruponosMeltanoConnectionError(GruponosMeltanoError):
+        """GrupoNOS connection error."""
+
+
+    class GruponosMeltanoProcessingError(GruponosMeltanoError):
+        """GrupoNOS processing error."""
+
+
+    class GruponosMeltanoAuthenticationError(GruponosMeltanoError):
+        """GrupoNOS authentication error."""
+
+
+    class GruponosMeltanoTimeoutError(GruponosMeltanoError):
+        """GrupoNOS timeout error."""
+
 
 
 # Specialized domain-specific errors extending base classes
@@ -71,8 +89,8 @@ class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
         super().__init__(f"GrupoNOS orchestration: {message}", **kwargs)
 
 
-class GruponosMeltanoPipelineError(GruponosMeltanoError):
-    """GrupoNOS pipeline error."""
+class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
+    """GrupoNOS pipeline error extending orchestration error."""
 
     def __init__(
         self,
@@ -86,8 +104,13 @@ class GruponosMeltanoPipelineError(GruponosMeltanoError):
         super().__init__(f"GrupoNOS pipeline: {message}", **kwargs)
 
 
+# Monitoring error hierarchy
+class GruponosMeltanoMonitoringError(GruponosMeltanoError):
+    """Monitoring system error."""
+
+
 # Domain-specific error classes extending foundation hierarchy
-class GruponosMeltanoAlertError(GruponosMeltanoError):
+class GruponosMeltanoAlertError(GruponosMeltanoMonitoringError):
     """Alert system error."""
 
 
@@ -109,10 +132,6 @@ class GruponosMeltanoDataValidationError(GruponosMeltanoDataError):
 
 class GruponosMeltanoMissingConfigError(GruponosMeltanoError):
     """Missing configuration error."""
-
-
-class GruponosMeltanoMonitoringError(GruponosMeltanoError):
-    """Monitoring system error."""
 
 
 class GruponosMeltanoOracleError(GruponosMeltanoError):
@@ -151,7 +170,7 @@ class GruponosMeltanoTargetError(GruponosMeltanoSingerError):
     """Target execution error."""
 
 
-__all__ = [
+__all__: list[str] = [
     "GruponosMeltanoAlertDeliveryError",
     "GruponosMeltanoAlertError",
     "GruponosMeltanoAuthenticationError",

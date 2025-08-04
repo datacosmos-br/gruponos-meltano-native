@@ -62,7 +62,7 @@ class GruponosMeltanoOracleConnectionManager:
     def test_connection(self) -> FlextResult[bool]:
         """Test Oracle database connection for GrupoNOS."""
         connection_result = self.get_connection()
-        if not connection_result.is_success:
+        if not connection_result.success:
             return FlextResult.fail(f"Connection failed: {connection_result.error}")
 
         connection = connection_result.data
@@ -71,7 +71,7 @@ class GruponosMeltanoOracleConnectionManager:
 
         test_result = connection.test_connection()
 
-        if test_result.is_success:
+        if test_result.success:
             return FlextResult.ok(data=True)
         return FlextResult.fail(f"Connection test failed: {test_result.error}")
 
@@ -106,7 +106,7 @@ def create_gruponos_meltano_oracle_connection_manager(
 # =============================================
 
 
-__all__ = [
+__all__: list[str] = [
     "GruponosMeltanoOracleConnectionManager",
     "create_gruponos_meltano_oracle_connection_manager",
 ]

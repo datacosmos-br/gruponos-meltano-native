@@ -22,7 +22,7 @@ from gruponos_meltano_native.infrastructure.di_container import (
 )
 
 # FLEXT Standard Infrastructure Exports - NO legacy functions
-__all__ = [
+__all__: list[str] = [
     # FLEXT Core Infrastructure
     "FlextBaseSettings",
     "FlextContainer",

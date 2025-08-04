@@ -1,5 +1,4 @@
-"""
-GrupoNOS Meltano Native - Enterprise ETL Pipeline Framework
+"""GrupoNOS Meltano Native - Enterprise ETL Pipeline Framework.
 
 A production-ready ETL pipeline implementation built on the FLEXT framework ecosystem,
 designed specifically for Oracle WMS to Oracle Database data integration operations.
@@ -26,16 +25,17 @@ Integration:
 
 Example:
     Basic ETL pipeline execution:
-    
+
     >>> from gruponos_meltano_native import create_gruponos_meltano_platform
     >>> orchestrator = create_gruponos_meltano_platform()
     >>> result = await orchestrator.execute_full_sync("GNOS", "DC01")
-    >>> if result.is_success:
+    >>> if result.success:
     ...     print(f"Processed {result.data.records_processed} records")
 
 Author: GrupoNOS FLEXT Team
 Version: 0.9.0
 License: MIT
+
 """
 
 from __future__ import annotations
@@ -112,62 +112,62 @@ from gruponos_meltano_native.validators import (
 
 
 def create_gruponos_meltano_platform() -> GruponosMeltanoOrchestrator:
-    """
-    Create a GrupoNOS Meltano platform instance with FLEXT standards.
-    
+    """Create a GrupoNOS Meltano platform instance with FLEXT standards.
+
     This factory function initializes a complete ETL platform orchestrator with
     enterprise-grade configuration, monitoring, and error handling capabilities.
     The orchestrator integrates with the FLEXT ecosystem for consistent patterns
     across all data pipeline operations.
-    
+
     The platform provides:
     - Full and incremental sync capabilities
     - Oracle WMS to Oracle Database ETL operations
     - Comprehensive data validation and quality checks
     - Enterprise monitoring and alerting
     - Railway-oriented error propagation
-    
+
     Returns:
         GruponosMeltanoOrchestrator: Fully configured orchestrator instance
         ready for ETL pipeline execution with enterprise monitoring and
         error handling capabilities.
-    
+
     Example:
         >>> platform = create_gruponos_meltano_platform()
         >>> result = await platform.execute_full_sync("GNOS", "DC01")
-        >>> if result.is_success:
+        >>> if result.success:
         ...     print(f"ETL completed: {result.data.summary}")
+
     """
     settings = GruponosMeltanoSettings()
     return GruponosMeltanoOrchestrator(settings)
 
 
 def create_gruponos_meltano_oracle_manager() -> GruponosMeltanoOracleConnectionManager:
-    """
-    Create a GrupoNOS Meltano Oracle connection manager.
-    
+    """Create a GrupoNOS Meltano Oracle connection manager.
+
     This factory function initializes an Oracle database connection manager
     optimized for ETL operations with connection pooling, health monitoring,
     and automatic failover capabilities. The manager integrates with the
     FLEXT database abstraction layer for consistent error handling.
-    
+
     Features:
     - Connection pooling for high-performance ETL operations
     - Health monitoring with automatic reconnection
     - Query optimization for large data volumes
     - Transaction management with rollback capabilities
     - Integration with FLEXT observability patterns
-    
+
     Returns:
         GruponosMeltanoOracleConnectionManager: Configured Oracle connection
         manager with enterprise-grade connection pooling and monitoring.
-    
+
     Example:
         >>> manager = create_gruponos_meltano_oracle_manager()
         >>> connection_result = await manager.get_connection()
-        >>> if connection_result.is_success:
+        >>> if connection_result.success:
         ...     conn = connection_result.data
         ...     # Use connection for ETL operations
+
     """
     return create_gruponos_meltano_oracle_connection_manager()
 
@@ -176,7 +176,7 @@ def create_gruponos_meltano_oracle_manager() -> GruponosMeltanoOracleConnectionM
 # PUBLIC API - FLEXT STANDARD ONLY
 # ================================
 
-__all__ = [
+__all__: list[str] = [
     "FlextBaseSettings",
     "FlextContainer",
     "FlextResult",

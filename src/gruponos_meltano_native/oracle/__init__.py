@@ -16,7 +16,7 @@ from gruponos_meltano_native.oracle.connection_manager_enhanced import (
 )
 
 # Public API exports - FLEXT standard only
-__all__ = [
+__all__: list[str] = [
     # FLEXT Standard Classes
     "GruponosMeltanoOracleConnectionManager",
     # Factory Functions

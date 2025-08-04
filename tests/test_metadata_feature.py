@@ -4,7 +4,6 @@
 This replaces the private _connection access with public method access.
 """
 
-
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConnection
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
@@ -36,7 +35,7 @@ def test_execute_with_metadata_method() -> None:
         assert True
 
     except ImportError as e:
-        msg = f"Import error while creating Oracle objects: {e}"
+        msg: str = f"Import error while creating Oracle objects: {e}"
         raise AssertionError(msg) from e
     except Exception:
         # Expected - we don't have actual Oracle server
@@ -66,7 +65,7 @@ def test_connection_manager_usage() -> None:
         assert config.service_name == "ORCL"
 
     except ImportError as e:
-        msg = f"Import error in connection management: {e}"
+        msg: str = f"Import error in connection management: {e}"
         raise AssertionError(msg) from e
     except Exception:
         # Expected - no actual Oracle server

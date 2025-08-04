@@ -66,7 +66,7 @@ assert settings.version == "0.9.0"
 # Oracle WMS configuration with validation
 wms_config = settings.oracle_wms
 validation_result = wms_config.validate_connection()
-assert validation_result.is_success
+assert validation_result.success
 ```
 
 ### **Domain Layer (Business Logic)**
@@ -599,7 +599,7 @@ class TestETLPipeline:
             facility_code="DC01"
         )
         
-        assert result.is_success
+        assert result.success
         assert isinstance(result.data, list)
         assert all(isinstance(item, WMSAllocation) for item in result.data)
     
@@ -767,7 +767,7 @@ async def execute_incremental_sync(
         >>> from datetime import datetime, timedelta
         >>> last_sync = datetime.utcnow() - timedelta(hours=2)
         >>> result = await execute_incremental_sync("GNOS", "DC01", last_sync)
-        >>> if result.is_success:
+        >>> if result.success:
         ...     print(f"Synced {result.data.records_processed} records")
         ... else:
         ...     logger.error(f"Sync failed: {result.error}")

@@ -7,12 +7,15 @@ This module provides high-performance Oracle database connectivity optimized for
 ## Components
 
 ### `connection_manager_enhanced.py` - Enhanced Connection Management
+
 Enterprise-grade Oracle connection management system optimized for large-scale ETL operations.
 
 #### Key Classes
 
 ##### `GruponosMeltanoOracleConnectionManager`
+
 Primary connection management system with enterprise features:
+
 - **Connection Pooling**: High-performance connection pool with configurable limits
 - **Health Monitoring**: Continuous health checks with automatic failover
 - **Query Optimization**: Query performance monitoring and optimization
@@ -22,18 +25,21 @@ Primary connection management system with enterprise features:
 #### Features
 
 ##### Connection Pooling
+
 - **Pool Management**: Configurable min/max connections with automatic scaling
 - **Connection Validation**: Pre-use connection validation to ensure reliability
 - **Leak Detection**: Connection leak detection with automatic recovery
 - **Performance Monitoring**: Connection usage metrics and performance tracking
 
 ##### Health Monitoring
+
 - **Continuous Checks**: Regular health check execution with configurable intervals
 - **Automatic Recovery**: Automatic connection recovery and pool refresh
 - **Failover Support**: Multi-host failover configuration for high availability
 - **Status Reporting**: Detailed health status reporting with metrics
 
 ##### Query Optimization
+
 - **Performance Tracking**: Query execution time monitoring
 - **Slow Query Detection**: Automatic detection of slow-running queries
 - **Query Hints**: Oracle-specific query hints for ETL optimization
@@ -42,6 +48,7 @@ Primary connection management system with enterprise features:
 ## Usage Examples
 
 ### Basic Connection Management
+
 ```python
 from gruponos_meltano_native.oracle import (
     create_gruponos_meltano_oracle_connection_manager,
@@ -63,7 +70,7 @@ manager = create_gruponos_meltano_oracle_connection_manager(config)
 
 # Get database connection
 connection_result = await manager.get_connection()
-if connection_result.is_success:
+if connection_result.success:
     conn = connection_result.data
     # Use connection for ETL operations
     await conn.execute("SELECT COUNT(*) FROM allocations")
@@ -72,6 +79,7 @@ else:
 ```
 
 ### ETL Pipeline Integration
+
 ```python
 from contextlib import asynccontextmanager
 
@@ -115,6 +123,7 @@ class ETLDataProcessor:
 ```
 
 ### Advanced Configuration
+
 ```python
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
@@ -155,6 +164,7 @@ manager = create_gruponos_meltano_oracle_connection_manager(config)
 ## Performance Optimization
 
 ### Query Optimization Features
+
 ```python
 # ETL-optimized queries with hints
 class OptimizedETLQueries:
@@ -205,6 +215,7 @@ class OptimizedETLQueries:
 ```
 
 ### Connection Pool Monitoring
+
 ```python
 class ConnectionPoolMonitor:
     def __init__(self, connection_manager):
@@ -228,7 +239,7 @@ class ConnectionPoolMonitor:
         """Comprehensive pool health check."""
         health_result = await self.connection_manager.check_pool_health()
         
-        if health_result.is_success:
+        if health_result.success:
             return {
                 "status": "healthy",
                 "metrics": await self.get_pool_metrics(),
@@ -245,6 +256,7 @@ class ConnectionPoolMonitor:
 ## Error Handling and Recovery
 
 ### Connection Failure Recovery
+
 ```python
 class ResilientConnectionManager:
     def __init__(self, primary_config, failover_configs):
@@ -259,13 +271,13 @@ class ResilientConnectionManager:
         """Get connection with automatic failover to backup instances."""
         # Try primary connection
         result = await self.current_manager.get_connection()
-        if result.is_success:
+        if result.success:
             return result
         
         # Try failover connections
         for failover_manager in self.failover_managers:
             result = await failover_manager.get_connection()
-            if result.is_success:
+            if result.success:
                 self.current_manager = failover_manager
                 await self._notify_failover_activated()
                 return result
@@ -280,6 +292,7 @@ class ResilientConnectionManager:
 ```
 
 ### Transaction Recovery
+
 ```python
 class TransactionManager:
     def __init__(self, connection_manager):
@@ -312,6 +325,7 @@ class TransactionManager:
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Basic Oracle connection
 GRUPONOS_ORACLE_HOST=oracle-prod.company.com
@@ -339,6 +353,7 @@ GRUPONOS_ORACLE_WALLET_LOCATION=/opt/oracle/wallet
 ## Testing Support
 
 ### Mock Connection Manager
+
 ```python
 class MockOracleConnectionManager:
     def __init__(self):
@@ -357,6 +372,7 @@ class MockOracleConnectionManager:
 ```
 
 ### Integration Testing
+
 ```python
 @pytest.mark.integration
 async def test_oracle_connection_pool():
@@ -367,7 +383,7 @@ async def test_oracle_connection_pool():
     # Simulate concurrent connections
     async def get_connection_task():
         result = await manager.get_connection()
-        assert result.is_success
+        assert result.success
         await asyncio.sleep(0.1)  # Simulate work
         await manager.return_connection(result.data)
     
@@ -377,12 +393,13 @@ async def test_oracle_connection_pool():
     
     # Verify pool health
     pool_health = await manager.check_pool_health()
-    assert pool_health.is_success
+    assert pool_health.success
 ```
 
 ## Development Guidelines
 
 ### Connection Management Best Practices
+
 1. **Always Use Context Managers**: Ensure proper connection cleanup
 2. **Monitor Pool Health**: Regular health checks and monitoring
 3. **Handle Failures Gracefully**: Comprehensive error handling and recovery
@@ -390,6 +407,7 @@ async def test_oracle_connection_pool():
 5. **Security First**: Secure credential management and SSL connections
 
 ### Performance Optimization
+
 1. **Connection Pooling**: Proper pool sizing for workload
 2. **Query Optimization**: Use Oracle-specific hints and optimizations
 3. **Batch Operations**: Minimize round trips with bulk operations

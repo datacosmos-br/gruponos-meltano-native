@@ -34,7 +34,10 @@ class TestOracleConnectionManager:
         """Test connection manager with missing credentials."""
         # Test with minimal config
         config = GruponosMeltanoOracleConnectionConfig(
-            host="localhost", service_name="TESTDB", username="test", password="test",
+            host="localhost",
+            service_name="TESTDB",
+            username="test",
+            password="test",
         )
 
         manager = GruponosMeltanoOracleConnectionManager(config)
@@ -42,7 +45,7 @@ class TestOracleConnectionManager:
 
         # Test get_connection returns FlextResult
         result = manager.get_connection()
-        assert hasattr(result, "is_success")
+        assert hasattr(result, "success")
         assert hasattr(result, "data")
         assert hasattr(result, "error")
 
@@ -62,9 +65,9 @@ class TestOracleConnectionManager:
 
         # Test that get_connection returns proper error result
         result = manager.get_connection()
-        assert hasattr(result, "is_success")
+        assert hasattr(result, "success")
         # Connection might fail or succeed depending on actual network/Oracle setup
-        assert isinstance(result.is_success, bool)
+        assert isinstance(result.success, bool)
 
     def test_connection_manager_configuration_options(self) -> None:
         """Test connection manager with different configuration options."""
@@ -102,7 +105,7 @@ class TestOracleConnectionManager:
 
         # Test that connection manager can create connections
         result = manager.get_connection()
-        assert hasattr(result, "is_success")
+        assert hasattr(result, "success")
 
         # Verify expected bulk size constant
         assert EXPECTED_BULK_SIZE == 2

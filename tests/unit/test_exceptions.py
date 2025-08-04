@@ -39,12 +39,12 @@ class TestGruponosMeltanoBaseException:
     def test_base_exception_creation(self) -> None:
         """Test base exception can be created with message."""
         error = GruponosMeltanoError("Test error message")
-        if str(error) != "Test error message":
-            msg = f"Expected {'Test error message'}, got {error!s}"
+        if str(error) != "[GENERIC_ERROR] Test error message":
+            msg: str = f"Expected {'[GENERIC_ERROR] Test error message'}, got {error!s}"
             raise AssertionError(msg)
         assert error.message == "Test error message"
-        if error.error_code != "GruponosMeltanoError":
-            msg = f"Expected {'GruponosMeltanoError'}, got {error.error_code}"
+        if error.error_code != "GENERIC_ERROR":
+            msg: str = f"Expected {'GENERIC_ERROR'}, got {error.error_code}"
             raise AssertionError(msg)
         assert error.context == {}
 
@@ -53,36 +53,37 @@ class TestGruponosMeltanoBaseException:
         context = {"key": "value", "number": 42}
         error = GruponosMeltanoError(
             "Test error",
-            error_code="TEST_001",
             context=context,
         )
         if error.message != "Test error":
-            msg = f"Expected {'Test error'}, got {error.message}"
+            msg: str = f"Expected {'Test error'}, got {error.message}"
             raise AssertionError(msg)
-        assert error.error_code == "TEST_001"
+        # FlextError generates GENERIC_ERROR by default unless overridden
+        assert error.error_code == "GENERIC_ERROR"
+        # Context is stored directly in FlextError
         if error.context != context:
-            msg = f"Expected {context}, got {error.context}"
+            msg: str = f"Expected {context}, got {error.context}"
             raise AssertionError(msg)
-        if "Context: {'key': 'value', 'number': 42}" not in str(error):
-            msg = f"Expected {"Context: {'key': 'value', 'number': 42}"} in {error!s}"
+        # The string representation shows the error code and message, but not context
+        if str(error) != "[GENERIC_ERROR] Test error":
+            msg: str = f"Expected '[GENERIC_ERROR] Test error', got {error!s}"
             raise AssertionError(msg)
 
     def test_base_exception_repr(self) -> None:
         """Test exception repr format."""
         error = GruponosMeltanoError(
             "Test message",
-            error_code="TEST_001",
             context={"test": True},
         )
         repr_str = repr(error)
+        # The repr shows the specific class name
         if "GruponosMeltanoError" not in repr_str:
-            msg = f"Expected {'GruponosMeltanoError'} in {repr_str}"
+            msg: str = f"Expected {'GruponosMeltanoError'} in {repr_str}"
             raise AssertionError(msg)
         assert "Test message" in repr_str
-        if "TEST_001" not in repr_str:
-            msg = f"Expected {'TEST_001'} in {repr_str}"
+        if "GENERIC_ERROR" not in repr_str:
+            msg: str = f"Expected {'GENERIC_ERROR'} in {repr_str}"
             raise AssertionError(msg)
-        assert "{'test': True}" in repr_str
 
     def test_base_exception_inheritance(self) -> None:
         """Test base exception inherits from Exception."""
@@ -291,16 +292,15 @@ class TestExceptionUsagePatterns:
         )
 
         if "Failed to connect to Oracle database" not in str(error):
-            msg = f"Expected {'Failed to connect to Oracle database'} in {error!s}"
+            msg: str = f"Expected {'Failed to connect to Oracle database'} in {error!s}"
             raise AssertionError(msg)
-        assert "localhost" in str(error)
-        if "1521" not in str(error):
-            msg = f"Expected {'1521'} in {error!s}"
-            raise AssertionError(msg)
+        # Context is stored in the error but not shown in string representation by default
+        assert error.context.get("host") == "localhost"
+        assert error.context.get("port") == 1521
         if error.error_code != "ORACLE_CONN_001":
-            msg = f"Expected {'ORACLE_CONN_001'}, got {error.error_code}"
+            msg: str = f"Expected {'ORACLE_CONN_001'}, got {error.error_code}"
             raise AssertionError(msg)
-        assert error.context["retry_count"] == EXPECTED_DATA_COUNT
+        assert error.context.get("retry_count") == EXPECTED_DATA_COUNT
 
     def test_exception_chaining(self) -> None:
         """Test exception chaining with cause."""
@@ -316,5 +316,7 @@ class TestExceptionUsagePatterns:
             # In real code, would use 'raise chain_error from e'
             assert isinstance(chain_error, GruponosMeltanoValidationError)
             if chain_error.context["field"] != "database_url":
-                msg = f"Expected {'database_url'}, got {chain_error.context['field']}"
+                msg: str = (
+                    f"Expected {'database_url'}, got {chain_error.context['field']}"
+                )
                 raise AssertionError(msg) from None

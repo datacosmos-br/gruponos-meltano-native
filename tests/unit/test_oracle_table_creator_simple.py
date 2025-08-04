@@ -47,11 +47,11 @@ class TestOracleTableCreatorSimple:
 
         # Check that config has necessary attributes
         if config.host != "localhost":
-            msg = f"Expected {'localhost'}, got {config.host}"
+            msg: str = f"Expected {'localhost'}, got {config.host}"
             raise AssertionError(msg)
         assert config.port == 1521
         if config.service_name != "XEPDB1":
-            msg = f"Expected {'XEPDB1'}, got {config.service_name}"
+            msg: str = f"Expected {'XEPDB1'}, got {config.service_name}"
             raise AssertionError(msg)
         assert config.username == "test_user"
         # Password is SecretStr for enterprise security - check actual value
@@ -59,7 +59,9 @@ class TestOracleTableCreatorSimple:
 
         assert isinstance(config.password, SecretStr)
         if config.password.get_secret_value() != "test_pass":
-            msg = f"Expected {'test_pass'}, got {config.password.get_secret_value()}"
+            msg: str = (
+                f"Expected {'test_pass'}, got {config.password.get_secret_value()}"
+            )
             raise AssertionError(msg)
 
     def test_table_creator_config_validation(self) -> None:
@@ -119,6 +121,6 @@ class TestOracleTableCreatorSimple:
 
         # Verify initialization completed
         if config.host != "localhost":
-            msg = f"Expected {'localhost'}, got {config.host}"
+            msg: str = f"Expected {'localhost'}, got {config.host}"
             raise AssertionError(msg)
         assert config.port == 1521

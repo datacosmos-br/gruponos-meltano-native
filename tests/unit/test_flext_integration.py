@@ -33,11 +33,11 @@ class TestFlextConfig:
             batch_size=1000,
         )
         if config.host != "localhost":
-            msg = f"Expected {'localhost'}, got {config.host}"
+            msg: str = f"Expected {'localhost'}, got {config.host}"
             raise AssertionError(msg)
         assert config.port == 1522
         if config.protocol != "tcps":
-            msg = f"Expected {'tcps'}, got {config.protocol}"
+            msg: str = f"Expected {'tcps'}, got {config.protocol}"
             raise AssertionError(msg)
         # Test real Oracle config fields
         assert config.timeout == 30  # Real default from FlextOracleModel
@@ -58,7 +58,7 @@ class TestFlextConfig:
             api_enabled=False,
         )
         if config.api_enabled:
-            msg = f"Expected False, got {config.api_enabled}"
+            msg: str = f"Expected False, got {config.api_enabled}"
             raise AssertionError(msg)
         assert config.api_base_url is None
         # Invalid config - API enabled but no URL (Pydantic validation error expected)
@@ -131,9 +131,9 @@ class TestFlextConfig:
         assert isinstance(debug_enabled, bool)
 
         # Verify sub-configs have expected structure
-        assert hasattr(wms_config, 'api_enabled')
-        assert hasattr(wms_config, 'oracle')
-        assert hasattr(target_config, 'target_schema')
+        assert hasattr(wms_config, "api_enabled")
+        assert hasattr(wms_config, "oracle")
+        assert hasattr(target_config, "target_schema")
 
 
 class TestGrupoNOSOrchestrator:
@@ -178,7 +178,7 @@ class TestGrupoNOSOrchestrator:
         # Verify basic properties
         assert hasattr(orchestrator, "settings")  # Real attribute name
         if orchestrator.settings != mock_config:
-            msg = f"Expected {mock_config}, got {orchestrator.settings}"
+            msg: str = f"Expected {mock_config}, got {orchestrator.settings}"
             raise AssertionError(msg)
         # Verify essential methods exist
         assert hasattr(orchestrator, "run_pipeline")  # Real method
@@ -224,12 +224,12 @@ class TestConnectionManagerIntegration:
             assert oracle_config.port == 1521
 
             # Verify FlextResult is working
-            assert service_result.is_success
+            assert service_result.success
             assert service_result.data == "test_service_working"
 
             # Test chaining FlextResult operations
             chained_result = service_result.map(lambda x: f"processed_{x}")
-            assert chained_result.is_success
+            assert chained_result.success
             assert chained_result.data == "processed_test_service_working"
         except ImportError as e:
             pytest.fail(f"FLEXT integration imports failed: {e}")

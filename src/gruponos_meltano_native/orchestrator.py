@@ -10,6 +10,8 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from flext_core import FlextResult
+
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
 # =============================================
@@ -35,57 +37,57 @@ class GruponosMeltanoPipelineResult:
 
 
 class GruponosMeltanoPipelineRunner:
-    """
-    GrupoNOS-specific Meltano pipeline runner with enterprise execution capabilities.
-    
+    """GrupoNOS-specific Meltano pipeline runner with enterprise execution capabilities.
+
     This runner provides low-level pipeline execution functionality with comprehensive
     error handling, environment management, and monitoring integration. It serves as
     the infrastructure layer for ETL pipeline operations.
-    
+
     Key Features:
         - Subprocess-based Meltano execution with timeout management
         - Environment variable management for secure credential handling
         - Comprehensive error capture and reporting
         - Performance monitoring and execution metrics
         - Process isolation and resource management
-    
+
     Architecture:
         Implements the infrastructure layer of Clean Architecture, handling
         external system interactions (Meltano CLI) while providing a clean
         interface for application services.
-    
+
     Example:
         Direct runner usage (typically used via GruponosMeltanoOrchestrator):
-        
+
         >>> settings = GruponosMeltanoSettings()
         >>> runner = GruponosMeltanoPipelineRunner(settings)
         >>> result = runner.run_pipeline("full-sync-job")
         >>> print(f"Pipeline result: {result.success}")
-    
+
     Security:
         - Credentials are passed via environment variables, not command line
         - Process isolation prevents credential leakage
         - Secure environment variable handling with proper cleanup
+
     """
 
     def __init__(self, settings: GruponosMeltanoSettings) -> None:
-        """
-        Initialize pipeline runner with GrupoNOS settings.
-        
+        """Initialize pipeline runner with GrupoNOS settings.
+
         Args:
             settings: GrupoNOS Meltano configuration settings containing
                      all required environment variables, connection strings,
                      and pipeline configuration parameters.
-        
+
         Raises:
             GruponosMeltanoConfigurationError: If required settings are missing
             GruponosMeltanoValidationError: If settings validation fails
             FileNotFoundError: If meltano_project_root directory doesn't exist
-        
+
         Example:
             >>> settings = GruponosMeltanoSettings()
             >>> runner = GruponosMeltanoPipelineRunner(settings)
             >>> # Runner is now ready for pipeline execution
+
         """
         self.settings = settings
         self.project_root = Path(settings.meltano_project_root)
@@ -251,90 +253,108 @@ class GruponosMeltanoPipelineRunner:
 
 
 class GruponosMeltanoOrchestrator:
-    """
-    Main GrupoNOS Meltano orchestrator for ETL pipeline management.
-    
+    """Main GrupoNOS Meltano orchestrator for ETL pipeline management.
+
     This orchestrator provides enterprise-grade ETL pipeline management for Oracle WMS
     to Oracle Database data integration operations. It coordinates Meltano pipeline
     execution with comprehensive error handling, monitoring, and business rule enforcement.
-    
+
     Key Features:
         - Full synchronization pipeline for complete data refresh
         - Incremental synchronization for real-time data updates
         - Oracle WMS API integration with retry mechanisms
         - Target database operations with transaction management
         - Comprehensive monitoring and alerting integration
-    
+
     Architecture:
         Built on Clean Architecture principles with dependency injection,
         the orchestrator serves as the main application service layer that
         coordinates between domain logic and infrastructure concerns.
-    
+
     Example:
         Basic orchestrator usage:
-        
+
         >>> orchestrator = GruponosMeltanoOrchestrator()
         >>> result = orchestrator.run_full_sync()
         >>> if result.success:
         ...     print(f"Pipeline completed in {result.execution_time:.2f}s")
         ... else:
         ...     print(f"Pipeline failed: {result.error}")
-    
+
     Integration:
         - Uses GruponosMeltanoSettings for environment-aware configuration
         - Integrates with GruponosMeltanoPipelineRunner for execution
         - Coordinates with monitoring systems for observability
         - Implements FLEXT patterns for consistent error handling
+
     """
 
     def __init__(self, settings: GruponosMeltanoSettings | None = None) -> None:
-        """
-        Initialize orchestrator with GrupoNOS settings.
-        
+        """Initialize orchestrator with GrupoNOS settings.
+
         Args:
             settings: Optional GrupoNOS Meltano configuration settings.
                      If None, settings will be loaded from environment variables
                      and configuration files using default patterns.
-        
+
         Raises:
             GruponosMeltanoConfigurationError: If required configuration is missing
             GruponosMeltanoValidationError: If configuration validation fails
-        
+
         Example:
             >>> # Use default settings from environment
             >>> orchestrator = GruponosMeltanoOrchestrator()
-            
+
             >>> # Use custom settings
             >>> custom_settings = GruponosMeltanoSettings(environment="production")
             >>> orchestrator = GruponosMeltanoOrchestrator(custom_settings)
+
         """
         self.settings = settings or GruponosMeltanoSettings()
         self.pipeline_runner = GruponosMeltanoPipelineRunner(self.settings)
 
-    def run_full_sync(self) -> GruponosMeltanoPipelineResult:
+    async def validate_configuration(self) -> FlextResult[None]:
+        """Validate orchestrator configuration using FLEXT patterns.
+
+        Returns:
+            FlextResult indicating success or failure with validation errors.
+
         """
-        Execute full synchronization pipeline for complete data refresh.
-        
+        # Check if target Oracle has required configuration
+        target_oracle = self.settings.target_oracle
+        if not target_oracle.target_schema:
+            return FlextResult.fail("Target Oracle not configured")
+
+        # Check if WMS source has required configuration
+        wms_source = self.settings.wms_source
+        if not wms_source.oracle:
+            return FlextResult.fail("WMS source not configured")
+
+        return FlextResult.ok(None)
+
+    def run_full_sync(self) -> GruponosMeltanoPipelineResult:
+        """Execute full synchronization pipeline for complete data refresh.
+
         This method runs the complete ETL pipeline that extracts all data from
         Oracle WMS API and loads it into the target Oracle database. It is
         designed for comprehensive data refresh operations and initial loads.
-        
+
         Pipeline Components:
             - Oracle WMS API data extraction (all entities)
             - Data validation and quality checks
             - Business rule enforcement
             - Target database bulk loading with transaction management
             - Comprehensive monitoring and alerting
-        
+
         Returns:
             GruponosMeltanoPipelineResult: Pipeline execution result containing
             success status, execution time, output logs, and any error information.
-            
+
         Raises:
             GruponosMeltanoPipelineError: If pipeline execution fails
             GruponosMeltanoOracleConnectionError: If database connections fail
             GruponosMeltanoValidationError: If data validation fails
-        
+
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
             >>> result = orchestrator.run_full_sync()
@@ -343,37 +363,37 @@ class GruponosMeltanoOrchestrator:
             ...     print(f"Output: {result.output}")
             ... else:
             ...     print(f"Full sync failed: {result.error}")
-        
+
         Performance:
             - Typical execution time: 5-15 minutes for standard datasets
             - Memory usage: 1-2GB peak during bulk operations
             - Recommended scheduling: Weekly or on-demand
+
         """
         return self.pipeline_runner.run_pipeline("full-sync-job")
 
     def run_incremental_sync(self) -> GruponosMeltanoPipelineResult:
-        """
-        Execute incremental synchronization pipeline for real-time updates.
-        
+        """Execute incremental synchronization pipeline for real-time updates.
+
         This method runs the incremental ETL pipeline that extracts only
         changed data since the last synchronization using modification timestamps.
         It is optimized for frequent execution and minimal data transfer.
-        
+
         Pipeline Components:
             - Oracle WMS API incremental data extraction (mod_ts filtering)
             - Change data capture and validation
             - Upsert operations on target database
             - Incremental monitoring and alerting
-        
+
         Returns:
             GruponosMeltanoPipelineResult: Pipeline execution result with
             incremental sync statistics and performance metrics.
-            
+
         Raises:
             GruponosMeltanoPipelineError: If incremental pipeline execution fails
             GruponosMeltanoDataValidationError: If change data validation fails
             GruponosMeltanoOracleConnectionError: If database connections fail
-        
+
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
             >>> result = orchestrator.run_incremental_sync()
@@ -382,35 +402,35 @@ class GruponosMeltanoOrchestrator:
             ...     # Access incremental metrics from result.metadata
             ... else:
             ...     print(f"Incremental sync failed: {result.error}")
-        
+
         Performance:
             - Typical execution time: 30 seconds - 2 minutes
             - Memory usage: 100-500MB peak
             - Recommended scheduling: Every 2 hours
+
         """
         return self.pipeline_runner.run_pipeline("incremental-sync-job")
 
     def run_job(self, job_name: str) -> GruponosMeltanoPipelineResult:
-        """
-        Execute a specific pipeline job by name.
-        
+        """Execute a specific pipeline job by name.
+
         This method provides flexible job execution for custom pipeline
         configurations defined in the Meltano project. It supports both
         standard and custom job definitions.
-        
+
         Args:
             job_name: Name of the Meltano job to execute. Must be defined
                      in the meltano.yml configuration file.
-        
+
         Returns:
             GruponosMeltanoPipelineResult: Job execution result with
             job-specific output and performance metrics.
-            
+
         Raises:
             GruponosMeltanoPipelineError: If job execution fails
             GruponosMeltanoConfigurationError: If job name is not found
             ValueError: If job_name is empty or invalid
-        
+
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
             >>> result = orchestrator.run_job("custom-data-quality-check")
@@ -418,35 +438,36 @@ class GruponosMeltanoOrchestrator:
             ...     print(f"Job '{result.job_name}' completed successfully")
             ... else:
             ...     print(f"Job failed: {result.error}")
-        
+
         Available Jobs:
             - "full-sync-job": Complete data synchronization
             - "incremental-sync-job": Incremental data updates
             - Custom jobs as defined in meltano.yml
+
         """
         return self.pipeline_runner.run_pipeline(job_name)
 
     def list_jobs(self) -> list[str]:
-        """
-        List all available pipeline jobs.
-        
+        """List all available pipeline jobs.
+
         This method returns a list of all Meltano jobs available for execution
         in the current project configuration. Jobs are defined in meltano.yml
         and can include both standard ETL jobs and custom operations.
-        
+
         Returns:
             list[str]: List of available job names that can be executed
             via run_job() method.
-        
+
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
             >>> jobs = orchestrator.list_jobs()
             >>> print(f"Available jobs: {', '.join(jobs)}")
             Available jobs: full-sync-job, incremental-sync-job
-        
+
         Note:
             The job list is currently hardcoded but should be enhanced
             to dynamically read from meltano.yml configuration in future versions.
+
         """
         # Based on meltano.yml configuration
         return ["full-sync-job", "incremental-sync-job"]
@@ -502,7 +523,7 @@ def create_gruponos_meltano_pipeline_runner(
 
 
 # Re-export for backward compatibility
-__all__ = [
+__all__: list[str] = [
     "GruponosMeltanoOrchestrator",
     "GruponosMeltanoPipelineResult",
     "GruponosMeltanoPipelineRunner",

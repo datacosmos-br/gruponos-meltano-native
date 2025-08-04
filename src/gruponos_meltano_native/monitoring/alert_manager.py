@@ -126,7 +126,7 @@ class GruponosMeltanoAlertService:
                 results.append(slack_result)
 
             # Check if any channel succeeded
-            success = any(result.is_success for result in results)
+            success = any(result.success for result in results)
 
             if success:
                 logger.info(
@@ -138,7 +138,7 @@ class GruponosMeltanoAlertService:
             error_messages = [
                 result.error or "Unknown error"
                 for result in results
-                if not result.is_success
+                if not result.success
             ]
             combined_error = "; ".join(error_messages)
             return FlextResult.fail(f"Failed to send alert: {combined_error}")
@@ -394,7 +394,7 @@ def create_gruponos_meltano_alert_manager(
 
 
 # Public API exports
-__all__ = [
+__all__: list[str] = [
     # FLEXT Standard Classes
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertManager",

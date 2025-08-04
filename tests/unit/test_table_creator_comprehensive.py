@@ -25,7 +25,10 @@ class TestOracleConnectionManagerComprehensive:
     def test_initialization_minimal_config(self) -> None:
         """Test initialization with minimal configuration."""
         config = GruponosMeltanoOracleConnectionConfig(
-            host="localhost", service_name="TESTDB", username="test", password="test",
+            host="localhost",
+            service_name="TESTDB",
+            username="test",
+            password="test",
         )
 
         manager = GruponosMeltanoOracleConnectionManager(config)
@@ -65,12 +68,12 @@ class TestOracleConnectionManagerComprehensive:
 
         # Test get_connection returns FlextResult
         result = manager.get_connection()
-        assert hasattr(result, "is_success")
+        assert hasattr(result, "success")
         assert hasattr(result, "data")
         assert hasattr(result, "error")
 
         # Result should be boolean type
-        assert isinstance(result.is_success, bool)
+        assert isinstance(result.success, bool)
 
     def test_connection_manager_test_connection(self) -> None:
         """Test connection manager test_connection method."""
@@ -86,12 +89,12 @@ class TestOracleConnectionManagerComprehensive:
 
         # Test test_connection returns FlextResult
         result = manager.test_connection()
-        assert hasattr(result, "is_success")
+        assert hasattr(result, "success")
         assert hasattr(result, "data")
         assert hasattr(result, "error")
 
         # Result should be boolean type
-        assert isinstance(result.is_success, bool)
+        assert isinstance(result.success, bool)
 
     def test_connection_manager_close_connection(self) -> None:
         """Test connection manager close_connection method."""
@@ -107,12 +110,12 @@ class TestOracleConnectionManagerComprehensive:
 
         # Test close_connection returns FlextResult
         result = manager.close_connection()
-        assert hasattr(result, "is_success")
+        assert hasattr(result, "success")
         assert hasattr(result, "data")
         assert hasattr(result, "error")
 
         # Result should be boolean type
-        assert isinstance(result.is_success, bool)
+        assert isinstance(result.success, bool)
 
     def test_connection_manager_error_handling(self) -> None:
         """Test connection manager error handling with invalid config."""
@@ -132,10 +135,10 @@ class TestOracleConnectionManagerComprehensive:
 
         # Connection operations should handle errors gracefully
         get_result = manager.get_connection()
-        assert isinstance(get_result.is_success, bool)
+        assert isinstance(get_result.success, bool)
 
         test_result = manager.test_connection()
-        assert isinstance(test_result.is_success, bool)
+        assert isinstance(test_result.success, bool)
 
     def test_connection_manager_configuration_validation(self) -> None:
         """Test connection manager with various configuration options."""

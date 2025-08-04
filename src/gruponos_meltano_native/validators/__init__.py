@@ -51,7 +51,7 @@ with contextlib.suppress(ImportError):
     )
 
 # FLEXT Standard Validation Exports
-__all__ = [
+__all__: list[str] = [
     # Legacy Compatibility (deprecated)
     "DataValidator",
     # FLEXT Standard Classes

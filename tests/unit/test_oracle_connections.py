@@ -43,11 +43,11 @@ class TestOracleConnections:
         )
 
         if config.host != "oracle.example.com":
-            msg = f"Expected {'oracle.example.com'}, got {config.host}"
+            msg: str = f"Expected {'oracle.example.com'}, got {config.host}"
             raise AssertionError(msg)
         assert config.port == 1521
         if config.protocol != "tcps":
-            msg = f"Expected {'tcps'}, got {config.protocol}"
+            msg: str = f"Expected {'tcps'}, got {config.protocol}"
             raise AssertionError(msg)
 
     def test_oracle_connection_config_defaults(self) -> None:
@@ -61,7 +61,7 @@ class TestOracleConnections:
 
         # Check defaults
         if config.port != 1521:  # Real default port
-            msg = f"Expected {1521}, got {config.port}"
+            msg: str = f"Expected {1521}, got {config.port}"
             raise AssertionError(msg)
         assert config.protocol == "TCP"
         # Test real fields instead of fake ones
@@ -79,7 +79,7 @@ class TestOracleConnections:
 
         manager = GruponosMeltanoOracleConnectionManager(config)
         if manager.config != config:
-            msg = f"Expected {config}, got {manager.config}"
+            msg: str = f"Expected {config}, got {manager.config}"
             raise AssertionError(msg)
         assert hasattr(manager, "test_connection")
         assert hasattr(manager, "get_connection")
@@ -98,7 +98,7 @@ class TestOracleConnections:
 
         # Test basic manager functionality - the connection functionality is mocked
         if manager.config != config:
-            msg = f"Expected {config}, got {manager.config}"
+            msg: str = f"Expected {config}, got {manager.config}"
             raise AssertionError(msg)
         assert hasattr(manager, "test_connection")
         assert hasattr(manager, "get_connection")
@@ -126,10 +126,10 @@ class TestOracleConnections:
         )
 
         if config.protocol != "tcps":
-            msg = f"Expected {'tcps'}, got {config.protocol}"
+            msg: str = f"Expected {'tcps'}, got {config.protocol}"
             raise AssertionError(msg)
         if not (config.ssl_enabled):  # Real field name
-            msg = f"Expected True, got {config.ssl_enabled}"
+            msg: str = f"Expected True, got {config.ssl_enabled}"
             raise AssertionError(msg)
 
     def test_oracle_connection_pool_settings(self) -> None:
@@ -140,11 +140,11 @@ class TestOracleConnections:
             username="pool_user",
             password="pool_pass",
             pool_max=10,  # Real field name
-            pool_min=2,   # Real field to test pool settings
+            pool_min=2,  # Real field to test pool settings
         )
 
         if config.pool_max != 10:  # Real field name
-            msg = f"Expected {10}, got {config.pool_max}"
+            msg: str = f"Expected {10}, got {config.pool_max}"
             raise AssertionError(msg)
         assert config.pool_min == 2  # Real field test
 
@@ -155,11 +155,11 @@ class TestOracleConnections:
             service_name="RETRY_DB",
             username="retry_user",
             password="retry_pass",
-            timeout=45,        # Real field name
+            timeout=45,  # Real field name
             pool_increment=2,  # Real field name
         )
 
         if config.timeout != 45:  # Real field test
-            msg = f"Expected {45}, got {config.timeout}"
+            msg: str = f"Expected {45}, got {config.timeout}"
             raise AssertionError(msg)
         assert config.pool_increment == 2  # Real field test

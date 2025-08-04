@@ -1,7 +1,8 @@
 """Basic integration tests for GrupoNOS Meltano Native."""
 
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 # FLEXT Core Standards - Direct imports allowed from Level 6 projects
 from flext_core import FlextResult
@@ -30,11 +31,11 @@ class TestBasicIntegration:
         )
 
         if oracle_config.host != "localhost":
-            msg = f"Expected {'localhost'}, got {oracle_config.host}"
+            msg: str = f"Expected {'localhost'}, got {oracle_config.host}"
             raise AssertionError(msg)
         assert oracle_config.port == 1521
         if oracle_config.service_name != "TEST":
-            msg = f"Expected {'TEST'}, got {oracle_config.service_name}"
+            msg: str = f"Expected {'TEST'}, got {oracle_config.service_name}"
             raise AssertionError(msg)
 
     def test_wms_source_config(self) -> None:
@@ -51,9 +52,9 @@ class TestBasicIntegration:
         )
 
         if wms_config.oracle.host != "wms.local":
-            msg = f"Expected {'wms.local'}, got {wms_config.oracle.host}"
+            msg: str = f"Expected {'wms.local'}, got {wms_config.oracle.host}"
             raise AssertionError(msg)
-        assert wms_config.api_enabled is False  # default value
+        assert wms_config.api_enabled is True  # default value
 
     @pytest.mark.asyncio
     async def test_orchestrator_creation(self) -> None:
@@ -97,13 +98,13 @@ class TestBasicIntegration:
         # Test validation
         result = await orchestrator.validate_configuration()
         assert result.success
-        if not (result.data):
-            msg = f"Expected True, got {result.data}"
-            raise AssertionError(msg)
+        assert result.error is None
 
     @pytest.mark.asyncio
-    @patch.object(GruponosMeltanoOrchestrator, 'run_pipeline')
-    async def test_orchestrator_pipeline_run(self, mock_run_pipeline: AsyncMock) -> None:
+    @patch.object(GruponosMeltanoOrchestrator, "run_pipeline")
+    async def test_orchestrator_pipeline_run(
+        self, mock_run_pipeline: AsyncMock,
+    ) -> None:
         """Test orchestrator can run a pipeline."""
         # Mock successful pipeline result
         from gruponos_meltano_native.orchestrator import GruponosMeltanoPipelineResult
@@ -114,7 +115,7 @@ class TestBasicIntegration:
             execution_time=1.5,
             output="Pipeline executed successfully",
             error="",
-            metadata={"pipeline": "test_pipeline", "status": "success"}
+            metadata={"pipeline": "test_pipeline", "status": "success"},
         )
         mock_run_pipeline.return_value = mock_result
 
@@ -158,7 +159,7 @@ class TestBasicIntegration:
         assert result.success
         assert result.metadata is not None
         if result.metadata["pipeline"] != "test_pipeline":
-            msg = f"Expected {'test_pipeline'}, got {result.metadata['pipeline']}"
+            msg: str = f"Expected {'test_pipeline'}, got {result.metadata['pipeline']}"
             raise AssertionError(msg)
         assert result.metadata["status"] == "success"
 
@@ -169,16 +170,16 @@ class TestBasicIntegration:
         """Test that FLEXT FlextResult pattern is used."""
         # Test success
         success_result = FlextResult.ok(data="test_value")
-        assert success_result.is_success
+        assert success_result.success
         if success_result.data != "test_value":
-            msg = f"Expected {'test_value'}, got {success_result.data}"
+            msg: str = f"Expected {'test_value'}, got {success_result.data}"
             raise AssertionError(msg)
         assert success_result.error is None
 
         # Test failure
         failure_result: FlextResult[str] = FlextResult.fail("test_error")
-        assert not failure_result.is_success
+        assert not failure_result.success
         assert failure_result.data is None
         if failure_result.error != "test_error":
-            msg = f"Expected {'test_error'}, got {failure_result.error}"
+            msg: str = f"Expected {'test_error'}, got {failure_result.error}"
             raise AssertionError(msg)

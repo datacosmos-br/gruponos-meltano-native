@@ -120,7 +120,7 @@ async def execute_etl_pipeline() -> FlextResult[PipelineResult]:
         facility_code="DC01"
     )
     
-    if result.is_success():
+    if result.success():
         logger.info(f"Pipeline completed: {result.value.records_processed} records")
     else:
         logger.error(f"Pipeline failed: {result.error}")
@@ -575,7 +575,7 @@ result = await platform.execute_full_sync(
     dry_run=False
 )
 
-if result.is_success():
+if result.success():
     print(f"✅ Sync completed: {result.value.summary}")
     print(f"📊 Records processed: {result.value.records_processed}")
     print(f"⏱️ Duration: {result.value.duration_seconds}s")
@@ -612,7 +612,7 @@ structlog = ">=25.4.0"
 
 ### External Dependencies
 
-```toml 
+```toml
 # External ecosystem integration
 [tool.poetry.dependencies]
 meltano = ">=3.8.0"              # Data integration orchestration
@@ -629,6 +629,7 @@ requests = ">=2.32.4"            # HTTP client for Oracle WMS API
 ### Common Issues & Solutions
 
 #### Connection Problems
+
 ```bash
 # Test Oracle WMS API connectivity
 make oracle-test
@@ -641,6 +642,7 @@ make env-validate
 ```
 
 #### Pipeline Failures
+
 ```bash
 # Diagnose pipeline health
 make diagnose
@@ -654,6 +656,7 @@ meltano test tap-oracle-wms-full
 ```
 
 #### Quality Gate Failures
+
 ```bash
 # Fix code formatting automatically
 make fix
@@ -666,6 +669,7 @@ poetry run bandit -r src/ --format json
 ```
 
 #### Performance Issues
+
 ```bash
 # Run performance benchmarks
 pytest -m performance --benchmark-only
@@ -740,12 +744,14 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## 🔗 Related Projects
 
 ### FLEXT Ecosystem
+
 - **[FLEXT Framework](https://github.com/flext-sh/flext)** - Main framework repository
 - **[flext-core](../flext-core/)** - Foundation library with shared patterns
 - **[flext-observability](../flext-observability/)** - Enterprise monitoring and logging
 - **[flext-meltano](../flext-meltano/)** - Meltano integration platform
 
 ### Data Integration Components
+
 - **[flext-tap-oracle-wms](../flext-tap-oracle-wms/)** - Oracle WMS data extraction
 - **[flext-target-oracle](../flext-target-oracle/)** - Oracle database loading
 - **[flext-db-oracle](../flext-db-oracle/)** - Oracle database connectivity

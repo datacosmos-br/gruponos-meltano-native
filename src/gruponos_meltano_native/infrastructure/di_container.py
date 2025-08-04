@@ -35,9 +35,9 @@ def _configure_dependencies(container: FlextContainer) -> None:
     """Configure core dependencies for GrupoNOS Meltano."""
     # Register core FLEXT components
     result = container.register("flext_result", FlextResult)
-    if not result.is_success:
+    if not result.success:
         logger.warning(f"Failed to register FlextResult: {result.error}")
 
     settings_result = container.register("flext_settings", FlextBaseSettings)
-    if not settings_result.is_success:
+    if not settings_result.success:
         logger.warning(f"Failed to register FlextCoreSettings: {settings_result.error}")

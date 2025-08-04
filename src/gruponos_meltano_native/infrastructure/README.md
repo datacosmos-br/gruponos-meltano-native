@@ -7,20 +7,24 @@ This module provides enterprise infrastructure patterns including dependency inj
 ## Components
 
 ### `di_container.py` - Dependency Injection Container
+
 Enterprise dependency injection system built on FLEXT container patterns for loose coupling and testability.
 
 #### Features
+
 - **Service Registration**: Type-safe service registration with lifecycle management
 - **Dependency Resolution**: Automatic dependency resolution with circular dependency detection
 - **Singleton Support**: Configurable singleton pattern for shared resources
 - **FLEXT Integration**: Full compatibility with FLEXT container ecosystem
 
 #### Key Classes
+
 - **`GruponosMeltanoContainer`**: Main DI container extending FLEXT patterns
 - **Service Factories**: Factory functions for core ETL components
 - **Lifecycle Management**: Service initialization and cleanup coordination
 
 #### Usage Example
+
 ```python
 from gruponos_meltano_native.infrastructure import GruponosMeltanoContainer
 
@@ -39,12 +43,15 @@ validator = container.resolve("data_validator")
 ## Architecture Integration
 
 ### Clean Architecture Compliance
+
 The infrastructure module sits at the outermost layer of Clean Architecture, providing:
+
 - **External Concerns**: Database connections, external API integrations
 - **Cross-Cutting Services**: Logging, caching, monitoring integration
 - **System Resources**: Connection pooling, resource management
 
 ### FLEXT Standards
+
 - **Container Patterns**: Extends FLEXT container with ETL-specific services
 - **Error Handling**: Uses FlextResult for all infrastructure operations
 - **Configuration**: Integrates with FLEXT configuration management
@@ -53,6 +60,7 @@ The infrastructure module sits at the outermost layer of Clean Architecture, pro
 ## Dependency Management
 
 ### Service Lifecycle
+
 ```python
 # Service registration with lifecycle
 container.register_singleton("connection_pool", 
@@ -65,6 +73,7 @@ container.dispose()  # Calls cleanup for all registered services
 ```
 
 ### Service Dependencies
+
 ```python
 # Services with dependencies
 def create_etl_orchestrator(container: GruponosMeltanoContainer):
@@ -80,6 +89,7 @@ container.register_transient("orchestrator", create_etl_orchestrator)
 ## Testing Support
 
 ### Mock Services
+
 ```python
 # Test container with mocked services
 test_container = GruponosMeltanoContainer()
@@ -91,6 +101,7 @@ orchestrator = test_container.resolve("orchestrator")
 ```
 
 ### Integration Testing
+
 ```python
 # Real services for integration testing
 integration_container = GruponosMeltanoContainer()
@@ -100,6 +111,7 @@ integration_container.configure_for_testing()  # Real but test-safe services
 ## Configuration Integration
 
 ### Environment-Aware Services
+
 ```python
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
@@ -117,12 +129,14 @@ def configure_container_for_environment(container: GruponosMeltanoContainer):
 ## Performance Considerations
 
 ### Resource Management
+
 - **Connection Pooling**: Efficient database connection management
 - **Memory Management**: Proper cleanup of large data processing resources
 - **Caching**: Strategic caching of expensive operations
 - **Monitoring**: Performance metrics collection
 
 ### Scalability Patterns
+
 - **Service Isolation**: Each service can be scaled independently
 - **Resource Limits**: Configurable resource consumption limits
 - **Circuit Breakers**: Automatic failure handling and recovery
@@ -131,11 +145,12 @@ def configure_container_for_environment(container: GruponosMeltanoContainer):
 ## Error Handling
 
 ### Infrastructure Failures
+
 ```python
 # Robust service resolution with fallbacks
 def get_service_with_fallback(container, service_name, fallback_factory):
     result = container.try_resolve(service_name)
-    if result.is_success:
+    if result.success:
         return result
     
     # Create fallback service
@@ -145,6 +160,7 @@ def get_service_with_fallback(container, service_name, fallback_factory):
 ```
 
 ### Circuit Breaker Pattern
+
 ```python
 # Service with circuit breaker
 class ServiceWithCircuitBreaker:
@@ -161,6 +177,7 @@ class ServiceWithCircuitBreaker:
 ## Development Guidelines
 
 ### Service Creation Standards
+
 1. **FLEXT Integration**: All services must use FLEXT patterns
 2. **Error Handling**: FlextResult for all operations
 3. **Type Safety**: Complete type annotations
@@ -168,6 +185,7 @@ class ServiceWithCircuitBreaker:
 5. **Documentation**: Detailed docstrings with examples
 
 ### Container Configuration
+
 1. **Environment Awareness**: Different configurations per environment
 2. **Resource Management**: Proper cleanup and disposal
 3. **Health Monitoring**: Service health checks

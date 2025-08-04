@@ -22,20 +22,19 @@ from pydantic_settings import SettingsConfigDict
 
 
 class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
-    """
-    Oracle WMS connection configuration for GrupoNOS with enterprise security.
-    
+    """Oracle WMS connection configuration for GrupoNOS with enterprise security.
+
     This configuration class extends FLEXT Oracle model to provide GrupoNOS-specific
     Oracle database connection settings with comprehensive validation, security features,
     and environment-aware configuration management.
-    
+
     Key Features:
         - Secure credential management with SecretStr fields
         - Environment variable integration with GRUPONOS_ prefix
         - Connection validation with retry mechanisms
         - Protocol-specific configuration (TCP/TCPS for SSL)
         - Production-ready connection pooling settings
-    
+
     Inherited Fields:
         From FlextOracleModel:
         - host: Oracle database hostname or IP address
@@ -44,31 +43,32 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
         - sid: Oracle SID (alternative to service_name)
         - username: Database connection username
         - password: Database connection password (SecretStr)
-    
+
     Example:
         Environment-based configuration:
-        
+
         >>> # Set environment variables
         >>> os.environ["GRUPONOS_ORACLE_HOST"] = "oracle-prod.company.com"
         >>> os.environ["GRUPONOS_ORACLE_USERNAME"] = "etl_user"
         >>> os.environ["GRUPONOS_ORACLE_PASSWORD"] = "secure_password"
-        >>> 
+        >>>
         >>> # Load configuration
         >>> config = GruponosMeltanoOracleConnectionConfig()
         >>> print(f"Connecting to: {config.host}:{config.port}")
-    
+
     Security:
         - Passwords are stored as SecretStr and excluded from string representation
         - Environment variables are preferred over hardcoded values
         - SSL/TLS support via TCPS protocol configuration
         - Connection validation before use
+
     """
 
     # Inherited from FlextOracleModel: host, port, service_name, sid, username, password
     # Additional GrupoNOS-specific configuration
     protocol: str = Field(
-        default="TCP", 
-        description="Connection protocol (TCP for standard, TCPS for SSL/TLS)"
+        default="TCP",
+        description="Connection protocol (TCP for standard, TCPS for SSL/TLS)",
     )
 
     model_config: ClassVar[ConfigDict] = ConfigDict(
@@ -303,7 +303,7 @@ def create_gruponos_meltano_settings() -> GruponosMeltanoSettings:
 
 
 # Re-export for backward compatibility
-__all__ = [
+__all__: list[str] = [
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoJobConfig",
     "GruponosMeltanoOracleConnectionConfig",

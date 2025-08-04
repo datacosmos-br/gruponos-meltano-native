@@ -33,7 +33,7 @@ def test_ssl_connection() -> None:
         assert True
 
     except ImportError as e:
-        msg = f"Import error while testing SSL configuration: {e}"
+        msg: str = f"Import error while testing SSL configuration: {e}"
         raise AssertionError(msg) from e
     except Exception:
         # Expected - no actual Oracle server available for SSL testing
@@ -56,7 +56,7 @@ def test_env_connection() -> None:
         assert True
 
     except ImportError as e:
-        msg = f"Import error in environment connection test: {e}"
+        msg: str = f"Import error in environment connection test: {e}"
         raise AssertionError(msg) from e
     except Exception:
         # Expected - environment variables may not be set or Oracle not available

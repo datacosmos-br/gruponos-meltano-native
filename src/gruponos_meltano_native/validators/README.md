@@ -7,12 +7,15 @@ This module provides comprehensive multi-layer data validation with business rul
 ## Components
 
 ### `data_validator.py` - Core Data Validation System
+
 Enterprise data validation system with multi-layer validation chains and comprehensive business rule enforcement.
 
 #### Key Classes
 
 ##### `GruponosMeltanoDataValidator`
+
 Primary data validation system with enterprise features:
+
 - **Multi-Layer Validation**: Schema, business rules, data quality, and referential integrity
 - **Railway-Oriented Programming**: FlextResult chains for clean error propagation
 - **Performance Monitoring**: Validation performance tracking and optimization
@@ -22,24 +25,28 @@ Primary data validation system with enterprise features:
 #### Validation Layers
 
 ##### 1. Schema Validation
+
 - **Structure Validation**: Ensures data matches expected schema structure
 - **Type Checking**: Validates data types and format compliance
 - **Required Fields**: Enforces required field presence and non-null constraints
 - **Field Validation**: Individual field validation with custom rules
 
 ##### 2. Business Rule Validation
+
 - **Oracle WMS Rules**: WMS-specific business logic validation
 - **Cross-Field Validation**: Rules spanning multiple fields or records
 - **Conditional Logic**: Complex conditional validation scenarios
 - **Custom Rules**: Configurable custom business rules
 
 ##### 3. Data Quality Validation
+
 - **Completeness Checks**: Data completeness analysis and scoring
 - **Accuracy Validation**: Data accuracy verification against known patterns
 - **Consistency Checks**: Cross-record consistency validation
 - **Anomaly Detection**: Statistical anomaly detection and reporting
 
 ##### 4. Referential Integrity
+
 - **Foreign Key Validation**: Reference integrity across related entities
 - **Consistency Checks**: Data consistency across multiple tables
 - **Constraint Validation**: Business constraint enforcement
@@ -47,6 +54,7 @@ Primary data validation system with enterprise features:
 ## Usage Examples
 
 ### Basic Data Validation
+
 ```python
 from gruponos_meltano_native.validators import (
     GruponosMeltanoDataValidator,
@@ -71,7 +79,7 @@ allocation_data = [
 # Execute validation chain
 validation_result = await validator.validate_allocation_data(allocation_data)
 
-if validation_result.is_success:
+if validation_result.success:
     validated_data = validation_result.data
     print(f"Validation passed: {len(validated_data)} records validated")
 else:
@@ -82,6 +90,7 @@ else:
 ```
 
 ### ETL Pipeline Integration
+
 ```python
 class ETLDataProcessor:
     def __init__(self, validator: GruponosMeltanoDataValidator):
@@ -103,6 +112,7 @@ class ETLDataProcessor:
 ```
 
 ### Advanced Validation Configuration
+
 ```python
 from gruponos_meltano_native.validators import ValidationRules, DataQualityThresholds
 
@@ -157,6 +167,7 @@ validator = GruponosMeltanoDataValidator(validation_config)
 ## Validation Patterns
 
 ### Railway-Oriented Validation
+
 ```python
 def validate_wms_data_pipeline(data: List[dict]) -> FlextResult[List[dict]]:
     """Comprehensive validation pipeline with error propagation."""
@@ -173,6 +184,7 @@ def validate_wms_data_pipeline(data: List[dict]) -> FlextResult[List[dict]]:
 ```
 
 ### Batch Validation with Performance Monitoring
+
 ```python
 class BatchValidator:
     def __init__(self, validator: GruponosMeltanoDataValidator):
@@ -191,7 +203,7 @@ class BatchValidator:
                 
                 batch_result = await self.validator.validate_batch(batch)
                 
-                if batch_result.is_success:
+                if batch_result.success:
                     validated_records.extend(batch_result.data)
                 else:
                     validation_errors.extend(batch_result.validation_errors)
@@ -207,6 +219,7 @@ class BatchValidator:
 ```
 
 ### Custom Validation Rules
+
 ```python
 class WMSBusinessRules:
     """WMS-specific business rule implementations."""
@@ -261,6 +274,7 @@ class WMSBusinessRules:
 ## Data Quality Monitoring
 
 ### Quality Metrics Collection
+
 ```python
 class DataQualityMonitor:
     def __init__(self, validator: GruponosMeltanoDataValidator):
@@ -319,6 +333,7 @@ class DataQualityMonitor:
 ```
 
 ### Anomaly Detection
+
 ```python
 class DataAnomalyDetector:
     def __init__(self):
@@ -354,6 +369,7 @@ class DataAnomalyDetector:
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Validation configuration
 GRUPONOS_VALIDATION_ENABLED=true
@@ -374,6 +390,7 @@ GRUPONOS_VALIDATION_PARALLEL_WORKERS=4
 ## Testing Support
 
 ### Mock Validator
+
 ```python
 class MockDataValidator:
     def __init__(self, should_pass=True):
@@ -393,6 +410,7 @@ class MockDataValidator:
 ```
 
 ### Validation Testing Utilities
+
 ```python
 class ValidationTestUtils:
     @staticmethod
@@ -420,6 +438,7 @@ class ValidationTestUtils:
 ## Development Guidelines
 
 ### Validation Design Principles
+
 1. **Layer Separation**: Clear separation between validation layers
 2. **Railway-Oriented**: Use FlextResult for clean error propagation
 3. **Performance Aware**: Optimize for large dataset validation
@@ -427,6 +446,7 @@ class ValidationTestUtils:
 5. **Observable**: Comprehensive logging and monitoring
 
 ### Business Rule Implementation
+
 1. **Testable**: All business rules must be unit testable
 2. **Documented**: Clear documentation of business logic
 3. **Configurable**: Support dynamic rule configuration
