@@ -11,8 +11,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core import create_module_exception_classes
-
 if TYPE_CHECKING:
     # Define base classes for type checking purposes
     class GruponosMeltanoError(Exception):
@@ -43,31 +41,24 @@ else:
     class GruponosMeltanoError(FlextError):
         """Base GrupoNOS Meltano error extending FLEXT foundation."""
 
-
     # Standard exception hierarchy extending base
     class GruponosMeltanoConfigurationError(GruponosMeltanoError):
         """GrupoNOS configuration error."""
 
-
     class GruponosMeltanoValidationError(GruponosMeltanoConfigurationError):
         """GrupoNOS validation error extending configuration error."""
-
 
     class GruponosMeltanoConnectionError(GruponosMeltanoError):
         """GrupoNOS connection error."""
 
-
     class GruponosMeltanoProcessingError(GruponosMeltanoError):
         """GrupoNOS processing error."""
-
 
     class GruponosMeltanoAuthenticationError(GruponosMeltanoError):
         """GrupoNOS authentication error."""
 
-
     class GruponosMeltanoTimeoutError(GruponosMeltanoError):
         """GrupoNOS timeout error."""
-
 
 
 # Specialized domain-specific errors extending base classes
