@@ -102,7 +102,7 @@ await alert_manager.send_alert(
 class GruponosMeltanoOrchestrator:
     def __init__(self, alert_manager: GruponosMeltanoAlertManager):
         self.alert_manager = alert_manager
-    
+
     async def execute_full_sync(self, company_code: str, facility_code: str):
         # Send start notification
         await self.alert_manager.send_alert(
@@ -111,11 +111,11 @@ class GruponosMeltanoOrchestrator:
             severity=GruponosMeltanoAlertSeverity.INFO,
             alert_type=GruponosMeltanoAlertType.PIPELINE_START
         )
-        
+
         try:
             # Execute ETL operations
             result = await self._execute_pipeline(company_code, facility_code)
-            
+
             # Send success notification
             await self.alert_manager.send_alert(
                 title="ETL Pipeline Completed",
@@ -124,9 +124,9 @@ class GruponosMeltanoOrchestrator:
                 alert_type=GruponosMeltanoAlertType.PIPELINE_SUCCESS,
                 context=result.to_dict()
             )
-            
+
             return FlextResult.ok(result)
-            
+
         except Exception as e:
             # Send failure notification
             await self.alert_manager.send_alert(
@@ -141,7 +141,7 @@ class GruponosMeltanoOrchestrator:
                     "stack_trace": traceback.format_exc()
                 }
             )
-            
+
             return FlextResult.fail(f"Pipeline execution failed: {str(e)}")
 ```
 
@@ -158,17 +158,17 @@ alert_config = GruponosMeltanoAlertConfig(
     smtp_port=587,
     email_from="etl-alerts@company.com",
     email_recipients=["ops-team@company.com", "data-team@company.com"],
-    
+
     # Slack configuration
     slack_enabled=True,
     slack_webhook_url="https://hooks.slack.com/services/...",
     slack_channel="#data-ops",
-    
+
     # Webhook configuration
     webhook_enabled=True,
     webhook_url="https://monitoring.company.com/alerts",
     webhook_auth_token="bearer_token_here",
-    
+
     # Alert filtering
     min_severity_level=GruponosMeltanoAlertSeverity.WARNING,
     rate_limit_window_minutes=5,
@@ -190,12 +190,12 @@ alert_templates = {
         "email_subject": "🚨 ETL Pipeline Failure - {company_code}/{facility_code}",
         "email_body": """
         ETL Pipeline Failure Alert
-        
+
         Company: {company_code}
         Facility: {facility_code}
         Time: {timestamp}
         Error: {error_message}
-        
+
         Please investigate immediately.
         """,
         "slack_message": "🚨 ETL Pipeline failed for {company_code}/{facility_code}: {error_message}"
@@ -217,7 +217,7 @@ class PerformanceMonitor:
             "records_per_second": 100,
             "error_rate_percent": 5
         }
-    
+
     async def check_performance_metrics(self, pipeline_result):
         # Check duration threshold
         if pipeline_result.duration_minutes > self.thresholds["pipeline_duration_minutes"]:
@@ -227,7 +227,7 @@ class PerformanceMonitor:
                 severity=GruponosMeltanoAlertSeverity.WARNING,
                 alert_type=GruponosMeltanoAlertType.PERFORMANCE
             )
-        
+
         # Check processing rate
         processing_rate = pipeline_result.records_processed / pipeline_result.duration_seconds
         if processing_rate < self.thresholds["records_per_second"]:
@@ -246,7 +246,7 @@ class PerformanceMonitor:
 class HealthCheckMonitor:
     def __init__(self, alert_manager: GruponosMeltanoAlertManager):
         self.alert_manager = alert_manager
-    
+
     async def check_system_health(self):
         # Check Oracle WMS connectivity
         wms_health = await self.check_wms_connectivity()
@@ -257,7 +257,7 @@ class HealthCheckMonitor:
                 severity=GruponosMeltanoAlertSeverity.ERROR,
                 alert_type=GruponosMeltanoAlertType.CONNECTION_ERROR
             )
-        
+
         # Check target database connectivity
         db_health = await self.check_database_connectivity()
         if not db_health.is_healthy:
@@ -301,11 +301,11 @@ GRUPONOS_ALERT_MAX_PER_WINDOW=10
 class MockAlertManager:
     def __init__(self):
         self.sent_alerts = []
-    
+
     async def send_alert(self, **kwargs):
         self.sent_alerts.append(kwargs)
         return FlextResult.ok("Alert sent successfully")
-    
+
     def get_alerts_by_type(self, alert_type):
         return [alert for alert in self.sent_alerts if alert.get("alert_type") == alert_type]
 ```
@@ -317,13 +317,13 @@ class MockAlertManager:
 @pytest.mark.integration
 async def test_alert_delivery():
     alert_manager = create_gruponos_meltano_alert_manager()
-    
+
     result = await alert_manager.send_alert(
         title="Test Alert",
         message="This is a test alert",
         severity=GruponosMeltanoAlertSeverity.INFO
     )
-    
+
     assert result.success
     # Verify alert was delivered to configured channels
 ```

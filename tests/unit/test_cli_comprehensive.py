@@ -176,9 +176,7 @@ class TestCLIComprehensive:
                 raise AssertionError(msg)
             # Check for individual component status instead of overall "PASSED" message
             if "configuration       : ✅ Valid" not in result.output:
-                msg = (
-                    f"Expected {'configuration       : ✅ Valid'} in {result.output}"
-                )
+                msg = f"Expected {'configuration       : ✅ Valid'} in {result.output}"
                 raise AssertionError(msg)
 
     def test_list_pipelines_command(self) -> None:

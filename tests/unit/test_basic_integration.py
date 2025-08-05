@@ -103,7 +103,8 @@ class TestBasicIntegration:
     @pytest.mark.asyncio
     @patch.object(GruponosMeltanoOrchestrator, "run_pipeline")
     async def test_orchestrator_pipeline_run(
-        self, mock_run_pipeline: AsyncMock,
+        self,
+        mock_run_pipeline: AsyncMock,
     ) -> None:
         """Test orchestrator can run a pipeline."""
         # Mock successful pipeline result

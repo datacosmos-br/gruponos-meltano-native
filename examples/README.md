@@ -59,11 +59,11 @@ from gruponos_meltano_native import create_gruponos_meltano_platform
 async def main():
     # Create ETL platform instance
     platform = create_gruponos_meltano_platform()
-    
+
     # Execute full synchronization
     print("Starting full synchronization...")
     result = await platform.execute_full_sync("GNOS", "DC01")
-    
+
     if result.success:
         print(f"ETL completed successfully!")
         print(f"Records processed: {result.data.records_processed}")
@@ -78,7 +78,7 @@ async def handle_etl_failure(result):
     """Handle ETL failure with appropriate actions."""
     # Log error details
     logger.error(f"ETL pipeline failed: {result.error}")
-    
+
     # Send alert if configured
     alert_manager = create_gruponos_meltano_alert_manager()
     await alert_manager.send_alert(
@@ -109,12 +109,12 @@ from gruponos_meltano_native.config import (
 
 def demonstrate_environment_specific_config():
     """Demonstrate environment-specific configuration loading."""
-    
+
     # Development environment
     dev_settings = GruponosMeltanoSettings(environment="development")
     print(f"Dev WMS URL: {dev_settings.oracle_wms.base_url}")
     print(f"Dev Debug Mode: {dev_settings.debug}")
-    
+
     # Production environment
     prod_settings = GruponosMeltanoSettings(environment="production")
     print(f"Prod WMS URL: {prod_settings.oracle_wms.base_url}")
@@ -122,7 +122,7 @@ def demonstrate_environment_specific_config():
 
 def demonstrate_custom_configuration():
     """Demonstrate custom configuration creation and validation."""
-    
+
     # Create custom Oracle WMS configuration
     custom_wms_config = GruponosMeltanoWMSSourceConfig(
         base_url="https://custom-wms.company.com/api/v1",
@@ -134,31 +134,31 @@ def demonstrate_custom_configuration():
         batch_size=2000,
         max_retries=5
     )
-    
+
     # Validate configuration
     validation_result = custom_wms_config.validate_connection_settings()
     if validation_result.success:
         print("Custom WMS configuration is valid")
     else:
         print(f"Configuration validation failed: {validation_result.error}")
-    
+
     # Create complete settings with custom config
     settings = GruponosMeltanoSettings(oracle_wms=custom_wms_config)
     return settings
 
 def demonstrate_configuration_security():
     """Demonstrate secure configuration handling."""
-    
+
     settings = GruponosMeltanoSettings()
-    
+
     # Demonstrate credential exclusion in string representation
     print("Settings representation (passwords excluded):")
     print(settings)
-    
+
     # Access credentials securely
     wms_password = settings.oracle_wms.password.get_secret_value()
     target_password = settings.oracle_target.password.get_secret_value()
-    
+
     # Use credentials for connections (not printed)
     print("Credentials loaded securely for connection use")
 ```
@@ -180,10 +180,10 @@ from gruponos_meltano_native.validators import (
 
 async def demonstrate_basic_validation():
     """Demonstrate basic data validation workflow."""
-    
+
     # Create validator for current environment
     validator = create_gruponos_meltano_validator_for_environment()
-    
+
     # Sample allocation data
     allocation_data = [
         {
@@ -201,17 +201,17 @@ async def demonstrate_basic_validation():
             "location": "B1-C2-D3"
         }
     ]
-    
+
     # Execute validation chain
     result = await validator.validate_allocation_data(allocation_data)
-    
+
     if result.success:
         print(f"Validation passed: {len(result.data)} records validated")
         for record in result.data:
             print(f"  - {record['allocation_id']}: {record['quantity']} units")
     else:
         print(f"Validation failed: {result.error}")
-        
+
         # Handle validation errors
         if hasattr(result, 'validation_errors'):
             for error in result.validation_errors:
@@ -219,7 +219,7 @@ async def demonstrate_basic_validation():
 
 async def demonstrate_custom_validation_rules():
     """Demonstrate custom validation rule implementation."""
-    
+
     # Custom validation configuration
     validation_config = {
         "business_rules": [
@@ -237,10 +237,10 @@ async def demonstrate_custom_validation_rules():
             }
         ]
     }
-    
+
     # Create validator with custom rules
     validator = GruponosMeltanoDataValidator(validation_config)
-    
+
     # Test data with validation violations
     test_data = [
         {
@@ -251,9 +251,9 @@ async def demonstrate_custom_validation_rules():
             "location": "INVALID_LOCATION"  # Violates location format rule
         }
     ]
-    
+
     result = await validator.validate_business_rules(test_data)
-    
+
     if result.is_failure:
         print("Expected validation failures:")
         for error in result.validation_errors:
@@ -283,7 +283,7 @@ from gruponos_meltano_native.oracle import (
 
 async def demonstrate_oracle_connection():
     """Demonstrate Oracle database connection management."""
-    
+
     # Create connection configuration
     config = GruponosMeltanoOracleConnectionConfig(
         host="oracle-dev.company.com",
@@ -293,22 +293,22 @@ async def demonstrate_oracle_connection():
         password="secure_password",
         schema="WMS_DATA"
     )
-    
+
     # Create connection manager
     manager = create_gruponos_meltano_oracle_connection_manager(config)
-    
+
     # Get database connection
     connection_result = await manager.get_connection()
-    
+
     if connection_result.success:
         conn = connection_result.data
         print("Connected to Oracle database successfully")
-        
+
         # Execute sample query
         result = await conn.execute("SELECT COUNT(*) FROM allocations")
         count = await result.fetchone()
         print(f"Total allocations in database: {count[0]}")
-        
+
         # Return connection to pool
         await manager.return_connection(conn)
     else:
@@ -316,26 +316,26 @@ async def demonstrate_oracle_connection():
 
 async def demonstrate_bulk_operations():
     """Demonstrate bulk database operations for ETL."""
-    
+
     manager = create_gruponos_meltano_oracle_connection_manager()
-    
+
     # Sample data for bulk insert
     allocation_batch = [
         ("A001", "ITEM001", 100, "DC01", "A1-B2-C3"),
         ("A002", "ITEM002", 250, "DC01", "B1-C2-D3"),
         ("A003", "ITEM003", 150, "DC01", "C1-D2-E3")
     ]
-    
+
     # Execute bulk insert with transaction management
     async with manager.get_connection() as conn:
         async with conn.begin():  # Transaction context
             # Bulk insert statement
             insert_sql = """
-                INSERT INTO wms_allocations 
+                INSERT INTO wms_allocations
                 (allocation_id, item_code, quantity, facility_code, location)
                 VALUES (?, ?, ?, ?, ?)
             """
-            
+
             # Execute bulk insert
             await conn.executemany(insert_sql, allocation_batch)
             print(f"Inserted {len(allocation_batch)} allocations successfully")
@@ -359,10 +359,10 @@ from gruponos_meltano_native.monitoring import (
 
 async def demonstrate_alert_management():
     """Demonstrate alert management and delivery."""
-    
+
     # Create alert manager
     alert_manager = create_gruponos_meltano_alert_manager()
-    
+
     # Send informational alert
     info_result = await alert_manager.send_alert(
         title="ETL Pipeline Started",
@@ -375,10 +375,10 @@ async def demonstrate_alert_management():
             "started_at": datetime.utcnow().isoformat()
         }
     )
-    
+
     if info_result.success:
         print("Informational alert sent successfully")
-    
+
     # Send error alert with rich context
     error_result = await alert_manager.send_alert(
         title="Data Validation Error Detected",
@@ -395,7 +395,7 @@ async def demonstrate_alert_management():
             "recommended_action": "Review data source quality"
         }
     )
-    
+
     if error_result.success:
         print("Error alert sent successfully")
 ```
@@ -455,10 +455,10 @@ async def main():
     """Main example function with clear structure."""
     # Setup
     print("Setting up example...")
-    
+
     # Demonstration
     print("Executing example logic...")
-    
+
     # Results
     print("Example completed successfully")
 

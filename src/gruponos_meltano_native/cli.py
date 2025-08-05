@@ -56,6 +56,7 @@ def initialize_cli_environment(debug: bool = False) -> dict[str, object]:
     # Create CLI environment using flext-cli patterns
     cli_config = get_config()  # Use flext-cli get_config utility
     from flext_cli.utils.config import get_settings
+
     cli_settings = get_settings()
     console = Console()
 
@@ -152,6 +153,7 @@ def health(ctx: click.Context) -> None:
 
         # Format output using Rich console
         from rich.console import Console
+
         if isinstance(console, Console):
             console.print("📋 Health Check Results:")
             for component, status in health_status.items():
@@ -162,6 +164,7 @@ def health(ctx: click.Context) -> None:
     except Exception as e:
         logger.exception("Health check failed")
         from rich.console import Console
+
         console = Console()
         console.print(f"❌ Health check failed: {e}")
         sys.exit(1)

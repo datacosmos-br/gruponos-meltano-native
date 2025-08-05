@@ -83,7 +83,8 @@ class TestOrchestrator:
         import unittest.mock
 
         with unittest.mock.patch.object(
-            orchestrator.pipeline_runner, "run_pipeline",
+            orchestrator.pipeline_runner,
+            "run_pipeline",
         ) as mock_run:
             mock_result = GruponosMeltanoPipelineResult(
                 success=True,

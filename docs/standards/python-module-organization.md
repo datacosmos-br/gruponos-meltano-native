@@ -96,17 +96,17 @@ class WMSAllocation(FlextEntity):
     quantity: int
     facility_code: str
     location: str
-    
+
     def validate_allocation_rules(self) -> FlextResult[None]:
         """Apply WMS business rules for allocation validation."""
         if self.quantity <= 0:
             return FlextResult.fail("Allocation quantity must be positive")
-        
+
         if not self.facility_code:
             return FlextResult.fail("Facility code is required")
-            
+
         return FlextResult.ok(None)
-    
+
     def transform_for_target(self) -> dict[str, Any]:
         """Transform allocation for target database format."""
         return {
@@ -137,10 +137,10 @@ from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
 class GruponosMeltanoOrchestrator:
     """Main ETL pipeline orchestrator with FLEXT patterns."""
-    
+
     async def execute_full_sync(
-        self, 
-        company_code: str, 
+        self,
+        company_code: str,
         facility_code: str
     ) -> FlextResult[PipelineResult]:
         """Execute full synchronization pipeline."""
@@ -210,9 +210,9 @@ from gruponos_meltano_native.validators import DataValidator, ValidationRules
 
 class WMSDataValidator(DataValidator):
     """WMS-specific data validation with FLEXT patterns."""
-    
+
     def validate_allocation_data(
-        self, 
+        self,
         data: List[dict]
     ) -> FlextResult[List[dict]]:
         """Validate allocation data with business rules."""
@@ -221,26 +221,26 @@ class WMSDataValidator(DataValidator):
             .flat_map(lambda validated: self._validate_business_rules(validated))
             .flat_map(lambda clean_data: self._validate_data_quality(clean_data))
         )
-    
+
     def _validate_business_rules(self, data: List[dict]) -> FlextResult[List[dict]]:
         """Apply WMS business validation rules."""
         validation_errors = []
         validated_data = []
-        
+
         for record in data:
             if record.get('quantity', 0) <= 0:
                 validation_errors.append(f"Invalid quantity in record {record.get('id')}")
                 continue
-                
+
             if not record.get('facility_code'):
                 validation_errors.append(f"Missing facility code in record {record.get('id')}")
                 continue
-                
+
             validated_data.append(record)
-        
+
         if validation_errors:
             return FlextResult.fail(f"Validation errors: {'; '.join(validation_errors)}")
-            
+
         return FlextResult.ok(validated_data)
 ```
 
@@ -497,7 +497,7 @@ async def execute_etl_pipeline(
     target_config: OracleTargetConfig
 ) -> FlextResult[PipelineResult]:
     """ETL pipeline with railway-oriented programming."""
-    
+
     return (
         await extract_from_source(source_config)
         .flat_map_async(lambda data: validate_extracted_data(data))
@@ -513,7 +513,7 @@ async def execute_etl_pipeline(
 ```python
 def validate_wms_data_pipeline(data: List[dict]) -> FlextResult[List[dict]]:
     """Comprehensive data validation chain."""
-    
+
     return (
         validate_schema(data)
         .flat_map(lambda schema_valid: validate_business_rules(schema_valid))
@@ -532,13 +532,13 @@ from flext_core import FlextResult
 @asynccontextmanager
 async def oracle_connection_context(config: OracleConnectionConfig):
     """Managed Oracle connection with proper cleanup."""
-    
+
     connection_result = await create_oracle_connection(config)
     if connection_result.is_failure:
         raise GruponosMeltanoOracleConnectionError(
             f"Failed to establish connection: {connection_result.error}"
         )
-    
+
     connection = connection_result.data
     try:
         yield connection
@@ -562,7 +562,7 @@ async def load_allocation_data(data: List[dict]) -> FlextResult[LoadResult]:
 tests/
 ├── unit/                    # Unit tests (isolated, fast)
 │   ├── test_config.py      # Configuration tests
-│   ├── test_orchestrator.py # Orchestrator unit tests  
+│   ├── test_orchestrator.py # Orchestrator unit tests
 │   ├── test_models/        # Domain model tests
 │   │   ├── test_allocation.py
 │   │   └── test_order_header.py
@@ -589,33 +589,33 @@ from gruponos_meltano_native.models import WMSAllocation
 
 class TestETLPipeline:
     """Test ETL pipeline operations with FLEXT patterns."""
-    
+
     async def test_successful_allocation_extraction(self):
         """Test successful data extraction from WMS."""
         orchestrator = GruponosMeltanoOrchestrator()
-        
+
         result = await orchestrator.extract_wms_allocations(
             company_code="TEST",
             facility_code="DC01"
         )
-        
+
         assert result.success
         assert isinstance(result.data, list)
         assert all(isinstance(item, WMSAllocation) for item in result.data)
-    
+
     async def test_pipeline_failure_handling(self):
         """Test pipeline failure propagation."""
         orchestrator = GruponosMeltanoOrchestrator()
-        
+
         # Simulate connection failure
         result = await orchestrator.execute_full_sync(
             company_code="INVALID",
             facility_code="NONE"
         )
-        
+
         assert result.is_failure
         assert "connection" in result.error.lower()
-    
+
     def test_data_validation_chain(self):
         """Test complete data validation workflow."""
         test_data = [
@@ -623,10 +623,10 @@ class TestETLPipeline:
             {"allocation_id": "A002", "quantity": -5, "facility_code": "DC01"},  # Invalid
             {"allocation_id": "A003", "quantity": 50, "facility_code": ""},      # Invalid
         ]
-        
+
         validator = WMSDataValidator()
         result = validator.validate_allocation_data(test_data)
-        
+
         assert result.is_failure  # Should fail due to invalid records
         assert "quantity" in result.error
         assert "facility" in result.error
@@ -637,7 +637,7 @@ def mock_wms_data():
     return [
         {
             "allocation_id": "TEST001",
-            "item_code": "ITEM001", 
+            "item_code": "ITEM001",
             "quantity": 100,
             "facility_code": "DC01",
             "location": "A1-B2-C3"
@@ -699,9 +699,9 @@ async def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
         response = await wms_client.get_allocations(config)
         if response.status != 200:
             return FlextResult.fail(f"WMS API error: {response.status}")
-        
+
         return FlextResult.ok(response.data)
-        
+
     except ConnectionError as e:
         return FlextResult.fail(f"WMS connection failed: {str(e)}")
     except TimeoutError as e:
@@ -734,35 +734,35 @@ async def execute_incremental_sync(
 ) -> FlextResult[IncrementalSyncResult]:
     """
     Execute incremental synchronization from Oracle WMS to target database.
-    
+
     This method implements incremental data synchronization using the mod_ts
     replication key to identify changed records since the last sync. It follows
     the FLEXT railway-oriented programming pattern for consistent error handling
     throughout the ETL pipeline.
-    
+
     The synchronization process includes:
     1. Extract changed records from Oracle WMS since last_sync_timestamp
     2. Validate data quality and business rules
     3. Transform data for target Oracle database schema
     4. Load data using upsert operations
     5. Update synchronization metadata
-    
+
     Args:
         company_code: WMS company identifier for data isolation
         facility_code: WMS facility identifier for location-specific data
         last_sync_timestamp: Timestamp of last successful synchronization
         batch_size: Number of records to process in each batch (default: 1000)
-    
+
     Returns:
         FlextResult[IncrementalSyncResult]: Success contains sync statistics
         including records processed, errors encountered, and performance metrics.
         Failure contains detailed error information for troubleshooting.
-    
+
     Raises:
         GruponosMeltanoOracleConnectionError: When WMS or target DB connection fails
         GruponosMeltanoPipelineTimeoutError: When sync exceeds configured timeout
         GruponosMeltanoDataValidationError: When data quality validation fails
-    
+
     Example:
         >>> from datetime import datetime, timedelta
         >>> last_sync = datetime.utcnow() - timedelta(hours=2)
@@ -794,11 +794,11 @@ async def sync_with_flext_patterns(
     target_config: OracleConfig
 ) -> FlextResult[SyncResult]:
     """Synchronization using consistent FLEXT patterns."""
-    
+
     # Initialize FLEXT services
     logger = get_logger(__name__)
     monitoring = FlextMonitoringService()
-    
+
     return (
         await extract_wms_data(source_config)
         .map(lambda data: monitoring.track_extraction_metrics(data))
@@ -816,26 +816,26 @@ from flext_core import FlextBaseSettings
 
 class GruponosMeltanoSettings(FlextBaseSettings):
     """GrupoNOS Meltano Native configuration with FLEXT patterns."""
-    
+
     # Application metadata
     app_name: str = "gruponos-meltano-native"
     version: str = "0.9.0"
     environment: str = "dev"
-    
+
     # FLEXT integration settings
     enable_monitoring: bool = True
     enable_metrics: bool = True
     log_level: str = "INFO"
-    
+
     # ETL-specific configuration
     oracle_wms: OracleWMSSourceConfig = Field(default_factory=OracleWMSSourceConfig)
     oracle_target: OracleTargetConfig = Field(default_factory=OracleTargetConfig)
     pipeline: PipelineConfig = Field(default_factory=PipelineConfig)
-    
+
     class Config:
         env_prefix = "GRUPONOS_"
         env_nested_delimiter = "__"
-        
+
 def create_gruponos_meltano_settings() -> GruponosMeltanoSettings:
     """Factory function for application settings with FLEXT integration."""
     return GruponosMeltanoSettings()

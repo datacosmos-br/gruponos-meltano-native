@@ -63,7 +63,7 @@ The infrastructure module sits at the outermost layer of Clean Architecture, pro
 
 ```python
 # Service registration with lifecycle
-container.register_singleton("connection_pool", 
+container.register_singleton("connection_pool",
     factory=create_connection_pool,
     cleanup=lambda pool: pool.close_all()
 )
@@ -117,7 +117,7 @@ from gruponos_meltano_native.config import GruponosMeltanoSettings
 
 def configure_container_for_environment(container: GruponosMeltanoContainer):
     settings = GruponosMeltanoSettings()
-    
+
     if settings.environment == "production":
         container.register_production_services()
     elif settings.environment == "development":
@@ -152,7 +152,7 @@ def get_service_with_fallback(container, service_name, fallback_factory):
     result = container.try_resolve(service_name)
     if result.success:
         return result
-    
+
     # Create fallback service
     fallback_service = fallback_factory()
     container.register_singleton(service_name, lambda: fallback_service)
@@ -167,7 +167,7 @@ class ServiceWithCircuitBreaker:
     def __init__(self, actual_service, circuit_breaker):
         self.service = actual_service
         self.circuit_breaker = circuit_breaker
-    
+
     async def execute_operation(self, *args, **kwargs):
         return await self.circuit_breaker.execute(
             lambda: self.service.execute_operation(*args, **kwargs)

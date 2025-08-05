@@ -10,25 +10,25 @@ graph TB
         CORE[flext-core<br/>Foundation Patterns]
         OBS[flext-observability<br/>Monitoring]
     end
-    
+
     subgraph "FLEXT Infrastructure Layer"
         ORACLE[flext-db-oracle<br/>Database Operations]
         GRPC[flext-grpc<br/>Communication]
         AUTH[flext-auth<br/>Authentication]
     end
-    
+
     subgraph "FLEXT Data Integration Layer"
         MELTANO[flext-meltano<br/>Platform Integration]
         TAP[flext-tap-oracle-wms<br/>WMS Extraction]
         TARGET[flext-target-oracle<br/>Database Loading]
     end
-    
+
     subgraph "GrupoNOS Specialized Layer"
         NATIVE[gruponos-meltano-native<br/>Business Logic]
         CONFIG[Configuration<br/>Management]
         ORCHESTRATION[Pipeline<br/>Orchestration]
     end
-    
+
     CORE --> ORACLE
     CORE --> OBS
     ORACLE --> TAP
@@ -51,13 +51,13 @@ from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
 async def execute_pipeline() -> FlextResult[PipelineResult]:
     orchestrator = GruponosMeltanoOrchestrator()
-    
+
     # All FLEXT operations return FlextResult
     result = await orchestrator.execute_full_sync(
         company_code="GNOS",
         facility_code="DC01"
     )
-    
+
     if result.success():
         print(f"Pipeline completed: {result.value.records_processed}")
         return result
@@ -79,7 +79,7 @@ logger = get_logger(__name__)
 class GruponosMeltanoOrchestrator:
     def __init__(self, settings: GruponosMeltanoSettings):
         self.settings = settings
-        
+
     async def execute_full_sync(self) -> FlextResult[PipelineResult]:
         logger.info(
             "Starting full sync",
@@ -89,7 +89,7 @@ class GruponosMeltanoOrchestrator:
                 "correlation_id": self.settings.correlation_id
             }
         )
-        
+
         # Pipeline execution with structured logging
         try:
             result = await self._run_meltano_pipeline()
@@ -111,10 +111,10 @@ from gruponos_meltano_native.infrastructure.di_container import configure_grupon
 def create_gruponos_application() -> FlextContainer:
     """Create configured application container"""
     container = get_flext_container()
-    
+
     # Register GrupoNOS-specific services
     configure_gruponos_container(container)
-    
+
     return container
 
 # Infrastructure configuration
@@ -125,10 +125,10 @@ def configure_gruponos_container(container: FlextContainer) -> None:
     from gruponos_meltano_native.oracle.connection_manager_enhanced import (
         GruponosMeltanoOracleConnectionManager
     )
-    
+
     # Configuration
     container.register_singleton(GruponosMeltanoSettings)
-    
+
     # Core services
     container.register_transient(GruponosMeltanoOrchestrator)
     container.register_singleton(GruponosMeltanoOracleConnectionManager)
@@ -144,19 +144,19 @@ from flext_core import FlextBaseSettings
 
 class GruponosMeltanoSettings(FlextBaseSettings):
     """GrupoNOS Meltano configuration extending FLEXT base settings"""
-    
+
     # Oracle WMS configuration
     wms_base_url: str
     wms_username: str
     wms_password: SecretStr
     company_code: str
     facility_code: str
-    
+
     # Pipeline configuration
     batch_size: int = 10000
     timeout_seconds: int = 300
     enable_incremental: bool = True
-    
+
     class Config:
         env_prefix = "GRUPONOS_"
         case_sensitive = False
@@ -176,17 +176,17 @@ class GruponosMeltanoMonitoring:
     def __init__(self):
         self.metrics: MetricsClient = get_metrics_client()
         self.tracer = get_tracer("gruponos-meltano-native")
-    
+
     async def track_pipeline_execution(self, pipeline_name: str):
         """Track pipeline execution metrics"""
         with self.tracer.start_span("pipeline_execution") as span:
             span.set_attribute("pipeline.name", pipeline_name)
             span.set_attribute("company.code", self.settings.company_code)
-            
+
             # Track execution metrics
             self.metrics.counter("pipeline.executions.total").inc()
             self.metrics.histogram("pipeline.duration.seconds").observe(execution_time)
-    
+
     def create_health_checks(self) -> list:
         """Create health checks for GrupoNOS pipeline"""
         return [
@@ -195,7 +195,7 @@ class GruponosMeltanoMonitoring:
                 check_func=self._check_wms_connection
             ),
             create_health_check(
-                name="oracle_database_connectivity", 
+                name="oracle_database_connectivity",
                 check_func=self._check_database_connection
             ),
             create_health_check(
@@ -220,13 +220,13 @@ class GruponosMeltanoOracleConnectionManager:
             username=settings.oracle_username,
             password=settings.oracle_password.get_secret_value()
         )
-    
+
     async def validate_target_schema(self) -> FlextResult[bool]:
         """Validate target database schema exists"""
         query = OracleQueryBuilder().select("1").from_table("user_tables").where(
             "table_name = :table_name"
         ).build()
-        
+
         async with self.connection_manager.get_connection() as conn:
             result = await conn.execute(query, {"table_name": "WMS_ALLOCATIONS"})
             return FlextResult.success(len(result) > 0)
@@ -246,7 +246,7 @@ plugins:
       executable: flext-tap-oracle-wms  # FLEXT-provided tap
       config:
         base_url: $TAP_ORACLE_WMS_BASE_URL
-        username: $TAP_ORACLE_WMS_USERNAME  
+        username: $TAP_ORACLE_WMS_USERNAME
         password: $TAP_ORACLE_WMS_PASSWORD
         company_code: $TAP_ORACLE_WMS_COMPANY_CODE
         facility_code: $TAP_ORACLE_WMS_FACILITY_CODE
@@ -319,20 +319,20 @@ from pydantic import Field, SecretStr
 
 class GruponosMeltanoSettings(FlextBaseSettings):
     """FLEXT-standardized configuration management"""
-    
+
     # FLEXT core settings inherited
     environment: str = Field(default="dev", env="FLEXT_ENVIRONMENT")
     log_level: str = Field(default="INFO", env="FLEXT_LOG_LEVEL")
-    
+
     # GrupoNOS-specific settings
     wms_base_url: str = Field(..., env="TAP_ORACLE_WMS_BASE_URL")
     wms_username: str = Field(..., env="TAP_ORACLE_WMS_USERNAME")
     wms_password: SecretStr = Field(..., env="TAP_ORACLE_WMS_PASSWORD")
-    
+
     # Oracle target settings
     oracle_host: str = Field(..., env="FLEXT_TARGET_ORACLE_HOST")
     oracle_service_name: str = Field(..., env="FLEXT_TARGET_ORACLE_SERVICE_NAME")
-    
+
     class Config:
         env_prefix = "GRUPONOS_"
         case_sensitive = False

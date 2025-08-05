@@ -29,7 +29,9 @@ class TestValidationError:
 
     def test_validation_error_with_field_name(self) -> None:
         """Test ValidationError with field name."""
-        error = ValidationError("Test message", validation_details={"field": "test_field"})
+        error = ValidationError(
+            "Test message", validation_details={"field": "test_field"}
+        )
         if "[VALIDATION_ERROR] Test message" not in str(error):
             msg: str = f"Expected '[VALIDATION_ERROR] Test message', got {error!s}"
             raise AssertionError(msg)

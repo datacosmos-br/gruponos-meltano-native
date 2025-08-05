@@ -86,17 +86,17 @@ from contextlib import asynccontextmanager
 class ETLDataProcessor:
     def __init__(self, connection_manager: GruponosMeltanoOracleConnectionManager):
         self.connection_manager = connection_manager
-    
+
     @asynccontextmanager
     async def database_transaction(self):
         """Managed database transaction with automatic rollback."""
         connection_result = await self.connection_manager.get_connection()
         if connection_result.is_failure:
             raise Exception(f"Failed to get connection: {connection_result.error}")
-        
+
         conn = connection_result.data
         transaction = await conn.begin()
-        
+
         try:
             yield conn
             await transaction.commit()
@@ -105,20 +105,20 @@ class ETLDataProcessor:
             raise
         finally:
             await self.connection_manager.return_connection(conn)
-    
+
     async def bulk_insert_allocations(self, allocations_data):
         """Bulk insert allocation data with transaction management."""
         async with self.database_transaction() as conn:
             # Prepare bulk insert statement
             insert_sql = """
-                INSERT INTO wms_allocations 
+                INSERT INTO wms_allocations
                 (allocation_id, item_code, quantity, facility_code, location, load_timestamp)
                 VALUES (?, ?, ?, ?, ?, ?)
             """
-            
+
             # Execute bulk insert
             await conn.executemany(insert_sql, allocations_data)
-            
+
             return len(allocations_data)
 ```
 
@@ -135,22 +135,22 @@ config = GruponosMeltanoOracleConnectionConfig(
     service_name="ETLDB",
     username="etl_service",
     password="secure_password",
-    
+
     # Connection pooling
     min_connections=5,
     max_connections=20,
     connection_timeout=30,
-    
+
     # Health monitoring
     health_check_interval=60,
     max_retry_attempts=3,
     retry_delay_seconds=5,
-    
+
     # Performance optimization
     enable_query_hints=True,
     batch_size=1000,
     fetch_size=10000,
-    
+
     # Security
     enable_ssl=True,
     ssl_verify_certificate=True,
@@ -170,21 +170,21 @@ manager = create_gruponos_meltano_oracle_connection_manager(config)
 class OptimizedETLQueries:
     def __init__(self, connection_manager):
         self.connection_manager = connection_manager
-    
+
     async def extract_incremental_data(self, last_sync_timestamp):
         """Extract incremental data with Oracle-specific optimizations."""
         query = """
             SELECT /*+ FIRST_ROWS(1000) INDEX(a, idx_mod_ts) */
-                   allocation_id, item_code, quantity, facility_code, 
+                   allocation_id, item_code, quantity, facility_code,
                    location, mod_ts
             FROM wms_allocations a
             WHERE mod_ts > :last_sync
             ORDER BY mod_ts
         """
-        
+
         async with self.connection_manager.get_connection() as conn:
             cursor = await conn.execute(query, {"last_sync": last_sync_timestamp})
-            
+
             # Fetch in batches for memory efficiency
             batch_size = 1000
             while True:
@@ -192,7 +192,7 @@ class OptimizedETLQueries:
                 if not batch:
                     break
                 yield batch
-    
+
     async def bulk_upsert_with_merge(self, data_batch):
         """High-performance bulk upsert using Oracle MERGE statement."""
         merge_sql = """
@@ -201,7 +201,7 @@ class OptimizedETLQueries:
                 SELECT * FROM TABLE(?)
             ) s ON (t.allocation_id = s.allocation_id)
             WHEN MATCHED THEN
-                UPDATE SET 
+                UPDATE SET
                     quantity = s.quantity,
                     location = s.location,
                     mod_ts = s.mod_ts
@@ -209,7 +209,7 @@ class OptimizedETLQueries:
                 INSERT (allocation_id, item_code, quantity, facility_code, location, mod_ts)
                 VALUES (s.allocation_id, s.item_code, s.quantity, s.facility_code, s.location, s.mod_ts)
         """
-        
+
         async with self.connection_manager.get_connection() as conn:
             await conn.execute(merge_sql, [data_batch])
 ```
@@ -220,11 +220,11 @@ class OptimizedETLQueries:
 class ConnectionPoolMonitor:
     def __init__(self, connection_manager):
         self.connection_manager = connection_manager
-    
+
     async def get_pool_metrics(self):
         """Get detailed connection pool metrics."""
         pool_stats = await self.connection_manager.get_pool_statistics()
-        
+
         return {
             "active_connections": pool_stats.active_count,
             "idle_connections": pool_stats.idle_count,
@@ -234,11 +234,11 @@ class ConnectionPoolMonitor:
             "average_wait_time": pool_stats.average_wait_time_ms,
             "pool_utilization_percent": (pool_stats.active_count / pool_stats.total_count) * 100
         }
-    
+
     async def check_pool_health(self):
         """Comprehensive pool health check."""
         health_result = await self.connection_manager.check_pool_health()
-        
+
         if health_result.success:
             return {
                 "status": "healthy",
@@ -266,14 +266,14 @@ class ResilientConnectionManager:
             for config in failover_configs
         ]
         self.current_manager = self.primary_manager
-    
+
     async def get_connection_with_failover(self):
         """Get connection with automatic failover to backup instances."""
         # Try primary connection
         result = await self.current_manager.get_connection()
         if result.success:
             return result
-        
+
         # Try failover connections
         for failover_manager in self.failover_managers:
             result = await failover_manager.get_connection()
@@ -281,10 +281,10 @@ class ResilientConnectionManager:
                 self.current_manager = failover_manager
                 await self._notify_failover_activated()
                 return result
-        
+
         # All connections failed
         return FlextResult.fail("All database connections failed")
-    
+
     async def _notify_failover_activated(self):
         """Notify operations team of failover activation."""
         # Send alert about failover
@@ -297,16 +297,16 @@ class ResilientConnectionManager:
 class TransactionManager:
     def __init__(self, connection_manager):
         self.connection_manager = connection_manager
-    
+
     async def execute_with_retry(self, operation, max_retries=3):
         """Execute database operation with retry logic."""
         last_error = None
-        
+
         for attempt in range(max_retries + 1):
             try:
                 async with self.connection_manager.get_connection() as conn:
                     return await operation(conn)
-            
+
             except DatabaseConnectionError as e:
                 last_error = e
                 if attempt < max_retries:
@@ -314,11 +314,11 @@ class TransactionManager:
                     await asyncio.sleep(wait_time)
                     continue
                 break
-            
+
             except Exception as e:
                 # Non-recoverable error
                 return FlextResult.fail(f"Operation failed: {str(e)}")
-        
+
         return FlextResult.fail(f"Operation failed after {max_retries} retries: {str(last_error)}")
 ```
 
@@ -359,14 +359,14 @@ class MockOracleConnectionManager:
     def __init__(self):
         self.mock_data = {}
         self.connection_calls = []
-    
+
     async def get_connection(self):
         self.connection_calls.append(datetime.utcnow())
         return FlextResult.ok(MockConnection(self.mock_data))
-    
+
     def set_mock_data(self, table_name, data):
         self.mock_data[table_name] = data
-    
+
     def get_connection_count(self):
         return len(self.connection_calls)
 ```
@@ -379,18 +379,18 @@ async def test_oracle_connection_pool():
     """Test connection pool under load."""
     config = get_test_oracle_config()
     manager = create_gruponos_meltano_oracle_connection_manager(config)
-    
+
     # Simulate concurrent connections
     async def get_connection_task():
         result = await manager.get_connection()
         assert result.success
         await asyncio.sleep(0.1)  # Simulate work
         await manager.return_connection(result.data)
-    
+
     # Execute 50 concurrent connection requests
     tasks = [get_connection_task() for _ in range(50)]
     await asyncio.gather(*tasks)
-    
+
     # Verify pool health
     pool_health = await manager.check_pool_health()
     assert pool_health.success

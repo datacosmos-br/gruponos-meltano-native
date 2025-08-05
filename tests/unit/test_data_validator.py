@@ -121,7 +121,8 @@ class TestDataValidator:
 
         # Test error with field name
         error_with_field = ValidationError(
-            "Field error", validation_details={"field": "test_field"},
+            "Field error",
+            validation_details={"field": "test_field"},
         )
         assert isinstance(error_with_field, ValidationError)
 

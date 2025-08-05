@@ -60,16 +60,16 @@ async def test_complete_full_sync_workflow():
     orchestrator = create_integration_orchestrator()
     company_code = "TEST_GNOS"
     facility_code = "TEST_DC01"
-    
+
     # Act
     result = await orchestrator.execute_full_sync(company_code, facility_code)
-    
+
     # Assert
     assert result.success
     assert result.data.records_processed > 0
     assert result.data.errors_count == 0
     assert result.data.duration_seconds > 0
-    
+
     # Verify data consistency
     source_count = await get_wms_record_count(company_code, facility_code)
     target_count = await get_target_db_record_count()
@@ -82,13 +82,13 @@ async def test_incremental_sync_workflow():
     # Arrange
     orchestrator = create_integration_orchestrator()
     last_sync_timestamp = await get_last_sync_timestamp()
-    
+
     # Act
     result = await orchestrator.execute_incremental_sync("TEST_GNOS", "TEST_DC01")
-    
+
     # Assert
     assert result.success
-    
+
     # Verify only new/modified records were processed
     processed_records = result.data.records_processed
     expected_new_records = await get_modified_records_count_since(last_sync_timestamp)
@@ -104,24 +104,24 @@ async def test_data_consistency_across_systems():
     """Test data consistency between WMS and target database."""
     # Arrange
     test_allocation_id = "INTEGRATION_TEST_001"
-    
+
     # Create test data in WMS
     await create_test_allocation_in_wms(test_allocation_id)
-    
+
     # Act - Execute sync
     orchestrator = create_integration_orchestrator()
     result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
-    
+
     # Assert - Verify data consistency
     assert result.success
-    
+
     wms_allocation = await get_allocation_from_wms(test_allocation_id)
     target_allocation = await get_allocation_from_target_db(test_allocation_id)
-    
+
     assert wms_allocation.allocation_id == target_allocation.allocation_id
     assert wms_allocation.quantity == target_allocation.quantity
     assert wms_allocation.location == target_allocation.location
-    
+
     # Cleanup
     await cleanup_test_allocation(test_allocation_id)
 ```
@@ -138,29 +138,29 @@ async def test_large_dataset_processing():
     # Arrange
     large_dataset_size = 50000  # 50K records
     await create_large_test_dataset(large_dataset_size)
-    
+
     orchestrator = create_integration_orchestrator()
     start_time = time.time()
-    
+
     # Act
     result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
     processing_time = time.time() - start_time
-    
+
     # Assert
     assert result.success
     assert result.data.records_processed == large_dataset_size
-    
+
     # Performance requirements
     assert processing_time < 300  # Max 5 minutes for 50K records
-    
+
     # Throughput requirements
     throughput = large_dataset_size / processing_time
     assert throughput > 100  # Min 100 records/second
-    
+
     # Memory usage validation
     memory_usage = await get_peak_memory_usage()
     assert memory_usage < 2048  # Max 2GB memory usage
-    
+
     # Cleanup
     await cleanup_large_test_dataset()
 
@@ -170,21 +170,21 @@ async def test_concurrent_pipeline_execution():
     """Test concurrent pipeline execution performance."""
     # Arrange
     concurrent_pipelines = 5
-    
+
     async def run_pipeline(pipeline_id):
         orchestrator = create_integration_orchestrator()
         return await orchestrator.execute_full_sync(f"TEST_{pipeline_id}", "TEST_DC01")
-    
+
     # Act
     start_time = time.time()
     results = await asyncio.gather(*[
         run_pipeline(i) for i in range(concurrent_pipelines)
     ])
     total_time = time.time() - start_time
-    
+
     # Assert
     assert all(result.success for result in results)
-    
+
     # Verify concurrent execution efficiency
     expected_sequential_time = sum(result.data.duration_seconds for result in results)
     efficiency = expected_sequential_time / total_time
@@ -201,24 +201,24 @@ async def test_resource_usage_monitoring():
     # Arrange
     resource_monitor = ResourceUsageMonitor()
     orchestrator = create_integration_orchestrator()
-    
+
     # Act
     with resource_monitor.track_usage():
         result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
-    
+
     usage_report = resource_monitor.generate_report()
-    
+
     # Assert
     assert result.success
-    
+
     # Memory usage requirements
     assert usage_report.peak_memory_mb < 1024  # Max 1GB memory
     assert usage_report.memory_leak_detected == False
-    
+
     # Connection pool efficiency
     assert usage_report.connection_pool_efficiency > 0.8  # 80% efficiency
     assert usage_report.connection_leaks == 0
-    
+
     # CPU usage requirements
     assert usage_report.peak_cpu_percent < 80  # Max 80% CPU
 ```
@@ -234,16 +234,16 @@ async def test_wms_connection_failure_recovery():
     """Test recovery from WMS connection failures."""
     # Arrange
     orchestrator = create_integration_orchestrator()
-    
+
     # Simulate WMS connection failure
     with patch_wms_connection_failure():
         # Act
         result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
-        
+
         # Assert - Should handle failure gracefully
         assert result.is_failure
         assert "connection" in result.error.lower()
-    
+
     # Recovery test - connection restored
     result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
     assert result.success
@@ -255,15 +255,15 @@ async def test_database_transaction_rollback():
     # Arrange
     orchestrator = create_integration_orchestrator()
     initial_record_count = await get_target_db_record_count()
-    
+
     # Simulate database error during load
     with patch_database_error_during_load():
         # Act
         result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
-        
+
         # Assert - Transaction should be rolled back
         assert result.is_failure
-        
+
         # Verify no partial data was committed
         final_record_count = await get_target_db_record_count()
         assert final_record_count == initial_record_count
@@ -279,7 +279,7 @@ async def test_alert_delivery_integration():
     """Test alert delivery to real systems."""
     # Arrange
     alert_manager = create_integration_alert_manager()
-    
+
     # Act
     result = await alert_manager.send_alert(
         title="Integration Test Alert",
@@ -287,10 +287,10 @@ async def test_alert_delivery_integration():
         severity=GruponosMeltanoAlertSeverity.INFO,
         context={"test_id": "INTEGRATION_001"}
     )
-    
+
     # Assert
     assert result.success
-    
+
     # Verify alert was delivered to configured channels
     # (This would check actual email, Slack, webhook delivery)
     assert await verify_email_delivery("Integration Test Alert")
@@ -307,12 +307,12 @@ async def integration_test_database():
     """Setup integration test database schema."""
     # Create test schema
     await create_integration_test_schema()
-    
+
     # Populate with test data
     await populate_test_data()
-    
+
     yield
-    
+
     # Cleanup
     await cleanup_integration_test_schema()
 
@@ -321,9 +321,9 @@ async def wms_test_environment():
     """Setup WMS test environment."""
     # Configure WMS test instance
     wms_config = await setup_wms_test_instance()
-    
+
     yield wms_config
-    
+
     # Cleanup WMS test data
     await cleanup_wms_test_data()
 ```

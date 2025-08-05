@@ -95,18 +95,18 @@ else:
 class ETLDataProcessor:
     def __init__(self, validator: GruponosMeltanoDataValidator):
         self.validator = validator
-    
+
     async def process_wms_data(self, raw_data):
         """Process WMS data with comprehensive validation."""
         return (
             await self.validator.validate_schema(raw_data)
-            .flat_map_async(lambda schema_valid: 
+            .flat_map_async(lambda schema_valid:
                 self.validator.validate_business_rules(schema_valid))
-            .flat_map_async(lambda business_valid: 
+            .flat_map_async(lambda business_valid:
                 self.validator.validate_data_quality(business_valid))
-            .flat_map_async(lambda quality_valid: 
+            .flat_map_async(lambda quality_valid:
                 self.validator.validate_referential_integrity(quality_valid))
-            .map_async(lambda final_valid: 
+            .map_async(lambda final_valid:
                 self.validator.enrich_with_metadata(final_valid))
         )
 ```
@@ -135,7 +135,7 @@ validation_config = {
             }
         }
     },
-    
+
     "business_rules": {
         "allocation": [
             {
@@ -152,7 +152,7 @@ validation_config = {
             }
         ]
     },
-    
+
     "quality_thresholds": {
         "completeness_threshold": 0.95,
         "accuracy_threshold": 0.98,
@@ -171,7 +171,7 @@ validator = GruponosMeltanoDataValidator(validation_config)
 ```python
 def validate_wms_data_pipeline(data: List[dict]) -> FlextResult[List[dict]]:
     """Comprehensive validation pipeline with error propagation."""
-    
+
     return (
         validate_basic_structure(data)
         .flat_map(lambda structured: validate_required_fields(structured))
@@ -190,31 +190,31 @@ class BatchValidator:
     def __init__(self, validator: GruponosMeltanoDataValidator):
         self.validator = validator
         self.performance_tracker = ValidationPerformanceTracker()
-    
+
     async def validate_large_dataset(self, data: List[dict], batch_size: int = 1000):
         """Validate large dataset in batches with performance tracking."""
         total_records = len(data)
         validated_records = []
         validation_errors = []
-        
+
         with self.performance_tracker.track_operation("batch_validation"):
             for i in range(0, total_records, batch_size):
                 batch = data[i:i + batch_size]
-                
+
                 batch_result = await self.validator.validate_batch(batch)
-                
+
                 if batch_result.success:
                     validated_records.extend(batch_result.data)
                 else:
                     validation_errors.extend(batch_result.validation_errors)
-                
+
                 # Report progress
                 progress = ((i + len(batch)) / total_records) * 100
                 print(f"Validation progress: {progress:.1f}%")
-        
+
         if validation_errors:
             return FlextResult.fail(f"Validation failed with {len(validation_errors)} errors")
-        
+
         return FlextResult.ok(validated_records)
 ```
 
@@ -223,30 +223,30 @@ class BatchValidator:
 ```python
 class WMSBusinessRules:
     """WMS-specific business rule implementations."""
-    
+
     @staticmethod
     def validate_allocation_consistency(record: dict) -> FlextResult[dict]:
         """Validate allocation record consistency."""
         # Check item-location compatibility
         item_code = record.get("item_code")
         location = record.get("location")
-        
+
         if not WMSBusinessRules._is_valid_item_location_combination(item_code, location):
             return FlextResult.fail(
                 f"Item {item_code} cannot be allocated to location {location}"
             )
-        
+
         # Check quantity limits
         quantity = record.get("quantity", 0)
         max_quantity = WMSBusinessRules._get_max_quantity_for_location(location)
-        
+
         if quantity > max_quantity:
             return FlextResult.fail(
                 f"Quantity {quantity} exceeds maximum {max_quantity} for location {location}"
             )
-        
+
         return FlextResult.ok(record)
-    
+
     @staticmethod
     def validate_order_completion_rules(order_records: List[dict]) -> FlextResult[List[dict]]:
         """Validate order completion business rules."""
@@ -257,17 +257,17 @@ class WMSBusinessRules:
             if order_id not in orders:
                 orders[order_id] = []
             orders[order_id].append(record)
-        
+
         # Validate each order
         validated_records = []
         for order_id, order_lines in orders.items():
             order_validation = WMSBusinessRules._validate_single_order(order_lines)
-            
+
             if order_validation.is_failure:
                 return FlextResult.fail(f"Order {order_id} validation failed: {order_validation.error}")
-            
+
             validated_records.extend(order_validation.data)
-        
+
         return FlextResult.ok(validated_records)
 ```
 
@@ -280,22 +280,22 @@ class DataQualityMonitor:
     def __init__(self, validator: GruponosMeltanoDataValidator):
         self.validator = validator
         self.quality_history = []
-    
+
     async def assess_data_quality(self, data: List[dict]) -> dict:
         """Comprehensive data quality assessment."""
-        
+
         # Completeness analysis
         completeness_score = self._calculate_completeness(data)
-        
+
         # Accuracy analysis
         accuracy_score = await self._calculate_accuracy(data)
-        
+
         # Consistency analysis
         consistency_score = self._calculate_consistency(data)
-        
+
         # Uniqueness analysis
         uniqueness_score = self._calculate_uniqueness(data)
-        
+
         # Overall quality score
         overall_score = (
             completeness_score * 0.3 +
@@ -303,7 +303,7 @@ class DataQualityMonitor:
             consistency_score * 0.25 +
             uniqueness_score * 0.15
         )
-        
+
         quality_report = {
             "timestamp": datetime.utcnow().isoformat(),
             "record_count": len(data),
@@ -314,10 +314,10 @@ class DataQualityMonitor:
             "overall_quality_score": overall_score,
             "quality_grade": self._get_quality_grade(overall_score)
         }
-        
+
         self.quality_history.append(quality_report)
         return quality_report
-    
+
     def _get_quality_grade(self, score: float) -> str:
         """Convert quality score to letter grade."""
         if score >= 0.95:
@@ -338,15 +338,15 @@ class DataQualityMonitor:
 class DataAnomalyDetector:
     def __init__(self):
         self.baseline_metrics = {}
-    
+
     async def detect_anomalies(self, current_data: List[dict]) -> List[dict]:
         """Detect data anomalies using statistical analysis."""
         anomalies = []
-        
+
         # Volume anomaly detection
         current_volume = len(current_data)
         expected_volume_range = self._get_expected_volume_range()
-        
+
         if not (expected_volume_range["min"] <= current_volume <= expected_volume_range["max"]):
             anomalies.append({
                 "type": "volume_anomaly",
@@ -354,15 +354,15 @@ class DataAnomalyDetector:
                 "message": f"Data volume {current_volume} outside expected range {expected_volume_range}",
                 "recommendation": "Investigate data source for potential issues"
             })
-        
+
         # Pattern anomaly detection
         pattern_anomalies = await self._detect_pattern_anomalies(current_data)
         anomalies.extend(pattern_anomalies)
-        
+
         # Distribution anomaly detection
         distribution_anomalies = self._detect_distribution_anomalies(current_data)
         anomalies.extend(distribution_anomalies)
-        
+
         return anomalies
 ```
 
@@ -396,15 +396,15 @@ class MockDataValidator:
     def __init__(self, should_pass=True):
         self.should_pass = should_pass
         self.validation_calls = []
-    
+
     async def validate_allocation_data(self, data):
         self.validation_calls.append(("allocation", len(data)))
-        
+
         if self.should_pass:
             return FlextResult.ok(data)
         else:
             return FlextResult.fail("Mock validation failure")
-    
+
     def get_validation_call_count(self):
         return len(self.validation_calls)
 ```
@@ -423,7 +423,7 @@ class ValidationTestUtils:
             "location": "A1-B2-C3",
             "mod_ts": datetime.utcnow()
         }
-    
+
     @staticmethod
     def create_invalid_allocation_record():
         return {

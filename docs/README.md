@@ -44,12 +44,15 @@ Welcome to the comprehensive documentation for GrupoNOS Meltano Native, an enter
 ## 🚀 Quick Navigation
 
 ### For Developers
+
 Start with [Architecture Overview](architecture/README.md) → [API Reference](api/README.md) → [Testing Guide](api/testing.md)
 
-### For DevOps Engineers  
+### For DevOps Engineers
+
 Start with [Deployment Guide](deployment/README.md) → [Monitoring](deployment/monitoring.md) → [Troubleshooting](deployment/troubleshooting.md)
 
 ### For Business Users
+
 Start with [Oracle WMS Integration](business/oracle-wms.md) → [Data Models](business/data-models.md) → [ETL Processes](business/etl-processes.md)
 
 ---

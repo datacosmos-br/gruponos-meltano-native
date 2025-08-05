@@ -227,7 +227,7 @@ class TestDataFactory:
         }
         default_data.update(overrides)
         return default_data
-    
+
     @staticmethod
     def create_batch_allocations(count=10, **overrides):
         """Create batch of allocation test data."""
@@ -246,10 +246,10 @@ def test_etl_pipeline_success_path():
     """Test successful ETL pipeline execution."""
     # Given: Valid input data
     test_data = TestDataFactory.create_batch_allocations(100)
-    
+
     # When: Execute pipeline
     result = await orchestrator.execute_full_sync("GNOS", "DC01")
-    
+
     # Then: Verify success:
     assert result.success
     assert result.data.records_processed == 100
@@ -259,10 +259,10 @@ def test_etl_pipeline_failure_propagation():
     """Test error propagation through pipeline."""
     # Given: Invalid input data
     test_data = [{"invalid": "data"}]
-    
+
     # When: Execute pipeline
     result = await orchestrator.execute_full_sync("GNOS", "DC01")
-    
+
     # Then: Verify failure
     assert result.is_failure
     assert "validation" in result.error.lower()
@@ -277,11 +277,11 @@ def test_oracle_integration_with_mocks(mock_oracle_api):
     # Setup mock behavior
     mock_connection = Mock()
     mock_oracle_api.return_value.get_connection.return_value = FlextResult.ok(mock_connection)
-    
+
     # Execute test
     manager = create_gruponos_meltano_oracle_connection_manager(test_config)
     result = await manager.get_connection()
-    
+
     # Verify behavior
     assert result.success
     mock_oracle_api.assert_called_once()
@@ -295,12 +295,12 @@ async def test_large_dataset_processing():
     """Test processing of large datasets."""
     # Given: Large test dataset
     large_dataset = TestDataFactory.create_batch_allocations(10000)
-    
+
     # When: Process with time measurement
     start_time = time.time()
     result = await validator.validate_allocation_data(large_dataset)
     processing_time = time.time() - start_time
-    
+
     # Then: Verify performance requirements
     assert result.success
     assert processing_time < 30  # Max 30 seconds for 10k records
@@ -325,15 +325,15 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.13
-      
+
       - name: Install dependencies
         run: |
           pip install poetry
           poetry install
-      
+
       - name: Run unit tests
         run: poetry run pytest tests/unit/ --cov=src --cov-fail-under=90
-      
+
       - name: Run integration tests
         run: poetry run pytest tests/integration/ -v
         env:

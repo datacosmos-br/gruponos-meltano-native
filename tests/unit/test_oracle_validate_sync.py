@@ -499,7 +499,8 @@ class TestOracleValidateSync:
         "gruponos_meltano_native.oracle.connection_manager_enhanced.GruponosMeltanoOracleConnectionManager.test_connection",
     )
     def test_validate_oracle_connection_no_config(
-        self, mock_test_connection: object,
+        self,
+        mock_test_connection: object,
     ) -> None:
         """Test validate_oracle_connection with connection failure."""
         from flext_core import FlextResult
@@ -528,7 +529,8 @@ class TestOracleValidateSync:
         "gruponos_meltano_native.oracle.connection_manager_enhanced.GruponosMeltanoOracleConnectionManager.test_connection",
     )
     def test_validate_oracle_connection_success(
-        self, mock_test_connection: object,
+        self,
+        mock_test_connection: object,
     ) -> None:
         """Test validate_oracle_connection with successful connection."""
         from flext_core import FlextResult

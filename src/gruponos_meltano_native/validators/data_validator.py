@@ -86,7 +86,8 @@ class DataValidator:
             error_msg: str = f"Required field '{rule.field_name}' is missing"
             if self.strict_mode:
                 raise ValidationError(
-                    error_msg, validation_details={"field": rule.field_name},
+                    error_msg,
+                    validation_details={"field": rule.field_name},
                 )
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
@@ -155,7 +156,8 @@ class DataValidator:
             error_msg: str = f"Field '{rule.field_name}' must be a valid decimal"
             if self.strict_mode:
                 raise ValidationError(
-                    error_msg, validation_details={"field": rule.field_name},
+                    error_msg,
+                    validation_details={"field": rule.field_name},
                 ) from e
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
@@ -171,7 +173,8 @@ class DataValidator:
             error_msg: str = f"Field '{rule.field_name}' must be a string"
             if self.strict_mode:
                 raise ValidationError(
-                    error_msg, validation_details={"field": rule.field_name},
+                    error_msg,
+                    validation_details={"field": rule.field_name},
                 )
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
@@ -188,7 +191,8 @@ class DataValidator:
                 )
                 if self.strict_mode:
                     raise ValidationError(
-                        error_msg, validation_details={"field": rule.field_name},
+                        error_msg,
+                        validation_details={"field": rule.field_name},
                     )
                 logger.warning(
                     f"Validation failed: {error_msg} (field: {rule.field_name})",
@@ -206,7 +210,8 @@ class DataValidator:
             error_msg: str = f"Field '{rule.field_name}' must be a number"
             if self.strict_mode:
                 raise ValidationError(
-                    error_msg, validation_details={"field": rule.field_name},
+                    error_msg,
+                    validation_details={"field": rule.field_name},
                 )
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
@@ -224,7 +229,8 @@ class DataValidator:
                 )
                 if self.strict_mode:
                     raise ValidationError(
-                        min_error_msg, validation_details={"field": rule.field_name},
+                        min_error_msg,
+                        validation_details={"field": rule.field_name},
                     )
                 logger.warning(
                     f"Validation failed: {min_error_msg} (field: {rule.field_name})",
@@ -240,7 +246,8 @@ class DataValidator:
                 )
                 if self.strict_mode:
                     raise ValidationError(
-                        max_error_msg, validation_details={"field": rule.field_name},
+                        max_error_msg,
+                        validation_details={"field": rule.field_name},
                     )
                 logger.warning(
                     f"Validation failed: {max_error_msg} (field: {rule.field_name})",
@@ -268,7 +275,8 @@ class DataValidator:
                 )
                 if self.strict_mode:
                     raise ValidationError(
-                        format_error_msg, validation_details={"field": rule.field_name},
+                        format_error_msg,
+                        validation_details={"field": rule.field_name},
                     ) from None
                 logger.warning(
                     f"Validation failed: {format_error_msg} (field: {rule.field_name})",
@@ -278,9 +286,12 @@ class DataValidator:
             type_error_msg: str = f"Field '{rule.field_name}' must be a valid date"
             if self.strict_mode:
                 raise ValidationError(
-                    type_error_msg, validation_details={"field": rule.field_name},
+                    type_error_msg,
+                    validation_details={"field": rule.field_name},
                 )
-            logger.warning(f"Validation failed: {type_error_msg} (field: {rule.field_name})")
+            logger.warning(
+                f"Validation failed: {type_error_msg} (field: {rule.field_name})",
+            )
             errors.append(type_error_msg)
 
     def _validate_boolean(
@@ -294,7 +305,8 @@ class DataValidator:
             error_msg: str = f"Field '{rule.field_name}' must be a boolean"
             if self.strict_mode:
                 raise ValidationError(
-                    error_msg, validation_details={"field": rule.field_name},
+                    error_msg,
+                    validation_details={"field": rule.field_name},
                 )
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
@@ -311,7 +323,8 @@ class DataValidator:
             error_msg: str = f"Field '{rule.field_name}' must be a valid email address"
             if self.strict_mode:
                 raise ValidationError(
-                    error_msg, validation_details={"field": rule.field_name},
+                    error_msg,
+                    validation_details={"field": rule.field_name},
                 )
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)
@@ -335,7 +348,8 @@ class DataValidator:
             )
             if self.strict_mode:
                 raise ValidationError(
-                    error_msg, validation_details={"field": rule.field_name},
+                    error_msg,
+                    validation_details={"field": rule.field_name},
                 )
             logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
             errors.append(error_msg)

@@ -134,10 +134,14 @@ class TestDataValidators:
 
     def test_validation_error(self) -> None:
         """Test ValidationError exception."""
-        error = ValidationError("Test validation error", validation_details={"field": "test_field"})
+        error = ValidationError(
+            "Test validation error", validation_details={"field": "test_field"}
+        )
 
         if "[VALIDATION_ERROR] Test validation error" not in str(error):
-            msg: str = f"Expected '[VALIDATION_ERROR] Test validation error', got {error!s}"
+            msg: str = (
+                f"Expected '[VALIDATION_ERROR] Test validation error', got {error!s}"
+            )
             raise AssertionError(msg)
         assert error.context.get("field") == "test_field"
 

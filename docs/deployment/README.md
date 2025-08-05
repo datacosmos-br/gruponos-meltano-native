@@ -13,18 +13,18 @@ graph TB
     subgraph "Development Environment"
         DEV[Local Development<br/>Docker Compose]
     end
-    
+
     subgraph "Staging Environment"
         STAGE[Kubernetes Staging<br/>Single Replica]
     end
-    
+
     subgraph "Production Environment"
         PROD[Kubernetes Production<br/>High Availability]
         LB[Load Balancer]
         DB[(Oracle Database<br/>RAC Cluster)]
         MONITOR[Monitoring Stack<br/>Prometheus + Grafana]
     end
-    
+
     DEV --> STAGE
     STAGE --> PROD
     PROD --> LB
@@ -39,12 +39,14 @@ graph TB
 ### Infrastructure Requirements
 
 #### Minimum System Requirements
+
 - **CPU**: 4 cores (8 recommended for production)
 - **Memory**: 8GB RAM (16GB recommended for production)
 - **Storage**: 100GB available disk space
 - **Network**: Outbound HTTPS access to Oracle WMS APIs
 
 #### Production Requirements
+
 - **CPU**: 8+ cores with high clock speed
 - **Memory**: 32GB+ RAM for large dataset processing
 - **Storage**: 500GB+ SSD storage with backup capabilities
@@ -53,12 +55,14 @@ graph TB
 ### External Dependencies
 
 #### Oracle WMS System
+
 - **Oracle WMS REST API**: v2.0+ with authenticated access
 - **Network Access**: HTTPS connectivity to WMS endpoints
 - **Credentials**: Service account with read permissions
 - **Rate Limits**: Understanding of API rate limiting policies
 
 #### Oracle Target Database
+
 - **Oracle Database**: 19c+ (21c recommended)
 - **Network Access**: Direct connection via TCP or TCPS
 - **Credentials**: ETL service account with DDL/DML permissions
@@ -68,6 +72,7 @@ graph TB
 ### Software Dependencies
 
 #### Container Runtime
+
 ```bash
 # Docker Engine 20.10+
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -78,6 +83,7 @@ sudo apt-get install docker-compose-plugin
 ```
 
 #### Kubernetes (Production)
+
 ```bash
 # kubectl client
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -94,6 +100,7 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ### Environment Variable Templates
 
 #### Development Environment (.env.dev)
+
 ```bash
 # FLEXT Framework Configuration
 FLEXT_ENVIRONMENT=development
@@ -127,6 +134,7 @@ GRUPONOS_MAX_WORKERS=2
 ```
 
 #### Production Environment (Kubernetes Secrets)
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -138,11 +146,11 @@ stringData:
   # Oracle WMS Credentials
   TAP_ORACLE_WMS_USERNAME: "gruponos_etl_prod"
   TAP_ORACLE_WMS_PASSWORD: "secure_wms_password"
-  
-  # Oracle Database Credentials  
+
+  # Oracle Database Credentials
   FLEXT_TARGET_ORACLE_USERNAME: "gruponos_etl_prod"
   FLEXT_TARGET_ORACLE_PASSWORD: "secure_db_password"
-  
+
   # Additional secrets
   FLEXT_ENCRYPTION_KEY: "base64_encoded_encryption_key"
   MONITORING_API_KEY: "monitoring_system_api_key"
@@ -151,6 +159,7 @@ stringData:
 ### Configuration Management
 
 #### ConfigMap for Non-Secret Configuration
+
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -163,21 +172,21 @@ data:
   FLEXT_LOG_LEVEL: "INFO"
   FLEXT_ENABLE_METRICS: "true"
   FLEXT_ENABLE_TRACING: "true"
-  
+
   # Oracle WMS Configuration
   TAP_ORACLE_WMS_BASE_URL: "https://wms-prod.gruponos.com/api/v1"
   TAP_ORACLE_WMS_COMPANY_CODE: "GNOS"
   TAP_ORACLE_WMS_FACILITY_CODE: "DC01"
   TAP_ORACLE_WMS_TIMEOUT: "600"
   TAP_ORACLE_WMS_BATCH_SIZE: "10000"
-  
+
   # Oracle Target Database Configuration
   FLEXT_TARGET_ORACLE_HOST: "oracle-prod.gruponos.com"
   FLEXT_TARGET_ORACLE_PORT: "1522"
   FLEXT_TARGET_ORACLE_SERVICE_NAME: "GNOSPROD"
   FLEXT_TARGET_ORACLE_PROTOCOL: "tcps"
   FLEXT_TARGET_ORACLE_SCHEMA: "WMS_PROD"
-  
+
   # Pipeline Configuration
   GRUPONOS_ENABLE_VALIDATION: "true"
   GRUPONOS_VALIDATION_THRESHOLD: "0.95"
@@ -193,7 +202,7 @@ data:
 
 ```yaml
 # docker-compose.dev.yml
-version: '3.8'
+version: "3.8"
 
 services:
   gruponos-meltano:
@@ -213,7 +222,7 @@ services:
     depends_on:
       - postgres
       - redis
-    
+
   postgres:
     image: postgres:15-alpine
     environment:
@@ -224,7 +233,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      
+
   redis:
     image: redis:7-alpine
     ports:
@@ -359,54 +368,54 @@ spec:
         runAsUser: 1000
         fsGroup: 1000
       containers:
-      - name: gruponos-meltano
-        image: gruponos-meltano:v0.9.0
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8080
-          name: http
-        env:
-        - name: FLEXT_ENVIRONMENT
-          value: "production"
-        envFrom:
-        - configMapRef:
-            name: gruponos-meltano-config
-        - secretRef:
-            name: gruponos-meltano-secrets
-        resources:
-          requests:
-            memory: "2Gi"
-            cpu: "1000m"
-          limits:
-            memory: "8Gi"
-            cpu: "4000m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-        volumeMounts:
-        - name: meltano-data
-          mountPath: /app/.meltano
-        - name: config-volume
-          mountPath: /app/config
-          readOnly: true
+        - name: gruponos-meltano
+          image: gruponos-meltano:v0.9.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: FLEXT_ENVIRONMENT
+              value: "production"
+          envFrom:
+            - configMapRef:
+                name: gruponos-meltano-config
+            - secretRef:
+                name: gruponos-meltano-secrets
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1000m"
+            limits:
+              memory: "8Gi"
+              cpu: "4000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: meltano-data
+              mountPath: /app/.meltano
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
       volumes:
-      - name: meltano-data
-        persistentVolumeClaim:
-          claimName: meltano-data-pvc
-      - name: config-volume
-        configMap:
-          name: gruponos-meltano-config
+        - name: meltano-data
+          persistentVolumeClaim:
+            claimName: meltano-data-pvc
+        - name: config-volume
+          configMap:
+            name: gruponos-meltano-config
 ```
 
 ### Service and Ingress
@@ -423,9 +432,9 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 80
-    targetPort: 8080
-    name: http
+    - port: 80
+      targetPort: 8080
+      name: http
   selector:
     app: gruponos-meltano
 
@@ -442,20 +451,20 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   tls:
-  - hosts:
-    - etl.gruponos.com
-    secretName: gruponos-meltano-tls
+    - hosts:
+        - etl.gruponos.com
+      secretName: gruponos-meltano-tls
   rules:
-  - host: etl.gruponos.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: gruponos-meltano
-            port:
-              number: 80
+    - host: etl.gruponos.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gruponos-meltano
+                port:
+                  number: 80
 ```
 
 ### CronJob for Scheduled Pipelines
@@ -468,7 +477,7 @@ metadata:
   name: gruponos-full-sync
   namespace: gruponos-etl
 spec:
-  schedule: "0 2 * * 0"  # Weekly at 2 AM Sunday
+  schedule: "0 2 * * 0" # Weekly at 2 AM Sunday
   timeZone: "America/Sao_Paulo"
   jobTemplate:
     spec:
@@ -477,29 +486,29 @@ spec:
           serviceAccountName: gruponos-meltano
           restartPolicy: OnFailure
           containers:
-          - name: gruponos-full-sync
-            image: gruponos-meltano:v0.9.0
-            command:
-            - "poetry"
-            - "run"
-            - "python"
-            - "-m"
-            - "gruponos_meltano_native.cli"
-            - "run"
-            - "--job"
-            - "full-sync-job"
-            envFrom:
-            - configMapRef:
-                name: gruponos-meltano-config
-            - secretRef:
-                name: gruponos-meltano-secrets
-            resources:
-              requests:
-                memory: "4Gi"
-                cpu: "2000m"
-              limits:
-                memory: "16Gi"
-                cpu: "8000m"
+            - name: gruponos-full-sync
+              image: gruponos-meltano:v0.9.0
+              command:
+                - "poetry"
+                - "run"
+                - "python"
+                - "-m"
+                - "gruponos_meltano_native.cli"
+                - "run"
+                - "--job"
+                - "full-sync-job"
+              envFrom:
+                - configMapRef:
+                    name: gruponos-meltano-config
+                - secretRef:
+                    name: gruponos-meltano-secrets
+              resources:
+                requests:
+                  memory: "4Gi"
+                  cpu: "2000m"
+                limits:
+                  memory: "16Gi"
+                  cpu: "8000m"
 
 ---
 apiVersion: batch/v1
@@ -508,7 +517,7 @@ metadata:
   name: gruponos-incremental-sync
   namespace: gruponos-etl
 spec:
-  schedule: "0 */2 * * *"  # Every 2 hours
+  schedule: "0 */2 * * *" # Every 2 hours
   timeZone: "America/Sao_Paulo"
   jobTemplate:
     spec:
@@ -517,29 +526,29 @@ spec:
           serviceAccountName: gruponos-meltano
           restartPolicy: OnFailure
           containers:
-          - name: gruponos-incremental-sync
-            image: gruponos-meltano:v0.9.0
-            command:
-            - "poetry"
-            - "run"  
-            - "python"
-            - "-m"
-            - "gruponos_meltano_native.cli"
-            - "run"
-            - "--job"
-            - "incremental-sync-job"
-            envFrom:
-            - configMapRef:
-                name: gruponos-meltano-config
-            - secretRef:
-                name: gruponos-meltano-secrets
-            resources:
-              requests:
-                memory: "2Gi"
-                cpu: "1000m"
-              limits:
-                memory: "8Gi"
-                cpu: "4000m"
+            - name: gruponos-incremental-sync
+              image: gruponos-meltano:v0.9.0
+              command:
+                - "poetry"
+                - "run"
+                - "python"
+                - "-m"
+                - "gruponos_meltano_native.cli"
+                - "run"
+                - "--job"
+                - "incremental-sync-job"
+              envFrom:
+                - configMapRef:
+                    name: gruponos-meltano-config
+                - secretRef:
+                    name: gruponos-meltano-secrets
+              resources:
+                requests:
+                  memory: "2Gi"
+                  cpu: "1000m"
+                limits:
+                  memory: "8Gi"
+                  cpu: "4000m"
 ```
 
 ---
@@ -562,10 +571,10 @@ spec:
     matchLabels:
       app: gruponos-meltano
   endpoints:
-  - port: http
-    path: /metrics
-    interval: 30s
-    scrapeTimeout: 10s
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
 ```
 
 ### Grafana Dashboard
@@ -627,34 +636,34 @@ metadata:
   namespace: gruponos-etl
 spec:
   groups:
-  - name: gruponos-meltano
-    rules:
-    - alert: PipelineExecutionFailure
-      expr: increase(pipeline_executions_total{status="failure"}[5m]) > 0
-      for: 0m
-      labels:
-        severity: critical
-      annotations:
-        summary: "GrupoNOS pipeline execution failed"
-        description: "Pipeline {{ $labels.pipeline }} failed for company {{ $labels.company }}"
-        
-    - alert: PipelineDurationHigh
-      expr: histogram_quantile(0.95, rate(pipeline_duration_seconds_bucket[5m])) > 3600
-      for: 10m
-      labels:
-        severity: warning
-      annotations:
-        summary: "GrupoNOS pipeline duration is high"
-        description: "Pipeline execution time is above 1 hour"
-        
-    - alert: DataQualityLow
-      expr: data_quality_score < 0.90
-      for: 5m
-      labels:
-        severity: warning
-      annotations:
-        summary: "GrupoNOS data quality score is low"
-        description: "Data quality score for {{ $labels.entity }} is {{ $value }}"
+    - name: gruponos-meltano
+      rules:
+        - alert: PipelineExecutionFailure
+          expr: increase(pipeline_executions_total{status="failure"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: "GrupoNOS pipeline execution failed"
+            description: "Pipeline {{ $labels.pipeline }} failed for company {{ $labels.company }}"
+
+        - alert: PipelineDurationHigh
+          expr: histogram_quantile(0.95, rate(pipeline_duration_seconds_bucket[5m])) > 3600
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "GrupoNOS pipeline duration is high"
+            description: "Pipeline execution time is above 1 hour"
+
+        - alert: DataQualityLow
+          expr: data_quality_score < 0.90
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "GrupoNOS data quality score is low"
+            description: "Data quality score for {{ $labels.entity }} is {{ $value }}"
 ```
 
 ---
@@ -678,12 +687,12 @@ metadata:
   namespace: gruponos-etl
   name: gruponos-meltano
 rules:
-- apiGroups: [""]
-  resources: ["configmaps", "secrets"]
-  verbs: ["get", "list"]
-- apiGroups: ["batch"]
-  resources: ["jobs", "cronjobs"]
-  verbs: ["get", "list", "create"]
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "create"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -692,9 +701,9 @@ metadata:
   name: gruponos-meltano
   namespace: gruponos-etl
 subjects:
-- kind: ServiceAccount
-  name: gruponos-meltano
-  namespace: gruponos-etl
+  - kind: ServiceAccount
+    name: gruponos-meltano
+    namespace: gruponos-etl
 roleRef:
   kind: Role
   name: gruponos-meltano
@@ -715,29 +724,29 @@ spec:
     matchLabels:
       app: gruponos-meltano
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: ingress-nginx
-    ports:
-    - protocol: TCP
-      port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
   egress:
-  - to: []
-    ports:
-    - protocol: TCP
-      port: 443  # HTTPS to Oracle WMS
-    - protocol: TCP
-      port: 1521 # Oracle Database
-    - protocol: TCP
-      port: 1522 # Oracle Database SSL
-    - protocol: TCP
-      port: 53   # DNS
-    - protocol: UDP
-      port: 53   # DNS
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443 # HTTPS to Oracle WMS
+        - protocol: TCP
+          port: 1521 # Oracle Database
+        - protocol: TCP
+          port: 1522 # Oracle Database SSL
+        - protocol: TCP
+          port: 53 # DNS
+        - protocol: UDP
+          port: 53 # DNS
 ```
 
 ---

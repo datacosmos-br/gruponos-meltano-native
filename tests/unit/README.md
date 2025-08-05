@@ -78,10 +78,10 @@ def test_successful_pipeline_execution():
     # Arrange
     mock_data = TestDataFactory.create_batch_allocations(10)
     orchestrator = create_test_orchestrator()
-    
+
     # Act
     result = await orchestrator.execute_full_sync("GNOS", "DC01")
-    
+
     # Assert
     assert result.success
     assert result.data.records_processed == 10
@@ -92,10 +92,10 @@ def test_pipeline_error_propagation():
     # Arrange
     orchestrator = create_test_orchestrator()
     mock_validator_failure()  # Mock validation failure
-    
+
     # Act
     result = await orchestrator.execute_full_sync("GNOS", "DC01")
-    
+
     # Assert
     assert result.is_failure
     assert "validation" in result.error.lower()
@@ -110,13 +110,13 @@ def test_oracle_connection_with_mock(mock_oracle_api):
     # Arrange
     mock_connection = Mock()
     mock_oracle_api.return_value.get_connection.return_value = FlextResult.ok(mock_connection)
-    
+
     config = create_test_oracle_config()
     manager = create_gruponos_meltano_oracle_connection_manager(config)
-    
+
     # Act
     result = await manager.get_connection()
-    
+
     # Assert
     assert result.success
     assert result.data == mock_connection
@@ -135,11 +135,11 @@ def test_valid_configuration_loading():
         "GRUPONOS_ORACLE_WMS_PASSWORD": "test_password",
         "GRUPONOS_ORACLE_TARGET_HOST": "test-db.company.com"
     }
-    
+
     with patch.dict(os.environ, test_env):
         # Act
         settings = GruponosMeltanoSettings()
-        
+
         # Assert
         assert settings.oracle_wms.base_url == "https://test-wms.company.com"
         assert settings.oracle_wms.username == "test_user"
@@ -155,7 +155,7 @@ def test_invalid_configuration_validation():
             username="test",
             password="test"
         )
-    
+
     assert "host" in str(exc_info.value)
 ```
 
@@ -168,12 +168,12 @@ def test_exception_hierarchy():
     base_error = GruponosMeltanoError("Base error")
     assert isinstance(base_error, Exception)
     assert str(base_error) == "Base error"
-    
+
     # Test derived exceptions
     oracle_error = GruponosMeltanoOracleConnectionError("Connection failed")
     assert isinstance(oracle_error, GruponosMeltanoError)
     assert isinstance(oracle_error, GruponosMeltanoOracleError)
-    
+
     # Test context handling
     pipeline_error = GruponosMeltanoPipelineError(
         "Pipeline failed",
@@ -199,10 +199,10 @@ def test_schema_validation_success():
             "location": "A1-B2-C3"
         }
     ]
-    
+
     # Act
     result = await validator.validate_schema(valid_data)
-    
+
     # Assert
     assert result.success
     assert len(result.data) == 1
@@ -221,10 +221,10 @@ def test_business_rule_validation_failure():
             "location": "A1-B2-C3"
         }
     ]
-    
+
     # Act
     result = await validator.validate_business_rules(invalid_data)
-    
+
     # Assert
     assert result.is_failure
     assert "quantity" in result.error.lower()
@@ -243,14 +243,14 @@ def test_alert_delivery_success():
         email_sender=mock_email_sender,
         slack_sender=mock_slack_sender
     )
-    
+
     # Act
     result = await alert_manager.send_alert(
         title="Test Alert",
         message="This is a test alert",
         severity=GruponosMeltanoAlertSeverity.INFO
     )
-    
+
     # Assert
     assert result.success
     mock_email_sender.send.assert_called_once()
@@ -263,12 +263,12 @@ def test_alert_rate_limiting():
         rate_limit_window_minutes=1,
         max_alerts_per_window=2
     )
-    
+
     # Act - Send 3 alerts within rate limit window
     result1 = await alert_manager.send_alert("Alert 1", "Message 1")
     result2 = await alert_manager.send_alert("Alert 2", "Message 2")
     result3 = await alert_manager.send_alert("Alert 3", "Message 3")
-    
+
     # Assert
     assert result1.success
     assert result2.success
@@ -289,14 +289,14 @@ class MockFactory:
         mock_conn.execute.return_value = AsyncMock()
         mock_conn.fetchall.return_value = []
         return mock_conn
-    
+
     @staticmethod
     def create_mock_alert_manager():
         """Create mock alert manager for testing."""
         mock_manager = Mock()
         mock_manager.send_alert.return_value = FlextResult.ok("Alert sent")
         return mock_manager
-    
+
     @staticmethod
     def create_mock_validator():
         """Create mock data validator for testing."""
@@ -323,7 +323,7 @@ class TestDataGenerator:
             }
             for i in range(count)
         ]
-    
+
     @staticmethod
     def generate_invalid_allocation(**invalid_fields):
         """Generate invalid allocation for error testing."""

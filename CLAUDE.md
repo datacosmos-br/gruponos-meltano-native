@@ -300,7 +300,7 @@ pytest --collect-only          # Show available tests without running
 This project depends on several FLEXT framework components managed as local path dependencies:
 
 - **flext-core**: Foundation patterns, logging, result handling
-- **flext-observability**: Monitoring and metrics  
+- **flext-observability**: Monitoring and metrics
 - **flext-db-oracle**: Oracle database connectivity
 - **flext-tap-oracle-wms**: Oracle WMS data extraction
 - **flext-target-oracle**: Oracle data loading
