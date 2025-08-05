@@ -219,33 +219,33 @@ class DataValidator:
                 and isinstance(min_value, (int, float))
                 and value < min_value
             ):
-                error_msg: str = (
+                min_error_msg: str = (
                     f"Field '{rule.field_name}' below minimum value {min_value}"
                 )
                 if self.strict_mode:
                     raise ValidationError(
-                        error_msg, validation_details={"field": rule.field_name},
+                        min_error_msg, validation_details={"field": rule.field_name},
                     )
                 logger.warning(
-                    f"Validation failed: {error_msg} (field: {rule.field_name})",
+                    f"Validation failed: {min_error_msg} (field: {rule.field_name})",
                 )
-                errors.append(error_msg)
+                errors.append(min_error_msg)
             if (
                 max_value is not None
                 and isinstance(max_value, (int, float))
                 and value > max_value
             ):
-                error_msg = (
+                max_error_msg = (
                     f"Field '{rule.field_name}' exceeds maximum value {max_value}"
                 )
                 if self.strict_mode:
                     raise ValidationError(
-                        error_msg, validation_details={"field": rule.field_name},
+                        max_error_msg, validation_details={"field": rule.field_name},
                     )
                 logger.warning(
-                    f"Validation failed: {error_msg} (field: {rule.field_name})",
+                    f"Validation failed: {max_error_msg} (field: {rule.field_name})",
                 )
-                errors.append(error_msg)
+                errors.append(max_error_msg)
 
     def _validate_date(
         self,
@@ -262,26 +262,26 @@ class DataValidator:
             try:
                 datetime.strptime(value, date_format).replace(tzinfo=UTC)
             except ValueError:
-                error_msg = (
+                format_error_msg = (
                     f"Field '{rule.field_name}' is not a valid date format "
                     f"{date_format}"
                 )
                 if self.strict_mode:
                     raise ValidationError(
-                        error_msg, validation_details={"field": rule.field_name},
+                        format_error_msg, validation_details={"field": rule.field_name},
                     ) from None
                 logger.warning(
-                    f"Validation failed: {error_msg} (field: {rule.field_name})",
+                    f"Validation failed: {format_error_msg} (field: {rule.field_name})",
                 )
-                errors.append(error_msg)
+                errors.append(format_error_msg)
         elif not isinstance(value, datetime):
-            error_msg: str = f"Field '{rule.field_name}' must be a valid date"
+            type_error_msg: str = f"Field '{rule.field_name}' must be a valid date"
             if self.strict_mode:
                 raise ValidationError(
-                    error_msg, validation_details={"field": rule.field_name},
+                    type_error_msg, validation_details={"field": rule.field_name},
                 )
-            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
-            errors.append(error_msg)
+            logger.warning(f"Validation failed: {type_error_msg} (field: {rule.field_name})")
+            errors.append(type_error_msg)
 
     def _validate_boolean(
         self,

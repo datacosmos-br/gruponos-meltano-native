@@ -138,7 +138,7 @@ def _get_table_details(cursor: Any, table_name: str) -> dict[str, Any]:
         # For tests, we use identifier quoting to prevent injection
         quoted_table = f'"{table_name}"'  # Oracle identifier quoting
         cursor.execute(
-            f"SELECT MIN(DATE_COL), MAX(DATE_COL), COUNT(DISTINCT ID) FROM {quoted_table}",
+            f"SELECT MIN(DATE_COL), MAX(DATE_COL), COUNT(DISTINCT ID) FROM {quoted_table}",  # noqa: S608
         )
         result = cursor.fetchone()
         min_date, max_date, unique_ids = result or [None, None, 0]

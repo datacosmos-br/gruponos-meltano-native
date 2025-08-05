@@ -90,9 +90,11 @@ class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
         **kwargs: object,
     ) -> None:
         """Initialize GrupoNOS pipeline error with context."""
+        # Extract pipeline_type if provided, otherwise use None
+        pipeline_type = kwargs.pop("pipeline_type", None)
         if pipeline_name is not None:
             kwargs["pipeline_name"] = pipeline_name
-        super().__init__(f"GrupoNOS pipeline: {message}", **kwargs)
+        super().__init__(message=f"GrupoNOS pipeline: {message}", pipeline_type=pipeline_type)
 
 
 # Monitoring error hierarchy
