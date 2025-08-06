@@ -6,7 +6,10 @@ with Oracle WMS systems, built on FLEXT foundation patterns.
 
 from __future__ import annotations
 
+import asyncio
+import os
 import subprocess
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -95,21 +98,22 @@ class GruponosMeltanoPipelineRunner:
     def run_pipeline(
         self,
         job_name: str,
-        **kwargs: object,
+        **_kwargs: object,
     ) -> GruponosMeltanoPipelineResult:
         """Run a GrupoNOS Meltano pipeline."""
-        import time
-
         start_time = time.time()
 
         try:
+            # Validate and sanitize job_name
+            sanitized_job_name = self._validate_job_name(job_name)
+
             # Build meltano command
-            cmd = ["meltano", "run", job_name]
+            cmd = ["meltano", "run", sanitized_job_name]
 
             # Set environment variables for GrupoNOS
             env = self._build_environment()
 
-            # Execute pipeline
+            # Execute pipeline (job_name validated and sanitized above)
             result = subprocess.run(
                 cmd,
                 check=False,
@@ -162,8 +166,6 @@ class GruponosMeltanoPipelineRunner:
 
     def _build_environment(self) -> dict[str, str]:
         """Build environment variables for GrupoNOS pipelines."""
-        import os
-
         env = os.environ.copy()
 
         # Add GrupoNOS-specific environment variables
@@ -196,6 +198,20 @@ class GruponosMeltanoPipelineRunner:
 
         return env
 
+    def _validate_job_name(self, job_name: str) -> str:
+        """Validate and sanitize job name to prevent command injection."""
+        if not job_name or not job_name.strip():
+            error_msg = "Job name cannot be empty"
+            raise ValueError(error_msg)
+
+        sanitized_job_name = job_name.strip()
+        invalid_chars = [";", "&", "|", "`", "$", "(", ")", "{", "}", "[", "]", '"', "'", "<", ">", "\\"]
+        if any(char in sanitized_job_name for char in invalid_chars):
+            error_msg = "Job name contains invalid characters"
+            raise ValueError(error_msg)
+
+        return sanitized_job_name
+
     async def run_with_retry(
         self,
         job_name: str,
@@ -203,8 +219,6 @@ class GruponosMeltanoPipelineRunner:
         **kwargs: object,
     ) -> GruponosMeltanoPipelineResult:
         """Run pipeline with retry logic."""
-        import asyncio
-
         last_result = None
         for attempt in range(max_retries + 1):
             try:
@@ -482,8 +496,6 @@ class GruponosMeltanoOrchestrator:
         **kwargs: object,
     ) -> GruponosMeltanoPipelineResult:
         """Run pipeline asynchronously (compatibility method)."""
-        import asyncio
-
         # Execute in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(

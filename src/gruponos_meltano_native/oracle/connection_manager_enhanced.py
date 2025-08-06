@@ -9,14 +9,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_core import FlextResult
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
-
-if TYPE_CHECKING:
-    from flext_db_oracle import FlextDbOracleApi
 
 # =============================================
 # GRUPONOS ORACLE CONNECTION MANAGER
@@ -37,9 +33,6 @@ class GruponosMeltanoOracleConnectionManager:
     def get_connection(self) -> FlextResult[FlextDbOracleApi]:
         """Get Oracle database connection for GrupoNOS."""
         try:
-            # Import here to avoid circular dependencies
-            from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
-
             # Build connection config
             db_config = FlextDbOracleConfig(
                 host=self.config.host,

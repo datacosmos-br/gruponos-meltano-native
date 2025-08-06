@@ -6,6 +6,7 @@ Tests all CLI commands, error paths, and edge cases to achieve full coverage.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 from click.testing import CliRunner
@@ -45,7 +46,7 @@ class TestCLIComprehensive:
         """Test config file flag functionality."""
         with self.runner.isolated_filesystem():
             # Create a temporary config file
-            with open("test_config.yml", "w", encoding="utf-8") as f:
+            with Path("test_config.yml").open("w", encoding="utf-8") as f:
                 f.write("test: config")
 
             with (

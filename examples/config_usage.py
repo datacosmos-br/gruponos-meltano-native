@@ -9,13 +9,15 @@ Clean Architecture.
 Example files are exempt from architectural constraints for educational purposes.
 """
 
-# NOTE: Example files can show direct imports for educational purposes
-# In production code, use DI container instead
 from flext_core import get_logger
 
 from gruponos_meltano_native.config import (
+    GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoSettings,
     create_gruponos_meltano_settings,
+)
+from gruponos_meltano_native.oracle import (
+    create_gruponos_meltano_oracle_connection_manager,
 )
 
 logger = get_logger(__name__)
@@ -109,12 +111,6 @@ def demonstrate_connection_manager_integration() -> None:
     # Demonstrate how Oracle connection manager would be created
     # Using the real Oracle connection manager from the project
     try:
-        from gruponos_meltano_native.config import (
-            GruponosMeltanoOracleConnectionConfig,
-        )
-        from gruponos_meltano_native.oracle import (
-            create_gruponos_meltano_oracle_connection_manager,
-        )
 
         # Create a sample Oracle config
         oracle_config = GruponosMeltanoOracleConnectionConfig(

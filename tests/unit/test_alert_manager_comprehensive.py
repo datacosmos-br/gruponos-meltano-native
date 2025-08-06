@@ -6,7 +6,7 @@ Tests the actual alert service and manager logic using enterprise patterns.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import Mock, patch
 
 from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
@@ -56,7 +56,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={"test": "data"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         with patch("requests.post") as mock_post:
@@ -90,7 +90,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={"test": "data"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         with patch("requests.post") as mock_post:
@@ -118,7 +118,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={"test": "data"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         with patch("requests.post") as mock_post:
@@ -145,7 +145,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={"test": "data"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         with patch("requests.post", side_effect=ValueError("Invalid JSON")):
@@ -168,7 +168,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={"test": "data"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         with patch("requests.post", side_effect=RuntimeError("Runtime error")):
@@ -190,7 +190,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={"test": "data"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         result = service.send_alert(alert)
@@ -213,7 +213,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={"test": "data"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         result = service.send_alert(alert)
@@ -239,7 +239,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         # First two calls should not send (below threshold)
@@ -282,7 +282,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         # Build up failure count
@@ -310,7 +310,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         validation_result = empty_alert.validate_domain_rules()
@@ -324,7 +324,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context={},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         validation_result = long_alert.validate_domain_rules()
@@ -345,7 +345,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.MEDIUM,
             alert_type=GruponosMeltanoAlertType.DATA_QUALITY_ISSUE,
             context={"entity": "test"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         # Email sending is mocked in the implementation
@@ -368,7 +368,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             severity=GruponosMeltanoAlertSeverity.CRITICAL,
             alert_type=GruponosMeltanoAlertType.PIPELINE_FAILURE,
             context={"pipeline": "test-pipeline"},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             pipeline_name="test-pipeline",
         )
 
@@ -601,7 +601,7 @@ class TestGruponosMeltanoAlertManagerComprehensive:
                         severity=GruponosMeltanoAlertSeverity.MEDIUM,
                         alert_type=alert_type,
                         context={"test": True},
-                        timestamp=datetime.now().isoformat(),
+                        timestamp=datetime.now(UTC).isoformat(),
                     )
                     result = service.send_alert(alert)
 

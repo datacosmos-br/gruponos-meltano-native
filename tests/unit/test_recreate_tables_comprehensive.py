@@ -283,7 +283,7 @@ class TestTableRecreationErrorHandling:
             )
             validation_result = config.validate_semantic_rules()
             assert validation_result.is_failure
-        except Exception:  # noqa: S110
+        except Exception:
             # Expected - invalid configuration should raise exception
             pass
 

@@ -1169,7 +1169,7 @@ class TestDateConversion:
         """Test converting datetime object to date string."""
         validator = DataValidator()
 
-        dt = datetime(2025, 1, 15, 10, 30, 45)
+        dt = datetime(2025, 1, 15, 10, 30, 45, tzinfo=UTC)
         result = validator._convert_to_date(dt, "date-time", "test_field")
 
         if result != "2025-01-15T10:30:45":
@@ -1277,7 +1277,7 @@ class TestStatisticsAndUtilities:
 
         # Perform some conversions to update stats
         validator._convert_to_number("123", "integer", "test")
-        validator._convert_to_date(datetime.now(), "date-time", "test")
+        validator._convert_to_date(datetime.now(UTC), "date-time", "test")
         validator._convert_field(
             value=None,
             field_schema={"type": "string"},

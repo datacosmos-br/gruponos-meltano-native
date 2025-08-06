@@ -25,7 +25,7 @@ with contextlib.suppress(ImportError):
     # FLEXT Standard Factory Function
     def create_gruponos_meltano_validator_for_environment(
         environment: str = "dev",
-        **kwargs: object,
+        **_kwargs: object,
     ) -> GruponosMeltanoDataValidator:
         """Create GrupoNOS Meltano data validator for environment.
 

@@ -448,7 +448,7 @@ class TestConfigFocused:
             version="1.0.0",
             debug=True,
             log_level="DEBUG",
-            meltano_project_root="/tmp/test",  # noqa: S108
+            meltano_project_root="/tmp/test",
             meltano_environment="test",
             meltano_state_backend="filesystem",
         )

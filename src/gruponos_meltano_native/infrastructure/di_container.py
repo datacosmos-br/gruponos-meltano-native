@@ -19,16 +19,24 @@ from flext_core import (
 
 logger = get_logger(__name__)
 
-_container_instance: FlextContainer | None = None
+
+class _ContainerSingleton:
+    """Singleton pattern for dependency injection container."""
+
+    _instance: FlextContainer | None = None
+
+    @classmethod
+    def get_instance(cls) -> FlextContainer:
+        """Get or create the container instance."""
+        if cls._instance is None:
+            cls._instance = get_flext_container()
+            _configure_dependencies(cls._instance)
+        return cls._instance
 
 
 def get_gruponos_meltano_container() -> FlextContainer:
     """Get GrupoNOS Meltano dependency injection container."""
-    global _container_instance
-    if _container_instance is None:
-        _container_instance = get_flext_container()
-        _configure_dependencies(_container_instance)
-    return _container_instance
+    return _ContainerSingleton.get_instance()
 
 
 def _configure_dependencies(container: FlextContainer) -> None:

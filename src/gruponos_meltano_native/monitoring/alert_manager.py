@@ -9,20 +9,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from email.mime.text import MIMEText
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 import requests
-
-# FLEXT Core Standards
 from flext_core import FlextResult, FlextValueObject, get_logger
 
-if TYPE_CHECKING:
-    from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
+from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
 
 logger = get_logger(__name__)
 
+# Constants
+MAX_ALERT_MESSAGE_LENGTH = 1000
 
 class GruponosMeltanoAlertSeverity(StrEnum):
     """Alert severity levels for GrupoNOS Meltano Native."""
@@ -60,10 +59,14 @@ class GruponosMeltanoAlert(FlextValueObject):
         if not self.message.strip():
             return FlextResult.fail("Alert message cannot be empty")
 
-        if len(self.message) > 1000:
-            return FlextResult.fail("Alert message too long (max 1000 characters)")
+        if len(self.message) > MAX_ALERT_MESSAGE_LENGTH:
+            return FlextResult.fail(f"Alert message too long (max {MAX_ALERT_MESSAGE_LENGTH} characters)")
 
         return FlextResult.ok(None)
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate alert business rules."""
+        return self.validate_domain_rules()
 
 
 class GruponosMeltanoAlertService:
@@ -108,7 +111,7 @@ class GruponosMeltanoAlertService:
                 logger.debug(
                     f"Alert threshold not reached: {self._failure_count}/{self.config.alert_threshold}",
                 )
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             # Send through enabled channels
             results = []
@@ -144,7 +147,7 @@ class GruponosMeltanoAlertService:
             return FlextResult.fail(f"Failed to send alert: {combined_error}")
 
         except (RuntimeError, ValueError, TypeError) as e:
-            logger.exception(f"Alert sending failed with unexpected error: {e}")
+            logger.exception("Alert sending failed with unexpected error")
             return FlextResult.fail(f"Alert sending error: {e}")
 
     def _send_webhook(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
@@ -298,14 +301,12 @@ class GruponosMeltanoAlertManager:
             FlextResult indicating success/failure
 
         """
-        from datetime import datetime
-
         alert = GruponosMeltanoAlert(
             message=f"Pipeline '{pipeline_name}' failed: {error_message}",
             severity=GruponosMeltanoAlertSeverity.HIGH,
             alert_type=GruponosMeltanoAlertType.PIPELINE_FAILURE,
             context=context or {},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             pipeline_name=pipeline_name,
         )
 
@@ -328,14 +329,12 @@ class GruponosMeltanoAlertManager:
             FlextResult indicating success/failure
 
         """
-        from datetime import datetime
-
         alert = GruponosMeltanoAlert(
             message=f"Connectivity failure to {target}: {error_message}",
             severity=GruponosMeltanoAlertSeverity.CRITICAL,
             alert_type=GruponosMeltanoAlertType.CONNECTIVITY_FAILURE,
             context=context or {},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         return self.alert_service.send_alert(alert)
@@ -357,14 +356,12 @@ class GruponosMeltanoAlertManager:
             FlextResult indicating success/failure
 
         """
-        from datetime import datetime
-
         alert = GruponosMeltanoAlert(
             message=f"Data quality issue: {issue_description}",
             severity=GruponosMeltanoAlertSeverity.MEDIUM,
             alert_type=GruponosMeltanoAlertType.DATA_QUALITY_ISSUE,
             context=context or {},
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             pipeline_name=pipeline_name,
         )
 
@@ -385,8 +382,6 @@ def create_gruponos_meltano_alert_manager(
 
     """
     if config is None:
-        from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
-
         config = GruponosMeltanoAlertConfig()
 
     alert_service = GruponosMeltanoAlertService(config)

@@ -21,6 +21,7 @@ from flext_cli import (
     get_config,
 )
 from flext_core import FlextResult, get_logger
+from rich.console import Console
 
 from gruponos_meltano_native.config import (
     GruponosMeltanoSettings,
@@ -28,12 +29,13 @@ from gruponos_meltano_native.config import (
 )
 from gruponos_meltano_native.orchestrator import (
     create_gruponos_meltano_orchestrator,
+    create_gruponos_meltano_pipeline_runner,
 )
 
 logger = get_logger(__name__)
 
 
-def initialize_cli_environment(debug: bool = False) -> dict[str, object]:
+def initialize_cli_environment(*, debug: bool = False) -> dict[str, object]:
     """Initialize CLI environment using FLEXT CLI framework patterns.
 
     This function sets up the complete CLI environment including logging,
@@ -51,19 +53,14 @@ def initialize_cli_environment(debug: bool = False) -> dict[str, object]:
         across the FLEXT ecosystem and enterprise CLI standards.
 
     """
-    from rich.console import Console
-
     # Create CLI environment using flext-cli patterns
     cli_config = get_config()  # Use flext-cli get_config utility
-    from flext_cli.utils.config import get_settings
 
-    cli_settings = get_settings()
     console = Console()
 
     # Create a proper CLI context dict
     return {
         "config": cli_config,
-        "settings": cli_settings,
         "console": console,
         "debug": debug or cli_config.debug,
     }
@@ -85,6 +82,7 @@ def initialize_cli_environment(debug: bool = False) -> dict[str, object]:
 @click.pass_context
 def cli(
     ctx: click.Context,
+    *,
     debug: bool,
     config_file: str | None,
 ) -> None:
@@ -95,7 +93,7 @@ def cli(
     """
     try:
         # Initialize CLI environment using FLEXT patterns
-        cli_context = initialize_cli_environment(debug)
+        cli_context = initialize_cli_environment(debug=debug)
 
         # Note: config_file handling will be implemented in future sprint
         # Current implementation focuses on core CLI framework integration
@@ -152,8 +150,6 @@ def health(ctx: click.Context) -> None:
         health_status["meltano_project"] = meltano_status
 
         # Format output using Rich console
-        from rich.console import Console
-
         if isinstance(console, Console):
             console.print("📋 Health Check Results:")
             for component, status in health_status.items():
@@ -163,8 +159,6 @@ def health(ctx: click.Context) -> None:
 
     except Exception as e:
         logger.exception("Health check failed")
-        from rich.console import Console
-
         console = Console()
         console.print(f"❌ Health check failed: {e}")
         sys.exit(1)
@@ -223,10 +217,11 @@ def _check_meltano_configuration(config: GruponosMeltanoSettings) -> str:
 )
 @click.pass_context
 def run(
-    ctx: click.Context,
+    _ctx: click.Context,
     pipeline_name: str,
+    *,
     dry_run: bool,
-    retry_attempts: int,
+    _retry_attempts: int,
 ) -> None:
     """Run a specific Meltano pipeline.
 
@@ -267,14 +262,14 @@ def run(
         asyncio.run(run_pipeline())
 
     except (RuntimeError, ValueError, TypeError) as e:
-        logger.exception(f"Pipeline execution failed: {e}")
+        logger.exception("Pipeline execution failed")
         click.echo(f"❌ Pipeline execution failed: {e}")
         sys.exit(1)
 
 
 @cli.command()
 @click.pass_context
-def list_pipelines(ctx: click.Context) -> None:
+def list_pipelines(_ctx: click.Context) -> None:
     """List available Meltano pipelines."""
     click.echo("📋 Listing available pipelines...")
     logger.info("Listing pipelines")
@@ -299,7 +294,7 @@ def list_pipelines(ctx: click.Context) -> None:
         list_available_pipelines()
 
     except (RuntimeError, ValueError, TypeError) as e:
-        logger.exception(f"Failed to list pipelines: {e}")
+        logger.exception("Failed to list pipelines")
         click.echo(f"❌ Failed to list pipelines: {e}")
         sys.exit(1)
 
@@ -312,7 +307,7 @@ def list_pipelines(ctx: click.Context) -> None:
     help="Output format",
 )
 @click.pass_context
-def validate(ctx: click.Context, output_format: str) -> None:
+def validate(_ctx: click.Context, *, output_format: str) -> None:
     """Validate configuration and pipeline setup."""
     if output_format != "json":
         click.echo("🔍 Running validation...")
@@ -349,7 +344,7 @@ def validate(ctx: click.Context, output_format: str) -> None:
             logger.info("Validation completed successfully")
 
     except (RuntimeError, ValueError, TypeError) as e:
-        logger.exception(f"Validation failed: {e}")
+        logger.exception("Validation failed")
         click.echo(f"❌ Validation failed: {e}")
         sys.exit(1)
 
@@ -369,7 +364,7 @@ def validate(ctx: click.Context, output_format: str) -> None:
     help="Include sensitive configuration (use with caution)",
 )
 @click.pass_context
-def show_config(ctx: click.Context, output_format: str, show_secrets: bool) -> None:
+def show_config(_ctx: click.Context, *, output_format: str, show_secrets: bool) -> None:
     """Show current configuration."""
     if output_format != "json":
         click.echo("📋 Current configuration:")
@@ -446,7 +441,7 @@ def show_config(ctx: click.Context, output_format: str, show_secrets: bool) -> N
             logger.info("Configuration displayed successfully")
 
     except (RuntimeError, ValueError, TypeError) as e:
-        logger.exception(f"Failed to show configuration: {e}")
+        logger.exception("Failed to show configuration")
         click.echo(f"❌ Failed to show configuration: {e}")
         sys.exit(1)
 
@@ -461,8 +456,9 @@ def show_config(ctx: click.Context, output_format: str, show_secrets: bool) -> N
 )
 @click.pass_context
 def run_with_retry(
-    ctx: click.Context,
+    _ctx: click.Context,
     pipeline_name: str,
+    *,
     max_retries: int,
 ) -> None:
     """Run a pipeline with automatic retry logic.
@@ -480,10 +476,7 @@ def run_with_retry(
         config = create_gruponos_meltano_settings()
         orchestrator = create_gruponos_meltano_orchestrator(config)
 
-        # Create pipeline runner for retry functionality
-        from gruponos_meltano_native.orchestrator import (
-            create_gruponos_meltano_pipeline_runner,
-        )
+                  # Create pipeline runner for retry functionality
 
         runner = create_gruponos_meltano_pipeline_runner(orchestrator.settings)
 
@@ -512,7 +505,7 @@ def run_with_retry(
         asyncio.run(run_with_retry_logic())
 
     except (RuntimeError, ValueError, TypeError) as e:
-        logger.exception(f"Pipeline execution with retry failed: {e}")
+        logger.exception("Pipeline execution with retry failed")
         click.echo(f"❌ Pipeline execution failed: {e}")
         sys.exit(1)
 
