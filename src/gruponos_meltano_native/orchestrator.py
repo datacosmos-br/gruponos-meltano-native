@@ -205,7 +205,24 @@ class GruponosMeltanoPipelineRunner:
             raise ValueError(error_msg)
 
         sanitized_job_name = job_name.strip()
-        invalid_chars = [";", "&", "|", "`", "$", "(", ")", "{", "}", "[", "]", '"', "'", "<", ">", "\\"]
+        invalid_chars = [
+            ";",
+            "&",
+            "|",
+            "`",
+            "$",
+            "(",
+            ")",
+            "{",
+            "}",
+            "[",
+            "]",
+            '"',
+            "'",
+            "<",
+            ">",
+            "\\",
+        ]
         if any(char in sanitized_job_name for char in invalid_chars):
             error_msg = "Job name contains invalid characters"
             raise ValueError(error_msg)

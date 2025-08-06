@@ -245,11 +245,15 @@ class TestGruponosMeltanoAlertManagerIntegration:
         try:
             # Test only if module exists, not specific functions
             import importlib.util
+
             _spec = importlib.util.find_spec("flext_core.logging")
 
             # Test only if module exists, not specific classes
             import importlib.util
-            _spec = importlib.util.find_spec("gruponos_meltano_native.monitoring.alert_manager")
+
+            _spec = importlib.util.find_spec(
+                "gruponos_meltano_native.monitoring.alert_manager"
+            )
         except ImportError as e:
             pytest.skip(f"Alert manager module not available: {e}")
         # Should use structlog (FLEXT standard) and GruponosMeltanoAlertService

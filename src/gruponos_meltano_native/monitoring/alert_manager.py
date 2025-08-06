@@ -23,6 +23,7 @@ logger = get_logger(__name__)
 # Constants
 MAX_ALERT_MESSAGE_LENGTH = 1000
 
+
 class GruponosMeltanoAlertSeverity(StrEnum):
     """Alert severity levels for GrupoNOS Meltano Native."""
 
@@ -60,7 +61,9 @@ class GruponosMeltanoAlert(FlextValueObject):
             return FlextResult.fail("Alert message cannot be empty")
 
         if len(self.message) > MAX_ALERT_MESSAGE_LENGTH:
-            return FlextResult.fail(f"Alert message too long (max {MAX_ALERT_MESSAGE_LENGTH} characters)")
+            return FlextResult.fail(
+                f"Alert message too long (max {MAX_ALERT_MESSAGE_LENGTH} characters)",
+            )
 
         return FlextResult.ok(None)
 
@@ -177,7 +180,7 @@ class GruponosMeltanoAlertService:
             return FlextResult.ok(data=True)
 
         except requests.RequestException as e:
-            logger.warning(f"Webhook alert failed: {e}")
+            logger.warning("Webhook alert failed: %s", e)
             return FlextResult.fail(f"Webhook failed: {e}")
 
     def _send_email(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
@@ -202,7 +205,7 @@ class GruponosMeltanoAlertService:
             return FlextResult.ok(data=True)
 
         except (RuntimeError, ValueError, TypeError) as e:
-            logger.warning(f"Email alert failed: {e}")
+            logger.warning("Email alert failed: %s", e)
             return FlextResult.fail(f"Email failed: {e}")
 
     def _send_slack(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
@@ -258,7 +261,7 @@ class GruponosMeltanoAlertService:
             return FlextResult.ok(data=True)
 
         except requests.RequestException as e:
-            logger.warning(f"Slack alert failed: {e}")
+            logger.warning("Slack alert failed: %s", e)
             return FlextResult.fail(f"Slack failed: {e}")
 
     def reset_failure_count(self) -> None:

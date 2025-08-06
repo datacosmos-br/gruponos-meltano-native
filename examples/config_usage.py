@@ -111,7 +111,6 @@ def demonstrate_connection_manager_integration() -> None:
     # Demonstrate how Oracle connection manager would be created
     # Using the real Oracle connection manager from the project
     try:
-
         # Create a sample Oracle config
         oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",

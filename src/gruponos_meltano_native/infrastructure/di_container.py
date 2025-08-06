@@ -44,8 +44,8 @@ def _configure_dependencies(container: FlextContainer) -> None:
     # Register core FLEXT components
     result = container.register("flext_result", FlextResult)
     if not result.success:
-        logger.warning(f"Failed to register FlextResult: {result.error}")
+        logger.warning("Failed to register FlextResult: %s", result.error)
 
     settings_result = container.register("flext_settings", FlextBaseSettings)
     if not settings_result.success:
-        logger.warning(f"Failed to register FlextCoreSettings: {settings_result.error}")
+        logger.warning("Failed to register FlextCoreSettings: %s", settings_result.error)

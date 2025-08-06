@@ -89,7 +89,7 @@ class DataValidator:
                     error_msg,
                     validation_details={"field": rule.field_name},
                 )
-            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
+            logger.warning("Validation failed: %s (field: %s)", error_msg, rule.field_name)
             errors.append(error_msg)
             return False
         return True
@@ -159,7 +159,7 @@ class DataValidator:
                     error_msg,
                     validation_details={"field": rule.field_name},
                 ) from e
-            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
+            logger.warning("Validation failed: %s (field: %s)", error_msg, rule.field_name)
             errors.append(error_msg)
 
     def _validate_string(
@@ -176,7 +176,7 @@ class DataValidator:
                     error_msg,
                     validation_details={"field": rule.field_name},
                 )
-            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
+            logger.warning("Validation failed: %s (field: %s)", error_msg, rule.field_name)
             errors.append(error_msg)
         else:
             # Check string length constraints - value is now confirmed to be str
@@ -213,7 +213,7 @@ class DataValidator:
                     error_msg,
                     validation_details={"field": rule.field_name},
                 )
-            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
+            logger.warning("Validation failed: %s (field: %s)", error_msg, rule.field_name)
             errors.append(error_msg)
         else:
             # Check numeric range constraints - value is now confirmed to be int | float
@@ -308,7 +308,7 @@ class DataValidator:
                     error_msg,
                     validation_details={"field": rule.field_name},
                 )
-            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
+            logger.warning("Validation failed: %s (field: %s)", error_msg, rule.field_name)
             errors.append(error_msg)
 
     def _validate_email(
@@ -326,7 +326,7 @@ class DataValidator:
                     error_msg,
                     validation_details={"field": rule.field_name},
                 )
-            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
+            logger.warning("Validation failed: %s (field: %s)", error_msg, rule.field_name)
             errors.append(error_msg)
 
     def _validate_enum(
@@ -351,7 +351,7 @@ class DataValidator:
                     error_msg,
                     validation_details={"field": rule.field_name},
                 )
-            logger.warning(f"Validation failed: {error_msg} (field: {rule.field_name})")
+            logger.warning("Validation failed: %s (field: %s)", error_msg, rule.field_name)
             errors.append(error_msg)
 
     def validate_and_convert_record(
@@ -584,5 +584,5 @@ if __name__ == "__main__":
         },
     }
     result = validator.validate_and_convert_record(test_record, test_schema)
-    logger.info(f"Converted record: {result}")
-    logger.info(f"Stats: {validator.get_conversion_stats()}")
+    logger.info("Converted record: %s", result)
+    logger.info("Stats: %s", validator.get_conversion_stats())

@@ -123,7 +123,7 @@ def health(ctx: click.Context) -> None:
         # Create configuration using FLEXT patterns
         config_result = _create_configuration()
         if config_result.is_failure:
-            logger.error(f"Configuration creation failed: {config_result.error}")
+            logger.error("Configuration creation failed: %s", config_result.error)
             sys.exit(1)
 
         if config_result.data is None:
@@ -136,7 +136,7 @@ def health(ctx: click.Context) -> None:
         # Create orchestrator using FLEXT patterns
         orchestrator_result = _create_orchestrator(config)
         if orchestrator_result.is_failure:
-            logger.error(f"Orchestrator creation failed: {orchestrator_result.error}")
+            logger.error("Orchestrator creation failed: %s", orchestrator_result.error)
             health_status["orchestrator"] = "❌ Failed"
         else:
             health_status["orchestrator"] = "✅ Initialized"
@@ -233,7 +233,7 @@ def run(
         return
 
     click.echo(f"🚀 Starting pipeline: {pipeline_name}")
-    logger.info(f"Starting pipeline execution: {pipeline_name}")
+    logger.info("Starting pipeline execution: %s", pipeline_name)
 
     try:
         # Create configuration and orchestrator
@@ -311,7 +311,7 @@ def validate(_ctx: click.Context, *, output_format: str) -> None:
     """Validate configuration and pipeline setup."""
     if output_format != "json":
         click.echo("🔍 Running validation...")
-        logger.info(f"Running validation with format: {output_format}")
+        logger.info("Running validation with format: %s", output_format)
 
     try:
         # Create configuration
@@ -368,7 +368,7 @@ def show_config(_ctx: click.Context, *, output_format: str, show_secrets: bool) 
     """Show current configuration."""
     if output_format != "json":
         click.echo("📋 Current configuration:")
-        logger.info(f"Showing configuration with format: {output_format}")
+        logger.info("Showing configuration with format: %s", output_format)
 
     try:
         # Create configuration
@@ -476,7 +476,7 @@ def run_with_retry(
         config = create_gruponos_meltano_settings()
         orchestrator = create_gruponos_meltano_orchestrator(config)
 
-                  # Create pipeline runner for retry functionality
+        # Create pipeline runner for retry functionality
 
         runner = create_gruponos_meltano_pipeline_runner(orchestrator.settings)
 

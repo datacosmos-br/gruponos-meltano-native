@@ -95,7 +95,8 @@ class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
         if pipeline_name is not None:
             kwargs["pipeline_name"] = pipeline_name
         super().__init__(
-            message=f"GrupoNOS pipeline: {message}", pipeline_type=pipeline_type,
+            message=f"GrupoNOS pipeline: {message}",
+            pipeline_type=pipeline_type,
         )
 
 
