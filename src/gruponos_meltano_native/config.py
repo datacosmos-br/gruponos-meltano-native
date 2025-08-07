@@ -64,11 +64,42 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
 
     """
 
-    # Inherited from FlextOracleModel: host, port, service_name, sid, username, password
+    # Inherited from FlextOracleModel: host, service_name, sid, username
+    # Override fields to ensure proper validation and types
+    port: int = Field(
+        default=1521,
+        ge=1,
+        le=65535,
+        description="Oracle database port number (1-65535)",
+    )
+    password: SecretStr = Field(
+        default=SecretStr(""),
+        description="Oracle database password (SecretStr for security)",
+    )
+
     # Additional GrupoNOS-specific configuration
     protocol: str = Field(
         default="TCP",
         description="Connection protocol (TCP for standard, TCPS for SSL/TLS)",
+    )
+    timeout: int = Field(
+        default=30,
+        ge=1,
+        description="Connection timeout in seconds (minimum 1 second)",
+    )
+    ssl_enabled: bool = Field(
+        default=False,
+        description="Enable SSL/TLS connection to Oracle database",
+    )
+    pool_min: int = Field(
+        default=1,
+        ge=1,
+        description="Minimum number of connections in pool",
+    )
+    pool_max: int = Field(
+        default=10,
+        ge=1,
+        description="Maximum number of connections in pool",
     )
 
     model_config: ClassVar[ConfigDict] = ConfigDict(

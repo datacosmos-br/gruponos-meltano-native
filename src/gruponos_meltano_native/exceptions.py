@@ -1,7 +1,9 @@
-"""GrupoNOS Meltano Native Exceptions.
+"""GrupoNOS Meltano Native Exceptions following flext-core patterns.
 
-All GrupoNOS-specific exceptions extending FLEXT core patterns.
-Uses flext-core's create_module_exception_classes for DRY compliance.
+All GrupoNOS-specific exceptions extending FLEXT core abstractions using
+proper static inheritance. Follows the architectural principle of keeping
+generic functionality in abstract libraries (flext-core) and using them
+correctly in concrete projects.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,56 +11,95 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from flext_core.exceptions import (
+    FlextAuthenticationError,
+    FlextConfigurationError,
+    FlextConnectionError,
+    FlextError,
+    FlextProcessingError,
+    FlextTimeoutError,
+    FlextValidationError,
+)
 
-if TYPE_CHECKING:
-    # Define base classes for type checking purposes
-    class GruponosMeltanoError(Exception):
-        """Base GrupoNOS Meltano error for type checking."""
 
-    class GruponosMeltanoValidationError(Exception):
-        """Validation error for type checking."""
+# Define GrupoNOS-specific exception hierarchy using static inheritance
+class GruponosMeltanoError(FlextError):
+    """Base GrupoNOS Meltano error following flext-core patterns."""
 
-    class GruponosMeltanoConfigurationError(Exception):
-        """Configuration error for type checking."""
+    def __init__(self, message: str = "GrupoNOS Meltano error", **kwargs: object) -> None:
+        """Initialize GrupoNOS Meltano error with context."""
+        super().__init__(
+            message,
+            error_code="GRUPONOS_MELTANO_ERROR",
+            context=kwargs,
+        )
 
-    class GruponosMeltanoConnectionError(Exception):
-        """Connection error for type checking."""
 
-    class GruponosMeltanoProcessingError(Exception):
-        """Processing error for type checking."""
+class GruponosMeltanoValidationError(FlextValidationError):
+    """GrupoNOS validation errors following flext-core patterns."""
 
-    class GruponosMeltanoAuthenticationError(Exception):
-        """Authentication error for type checking."""
+    def __init__(self, message: str = "GrupoNOS validation error", **kwargs: object) -> None:
+        """Initialize GrupoNOS validation error."""
+        super().__init__(
+            message,
+            error_code="GRUPONOS_MELTANO_VALIDATION_ERROR",
+            context=kwargs,
+        )
 
-    class GruponosMeltanoTimeoutError(Exception):
-        """Timeout error for type checking."""
-else:
-    # Runtime: Create exception hierarchy with proper inheritance using flext-core patterns
-    from flext_core.exceptions import FlextError
 
-    # Base GrupoNOS error extending FLEXT foundation
-    class GruponosMeltanoError(FlextError):
-        """Base GrupoNOS Meltano error extending FLEXT foundation."""
+class GruponosMeltanoConfigurationError(FlextConfigurationError):
+    """GrupoNOS configuration errors following flext-core patterns."""
 
-    # Standard exception hierarchy extending base
-    class GruponosMeltanoConfigurationError(GruponosMeltanoError):
-        """GrupoNOS configuration error."""
+    def __init__(self, message: str = "GrupoNOS configuration error", **kwargs: object) -> None:
+        """Initialize GrupoNOS configuration error."""
+        super().__init__(
+            message,
+            **kwargs,
+        )
 
-    class GruponosMeltanoValidationError(GruponosMeltanoConfigurationError):
-        """GrupoNOS validation error extending configuration error."""
 
-    class GruponosMeltanoConnectionError(GruponosMeltanoError):
-        """GrupoNOS connection error."""
+class GruponosMeltanoConnectionError(FlextConnectionError):
+    """GrupoNOS connection errors following flext-core patterns."""
 
-    class GruponosMeltanoProcessingError(GruponosMeltanoError):
-        """GrupoNOS processing error."""
+    def __init__(self, message: str = "GrupoNOS connection error", **kwargs: object) -> None:
+        """Initialize GrupoNOS connection error."""
+        super().__init__(
+            message,
+            **kwargs,
+        )
 
-    class GruponosMeltanoAuthenticationError(GruponosMeltanoError):
-        """GrupoNOS authentication error."""
 
-    class GruponosMeltanoTimeoutError(GruponosMeltanoError):
-        """GrupoNOS timeout error."""
+class GruponosMeltanoProcessingError(FlextProcessingError):
+    """GrupoNOS processing errors following flext-core patterns."""
+
+    def __init__(self, message: str = "GrupoNOS processing error", **kwargs: object) -> None:
+        """Initialize GrupoNOS processing error."""
+        super().__init__(
+            message,
+            **kwargs,
+        )
+
+
+class GruponosMeltanoAuthenticationError(FlextAuthenticationError):
+    """GrupoNOS authentication errors following flext-core patterns."""
+
+    def __init__(self, message: str = "GrupoNOS authentication error", **kwargs: object) -> None:
+        """Initialize GrupoNOS authentication error."""
+        super().__init__(
+            message,
+            **kwargs,
+        )
+
+
+class GruponosMeltanoTimeoutError(FlextTimeoutError):
+    """GrupoNOS timeout errors following flext-core patterns."""
+
+    def __init__(self, message: str = "GrupoNOS timeout error", **kwargs: object) -> None:
+        """Initialize GrupoNOS timeout error."""
+        super().__init__(
+            message,
+            **kwargs,
+        )
 
 
 # Specialized domain-specific errors extending base classes
@@ -94,9 +135,18 @@ class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
         pipeline_type = kwargs.pop("pipeline_type", None)
         if pipeline_name is not None:
             kwargs["pipeline_name"] = pipeline_name
+        # Extract operation and stage for parent class, keep other kwargs
+        operation_obj = kwargs.pop("operation", None)
+        stage_obj = kwargs.pop("stage", None)
+        operation = str(operation_obj) if operation_obj is not None else None
+        stage = str(stage_obj) if stage_obj is not None else None
+        if pipeline_type is not None:
+            kwargs["pipeline_type"] = pipeline_type
         super().__init__(
             message=f"GrupoNOS pipeline: {message}",
-            pipeline_type=pipeline_type,
+            operation=operation,
+            stage=stage,
+            **kwargs,
         )
 
 

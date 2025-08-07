@@ -20,8 +20,22 @@ if TYPE_CHECKING:
 # Get dependencies via DI
 logger = get_logger(__name__)
 
-# Use FLEXT foundation pattern instead of custom implementation
-ValidationError = FlextValidationError
+
+# Use FLEXT foundation pattern with proper error code for tests compatibility
+class ValidationError(FlextValidationError):
+    """Validation error with test-compatible error code."""
+
+    def __init__(self, message: str, validation_details: dict[str, object] | None = None, **kwargs: object) -> None:
+        """Initialize validation error with consistent error code."""
+        context = validation_details if validation_details is not None else {}
+        # Merge kwargs into context if needed
+        if kwargs:
+            context.update(kwargs)
+        super().__init__(
+            message,
+            error_code="VALIDATION_ERROR",
+            context=context,
+        )
 
 
 class ValidationRule:

@@ -33,12 +33,14 @@ class GruponosMeltanoOracleConnectionManager:
     def get_connection(self) -> FlextResult[FlextDbOracleApi]:
         """Get Oracle database connection for GrupoNOS."""
         try:
-            # Build connection config
+            # Build connection config - password is always SecretStr now due to field override
+            password_value = self.config.password
+
             db_config = FlextDbOracleConfig(
                 host=self.config.host,
                 port=self.config.port,
                 username=self.config.username,
-                password=self.config.password,
+                password=password_value,
                 service_name=self.config.service_name,
                 sid=self.config.sid,
                 protocol=self.config.protocol,

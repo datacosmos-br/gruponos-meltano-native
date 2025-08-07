@@ -17,9 +17,6 @@ import click
 import yaml
 
 # FLEXT CLI Framework Integration
-from flext_cli import (
-    get_config,
-)
 from flext_core import FlextResult, get_logger
 from rich.console import Console
 
@@ -54,7 +51,7 @@ def initialize_cli_environment(*, debug: bool = False) -> dict[str, object]:
 
     """
     # Create CLI environment using flext-cli patterns
-    cli_config = get_config()  # Use flext-cli get_config utility
+    cli_config = create_gruponos_meltano_settings()  # Use gruponos config utility
 
     console = Console()
 

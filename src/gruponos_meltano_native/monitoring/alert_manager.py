@@ -391,8 +391,13 @@ def create_gruponos_meltano_alert_manager(
     return GruponosMeltanoAlertManager(alert_service)
 
 
+# Backwards compatibility aliases for tests
+AlertSeverity = GruponosMeltanoAlertSeverity
+
 # Public API exports
 __all__: list[str] = [
+    # Compatibility aliases
+    "AlertSeverity",
     # FLEXT Standard Classes
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertManager",

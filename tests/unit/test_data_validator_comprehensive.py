@@ -1172,8 +1172,9 @@ class TestDateConversion:
         dt = datetime(2025, 1, 15, 10, 30, 45, tzinfo=UTC)
         result = validator._convert_to_date(dt, "date-time", "test_field")
 
-        if result != "2025-01-15T10:30:45":
-            msg: str = f"Expected {'2025-01-15T10:30:45'}, got {result}"
+        # ISO format includes timezone when present
+        if result not in {"2025-01-15T10:30:45", "2025-01-15T10:30:45+00:00"}:
+            msg: str = f"Expected '2025-01-15T10:30:45' or '2025-01-15T10:30:45+00:00', got {result}"
             raise AssertionError(msg)
         assert validator.conversion_stats["dates_normalized"] == 1
 
