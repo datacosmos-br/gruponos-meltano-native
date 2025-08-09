@@ -10,9 +10,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import (
-    FlextBaseSettings,
     FlextContainer,
     FlextResult,
+    FlextSettings,
     get_flext_container,
     get_logger,
 )
@@ -46,6 +46,8 @@ def _configure_dependencies(container: FlextContainer) -> None:
     if not result.success:
         logger.warning("Failed to register FlextResult: %s", result.error)
 
-    settings_result = container.register("flext_settings", FlextBaseSettings)
+    settings_result = container.register("flext_settings", FlextSettings)
     if not settings_result.success:
-        logger.warning("Failed to register FlextCoreSettings: %s", settings_result.error)
+        logger.warning(
+            "Failed to register FlextCoreSettings: %s", settings_result.error
+        )

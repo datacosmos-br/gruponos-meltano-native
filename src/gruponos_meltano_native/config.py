@@ -9,8 +9,8 @@ from __future__ import annotations
 from typing import ClassVar
 
 from flext_core import (
-    FlextBaseSettings,
     FlextOracleModel,
+    FlextSettings,
     TAnyDict,
 )
 from pydantic import ConfigDict, Field, SecretStr
@@ -108,7 +108,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
     )
 
 
-class GruponosMeltanoWMSSourceConfig(FlextBaseSettings):
+class GruponosMeltanoWMSSourceConfig(FlextSettings):
     """Oracle WMS source configuration for GrupoNOS."""
 
     oracle: GruponosMeltanoOracleConnectionConfig | None = Field(
@@ -167,7 +167,7 @@ class GruponosMeltanoWMSSourceConfig(FlextBaseSettings):
     )
 
 
-class GruponosMeltanoTargetOracleConfig(FlextBaseSettings):
+class GruponosMeltanoTargetOracleConfig(FlextSettings):
     """Oracle target configuration for GrupoNOS."""
 
     target_schema: str = Field(default="default", description="Target schema")
@@ -189,7 +189,7 @@ class GruponosMeltanoTargetOracleConfig(FlextBaseSettings):
     )
 
 
-class GruponosMeltanoJobConfig(FlextBaseSettings):
+class GruponosMeltanoJobConfig(FlextSettings):
     """Meltano job configuration for GrupoNOS."""
 
     job_name: str = Field(default="gruponos-etl-pipeline", description="Job name")
@@ -217,7 +217,7 @@ class GruponosMeltanoJobConfig(FlextBaseSettings):
     )
 
 
-class GruponosMeltanoAlertConfig(FlextBaseSettings):
+class GruponosMeltanoAlertConfig(FlextSettings):
     """Alert configuration for GrupoNOS."""
 
     enabled: bool = Field(default=True, description="Enable alerts")
@@ -244,7 +244,7 @@ class GruponosMeltanoAlertConfig(FlextBaseSettings):
     )
 
 
-class GruponosMeltanoSettings(FlextBaseSettings):
+class GruponosMeltanoSettings(FlextSettings):
     """Main GrupoNOS Meltano settings."""
 
     environment: str = Field(

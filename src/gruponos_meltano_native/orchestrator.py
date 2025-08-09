@@ -114,7 +114,7 @@ class GruponosMeltanoPipelineRunner:
             env = self._build_environment()
 
             # Execute pipeline (job_name validated and sanitized above)
-            result = subprocess.run(  # noqa: S603 # job_name is validated and sanitized by _validate_job_name
+            result = subprocess.run(
                 cmd,
                 check=False,
                 cwd=self.project_root,
@@ -183,7 +183,9 @@ class GruponosMeltanoPipelineRunner:
                 "FLEXT_TARGET_ORACLE_HOST": self.settings.oracle_connection.host,
                 "FLEXT_TARGET_ORACLE_PORT": str(self.settings.oracle_connection.port),
                 "FLEXT_TARGET_ORACLE_USERNAME": self.settings.oracle_connection.username,
-                "FLEXT_TARGET_ORACLE_PASSWORD": self.settings.oracle_connection.password.get_secret_value() if hasattr(self.settings.oracle_connection.password, "get_secret_value") else str(self.settings.oracle_connection.password),
+                "FLEXT_TARGET_ORACLE_PASSWORD": self.settings.oracle_connection.password.get_secret_value()
+                if hasattr(self.settings.oracle_connection.password, "get_secret_value")
+                else str(self.settings.oracle_connection.password),
                 "FLEXT_TARGET_ORACLE_SCHEMA": self.settings.target_oracle.target_schema,
             },
         )

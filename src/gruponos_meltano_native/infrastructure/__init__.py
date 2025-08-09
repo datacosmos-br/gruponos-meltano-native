@@ -11,7 +11,7 @@ from __future__ import annotations
 
 # FLEXT Core Infrastructure - Direct imports ONLY
 from flext_core import (
-    FlextBaseSettings,
+    FlextSettings,
     FlextContainer,
     get_flext_container,
 )
@@ -24,7 +24,7 @@ from gruponos_meltano_native.infrastructure.di_container import (
 # FLEXT Standard Infrastructure Exports - NO legacy functions
 __all__: list[str] = [
     # FLEXT Core Infrastructure
-    "FlextBaseSettings",
+    "FlextSettings",
     "FlextContainer",
     "get_flext_container",
     # GrupoNOS Meltano Infrastructure

@@ -486,9 +486,7 @@ class TestConfigFocused:
     )
     def test_gruponos_config_from_env(self) -> None:
         """Test GruponosMeltanoSettings environment variable loading."""
-        config = (
-            GruponosMeltanoSettings()
-        )  # FlextBaseSettings automatically loads from env
+        config = GruponosMeltanoSettings()  # FlextSettings automatically loads from env
 
         # Test that configuration was created and loaded from environment
         assert config is not None
