@@ -22,45 +22,53 @@ from pydantic_settings import SettingsConfigDict
 
 
 class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
-    """Oracle WMS connection configuration for GrupoNOS with enterprise security.
+    """Configuração de conexão Oracle WMS para GrupoNOS com segurança empresarial.
 
-    This configuration class extends FLEXT Oracle model to provide GrupoNOS-specific
-    Oracle database connection settings with comprehensive validation, security features,
-    and environment-aware configuration management.
+    Esta classe de configuração estende o modelo Oracle FLEXT para fornecer
+    configurações específicas do GrupoNOS para conexão com banco de dados Oracle,
+    com validação abrangente, recursos de segurança e gerenciamento de configuração
+    consciente do ambiente.
 
-    Key Features:
-        - Secure credential management with SecretStr fields
-        - Environment variable integration with GRUPONOS_ prefix
-        - Connection validation with retry mechanisms
-        - Protocol-specific configuration (TCP/TCPS for SSL)
-        - Production-ready connection pooling settings
+    Recursos Principais:
+        - Gerenciamento seguro de credenciais com campos SecretStr
+        - Integração com variáveis de ambiente com prefixo GRUPONOS_
+        - Validação de conexão com mecanismos de retry
+        - Configuração específica de protocolo (TCP/TCPS para SSL)
+        - Configurações de pool de conexão prontas para produção
 
-    Inherited Fields:
-        From FlextOracleModel:
-        - host: Oracle database hostname or IP address
-        - port: Database port (typically 1521 for TCP, 1522 for TCPS)
-        - service_name: Oracle service name for connection
-        - sid: Oracle SID (alternative to service_name)
-        - username: Database connection username
-        - password: Database connection password (SecretStr)
+    Attributes:
+        Herdados de FlextOracleModel:
+        host: Hostname ou endereço IP do banco Oracle.
+        port: Porta do banco (tipicamente 1521 para TCP, 1522 para TCPS).
+        service_name: Nome do serviço Oracle para conexão.
+        sid: SID Oracle (alternativa ao service_name).
+        username: Nome de usuário para conexão no banco.
+        password: Senha de conexão no banco (SecretStr).
+        protocol: Protocolo de conexão (TCP padrão, TCPS para SSL/TLS).
+        timeout: Timeout de conexão em segundos.
+        ssl_enabled: Habilita conexão SSL/TLS.
+        pool_min: Número mínimo de conexões no pool.
+        pool_max: Número máximo de conexões no pool.
 
     Example:
-        Environment-based configuration:
+        Configuração baseada em variáveis de ambiente:
 
-        >>> # Set environment variables
+        >>> import os
+        >>> # Definir variáveis de ambiente
         >>> os.environ["GRUPONOS_ORACLE_HOST"] = "oracle-prod.company.com"
         >>> os.environ["GRUPONOS_ORACLE_USERNAME"] = "etl_user"
         >>> os.environ["GRUPONOS_ORACLE_PASSWORD"] = "secure_password"
         >>>
-        >>> # Load configuration
+        >>> # Carregar configuração
         >>> config = GruponosMeltanoOracleConnectionConfig()
-        >>> print(f"Connecting to: {config.host}:{config.port}")
+        >>> print(f"Conectando em: {config.host}:{config.port}")
 
-    Security:
-        - Passwords are stored as SecretStr and excluded from string representation
-        - Environment variables are preferred over hardcoded values
-        - SSL/TLS support via TCPS protocol configuration
-        - Connection validation before use
+    Note:
+        Segurança:
+        - Senhas são armazenadas como SecretStr e excluídas da representação string
+        - Variáveis de ambiente são preferidas a valores hardcoded
+        - Suporte SSL/TLS via configuração de protocolo TCPS
+        - Validação de conexão antes do uso
 
     """
 
@@ -109,7 +117,34 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
 
 
 class GruponosMeltanoWMSSourceConfig(FlextSettings):
-    """Oracle WMS source configuration for GrupoNOS."""
+    """Configuração de fonte Oracle WMS para GrupoNOS.
+
+    Classe que define as configurações necessárias para conexão e extração
+    de dados do sistema Oracle WMS do GrupoNOS, incluindo configurações de API,
+    parâmetros de extração e opções de processamento.
+
+    Attributes:
+        oracle: Configuração de conexão Oracle.
+        api_enabled: Habilita acesso via API.
+        api_base_url: URL base da API WMS.
+        base_url: URL base da API WMS (legado).
+        username: Nome de usuário WMS.
+        password: Senha WMS.
+        company_code: Código da empresa.
+        facility_code: Código da facilidade.
+        entities: Entidades WMS a serem extraídas.
+        organization_id: ID da organização.
+        source_schema: Nome do schema de origem.
+        batch_size: Tamanho do lote de processamento.
+        parallel_jobs: Número de jobs paralelos.
+        extract_mode: Modo de extração.
+        page_size: Tamanho da página da API.
+        timeout: Timeout de requisição em segundos.
+        max_retries: Número máximo de tentativas de retry.
+        enable_incremental: Habilita extração incremental.
+        start_date: Data de início para extração.
+
+    """
 
     oracle: GruponosMeltanoOracleConnectionConfig | None = Field(
         default_factory=GruponosMeltanoOracleConnectionConfig,
@@ -150,7 +185,15 @@ class GruponosMeltanoWMSSourceConfig(FlextSettings):
     )
 
     def model_post_init(self, /, __context: TAnyDict | None = None) -> None:
-        """Post-init validation for WMS source configuration."""
+        """Validação pós-inicialização para configuração de fonte WMS.
+
+        Args:
+            __context: Contexto de validação opcional.
+
+        Raises:
+            ValueError: Se api_base_url for obrigatória mas não fornecida.
+
+        """
         if self.api_enabled and not self.api_base_url:
             # Use base_url as fallback for api_base_url
             if self.base_url:
@@ -168,7 +211,23 @@ class GruponosMeltanoWMSSourceConfig(FlextSettings):
 
 
 class GruponosMeltanoTargetOracleConfig(FlextSettings):
-    """Oracle target configuration for GrupoNOS."""
+    """Configuração de destino Oracle para GrupoNOS.
+
+    Classe que define as configurações para carregamento de dados no
+    banco Oracle de destino, incluindo opções de schema, tabelas,
+    paralelismo e métodos de carga.
+
+    Attributes:
+        target_schema: Schema de destino.
+        table_prefix: Prefixo das tabelas.
+        parallel_workers: Número de workers paralelos.
+        drop_target_tables: Remove tabelas de destino.
+        enable_compression: Habilita compressão.
+        batch_size: Tamanho do lote para carregamento.
+        load_method: Método de carga (append_only/upsert).
+        add_record_metadata: Adiciona metadados de registro.
+
+    """
 
     target_schema: str = Field(default="default", description="Target schema")
     table_prefix: str = Field(default="", description="Table prefix")
@@ -190,7 +249,22 @@ class GruponosMeltanoTargetOracleConfig(FlextSettings):
 
 
 class GruponosMeltanoJobConfig(FlextSettings):
-    """Meltano job configuration for GrupoNOS."""
+    """Configuração de job Meltano para GrupoNOS.
+
+    Classe que define as configurações de execução de jobs ETL,
+    incluindo agendamento, timeouts, retries e seleção de plugins.
+
+    Attributes:
+        job_name: Nome do job.
+        extractor: Nome do plugin extrator.
+        loader: Nome do plugin carregador.
+        schedule: Agendamento do job (formato cron).
+        transform: Habilita transformação DBT.
+        timeout_minutes: Timeout do job em minutos.
+        retry_attempts: Número de tentativas de retry.
+        retry_delay_seconds: Atraso entre retries em segundos.
+
+    """
 
     job_name: str = Field(default="gruponos-etl-pipeline", description="Job name")
     extractor: str = Field(
@@ -218,7 +292,24 @@ class GruponosMeltanoJobConfig(FlextSettings):
 
 
 class GruponosMeltanoAlertConfig(FlextSettings):
-    """Alert configuration for GrupoNOS."""
+    """Configuração de alertas para GrupoNOS.
+
+    Classe que define as configurações do sistema de alertas,
+    incluindo canais de notificação, destinatários e critérios de alerta.
+
+    Attributes:
+        enabled: Habilita alertas.
+        email_recipients: Destinatários de email.
+        webhook_url: URL do webhook para alertas.
+        slack_webhook_url: URL do webhook do Slack.
+        webhook_enabled: Habilita alertas via webhook.
+        email_enabled: Habilita alertas via email.
+        slack_enabled: Habilita alertas via Slack.
+        alert_threshold: Número de falhas antes de alertar.
+        alert_on_failure: Alerta em caso de falha do job.
+        alert_on_success: Alerta em caso de sucesso do job.
+
+    """
 
     enabled: bool = Field(default=True, description="Enable alerts")
     email_recipients: list[str] = Field(
@@ -245,7 +336,24 @@ class GruponosMeltanoAlertConfig(FlextSettings):
 
 
 class GruponosMeltanoSettings(FlextSettings):
-    """Main GrupoNOS Meltano settings."""
+    """Configurações principais do Meltano GrupoNOS.
+
+    Classe principal que agrega todas as configurações necessárias
+    para operação do sistema ETL GrupoNOS, incluindo configurações
+    de ambiente, logging e integração Meltano.
+
+    Attributes:
+        environment: Ambiente (dev/staging/prod).
+        project_name: Nome do projeto.
+        app_name: Nome da aplicação.
+        version: Versão da aplicação.
+        debug: Modo debug.
+        log_level: Nível de log.
+        meltano_project_root: Diretório raiz do projeto Meltano.
+        meltano_environment: Ambiente Meltano.
+        meltano_state_backend: Backend de estado Meltano.
+
+    """
 
     environment: str = Field(
         default="dev",
@@ -276,41 +384,90 @@ class GruponosMeltanoSettings(FlextSettings):
 
     @property
     def oracle_connection(self) -> GruponosMeltanoOracleConnectionConfig:
-        """Get Oracle connection configuration."""
+        """Obtém configuração de conexão Oracle.
+
+        Returns:
+            GruponosMeltanoOracleConnectionConfig: Configuração de conexão Oracle.
+
+        """
         return GruponosMeltanoOracleConnectionConfig()
 
     @property
     def oracle(self) -> GruponosMeltanoOracleConnectionConfig:
-        """Get Oracle connection configuration (alias for compatibility)."""
+        """Obtém configuração de conexão Oracle (alias para compatibilidade).
+
+        Returns:
+            GruponosMeltanoOracleConnectionConfig: Configuração de conexão Oracle.
+
+        """
         return self.oracle_connection
 
     @property
     def wms_source(self) -> GruponosMeltanoWMSSourceConfig:
-        """Get WMS source configuration."""
+        """Obtém configuração de fonte WMS.
+
+        Returns:
+            GruponosMeltanoWMSSourceConfig: Configuração de fonte WMS.
+
+        """
         return GruponosMeltanoWMSSourceConfig()
 
     @property
     def target_oracle(self) -> GruponosMeltanoTargetOracleConfig:
-        """Get Oracle target configuration."""
+        """Obtém configuração de destino Oracle.
+
+        Returns:
+            GruponosMeltanoTargetOracleConfig: Configuração de destino Oracle.
+
+        """
         return GruponosMeltanoTargetOracleConfig()
 
     @property
     def job_config(self) -> GruponosMeltanoJobConfig:
-        """Get job configuration."""
+        """Obtém configuração de job.
+
+        Returns:
+            GruponosMeltanoJobConfig: Configuração de job.
+
+        """
         return GruponosMeltanoJobConfig()
 
     @property
     def alert_config(self) -> GruponosMeltanoAlertConfig:
-        """Get alert configuration."""
+        """Obtém configuração de alertas.
+
+        Returns:
+            GruponosMeltanoAlertConfig: Configuração de alertas.
+
+        """
         return GruponosMeltanoAlertConfig()
 
     @property
     def job(self) -> GruponosMeltanoJobConfig:
-        """Get job configuration (alias for job_config)."""
+        """Obtém configuração de job (alias para job_config).
+
+        Returns:
+            GruponosMeltanoJobConfig: Configuração de job.
+
+        """
         return self.job_config
 
     def get_oracle_connection_string(self) -> str:
-        """Get Oracle connection string."""
+        """Obtém string de conexão Oracle.
+
+        Constrói a string de conexão Oracle baseada nas configurações
+        atuais, usando service_name ou SID conforme disponível.
+
+        Returns:
+            str: String de conexão Oracle formatada.
+
+        Example:
+            >>> settings = GruponosMeltanoSettings()
+            >>> conn_str = settings.get_oracle_connection_string()
+            >>> print(conn_str)
+            user@host:1521/service_name
+
+        """
         conn = self.oracle_connection
         if conn.service_name:
             return f"{conn.username}@{conn.host}:{conn.port}/{conn.service_name}"
@@ -319,7 +476,12 @@ class GruponosMeltanoSettings(FlextSettings):
         return f"{conn.username}@{conn.host}:{conn.port}"
 
     def is_debug_enabled(self) -> bool:
-        """Check if debug mode is enabled."""
+        """Verifica se o modo debug está habilitado.
+
+        Returns:
+            bool: True se debug estiver habilitado, False caso contrário.
+
+        """
         return self.debug
 
 
@@ -329,7 +491,19 @@ class GruponosMeltanoSettings(FlextSettings):
 
 
 def create_gruponos_meltano_settings() -> GruponosMeltanoSettings:
-    """Create GrupoNOS Meltano settings instance."""
+    """Cria instância das configurações Meltano GrupoNOS.
+
+    Função factory que cria uma instância configurada das
+    configurações principais do sistema Meltano GrupoNOS.
+
+    Returns:
+        GruponosMeltanoSettings: Instância configurada das configurações.
+
+    Example:
+        >>> settings = create_gruponos_meltano_settings()
+        >>> print(f"Ambiente: {settings.environment}")
+
+    """
     return GruponosMeltanoSettings()
 
 

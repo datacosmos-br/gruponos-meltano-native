@@ -1,7 +1,14 @@
-"""GrupoNOS Meltano Native Oracle Connection Manager - GRUPONOS specific implementation.
+"""Gerenciador de Conexão Oracle Meltano Native GrupoNOS - Implementação específica GRUPONOS.
 
-Professional Oracle connection management following FLEXT patterns
-and Clean Architecture principles with proper type safety.
+Gerenciamento profissional de conexões Oracle seguindo padrões FLEXT
+e princípios de Clean Architecture com type safety adequado.
+
+Fornece:
+    - Gerenciamento seguro de conexões Oracle
+    - Integração com flext-db-oracle
+    - Teste de conectividade
+    - Manipulação adequada de credenciais SecretStr
+    - Factory functions para criação de instâncias
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -20,31 +27,84 @@ from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
 
 class GruponosMeltanoOracleConnectionManager:
-    """GrupoNOS-specific Oracle connection manager."""
+    """Gerenciador de conexão Oracle específico do GrupoNOS.
+
+    Classe responsável por gerenciar conexões com banco de dados Oracle
+    para o sistema ETL GrupoNOS, fornecendo abstração segura sobre
+    as configurações de conexão e integração com flext-db-oracle.
+
+    Attributes:
+        config: Configuração de conexão Oracle.
+        _connection: Instância de conexão Oracle (privada).
+
+    """
 
     def __init__(
         self,
         config: GruponosMeltanoOracleConnectionConfig | None = None,
     ) -> None:
-        """Initialize Oracle connection manager for GrupoNOS."""
+        """Inicializa gerenciador de conexão Oracle para GrupoNOS.
+
+        Args:
+            config: Configuração de conexão Oracle opcional.
+                   Se None, usará configuração padrão.
+
+        """
         self.config = config or GruponosMeltanoOracleConnectionConfig()
         self._connection: FlextDbOracleApi | None = None
 
     def get_connection(self) -> FlextResult[FlextDbOracleApi]:
-        """Get Oracle database connection for GrupoNOS."""
+        """Obtém conexão com banco de dados Oracle para GrupoNOS.
+
+        Cria e configura uma conexão Oracle usando as configurações
+        do GrupoNOS, incluindo manipulação adequada de credenciais
+        SecretStr e mapeamento de SID/service_name.
+
+        Returns:
+            FlextResult[FlextDbOracleApi]: Resultado contendo a conexão
+            Oracle ou erro em caso de falha.
+
+        Example:
+            >>> manager = GruponosMeltanoOracleConnectionManager()
+            >>> resultado = manager.get_connection()
+            >>> if resultado.success:
+            ...     conn = resultado.data
+            ...     # Usar conexão para operações
+
+        """
         try:
             # Build connection config - password is always SecretStr now due to field override
             password_value = self.config.password
 
-            db_config = FlextDbOracleConfig(
-                host=self.config.host,
-                port=self.config.port,
-                username=self.config.username,
-                password=password_value,
-                service_name=self.config.service_name,
-                sid=self.config.sid,
-                protocol=self.config.protocol,
-            )
+            # Convert SecretStr to string for FlextDbOracleConfig
+            password_str = password_value.get_secret_value() if hasattr(password_value, "get_secret_value") else str(password_value)
+
+            # Determine service_name value
+            service_name: str
+            if self.config.service_name:
+                service_name = self.config.service_name
+            elif self.config.sid:
+                # FlextDbOracleConfig doesn't support sid, use as service_name
+                service_name = self.config.sid
+            else:
+                # Default service name if neither provided
+                service_name = "ORCL"
+
+            # Create config using from_dict for better compatibility
+            config_data = {
+                "host": self.config.host,
+                "port": self.config.port,
+                "username": self.config.username,
+                "password": password_str,
+                "service_name": service_name,
+            }
+
+            # Use from_dict factory method for proper initialization
+            config_result = FlextDbOracleConfig.from_dict(config_data)
+            if not config_result.success:
+                return FlextResult.fail(f"Failed to create Oracle config: {config_result.error}")
+
+            db_config = config_result.data
 
             # Create connection
             self._connection = FlextDbOracleApi(db_config)
@@ -55,7 +115,25 @@ class GruponosMeltanoOracleConnectionManager:
             return FlextResult.fail(f"Failed to create Oracle connection: {e}")
 
     def test_connection(self) -> FlextResult[bool]:
-        """Test Oracle database connection for GrupoNOS."""
+        """Testa conexão com banco de dados Oracle para GrupoNOS.
+
+        Executa teste de conectividade com o banco Oracle usando
+        as configurações atuais, verificando se é possível estabelecer
+        uma conexão válida.
+
+        Returns:
+            FlextResult[bool]: Resultado do teste - True se conexão
+            bem-sucedida, erro caso contrário.
+
+        Example:
+            >>> manager = GruponosMeltanoOracleConnectionManager()
+            >>> resultado = manager.test_connection()
+            >>> if resultado.success:
+            ...     print("Conexão Oracle OK")
+            ... else:
+            ...     print(f"Falha na conexão: {resultado.error}")
+
+        """
         connection_result = self.get_connection()
         if not connection_result.success:
             return FlextResult.fail(f"Connection failed: {connection_result.error}")
@@ -71,7 +149,22 @@ class GruponosMeltanoOracleConnectionManager:
         return FlextResult.fail(f"Connection test failed: {test_result.error}")
 
     def close_connection(self) -> FlextResult[bool]:
-        """Close Oracle connection."""
+        """Fecha conexão Oracle.
+
+        Fecha adequadamente a conexão ativa com o banco Oracle
+        e limpa recursos associados.
+
+        Returns:
+            FlextResult[bool]: Resultado da operação de fechamento.
+
+        Example:
+            >>> manager = GruponosMeltanoOracleConnectionManager()
+            >>> # ... usar conexão ...
+            >>> resultado = manager.close_connection()
+            >>> if resultado.success:
+            ...     print("Conexão fechada com sucesso")
+
+        """
         try:
             if self._connection:
                 # disconnect() returns the API instance, not a FlextResult
@@ -92,7 +185,28 @@ class GruponosMeltanoOracleConnectionManager:
 def create_gruponos_meltano_oracle_connection_manager(
     config: GruponosMeltanoOracleConnectionConfig | None = None,
 ) -> GruponosMeltanoOracleConnectionManager:
-    """Create GrupoNOS Oracle connection manager instance."""
+    """Cria instância do gerenciador de conexão Oracle GrupoNOS.
+
+    Função factory que cria uma instância configurada do
+    gerenciador de conexões Oracle para uso no sistema ETL GrupoNOS.
+
+    Args:
+        config: Configuração de conexão Oracle opcional.
+               Se None, usará configuração padrão.
+
+    Returns:
+        GruponosMeltanoOracleConnectionManager: Instância configurada
+        do gerenciador de conexões.
+
+    Example:
+        >>> # Usar configuração padrão
+        >>> manager = create_gruponos_meltano_oracle_connection_manager()
+        >>>
+        >>> # Usar configuração customizada
+        >>> config = GruponosMeltanoOracleConnectionConfig(host="custom-db")
+        >>> manager = create_gruponos_meltano_oracle_connection_manager(config)
+
+    """
     return GruponosMeltanoOracleConnectionManager(config)
 
 

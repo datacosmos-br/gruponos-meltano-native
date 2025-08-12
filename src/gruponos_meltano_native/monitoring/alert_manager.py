@@ -25,7 +25,18 @@ MAX_ALERT_MESSAGE_LENGTH = 1000
 
 
 class GruponosMeltanoAlertSeverity(StrEnum):
-    """Alert severity levels for GrupoNOS Meltano Native."""
+    """Níveis de severidade de alerta para GrupoNOS Meltano Native.
+
+    Enumeração que define os níveis de severidade disponíveis
+    para classificação de alertas no sistema.
+
+    Attributes:
+        LOW: Severidade baixa para eventos informativos.
+        MEDIUM: Severidade média para eventos que requerem atenção.
+        HIGH: Severidade alta para eventos críticos.
+        CRITICAL: Severidade crítica para falhas do sistema.
+
+    """
 
     LOW = "low"
     MEDIUM = "medium"
@@ -34,7 +45,21 @@ class GruponosMeltanoAlertSeverity(StrEnum):
 
 
 class GruponosMeltanoAlertType(StrEnum):
-    """Alert types for GrupoNOS Meltano Native."""
+    """Tipos de alerta para GrupoNOS Meltano Native.
+
+    Enumeração que define os tipos de alertas disponíveis
+    no sistema de monitoramento.
+
+    Attributes:
+        CONNECTIVITY_FAILURE: Falha de conectividade.
+        DATA_QUALITY_ISSUE: Problema de qualidade de dados.
+        SYNC_TIMEOUT: Timeout de sincronização.
+        THRESHOLD_BREACH: Violação de limite.
+        CONFIGURATION_ERROR: Erro de configuração.
+        PIPELINE_FAILURE: Falha de pipeline.
+        PERFORMANCE_DEGRADATION: Degradação de performance.
+
+    """
 
     CONNECTIVITY_FAILURE = "connectivity_failure"
     DATA_QUALITY_ISSUE = "data_quality_issue"
@@ -46,7 +71,20 @@ class GruponosMeltanoAlertType(StrEnum):
 
 
 class GruponosMeltanoAlert(FlextValueObject):
-    """GrupoNOS Meltano alert data structure."""
+    """Estrutura de dados de alerta Meltano GrupoNOS.
+
+    Value object que representa um alerta no sistema,
+    contendo informações de severidade, tipo e contexto.
+
+    Attributes:
+        message: Mensagem descritiva do alerta.
+        severity: Nível de severidade do alerta.
+        alert_type: Tipo do alerta.
+        context: Contexto adicional do alerta.
+        timestamp: Timestamp da ocorrência.
+        pipeline_name: Nome do pipeline relacionado (opcional).
+
+    """
 
     message: str
     severity: GruponosMeltanoAlertSeverity
@@ -56,7 +94,18 @@ class GruponosMeltanoAlert(FlextValueObject):
     pipeline_name: str | None = None
 
     def validate_domain_rules(self) -> FlextResult[None]:
-        """Validate alert domain rules."""
+        """Valida regras de domínio do alerta.
+
+        Verifica se o alerta atende aos critérios de domínio,
+        incluindo presença e tamanho da mensagem.
+
+        Returns:
+            FlextResult[None]: Resultado da validação.
+
+        Raises:
+            FlextResult.fail: Se a mensagem estiver vazia ou muito longa.
+
+        """
         if not self.message.strip():
             return FlextResult.fail("Alert message cannot be empty")
 
@@ -68,18 +117,35 @@ class GruponosMeltanoAlert(FlextValueObject):
         return FlextResult.ok(None)
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate alert business rules."""
+        """Valida regras de negócio do alerta.
+
+        Executa validações de regras de negócio específicas
+        para o contexto empresarial.
+
+        Returns:
+            FlextResult[None]: Resultado da validação.
+
+        """
         return self.validate_domain_rules()
 
 
 class GruponosMeltanoAlertService:
-    """GrupoNOS Meltano alert service following FLEXT patterns."""
+    """Serviço de alertas Meltano GrupoNOS seguindo padrões FLEXT.
+
+    Serviço responsável por gerenciar o envio de alertas
+    através de múltiplos canais de comunicação.
+
+    Attributes:
+        config: Configuração de alertas.
+        _failure_count: Contador de falhas interno.
+
+    """
 
     def __init__(self, config: GruponosMeltanoAlertConfig) -> None:
-        """Initialize alert service with configuration.
+        """Inicializa serviço de alertas com configuração.
 
         Args:
-            config: Alert configuration instance
+            config: Instância da configuração de alertas.
 
         """
         self.config = config
@@ -94,13 +160,25 @@ class GruponosMeltanoAlertService:
         self,
         alert: GruponosMeltanoAlert,
     ) -> FlextResult[bool]:
-        """Send alert through configured channels.
+        """Envia alerta através dos canais configurados.
+
+        Processa e envia o alerta através de todos os canais
+        habilitados (webhook, email, Slack), considerando
+        o threshold de alertas configurado.
 
         Args:
-            alert: Alert to send
+            alert: Alerta a ser enviado.
 
         Returns:
-            FlextResult indicating success/failure
+            FlextResult[bool]: Resultado indicando sucesso/falha do envio.
+            True se pelo menos um canal teve sucesso, False caso contrário.
+
+        Example:
+            >>> service = GruponosMeltanoAlertService(config)
+            >>> alert = GruponosMeltanoAlert(message="Pipeline falhou", ...)
+            >>> resultado = service.send_alert(alert)
+            >>> if resultado.success:
+            ...     print("Alerta enviado com sucesso")
 
         """
         try:
@@ -154,7 +232,15 @@ class GruponosMeltanoAlertService:
             return FlextResult.fail(f"Alert sending error: {e}")
 
     def _send_webhook(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
-        """Send alert via webhook."""
+        """Envia alerta via webhook.
+
+        Args:
+            alert: Alerta a ser enviado.
+
+        Returns:
+            FlextResult[bool]: Resultado do envio via webhook.
+
+        """
         try:
             if not self.config.webhook_url:
                 return FlextResult.fail("Webhook URL not configured")
@@ -184,7 +270,19 @@ class GruponosMeltanoAlertService:
             return FlextResult.fail(f"Webhook failed: {e}")
 
     def _send_email(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
-        """Send alert via email using SMTP configuration."""
+        """Envia alerta via email usando configuração SMTP.
+
+        Args:
+            alert: Alerta a ser enviado.
+
+        Returns:
+            FlextResult[bool]: Resultado do envio via email.
+
+        Note:
+            Requer configuração SMTP no config de alertas para
+            funcionar adequadamente em produção.
+
+        """
         try:
             if not self.config.email_recipients:
                 return FlextResult.fail("No email recipients configured")
@@ -209,7 +307,18 @@ class GruponosMeltanoAlertService:
             return FlextResult.fail(f"Email failed: {e}")
 
     def _send_slack(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
-        """Send alert via Slack webhook."""
+        """Envia alerta via webhook do Slack.
+
+        Formata o alerta como uma mensagem Slack com cores
+        baseadas na severidade e envia via webhook.
+
+        Args:
+            alert: Alerta a ser enviado.
+
+        Returns:
+            FlextResult[bool]: Resultado do envio via Slack.
+
+        """
         try:
             if not self.config.slack_webhook_url:
                 return FlextResult.fail("Slack webhook URL not configured")
@@ -265,23 +374,40 @@ class GruponosMeltanoAlertService:
             return FlextResult.fail(f"Slack failed: {e}")
 
     def reset_failure_count(self) -> None:
-        """Reset failure count (for successful operations)."""
+        """Reseta contador de falhas (para operações bem-sucedidas).
+
+        Usado para resetar o contador interno quando uma operação
+        é bem-sucedida, zerando o threshold de alertas.
+        """
         self._failure_count = 0
         logger.debug("Alert failure count reset")
 
     def get_failure_count(self) -> int:
-        """Get current failure count."""
+        """Obtém contador atual de falhas.
+
+        Returns:
+            int: Número atual de falhas registradas.
+
+        """
         return self._failure_count
 
 
 class GruponosMeltanoAlertManager:
-    """GrupoNOS Meltano alert manager - orchestrates alert services."""
+    """Gerenciador de alertas Meltano GrupoNOS - orquestra serviços de alerta.
+
+    Classe de alto nível que coordena o sistema de alertas,
+    fornecendo métodos convenientes para diferentes tipos de alertas.
+
+    Attributes:
+        alert_service: Serviço de alertas subjacente.
+
+    """
 
     def __init__(self, alert_service: GruponosMeltanoAlertService) -> None:
-        """Initialize alert manager with service.
+        """Inicializa gerenciador de alertas com serviço.
 
         Args:
-            alert_service: Alert service instance
+            alert_service: Instância do serviço de alertas.
 
         """
         self.alert_service = alert_service
@@ -293,15 +419,24 @@ class GruponosMeltanoAlertManager:
         error_message: str,
         context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
-        """Send pipeline failure alert.
+        """Envia alerta de falha de pipeline.
+
+        Cria e envia um alerta específico para falhas de pipeline
+        com severidade alta e contexto relevante.
 
         Args:
-            pipeline_name: Name of failed pipeline
-            error_message: Error description
-            context: Additional context data
+            pipeline_name: Nome do pipeline que falhou.
+            error_message: Descrição do erro.
+            context: Dados de contexto adicionais.
 
         Returns:
-            FlextResult indicating success/failure
+            FlextResult[bool]: Resultado indicando sucesso/falha do envio.
+
+        Example:
+            >>> manager = GruponosMeltanoAlertManager(service)
+            >>> resultado = manager.send_pipeline_failure_alert(
+            ...     "full-sync-job", "Timeout na conexão Oracle"
+            ... )
 
         """
         alert = GruponosMeltanoAlert(
@@ -321,15 +456,24 @@ class GruponosMeltanoAlertManager:
         error_message: str,
         context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
-        """Send connectivity failure alert.
+        """Envia alerta de falha de conectividade.
+
+        Cria e envia um alerta crítico para falhas de conectividade
+        com sistemas externos.
 
         Args:
-            target: Target system that failed
-            error_message: Error description
-            context: Additional context data
+            target: Sistema de destino que falhou.
+            error_message: Descrição do erro.
+            context: Dados de contexto adicionais.
 
         Returns:
-            FlextResult indicating success/failure
+            FlextResult[bool]: Resultado indicando sucesso/falha do envio.
+
+        Example:
+            >>> manager = GruponosMeltanoAlertManager(service)
+            >>> resultado = manager.send_connectivity_alert(
+            ...     "Oracle Database", "Conexão recusada na porta 1521"
+            ... )
 
         """
         alert = GruponosMeltanoAlert(
@@ -348,15 +492,25 @@ class GruponosMeltanoAlertManager:
         pipeline_name: str | None = None,
         context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
-        """Send data quality issue alert.
+        """Envia alerta de problema de qualidade de dados.
+
+        Cria e envia um alerta de severidade média para problemas
+        de qualidade de dados identificados durante o processamento.
 
         Args:
-            issue_description: Description of data quality issue
-            pipeline_name: Related pipeline name
-            context: Additional context data
+            issue_description: Descrição do problema de qualidade.
+            pipeline_name: Nome do pipeline relacionado.
+            context: Dados de contexto adicionais.
 
         Returns:
-            FlextResult indicating success/failure
+            FlextResult[bool]: Resultado indicando sucesso/falha do envio.
+
+        Example:
+            >>> manager = GruponosMeltanoAlertManager(service)
+            >>> resultado = manager.send_data_quality_alert(
+            ...     "Valores nulos encontrados em campo obrigatório",
+            ...     "data-validation-job"
+            ... )
 
         """
         alert = GruponosMeltanoAlert(
@@ -375,13 +529,24 @@ class GruponosMeltanoAlertManager:
 def create_gruponos_meltano_alert_manager(
     config: GruponosMeltanoAlertConfig | None = None,
 ) -> GruponosMeltanoAlertManager:
-    """Create GrupoNOS Meltano alert manager instance.
+    """Cria instância do gerenciador de alertas Meltano GrupoNOS.
+
+    Função factory que cria um gerenciador de alertas totalmente
+    configurado com serviço de alertas e configuração.
 
     Args:
-        config: Optional alert configuration
+        config: Configuração de alertas opcional. Se None, usa configuração padrão.
 
     Returns:
-        Configured GruponosMeltanoAlertManager instance
+        GruponosMeltanoAlertManager: Instância configurada do gerenciador.
+
+    Example:
+        >>> # Usar configuração padrão
+        >>> manager = create_gruponos_meltano_alert_manager()
+        >>>
+        >>> # Usar configuração customizada
+        >>> config = GruponosMeltanoAlertConfig(webhook_enabled=True)
+        >>> manager = create_gruponos_meltano_alert_manager(config)
 
     """
     if config is None:

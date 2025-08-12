@@ -1,7 +1,13 @@
-"""Oracle Integration Module - FLEXT standardized.
+"""Módulo de Integração Oracle - Padronizado FLEXT.
 
-This module provides Oracle database integration capabilities following FLEXT standards,
-Clean Architecture principles, and proper type safety.
+Este módulo fornece capacidades de integração com banco de dados Oracle
+seguindo padrões FLEXT, princípios de Clean Architecture e type safety adequado.
+
+Fornece classes e funções para:
+    - Gerenciamento de conexões Oracle
+    - Configuração segura de credenciais
+    - Teste de conectividade
+    - Factory functions para criação de instâncias
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT

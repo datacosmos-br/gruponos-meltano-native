@@ -1,6 +1,15 @@
-"""Professional Data Validator for Oracle WMS Integration.
+"""Validador de Dados Profissional para Integração Oracle WMS.
 
-Handles type conversion and validation issues found in production.
+Lida com conversão de tipos e problemas de validação encontrados em produção.
+Fornece validação robusta e conversão de dados para integração ETL.
+
+Classes:
+    ValidationError: Erro de validação compatível com testes.
+    ValidationRule: Definição de regra de validação.
+    DataValidator: Validador principal com manipulação específica Oracle.
+
+Funções:
+    create_validator_for_environment: Cria validador configurado para ambiente.
 """
 
 from __future__ import annotations
@@ -23,10 +32,22 @@ logger = get_logger(__name__)
 
 # Use FLEXT foundation pattern with proper error code for tests compatibility
 class ValidationError(FlextValidationError):
-    """Validation error with test-compatible error code."""
+    """Erro de validação com código de erro compatível com testes.
+
+    Estende FlextValidationError para fornecer erro de validação
+    consistente com código de erro específico para compatibilidade
+    com suíte de testes existente.
+    """
 
     def __init__(self, message: str, validation_details: dict[str, object] | None = None, **kwargs: object) -> None:
-        """Initialize validation error with consistent error code."""
+        """Inicializa erro de validação com código de erro consistente.
+
+        Args:
+            message: Mensagem de erro descritiva.
+            validation_details: Detalhes adicionais de validação.
+            **kwargs: Argumentos adicionais mesclados no contexto.
+
+        """
         context = validation_details if validation_details is not None else {}
         # Merge kwargs into context if needed
         if kwargs:
@@ -39,7 +60,18 @@ class ValidationError(FlextValidationError):
 
 
 class ValidationRule:
-    """Validation rule definition."""
+    """Definição de regra de validação.
+
+    Representa uma regra de validação que pode ser aplicada
+    a campos de dados durante o processo de validação.
+
+    Attributes:
+        field_name: Nome do campo a ser validado.
+        rule_type: Tipo de validação (required, type, range, etc.).
+        parameters: Parâmetros da regra.
+        params: Alias para parameters (compatibilidade).
+
+    """
 
     def __init__(
         self,
@@ -48,13 +80,13 @@ class ValidationRule:
         parameters: dict[str, object] | None = None,
         **kwargs: object,
     ) -> None:
-        """Initialize validation rule.
+        """Inicializa regra de validação.
 
         Args:
-            field_name: Field to validate
-            rule_type: Type of validation (required, type, range, etc.)
-            parameters: Rule parameters dictionary (optional)
-            **kwargs: Additional rule parameters (merged with parameters).
+            field_name: Campo a ser validado.
+            rule_type: Tipo de validação (required, type, range, etc.).
+            parameters: Dicionário de parâmetros da regra (opcional).
+            **kwargs: Parâmetros adicionais da regra (mesclados com parameters).
 
         """
         self.field_name = field_name
@@ -65,7 +97,18 @@ class ValidationRule:
 
 
 class DataValidator:
-    """Professional data validator with Oracle-specific type handling."""
+    """Validador de dados profissional com manipulação de tipos específica Oracle.
+
+    Fornece validação robusta e conversão de dados otimizada para
+    integração Oracle WMS, com manipulação adequada de tipos de dados
+    e estatísticas de conversão.
+
+    Attributes:
+        rules: Lista de regras de validação.
+        strict_mode: Se True, lança exceções em falhas de validação.
+        conversion_stats: Estatísticas de conversão de dados.
+
+    """
 
     def __init__(
         self,
@@ -73,11 +116,11 @@ class DataValidator:
         *,
         strict_mode: bool = False,
     ) -> None:
-        """Initialize data validator.
+        """Inicializa validador de dados.
 
         Args:
-            rules: List of validation rules to apply
-            strict_mode: Whether to raise exceptions on validation failures.
+            rules: Lista de regras de validação a aplicar.
+            strict_mode: Se True, lança exceções em falhas de validação.
 
         """
         self.rules = rules or []
@@ -133,15 +176,25 @@ class DataValidator:
             validation_method(rule, value, errors)
 
     def validate(self, data: dict[str, object]) -> list[str]:
-        """Validate data against configured rules.
+        """Valida dados contra regras configuradas.
+
+        Aplica todas as regras de validação configuradas aos dados fornecidos,
+        coletando erros de validação encontrados.
 
         Args:
-            data: Data to validate
+            data: Dados a serem validados.
+
         Returns:
-            List of validation error messages (empty if all validations pass)
+            list[str]: Lista de mensagens de erro de validação
+            (vazia se todas as validações passarem).
 
         Raises:
-            ValidationError: If validation fails in strict mode.
+            ValidationError: Se a validação falhar no modo strict.
+
+        Example:
+            >>> validator = DataValidator([ValidationRule("id", "required")])
+            >>> erros = validator.validate({"nome": "João"})
+            >>> print(erros)  # ['Required field "id" is missing']
 
         """
         errors: list[str] = []
@@ -373,7 +426,31 @@ class DataValidator:
         record: dict[str, object],
         schema: dict[str, object],
     ) -> dict[str, object]:
-        """Validate and convert a record according to schema."""
+        """Valida e converte um registro de acordo com schema.
+
+        Processa um registro de dados aplicando conversões de tipo
+        baseadas no schema fornecido, com manipulação específica
+        para tipos Oracle WMS.
+
+        Args:
+            record: Registro de dados a ser processado.
+            schema: Schema definindo tipos esperados dos campos.
+
+        Returns:
+            dict[str, object]: Registro convertido com tipos apropriados.
+
+        Raises:
+            ValueError: Se conversão de tipo falhar.
+
+        Example:
+            >>> validator = DataValidator()
+            >>> schema = {"properties": {"id": {"type": "integer"}}}
+            >>> resultado = validator.validate_and_convert_record(
+            ...     {"id": "123"}, schema
+            ... )
+            >>> print(resultado)  # {"id": 123}
+
+        """
         properties = schema.get("properties")
         if not properties or not isinstance(properties, dict):
             return record
@@ -563,17 +640,45 @@ class DataValidator:
         return str(value) if value is not None else None
 
     def get_conversion_stats(self) -> dict[str, int]:
-        """Get conversion statistics."""
+        """Obtém estatísticas de conversão.
+
+        Returns:
+            dict[str, int]: Dicionário com estatísticas de conversão
+            incluindo strings convertidas, datas normalizadas, etc.
+
+        """
         return self.conversion_stats.copy()
 
     def reset_stats(self) -> None:
-        """Reset conversion statistics."""
+        """Reseta estatísticas de conversão.
+
+        Zera todos os contadores de estatísticas de conversão
+        para reiniciar a coleta de métricas.
+        """
         for key in self.conversion_stats:
             self.conversion_stats[key] = 0
 
 
 def create_validator_for_environment(environment: str = "dev") -> DataValidator:
-    """Create a validator configured for the given environment."""
+    """Cria validador configurado para o ambiente especificado.
+
+    Factory function que cria um validador de dados com configuração
+    apropriada para o ambiente especificado (desenvolvimento vs produção).
+
+    Args:
+        environment: Ambiente de execução ("dev", "prod", etc.).
+
+    Returns:
+        DataValidator: Instância configurada do validador.
+
+    Example:
+        >>> # Validador para desenvolvimento (modo não-strict)
+        >>> validator_dev = create_validator_for_environment("dev")
+        >>>
+        >>> # Validador para produção (modo strict)
+        >>> validator_prod = create_validator_for_environment("prod")
+
+    """
     strict_mode = environment == "prod"
     return DataValidator(strict_mode=strict_mode)
 

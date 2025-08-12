@@ -33,21 +33,22 @@ logger = get_logger(__name__)
 
 
 def initialize_cli_environment(*, debug: bool = False) -> dict[str, object]:
-    """Initialize CLI environment using FLEXT CLI framework patterns.
+    """Inicializa ambiente CLI usando padrões do framework FLEXT CLI.
 
-    This function sets up the complete CLI environment including logging,
-    configuration, and context management using FLEXT CLI standards.
+    Esta função configura o ambiente CLI completo incluindo logging,
+    configuração e gerenciamento de contexto usando padrões FLEXT CLI.
 
     Args:
-        debug: If True, enables debug mode for detailed troubleshooting.
-               If False, uses production configuration.
+        debug: Se True, habilita modo debug para troubleshooting detalhado.
+               Se False, usa configuração de produção.
 
     Returns:
-        dict: CLI environment context with configuration and console.
+        dict[str, object]: Contexto do ambiente CLI com configuração e console.
 
-    Integration:
-        Uses FLEXT CLI framework patterns for consistent environment setup
-        across the FLEXT ecosystem and enterprise CLI standards.
+    Note:
+        Integração:
+        Usa padrões do framework FLEXT CLI para configuração consistente
+        de ambiente em todo o ecossistema FLEXT e padrões CLI empresariais.
 
     """
     # Create CLI environment using flext-cli patterns
@@ -83,10 +84,19 @@ def cli(
     debug: bool,
     config_file: str | None,
 ) -> None:
-    """GrupoNOS Meltano Native - Enterprise ETL Pipeline Manager.
+    """GrupoNOS Meltano Native - Gerenciador de Pipeline ETL Empresarial.
 
-    A FLEXT-standardized tool for managing Meltano pipelines with Oracle
-    integration, comprehensive monitoring, and enterprise-grade reliability.
+    Uma ferramenta padronizada FLEXT para gerenciar pipelines Meltano com
+    integração Oracle, monitoramento abrangente e confiabilidade empresarial.
+
+    Args:
+        ctx: Contexto do Click.
+        debug: Habilita modo debug.
+        config_file: Caminho para arquivo de configuração.
+
+    Raises:
+        SystemExit: Se a inicialização do CLI falhar.
+
     """
     try:
         # Initialize CLI environment using FLEXT patterns
@@ -111,7 +121,24 @@ def cli(
 @cli.command()
 @click.pass_context
 def health(ctx: click.Context) -> None:
-    """Check pipeline health and system connectivity."""
+    """Verifica saúde do pipeline e conectividade do sistema.
+
+    Executa verificações de saúde abrangentes incluindo configuração,
+    conexões Oracle, projetos Meltano e disponibilidade do orquestrador.
+
+    Args:
+        ctx: Contexto do Click contendo configurações CLI.
+
+    Raises:
+        SystemExit: Se as verificações de saúde falharem.
+
+    Example:
+        $ gruponos-meltano-native health
+        📋 Health Check Results:
+          configuration    : ✅ Valid
+          orchestrator     : ✅ Initialized
+
+    """
     try:
         cli_context: dict[str, object] = ctx.obj["cli_context"]
         console = cli_context["console"]
@@ -162,7 +189,13 @@ def health(ctx: click.Context) -> None:
 
 
 def _create_configuration() -> FlextResult[GruponosMeltanoSettings]:
-    """Create configuration using FLEXT patterns."""
+    """Cria configuração usando padrões FLEXT.
+
+    Returns:
+        FlextResult[GruponosMeltanoSettings]: Resultado contendo configuração
+        criada ou erro em caso de falha.
+
+    """
     try:
         config = create_gruponos_meltano_settings()
         return FlextResult.ok(config)
@@ -171,7 +204,16 @@ def _create_configuration() -> FlextResult[GruponosMeltanoSettings]:
 
 
 def _create_orchestrator(config: GruponosMeltanoSettings) -> FlextResult[object]:
-    """Create orchestrator using FLEXT patterns."""
+    """Cria orquestrador usando padrões FLEXT.
+
+    Args:
+        config: Configurações do Meltano GrupoNOS.
+
+    Returns:
+        FlextResult[object]: Resultado contendo orquestrador criado
+        ou erro em caso de falha.
+
+    """
     try:
         orchestrator = create_gruponos_meltano_orchestrator(config)
         return FlextResult.ok(orchestrator)
@@ -180,7 +222,15 @@ def _create_orchestrator(config: GruponosMeltanoSettings) -> FlextResult[object]
 
 
 def _check_oracle_connection(config: GruponosMeltanoSettings) -> str:
-    """Check Oracle connection status."""
+    """Verifica status da conexão Oracle.
+
+    Args:
+        config: Configurações do Meltano GrupoNOS.
+
+    Returns:
+        str: Status da conexão Oracle formatado para exibição.
+
+    """
     if (
         config.oracle
         and config.oracle.host
@@ -192,7 +242,15 @@ def _check_oracle_connection(config: GruponosMeltanoSettings) -> str:
 
 
 def _check_meltano_configuration(config: GruponosMeltanoSettings) -> str:
-    """Check Meltano configuration status."""
+    """Verifica status da configuração Meltano.
+
+    Args:
+        config: Configurações do Meltano GrupoNOS.
+
+    Returns:
+        str: Status da configuração Meltano formatado para exibição.
+
+    """
     if config.meltano_project_root and config.meltano_environment:
         return "✅ Found"
     return "⚠️  Missing"
@@ -220,9 +278,22 @@ def run(
     dry_run: bool,
     _retry_attempts: int,
 ) -> None:
-    """Run a specific Meltano pipeline.
+    """Executa um pipeline Meltano específico.
 
-    PIPELINE_NAME: Name of the pipeline to execute
+    Args:
+        _ctx: Contexto do Click (não utilizado).
+        pipeline_name: Nome do pipeline a ser executado.
+        dry_run: Se True, executa em modo dry-run sem alterações reais.
+        _retry_attempts: Número de tentativas de retry (não utilizado nesta versão).
+
+    Raises:
+        SystemExit: Se a execução do pipeline falhar.
+
+    Example:
+        $ gruponos-meltano-native run full-sync-job
+        🚀 Starting pipeline: full-sync-job
+        ✅ Pipeline completed successfully!
+
     """
     if dry_run:
         click.echo("🔍 DRY RUN MODE - No actual changes will be made")
@@ -267,7 +338,25 @@ def run(
 @cli.command()
 @click.pass_context
 def list_pipelines(_ctx: click.Context) -> None:
-    """List available Meltano pipelines."""
+    """Lista pipelines Meltano disponíveis.
+
+    Exibe uma lista de todos os pipelines Meltano configurados
+    e disponíveis para execução no projeto atual.
+
+    Args:
+        _ctx: Contexto do Click (não utilizado).
+
+    Raises:
+        SystemExit: Se falhar ao listar pipelines.
+
+    Example:
+        $ gruponos-meltano-native list-pipelines
+        📋 Listing available pipelines...
+        Available pipelines:
+          - full-sync-job
+          - incremental-sync-job
+
+    """
     click.echo("📋 Listing available pipelines...")
     logger.info("Listing pipelines")
 
@@ -305,7 +394,26 @@ def list_pipelines(_ctx: click.Context) -> None:
 )
 @click.pass_context
 def validate(_ctx: click.Context, *, output_format: str) -> None:
-    """Validate configuration and pipeline setup."""
+    """Valida configuração e setup de pipeline.
+
+    Executa validações abrangentes da configuração do sistema,
+    conexões e setup de pipeline, exibindo resultados no formato especificado.
+
+    Args:
+        _ctx: Contexto do Click (não utilizado).
+        output_format: Formato de saída (json, yaml, table).
+
+    Raises:
+        SystemExit: Se a validação falhar.
+
+    Example:
+        $ gruponos-meltano-native validate --output-format json
+        {
+          "configuration": "✅ Valid",
+          "oracle_connection": "✅ Configured"
+        }
+
+    """
     if output_format != "json":
         click.echo("🔍 Running validation...")
         logger.info("Running validation with format: %s", output_format)
@@ -362,7 +470,29 @@ def validate(_ctx: click.Context, *, output_format: str) -> None:
 )
 @click.pass_context
 def show_config(_ctx: click.Context, *, output_format: str, show_secrets: bool) -> None:
-    """Show current configuration."""
+    """Exibe configuração atual.
+
+    Mostra todas as configurações do sistema no formato especificado,
+    incluindo configurações Oracle, WMS e Meltano.
+
+    Args:
+        _ctx: Contexto do Click (não utilizado).
+        output_format: Formato de saída (json, yaml).
+        show_secrets: Se True, inclui configurações sensíveis (usar com cuidado).
+
+    Raises:
+        SystemExit: Se falhar ao exibir configuração.
+
+    Warning:
+        O parâmetro show_secrets deve ser usado com cuidado em ambientes
+        de produção para evitar exposição de credenciais.
+
+    Example:
+        $ gruponos-meltano-native show-config --format yaml
+        app_name: gruponos-meltano-native
+        environment: dev
+
+    """
     if output_format != "json":
         click.echo("📋 Current configuration:")
         logger.info("Showing configuration with format: %s", output_format)
@@ -458,9 +588,25 @@ def run_with_retry(
     *,
     max_retries: int,
 ) -> None:
-    """Run a pipeline with automatic retry logic.
+    """Executa pipeline com lógica de retry automático.
 
-    PIPELINE_NAME: Name of the pipeline to execute with retry
+    Executa um pipeline com tentativas automáticas de retry em caso
+    de falha, usando backoff exponencial entre tentativas.
+
+    Args:
+        _ctx: Contexto do Click (não utilizado).
+        pipeline_name: Nome do pipeline a ser executado com retry.
+        max_retries: Número máximo de tentativas de retry.
+
+    Raises:
+        SystemExit: Se o pipeline falhar após todas as tentativas.
+
+    Example:
+        $ gruponos-meltano-native run-with-retry full-sync-job --max-retries 5
+        🚀 Starting pipeline with retry: full-sync-job
+           Max retries: 5
+        ✅ Pipeline completed successfully after retries!
+
     """
     click.echo(f"🚀 Starting pipeline with retry: {pipeline_name}")
     click.echo(f"   Max retries: {max_retries}")

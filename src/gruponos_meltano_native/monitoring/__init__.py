@@ -1,7 +1,13 @@
-"""Monitoring Module - FLEXT standardized.
+"""Módulo de Monitoramento - Padronizado FLEXT.
 
-This module provides monitoring and alerting capabilities following FLEXT standards,
-Clean Architecture principles, and proper type safety.
+Este módulo fornece capacidades de monitoramento e alertas seguindo padrões FLEXT,
+princípios de Clean Architecture e type safety adequado.
+
+Fornece classes e funções para:
+    - Gerenciamento de alertas com múltiplos canais
+    - Monitoramento de pipeline e sistema
+    - Severidade e tipos de alerta
+    - Integração com webhook, email e Slack
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT

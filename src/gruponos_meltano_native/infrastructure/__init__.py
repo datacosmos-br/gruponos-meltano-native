@@ -1,7 +1,13 @@
-"""Infrastructure layer for GrupoNOS Meltano Native - FLEXT standardized.
+"""Camada de infraestrutura para Meltano Native GrupoNOS - Padronizado FLEXT.
 
-This module provides FLEXT-standard infrastructure components following
-Clean Architecture and Domain-Driven Design principles.
+Este módulo fornece componentes de infraestrutura padrão FLEXT seguindo
+princípios de Clean Architecture e Domain-Driven Design.
+
+Fornece:
+    - Container de injeção de dependência
+    - Configurações de infraestrutura FLEXT
+    - Padrões de registro de componentes
+    - Integração com flext-core
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT

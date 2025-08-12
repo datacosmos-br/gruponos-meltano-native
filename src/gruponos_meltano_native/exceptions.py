@@ -1,9 +1,9 @@
-"""GrupoNOS Meltano Native Exceptions following flext-core patterns.
+"""Exceções Nativas Meltano GrupoNOS seguindo padrões flext-core.
 
-All GrupoNOS-specific exceptions extending FLEXT core abstractions using
-proper static inheritance. Follows the architectural principle of keeping
-generic functionality in abstract libraries (flext-core) and using them
-correctly in concrete projects.
+Todas as exceções específicas do GrupoNOS estendendo abstrações centrais FLEXT usando
+herança estática adequada. Segue o princípio arquitetural de manter
+funcionalidade genérica em bibliotecas abstratas (flext-core) e usá-las
+corretamente em projetos concretos.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -22,198 +22,296 @@ from flext_core.exceptions import (
 )
 
 
-# Define GrupoNOS-specific exception hierarchy using static inheritance
+# Definir hierarquia de exceções específica do GrupoNOS usando herança estática
 class GruponosMeltanoError(FlextError):
-    """Base GrupoNOS Meltano error following flext-core patterns."""
+    """Erro base Meltano GrupoNOS seguindo padrões flext-core.
 
-    def __init__(self, message: str = "GrupoNOS Meltano error", **kwargs: object) -> None:
-        """Initialize GrupoNOS Meltano error with context."""
-        super().__init__(
-            message,
-            error_code="GRUPONOS_MELTANO_ERROR",
-            context=kwargs,
-        )
+    Classe base para todas as exceções específicas do sistema
+    Meltano GrupoNOS, estendendo FlextError para manter
+    consistência arquitetural.
+    """
+
+    def __init__(self, message: str = "GrupoNOS Meltano error") -> None:
+        """Inicializa erro Meltano GrupoNOS com contexto.
+
+        Args:
+            message: Mensagem de erro descritiva.
+
+        """
+        super().__init__(message)
 
 
 class GruponosMeltanoValidationError(FlextValidationError):
-    """GrupoNOS validation errors following flext-core patterns."""
+    """Erros de validação GrupoNOS seguindo padrões flext-core.
 
-    def __init__(self, message: str = "GrupoNOS validation error", **kwargs: object) -> None:
-        """Initialize GrupoNOS validation error."""
-        super().__init__(
-            message,
-            error_code="GRUPONOS_MELTANO_VALIDATION_ERROR",
-            context=kwargs,
-        )
+    Exceção lançada quando dados ou configurações não passam
+    nas validações do sistema GrupoNOS.
+    """
+
+    def __init__(self, message: str = "GrupoNOS validation error") -> None:
+        """Inicializa erro de validação GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo o erro de validação.
+
+        """
+        super().__init__(message)
 
 
 class GruponosMeltanoConfigurationError(FlextConfigurationError):
-    """GrupoNOS configuration errors following flext-core patterns."""
+    """Erros de configuração GrupoNOS seguindo padrões flext-core.
 
-    def __init__(self, message: str = "GrupoNOS configuration error", **kwargs: object) -> None:
-        """Initialize GrupoNOS configuration error."""
-        super().__init__(
-            message,
-            **kwargs,
-        )
+    Exceção lançada quando há problemas na configuração
+    do sistema, como parâmetros ausentes ou inválidos.
+    """
+
+    def __init__(self, message: str = "GrupoNOS configuration error") -> None:
+        """Inicializa erro de configuração GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo o problema de configuração.
+
+        """
+        super().__init__(message)
 
 
 class GruponosMeltanoConnectionError(FlextConnectionError):
-    """GrupoNOS connection errors following flext-core patterns."""
+    """Erros de conexão GrupoNOS seguindo padrões flext-core.
 
-    def __init__(self, message: str = "GrupoNOS connection error", **kwargs: object) -> None:
-        """Initialize GrupoNOS connection error."""
-        super().__init__(
-            message,
-            **kwargs,
-        )
+    Exceção lançada quando há falhas de conectividade
+    com sistemas externos como bancos de dados ou APIs.
+    """
+
+    def __init__(self, message: str = "GrupoNOS connection error") -> None:
+        """Inicializa erro de conexão GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo o problema de conexão.
+
+        """
+        super().__init__(message)
 
 
 class GruponosMeltanoProcessingError(FlextProcessingError):
-    """GrupoNOS processing errors following flext-core patterns."""
+    """Erros de processamento GrupoNOS seguindo padrões flext-core.
 
-    def __init__(self, message: str = "GrupoNOS processing error", **kwargs: object) -> None:
-        """Initialize GrupoNOS processing error."""
-        super().__init__(
-            message,
-            **kwargs,
-        )
+    Exceção lançada durante o processamento de dados,
+    incluindo transformações e operações ETL.
+    """
+
+    def __init__(self, message: str = "GrupoNOS processing error") -> None:
+        """Inicializa erro de processamento GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo o erro de processamento.
+
+        """
+        super().__init__(message)
 
 
 class GruponosMeltanoAuthenticationError(FlextAuthenticationError):
-    """GrupoNOS authentication errors following flext-core patterns."""
+    """Erros de autenticação GrupoNOS seguindo padrões flext-core.
 
-    def __init__(self, message: str = "GrupoNOS authentication error", **kwargs: object) -> None:
-        """Initialize GrupoNOS authentication error."""
-        super().__init__(
-            message,
-            **kwargs,
-        )
+    Exceção lançada quando há falhas na autenticação
+    com sistemas externos ou credenciais inválidas.
+    """
+
+    def __init__(self, message: str = "GrupoNOS authentication error") -> None:
+        """Inicializa erro de autenticação GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo o problema de autenticação.
+
+        """
+        super().__init__(message)
 
 
 class GruponosMeltanoTimeoutError(FlextTimeoutError):
-    """GrupoNOS timeout errors following flext-core patterns."""
+    """Erros de timeout GrupoNOS seguindo padrões flext-core.
 
-    def __init__(self, message: str = "GrupoNOS timeout error", **kwargs: object) -> None:
-        """Initialize GrupoNOS timeout error."""
-        super().__init__(
-            message,
-            **kwargs,
-        )
+    Exceção lançada quando operações excedem
+    o tempo limite estabelecido.
+    """
+
+    def __init__(self, message: str = "GrupoNOS timeout error") -> None:
+        """Inicializa erro de timeout GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo o problema de timeout.
+
+        """
+        super().__init__(message)
 
 
 # Specialized domain-specific errors extending base classes
 class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
-    """GrupoNOS orchestration error."""
+    """Erro de orquestração GrupoNOS.
+
+    Exceção lançada quando há falhas na orquestração
+    de pipelines ETL ou coordenação de componentes.
+    """
 
     def __init__(
         self,
         message: str = "GrupoNOS orchestration failed",
-        operation: str | None = None,
-        stage: str | None = None,
-        **kwargs: object,
     ) -> None:
-        """Initialize GrupoNOS orchestration error with context."""
-        if operation is not None:
-            kwargs["operation"] = operation
-        if stage is not None:
-            kwargs["stage"] = stage
-        super().__init__(f"GrupoNOS orchestration: {message}", **kwargs)
+        """Inicializa erro de orquestração GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo a falha de orquestração.
+
+        """
+        super().__init__(f"GrupoNOS orchestration: {message}")
 
 
 class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
-    """GrupoNOS pipeline error extending orchestration error."""
+    """Erro de pipeline GrupoNOS estendendo erro de orquestração.
+
+    Exceção lançada quando há falhas específicas
+    na execução de pipelines individuais.
+    """
 
     def __init__(
         self,
         message: str = "GrupoNOS pipeline failed",
-        pipeline_name: str | None = None,
-        **kwargs: object,
     ) -> None:
-        """Initialize GrupoNOS pipeline error with context."""
-        # Extract pipeline_type if provided, otherwise use None
-        pipeline_type = kwargs.pop("pipeline_type", None)
-        if pipeline_name is not None:
-            kwargs["pipeline_name"] = pipeline_name
-        # Extract operation and stage for parent class, keep other kwargs
-        operation_obj = kwargs.pop("operation", None)
-        stage_obj = kwargs.pop("stage", None)
-        operation = str(operation_obj) if operation_obj is not None else None
-        stage = str(stage_obj) if stage_obj is not None else None
-        if pipeline_type is not None:
-            kwargs["pipeline_type"] = pipeline_type
-        super().__init__(
-            message=f"GrupoNOS pipeline: {message}",
-            operation=operation,
-            stage=stage,
-            **kwargs,
-        )
+        """Inicializa erro de pipeline GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo a falha do pipeline.
+
+        """
+        super().__init__(f"GrupoNOS pipeline: {message}")
 
 
 # Monitoring error hierarchy
 class GruponosMeltanoMonitoringError(GruponosMeltanoError):
-    """Monitoring system error."""
+    """Erro do sistema de monitoramento.
+
+    Exceção base para erros relacionados ao sistema
+    de monitoramento e observabilidade.
+    """
 
 
 # Domain-specific error classes extending foundation hierarchy
 class GruponosMeltanoAlertError(GruponosMeltanoMonitoringError):
-    """Alert system error."""
+    """Erro do sistema de alertas.
+
+    Exceção lançada quando há problemas no
+    sistema de alertas e notificações.
+    """
 
 
 class GruponosMeltanoAlertDeliveryError(GruponosMeltanoAlertError):
-    """Alert delivery error."""
+    """Erro de entrega de alerta.
+
+    Exceção lançada quando falha a entrega de alertas
+    via email, webhook ou outros canais.
+    """
 
 
 class GruponosMeltanoDataError(GruponosMeltanoError):
-    """Data processing error."""
+    """Erro de processamento de dados.
+
+    Exceção base para erros relacionados ao
+    processamento e manipulação de dados.
+    """
 
 
 class GruponosMeltanoDataQualityError(GruponosMeltanoDataError):
-    """Data quality error."""
+    """Erro de qualidade de dados.
+
+    Exceção lançada quando dados não atendem
+    aos critérios de qualidade estabelecidos.
+    """
 
 
 class GruponosMeltanoDataValidationError(GruponosMeltanoDataError):
-    """Data validation error."""
+    """Erro de validação de dados.
+
+    Exceção lançada quando dados falham
+    nas validações de formato ou integridade.
+    """
 
 
 class GruponosMeltanoMissingConfigError(GruponosMeltanoError):
-    """Missing configuration error."""
+    """Erro de configuração ausente.
+
+    Exceção lançada quando configurações
+    obrigatórias não são encontradas.
+    """
 
 
 class GruponosMeltanoOracleError(GruponosMeltanoError):
-    """Oracle database error."""
+    """Erro de banco de dados Oracle.
+
+    Exceção base para todos os erros relacionados
+    a operações com banco de dados Oracle.
+    """
 
 
 class GruponosMeltanoOracleConnectionError(GruponosMeltanoOracleError):
-    """Oracle connection error."""
+    """Erro de conexão Oracle.
+
+    Exceção lançada quando há falhas na
+    conexão com o banco de dados Oracle.
+    """
 
 
 class GruponosMeltanoOracleQueryError(GruponosMeltanoOracleError):
-    """Oracle query error."""
+    """Erro de consulta Oracle.
+
+    Exceção lançada quando há falhas na
+    execução de consultas SQL no Oracle.
+    """
 
 
 class GruponosMeltanoOracleTimeoutError(GruponosMeltanoOracleError):
-    """Oracle timeout error."""
+    """Erro de timeout Oracle.
+
+    Exceção lançada quando operações Oracle
+    excedem o tempo limite configurado.
+    """
 
 
 class GruponosMeltanoPipelineTimeoutError(GruponosMeltanoPipelineError):
-    """Pipeline timeout error."""
+    """Erro de timeout de pipeline.
+
+    Exceção lançada quando a execução de pipeline
+    excede o tempo limite estabelecido.
+    """
 
 
 class GruponosMeltanoPipelineValidationError(GruponosMeltanoPipelineError):
-    """Pipeline validation error."""
+    """Erro de validação de pipeline.
+
+    Exceção lançada quando a configuração ou
+    estrutura do pipeline é inválida.
+    """
 
 
 class GruponosMeltanoSingerError(GruponosMeltanoError):
-    """Singer protocol error."""
+    """Erro de protocolo Singer.
+
+    Exceção base para erros relacionados ao
+    protocolo Singer e seus componentes.
+    """
 
 
 class GruponosMeltanoTapError(GruponosMeltanoSingerError):
-    """Tap execution error."""
+    """Erro de execução de tap.
+
+    Exceção lançada quando há falhas na
+    execução de taps Singer.
+    """
 
 
 class GruponosMeltanoTargetError(GruponosMeltanoSingerError):
-    """Target execution error."""
+    """Erro de execução de target.
+
+    Exceção lançada quando há falhas na
+    execução de targets Singer.
+    """
 
 
 __all__: list[str] = [
