@@ -151,7 +151,7 @@ class GruponosMeltanoPipelineRunner:
 
             # Executar pipeline (job_name validado e sanitizado acima)
             # S603: chamada de subprocesso é segura - job_name é validado contra injeção de comando
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603
                 cmd,
                 check=False,
                 cwd=self.project_root,

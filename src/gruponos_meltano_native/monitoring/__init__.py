@@ -15,7 +15,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# Direct imports - NO wrappers or legacy aliases
 from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlert,
     GruponosMeltanoAlertManager,

@@ -15,7 +15,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# Direct imports - NO wrappers or legacy aliases
 from gruponos_meltano_native.oracle.connection_manager_enhanced import (
     GruponosMeltanoOracleConnectionManager,
     create_gruponos_meltano_oracle_connection_manager,

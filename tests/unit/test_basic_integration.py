@@ -3,8 +3,6 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
-# FLEXT Core Standards - Direct imports allowed from Level 6 projects
 from flext_core import FlextResult
 
 from gruponos_meltano_native.config import (

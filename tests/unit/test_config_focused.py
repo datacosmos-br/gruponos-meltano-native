@@ -5,15 +5,9 @@ Tests all configuration classes and validation logic comprehensively.
 """
 
 import os
-import sys
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
-# Add src to path for testing
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-
 from pydantic import ValidationError
 
 from gruponos_meltano_native.config import (

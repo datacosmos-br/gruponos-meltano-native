@@ -258,7 +258,7 @@ class GruponosMeltanoAlertService:
                 self.config.webhook_url,
                 json=payload,
                 timeout=30,
-                headers={"Content-Type": "application/json"},
+                headers={"Content-Type": FlextApiConstants.ContentTypes.JSON},
             )
             response.raise_for_status()
 
@@ -362,7 +362,7 @@ class GruponosMeltanoAlertService:
                 self.config.slack_webhook_url,
                 json=payload,
                 timeout=30,
-                headers={"Content-Type": "application/json"},
+                headers={"Content-Type": FlextApiConstants.ContentTypes.JSON},
             )
             response.raise_for_status()
 
@@ -509,7 +509,7 @@ class GruponosMeltanoAlertManager:
             >>> manager = GruponosMeltanoAlertManager(service)
             >>> resultado = manager.send_data_quality_alert(
             ...     "Valores nulos encontrados em campo obrigatório",
-            ...     "data-validation-job"
+            ...     "data-validation-job",
             ... )
 
         """

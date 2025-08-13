@@ -221,7 +221,7 @@ await alert_manager.send_alert(
 
 ### Code Quality Requirements
 
-- **Type Annotations**: 95%+ coverage with strict MyPy validation
+- **Type Safety**: MyPy strict mode adoption; aim for 95%+ coverage
 - **Documentation**: Comprehensive docstrings with examples and integration notes
 - **Testing**: 90% minimum test coverage across unit, integration, and E2E tests
 - **Error Handling**: FlextResult patterns throughout with rich context

@@ -77,7 +77,11 @@ class GruponosMeltanoOracleConnectionManager:
             password_value = self.config.password
 
             # Convert SecretStr to string for FlextDbOracleConfig
-            password_str = password_value.get_secret_value() if hasattr(password_value, "get_secret_value") else str(password_value)
+            password_str = (
+                password_value.get_secret_value()
+                if hasattr(password_value, "get_secret_value")
+                else str(password_value)
+            )
 
             # Determine service_name value
             service_name: str
@@ -99,12 +103,8 @@ class GruponosMeltanoOracleConnectionManager:
                 "service_name": service_name,
             }
 
-            # Use from_dict factory method for proper initialization
-            config_result = FlextDbOracleConfig.from_dict(config_data)
-            if not config_result.success:
-                return FlextResult.fail(f"Failed to create Oracle config: {config_result.error}")
-
-            db_config = config_result.data
+            # Use model_validate to build config directly
+            db_config = FlextDbOracleConfig.model_validate(config_data)
 
             # Create connection
             self._connection = FlextDbOracleApi(db_config)

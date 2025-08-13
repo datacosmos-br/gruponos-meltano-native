@@ -6,7 +6,6 @@ from flext_core import get_logger
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
-# Configure logger
 # Constants
 EXPECTED_DATA_COUNT = 3
 

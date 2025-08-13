@@ -1,10 +1,10 @@
 # gruponos-meltano-native
 
-**Type**: Specialized Service | **Status**: Development | **Dependencies**: flext-core, flext-meltano
+**Type**: Specialized Service | **Status**: Active Development | **Dependencies**: flext-core, flext-meltano
 
 Oracle WMS ETL pipeline implementation for GrupoNOS using Meltano orchestration platform.
 
-> **⚠️ Development Status**: ETL pipeline working, Meltano integration functional, Oracle WMS connectivity established, production deployment validation needed
+> ⚠️ Development Status: ETL pipeline working; Meltano integration functional; Oracle WMS conectividade estabelecida; validação de deployment em produção pendente.
 
 ## Quick Start
 

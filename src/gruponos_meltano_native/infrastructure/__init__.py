@@ -15,14 +15,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# FLEXT Core Infrastructure - Direct imports ONLY
 from flext_core import (
     FlextSettings,
     FlextContainer,
     get_flext_container,
 )
 
-# GrupoNOS Meltano specific DI
 from gruponos_meltano_native.infrastructure.di_container import (
     get_gruponos_meltano_container,
 )
