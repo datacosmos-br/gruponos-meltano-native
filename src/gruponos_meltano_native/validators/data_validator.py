@@ -150,7 +150,9 @@ class DataValidator:
                     validation_details={"field": rule.field_name},
                 )
             logger.warning(
-                "Validation failed: %s (field: %s)", error_msg, rule.field_name,
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
             )
             errors.append(error_msg)
             return False
@@ -232,7 +234,9 @@ class DataValidator:
                     validation_details={"field": rule.field_name},
                 ) from e
             logger.warning(
-                "Validation failed: %s (field: %s)", error_msg, rule.field_name,
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
             )
             errors.append(error_msg)
 
@@ -251,7 +255,9 @@ class DataValidator:
                     validation_details={"field": rule.field_name},
                 )
             logger.warning(
-                "Validation failed: %s (field: %s)", error_msg, rule.field_name,
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
             )
             errors.append(error_msg)
         else:
@@ -290,7 +296,9 @@ class DataValidator:
                     validation_details={"field": rule.field_name},
                 )
             logger.warning(
-                "Validation failed: %s (field: %s)", error_msg, rule.field_name,
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
             )
             errors.append(error_msg)
         else:
@@ -387,7 +395,9 @@ class DataValidator:
                     validation_details={"field": rule.field_name},
                 )
             logger.warning(
-                "Validation failed: %s (field: %s)", error_msg, rule.field_name,
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
             )
             errors.append(error_msg)
 
@@ -407,7 +417,9 @@ class DataValidator:
                     validation_details={"field": rule.field_name},
                 )
             logger.warning(
-                "Validation failed: %s (field: %s)", error_msg, rule.field_name,
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
             )
             errors.append(error_msg)
 
@@ -434,7 +446,9 @@ class DataValidator:
                     validation_details={"field": rule.field_name},
                 )
             logger.warning(
-                "Validation failed: %s (field: %s)", error_msg, rule.field_name,
+                "Validation failed: %s (field: %s)",
+                error_msg,
+                rule.field_name,
             )
             errors.append(error_msg)
 

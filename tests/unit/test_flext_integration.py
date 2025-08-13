@@ -252,7 +252,7 @@ class TestGruponosMeltanoAlertManagerIntegration:
             import importlib.util
 
             _spec = importlib.util.find_spec(
-                "gruponos_meltano_native.monitoring.alert_manager"
+                "gruponos_meltano_native.monitoring.alert_manager",
             )
         except ImportError as e:
             pytest.skip(f"Alert manager module not available: {e}")

@@ -22,6 +22,7 @@ logger = get_logger(__name__)
 
 # Constants
 MAX_ALERT_MESSAGE_LENGTH = 1000
+JSON_MIME = "application/json"
 
 
 class GruponosMeltanoAlertSeverity(StrEnum):
@@ -258,7 +259,7 @@ class GruponosMeltanoAlertService:
                 self.config.webhook_url,
                 json=payload,
                 timeout=30,
-                headers={"Content-Type": FlextApiConstants.ContentTypes.JSON},
+                headers={"Content-Type": JSON_MIME},
             )
             response.raise_for_status()
 
@@ -362,7 +363,7 @@ class GruponosMeltanoAlertService:
                 self.config.slack_webhook_url,
                 json=payload,
                 timeout=30,
-                headers={"Content-Type": FlextApiConstants.ContentTypes.JSON},
+                headers={"Content-Type": JSON_MIME},
             )
             response.raise_for_status()
 

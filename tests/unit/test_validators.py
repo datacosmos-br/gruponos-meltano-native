@@ -135,7 +135,7 @@ class TestDataValidators:
     def test_validation_error(self) -> None:
         """Test ValidationError exception."""
         error = ValidationError(
-            "Test validation error", validation_details={"field": "test_field"}
+            "Test validation error", validation_details={"field": "test_field"},
         )
 
         if "[VALIDATION_ERROR] Test validation error" not in str(error):
