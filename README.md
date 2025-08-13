@@ -299,5 +299,3 @@ MIT License - See [LICENSE](LICENSE) file for details.
 - **[CLAUDE.md](CLAUDE.md)**: Development guidance
 
 ---
-
-_Specialized service within the FLEXT ecosystem - Enterprise data integration platform_
