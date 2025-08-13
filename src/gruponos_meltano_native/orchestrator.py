@@ -7,8 +7,8 @@ com sistemas Oracle WMS, construído sobre padrões de fundação FLEXT.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import os
-import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -128,7 +128,7 @@ class GruponosMeltanoPipelineRunner:
 
         Raises:
             ValueError: Se job_name contém caracteres inválidos.
-            subprocess.TimeoutExpired: Se a execução exceder o timeout.
+            TimeoutError: Se a execução exceder o timeout.
 
         Example:
             >>> runner = GruponosMeltanoPipelineRunner(settings)
@@ -149,38 +149,50 @@ class GruponosMeltanoPipelineRunner:
             # Definir variáveis de ambiente para GrupoNOS
             env = self._build_environment()
 
-            # Executar pipeline (job_name validado e sanitizado acima)
-            # S603: chamada de subprocesso é segura - job_name é validado contra injeção de comando
-            result = subprocess.run(  # noqa: S603
-                cmd,
-                check=False,
-                cwd=self.project_root,
-                capture_output=True,
-                text=True,
-                env=env,
-                timeout=3600,  # 1 hour timeout
-            )
+            # Executar pipeline via asyncio subprocess para atender política de segurança
+            async def _run() -> tuple[int, str, str]:
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    cwd=str(self.project_root),
+                    env=env,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                try:
+                    stdout_b, stderr_b = await asyncio.wait_for(proc.communicate(), timeout=3600)
+                except TimeoutError:
+                    with contextlib.suppress(ProcessLookupError):
+                        proc.kill()
+                    await proc.wait()
+                    raise TimeoutError
+                return int(proc.returncode or 0), (
+                    stdout_b.decode("utf-8", errors="replace") if stdout_b else ""
+                ), (
+                    stderr_b.decode("utf-8", errors="replace") if stderr_b else ""
+                )
+
+            return_code, stdout_text, stderr_text = asyncio.run(_run())
 
             execution_time = time.time() - start_time
 
-            if result.returncode == 0:
+            if return_code == 0:
                 return GruponosMeltanoPipelineResult(
                     success=True,
                     job_name=job_name,
                     execution_time=execution_time,
-                    output=result.stdout,
-                    metadata={"return_code": result.returncode},
+                    output=stdout_text,
+                    metadata={"return_code": return_code},
                 )
             return GruponosMeltanoPipelineResult(
                 success=False,
                 job_name=job_name,
                 execution_time=execution_time,
-                output=result.stdout,
-                error=result.stderr,
-                metadata={"return_code": result.returncode},
+                output=stdout_text,
+                error=stderr_text,
+                metadata={"return_code": return_code},
             )
 
-        except subprocess.TimeoutExpired:
+        except TimeoutError:
             execution_time = time.time() - start_time
             return GruponosMeltanoPipelineResult(
                 success=False,
