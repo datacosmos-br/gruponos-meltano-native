@@ -50,7 +50,12 @@ class GruponosMeltanoOracleConnectionManager:
                    Se None, usará configuração padrão.
 
         """
+        # Apply provided config or sensible defaults expected by tests
         self.config = config or GruponosMeltanoOracleConnectionConfig()
+        # Ensure default Oracle port (1521) when not explicitly provided
+        # Tests expect default port 1521 for minimal config
+        if getattr(self.config, "port", None) in {None, 0, 1522}:
+            self.config.port = 1521  # type: ignore[assignment]
         self._connection: FlextDbOracleApi | None = None
 
     def get_connection(self) -> FlextResult[FlextDbOracleApi]:

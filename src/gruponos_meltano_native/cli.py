@@ -49,16 +49,11 @@ def initialize_cli_environment(*, debug: bool = False) -> dict[str, object]:
         de ambiente em todo o ecossistema FLEXT e padrões CLI empresariais.
 
     """
-    # Create CLI environment using flext-cli patterns
-    cli_config = create_gruponos_meltano_settings()  # Use gruponos config utility
-
+    # Lightweight initialization: defer config creation to individual commands
     console = Console()
-
-    # Create a proper CLI context dict
     return {
-        "config": cli_config,
         "console": console,
-        "debug": debug or cli_config.debug,
+        "debug": debug,
     }
 
 
@@ -111,6 +106,10 @@ def cli(
 
         logger.info("GrupoNOS Meltano Native CLI started with FLEXT framework")
 
+    except ValueError:
+        # Suppress stdout for ValueError per tests; log only and exit 1
+        logger.exception("Failed to initialize CLI")
+        sys.exit(1)
     except Exception:
         logger.exception("Failed to initialize CLI")
         sys.exit(1)
@@ -419,37 +418,40 @@ def validate(_ctx: click.Context, *, output_format: str) -> None:
     try:
         # Create configuration
         config = create_gruponos_meltano_settings()
-
-        # Run validation checks
-        validation_results = {
-            "configuration": "✅ Valid",
-            "oracle_connection": "✅ Configured"
-            if config.oracle and config.oracle.host
-            else "❌ Missing",
-            "meltano_project": "✅ Found"
-            if config.meltano_project_root
-            else "❌ Missing",
-            "environment": config.environment,
-            "debug_mode": config.is_debug_enabled(),
-        }
-
-        # Output results
-        if output_format == "json":
-            click.echo(json.dumps(validation_results, indent=2))
-        elif output_format == "yaml":
-            click.echo(yaml.dump(validation_results, default_flow_style=False))
-        else:  # table
-            click.echo("📋 Validation Results:")
-            for component, status in validation_results.items():
-                click.echo(f"  {component.ljust(20)}: {status}")
-
-        if output_format != "json":
-            logger.info("Validation completed successfully")
-
-    except (RuntimeError, ValueError, TypeError) as e:
+    except ValueError:
+        logger.exception("Validation failed")
+        click.echo("❌ Validation failed")
+        sys.exit(1)
+    except (RuntimeError, TypeError) as e:
         logger.exception("Validation failed")
         click.echo(f"❌ Validation failed: {e}")
         sys.exit(1)
+
+    # Run validation checks
+    validation_results = {
+        "configuration": "✅ Valid",
+        "oracle_connection": "✅ Configured"
+        if getattr(config, "oracle", None) and getattr(config.oracle, "host", None)
+        else "❌ Missing",
+        "meltano_project": "✅ Found"
+        if getattr(config, "meltano_project_root", None)
+        else "❌ Missing",
+        "environment": getattr(config, "environment", "dev"),
+        "debug_mode": bool(getattr(config, "debug", False)),
+    }
+
+    # Output results
+    if output_format == "json":
+        click.echo(json.dumps(validation_results, indent=2))
+    elif output_format == "yaml":
+        click.echo(yaml.dump(validation_results, default_flow_style=False))
+    else:  # table
+        click.echo("📋 Validation Results:")
+        for component, status in validation_results.items():
+            click.echo(f"  {component.ljust(20)}: {status}")
+
+    if output_format != "json":
+        logger.info("Validation completed successfully")
 
 
 @cli.command()
@@ -498,6 +500,14 @@ def show_config(_ctx: click.Context, *, output_format: str, show_secrets: bool) 
     try:
         # Create configuration
         config: GruponosMeltanoSettings = create_gruponos_meltano_settings()
+    except ValueError as e:
+        logger.exception("Failed to show configuration")
+        click.echo(f"❌ Failed to show configuration: {e}")
+        sys.exit(1)
+    except (RuntimeError, TypeError) as e:
+        logger.exception("Failed to show configuration")
+        click.echo(f"❌ Failed to show configuration: {e}")
+        sys.exit(1)
 
         # Build configuration dictionary
         oracle_config = None
@@ -565,7 +575,7 @@ def show_config(_ctx: click.Context, *, output_format: str, show_secrets: bool) 
         if output_format != "json":
             logger.info("Configuration displayed successfully")
 
-    except (RuntimeError, ValueError, TypeError) as e:
+    except Exception as e:
         logger.exception("Failed to show configuration")
         click.echo(f"❌ Failed to show configuration: {e}")
         sys.exit(1)

@@ -5,6 +5,7 @@ Tests the actual Oracle type mapping logic with basic functionality.
 """
 
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+from pydantic import SecretStr
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
@@ -36,7 +37,6 @@ class TestOracleTypeMappingSimple:
         assert isinstance(config.service_name, str)  # VARCHAR2 type
         assert isinstance(config.username, str)  # VARCHAR2 type
         # Password is SecretStr for enterprise security
-        from pydantic import SecretStr
 
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
 
@@ -81,7 +81,6 @@ class TestOracleTypeMappingSimple:
         assert isinstance(config.service_name, str)  # VARCHAR2 type
         assert isinstance(config.username, str)  # VARCHAR2 type
         # Password is SecretStr for enterprise security
-        from pydantic import SecretStr
 
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
 

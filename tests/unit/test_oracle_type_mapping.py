@@ -6,6 +6,7 @@ Tests the actual Oracle configuration and connection management.
 
 import pytest
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+from pydantic import SecretStr
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 from gruponos_meltano_native.oracle import GruponosMeltanoOracleConnectionManager
@@ -31,7 +32,6 @@ class TestOracleConnectionConfiguration:
         assert isinstance(config.service_name, str)
         assert isinstance(config.username, str)
         # Password is SecretStr for security
-        from pydantic import SecretStr
 
         assert isinstance(config.password, SecretStr)
 
@@ -99,7 +99,6 @@ class TestOracleConnectionConfiguration:
         assert isinstance(config.service_name, str)  # VARCHAR2 type
         assert isinstance(config.username, str)  # VARCHAR2 type
         # FlextDbOracleConfig also uses SecretStr for password security
-        from pydantic import SecretStr
 
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
 
@@ -158,7 +157,6 @@ class TestOracleConnectionConfiguration:
         assert isinstance(config.service_name, str)  # VARCHAR2 type
         assert isinstance(config.username, str)  # VARCHAR2 type
         # Password is SecretStr for security (proper enterprise practice)
-        from pydantic import SecretStr
 
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
 
@@ -193,6 +191,5 @@ class TestOracleConnectionConfiguration:
         assert isinstance(config.port, int)  # NUMBER type validation
         assert isinstance(config.host, str)  # VARCHAR2 type validation
         # Password is SecretStr for security
-        from pydantic import SecretStr
 
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type

@@ -11,7 +11,10 @@ from gruponos_meltano_native.config import (
     GruponosMeltanoTargetOracleConfig,
     GruponosMeltanoWMSSourceConfig,
 )
-from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
+from gruponos_meltano_native.orchestrator import (
+    GruponosMeltanoOrchestrator,
+    GruponosMeltanoPipelineResult,
+)
 
 
 class TestBasicIntegration:
@@ -106,7 +109,6 @@ class TestBasicIntegration:
     ) -> None:
         """Test orchestrator can run a pipeline."""
         # Mock successful pipeline result
-        from gruponos_meltano_native.orchestrator import GruponosMeltanoPipelineResult
 
         mock_result = GruponosMeltanoPipelineResult(
             success=True,

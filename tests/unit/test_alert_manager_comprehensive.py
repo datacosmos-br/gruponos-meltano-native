@@ -9,6 +9,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from unittest.mock import Mock, patch
 
+import requests
+
 from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
 from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlert,
@@ -94,8 +96,6 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         )
 
         with patch("requests.post") as mock_post:
-            import requests
-
             mock_post.side_effect = requests.RequestException("HTTP 500 Error")
 
             result = service.send_alert(alert)
@@ -122,8 +122,6 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         )
 
         with patch("requests.post") as mock_post:
-            import requests
-
             mock_post.side_effect = requests.RequestException("Network error")
 
             result = service.send_alert(alert)

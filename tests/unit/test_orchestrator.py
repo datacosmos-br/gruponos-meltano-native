@@ -1,5 +1,7 @@
 """Unit tests for orchestrator functionality."""
 
+import unittest.mock
+
 import pytest
 
 from gruponos_meltano_native.config import (
@@ -80,7 +82,6 @@ class TestOrchestrator:
         orchestrator = GruponosMeltanoOrchestrator(valid_config)
 
         # Mock the pipeline execution since it requires real Meltano setup
-        import unittest.mock
 
         with unittest.mock.patch.object(
             orchestrator.pipeline_runner,

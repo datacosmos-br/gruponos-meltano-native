@@ -159,16 +159,19 @@ class GruponosMeltanoPipelineRunner:
                     stderr=asyncio.subprocess.PIPE,
                 )
                 try:
-                    stdout_b, stderr_b = await asyncio.wait_for(proc.communicate(), timeout=3600)
+                    stdout_b, stderr_b = await asyncio.wait_for(
+                        proc.communicate(),
+                        timeout=3600,
+                    )
                 except TimeoutError:
                     with contextlib.suppress(ProcessLookupError):
                         proc.kill()
                     await proc.wait()
-                    raise TimeoutError
-                return int(proc.returncode or 0), (
-                    stdout_b.decode("utf-8", errors="replace") if stdout_b else ""
-                ), (
-                    stderr_b.decode("utf-8", errors="replace") if stderr_b else ""
+                    raise TimeoutError from None
+                return (
+                    int(proc.returncode or 0),
+                    (stdout_b.decode("utf-8", errors="replace") if stdout_b else ""),
+                    (stderr_b.decode("utf-8", errors="replace") if stderr_b else ""),
                 )
 
             return_code, stdout_text, stderr_text = asyncio.run(_run())
