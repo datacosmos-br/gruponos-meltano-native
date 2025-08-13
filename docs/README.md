@@ -2,7 +2,7 @@
 
 **Version**: 0.9.0 | **Framework**: FLEXT Ecosystem | **Technology**: Meltano 3.8.0 + Python 3.13
 
-Welcome to the comprehensive documentation for GrupoNOS Meltano Native, an enterprise-grade ETL pipeline implementation built on the FLEXT framework ecosystem.
+Welcome to the comprehensive documentation for GrupoNOS Meltano Native, an enterprise-grade ETL pipeline implementation.
 
 ## 📖 Documentation Structure
 

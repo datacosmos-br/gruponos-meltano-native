@@ -1,6 +1,6 @@
 # Architecture Overview
 
-**GrupoNOS Meltano Native** implements a modern, enterprise-grade ETL architecture built on the FLEXT framework ecosystem, following Clean Architecture and Domain-Driven Design principles.
+**GrupoNOS Meltano Native** implements a modern, enterprise-grade ETL architecture following Clean Architecture and Domain-Driven Design principles.
 
 ## High-Level Architecture
 

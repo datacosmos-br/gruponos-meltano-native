@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-GrupoNOS Meltano Native is an enterprise-grade ETL pipeline implementation for Grupo Nos, built on the FLEXT framework ecosystem. This project provides specialized Oracle WMS (Warehouse Management System) integration using Meltano 3.8.0 as the orchestration platform, with Python 3.13 and strict type safety.
+GrupoNOS Meltano Native is an enterprise-grade ETL pipeline implementation for Grupo Nos. This project provides specialized Oracle WMS (Warehouse Management System) integration using Meltano 3.8.0 as the orchestration platform, with Python 3.13 and strict type safety.
 
 ## Key Technologies
 
