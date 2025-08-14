@@ -31,48 +31,89 @@ class GruponosMeltanoError(FlextError):
     consistência arquitetural.
     """
 
-    def __init__(self, message: str = "GrupoNOS Meltano error") -> None:
+    def __init__(
+        self,
+        message: str = "GrupoNOS Meltano error",
+        *,
+        error_code: str | None = None,
+        context: dict[str, object] | None = None,
+    ) -> None:
         """Inicializa erro Meltano GrupoNOS com contexto.
 
         Args:
             message: Mensagem de erro descritiva.
+            error_code: Código de erro específico; padrão GENERIC_ERROR.
+            context: Contexto adicional do erro (detalhes estruturados).
 
         """
-        super().__init__(message)
+        # Ensure default code matches test expectation (GENERIC_ERROR)
+        # Call FlextError directly to avoid MRO conflicts with ConfigurationError
+        FlextError.__init__(
+            self,
+            message=message,
+            error_code=error_code or "GENERIC_ERROR",
+            context=context or {},
+        )
 
 
-class GruponosMeltanoValidationError(FlextValidationError):
-    """Erros de validação GrupoNOS seguindo padrões flext-core.
-
-    Exceção lançada quando dados ou configurações não passam
-    nas validações do sistema GrupoNOS.
-    """
-
-    def __init__(self, message: str = "GrupoNOS validation error") -> None:
-        """Inicializa erro de validação GrupoNOS.
-
-        Args:
-            message: Mensagem descrevendo o erro de validação.
-
-        """
-        super().__init__(message)
-
-
-class GruponosMeltanoConfigurationError(FlextConfigurationError):
+class GruponosMeltanoConfigurationError(GruponosMeltanoError, FlextConfigurationError):
     """Erros de configuração GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando há problemas na configuração
     do sistema, como parâmetros ausentes ou inválidos.
     """
 
-    def __init__(self, message: str = "GrupoNOS configuration error") -> None:
+    def __init__(
+        self,
+        message: str = "GrupoNOS configuration error",
+        *,
+        error_code: str | None = None,
+        context: dict[str, object] | None = None,
+    ) -> None:
         """Inicializa erro de configuração GrupoNOS.
 
         Args:
             message: Mensagem descrevendo o problema de configuração.
+            error_code: Código de erro opcional.
+            context: Contexto adicional do erro.
 
         """
-        super().__init__(message)
+        # Call GruponosMeltanoError to set generic error code and context, avoid
+        # passing error_code twice into FlextConfigurationError chain.
+        GruponosMeltanoError.__init__(
+            self, message=message, error_code=error_code, context=context,
+        )
+
+
+# Definir após ConfigurationError para suportar herança desejada no teste
+class GruponosMeltanoValidationError(
+    GruponosMeltanoConfigurationError, FlextValidationError,
+):
+    """Erros de validação GrupoNOS seguindo padrões flext-core.
+
+    Exceção lançada quando dados ou configurações não passam
+    nas validações do sistema GrupoNOS.
+    """
+
+    def __init__(
+        self,
+        message: str = "GrupoNOS validation error",
+        *,
+        error_code: str | None = None,
+        context: dict[str, object] | None = None,
+    ) -> None:
+        """Inicializa erro de validação GrupoNOS.
+
+        Args:
+            message: Mensagem descrevendo o erro de validação.
+            error_code: Código de erro opcional.
+            context: Contexto adicional do erro.
+
+        """
+        # Initialize via base GruponosMeltanoError to avoid multiple error_code passing
+        GruponosMeltanoError.__init__(
+            self, message=message, error_code=error_code, context=context,
+        )
 
 
 class GruponosMeltanoConnectionError(FlextConnectionError):

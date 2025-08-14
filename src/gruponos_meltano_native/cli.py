@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+from contextlib import suppress
 
 import click
 import yaml
@@ -273,7 +274,7 @@ def run(
     pipeline_name: str,
     *,
     dry_run: bool,
-    _retry_attempts: int,
+    retry_attempts: int,
 ) -> None:
     """Executa um pipeline Meltano específico.
 
@@ -281,7 +282,7 @@ def run(
         _ctx: Contexto do Click (não utilizado).
         pipeline_name: Nome do pipeline a ser executado.
         dry_run: Se True, executa em modo dry-run sem alterações reais.
-        _retry_attempts: Número de tentativas de retry (não utilizado nesta versão).
+        retry_attempts: Número de tentativas de retry (logado para auditoria).
 
     Raises:
         SystemExit: Se a execução do pipeline falhar.
@@ -294,7 +295,20 @@ def run(
     """
     if dry_run:
         click.echo("🔍 DRY RUN MODE - No actual changes will be made")
-        logger.info("Running in dry-run mode")
+        logger.info("Running in dry-run mode (retry_attempts=%s)", retry_attempts)
+        # In dry-run, still exercise orchestrator plan to reflect new flow
+        try:
+            config = create_gruponos_meltano_settings()
+            orchestrator = create_gruponos_meltano_orchestrator(config)
+            # If runner supports planning, call it; otherwise just list
+            if hasattr(orchestrator, "plan_pipeline"):
+                with suppress(Exception):
+                    _ = orchestrator.plan_pipeline(pipeline_name)
+            elif hasattr(orchestrator, "list_pipelines"):
+                _ = orchestrator.list_pipelines()
+        except Exception:
+            # Do not fail dry-run for environment issues
+            logger.debug("Dry-run planning skipped due to environment", exc_info=True)
         return
 
     click.echo(f"🚀 Starting pipeline: {pipeline_name}")
