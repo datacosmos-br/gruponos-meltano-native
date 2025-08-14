@@ -4,7 +4,9 @@ REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests all configuration classes and validation logic comprehensively.
 """
 
+import contextlib
 import os
+import tempfile
 from unittest.mock import patch
 
 import pytest
@@ -293,7 +295,6 @@ class TestConfigFocused:
 
         # Test invalid values if there are validation constraints
         # (Note: The real implementation may not have strict validation constraints)
-        import contextlib
 
         with contextlib.suppress(ValidationError):
             # Try to create invalid config - if validation exists, it will be suppressed
@@ -442,7 +443,7 @@ class TestConfigFocused:
             version="1.0.0",
             debug=True,
             log_level="DEBUG",
-            meltano_project_root="/tmp/test",
+            meltano_project_root=tempfile.gettempdir(),
             meltano_environment="test",
             meltano_state_backend="filesystem",
         )

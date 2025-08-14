@@ -509,6 +509,7 @@ def show_config(_ctx: click.Context, *, output_format: str, show_secrets: bool) 
         click.echo(f"❌ Failed to show configuration: {e}")
         sys.exit(1)
 
+    try:
         # Build configuration dictionary
         oracle_config = None
         if config.oracle:

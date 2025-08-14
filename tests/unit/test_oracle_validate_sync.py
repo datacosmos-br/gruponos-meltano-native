@@ -4,8 +4,19 @@ REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle validation sync logic with comprehensive functionality.
 """
 
+import re
 from typing import Any
 from unittest.mock import patch
+
+from flext_core import FlextResult
+
+from gruponos_meltano_native.config import (
+    GruponosMeltanoSettings,
+    create_gruponos_meltano_settings,
+)
+from gruponos_meltano_native.oracle.connection_manager_enhanced import (
+    GruponosMeltanoOracleConnectionManager,
+)
 
 
 # Create working implementations using flext-db-oracle
@@ -18,8 +29,6 @@ def _validate_table_name(table_name: str) -> bool:
     - Be 1-30 characters long
     - Not contain spaces, semicolons, quotes or other special characters
     """
-    import re
-
     if not table_name or len(table_name) == 0:
         return False
 
@@ -103,7 +112,7 @@ def _count_table_records(cursor: Any, table_name: str) -> int:
             .isalpha()
         ):
             return 0
-        query = f"SELECT COUNT(*) FROM {table_name}"
+        query = f"SELECT COUNT(*) FROM {table_name}"  # noqa: S608 - table name validated above
         cursor.execute(query)
         result = cursor.fetchone()
         return result[0] if result else 0
@@ -138,13 +147,13 @@ def _get_table_details(cursor: Any, table_name: str) -> dict[str, Any]:
         # For tests, we use identifier quoting to prevent injection
         quoted_table = f'"{table_name}"'  # Oracle identifier quoting
         cursor.execute(
-            f"SELECT MIN(DATE_COL), MAX(DATE_COL), COUNT(DISTINCT ID) FROM {quoted_table}",
+            f"SELECT MIN(DATE_COL), MAX(DATE_COL), COUNT(DISTINCT ID) FROM {quoted_table}",  # noqa: S608 - identifier quoted
         )
         result = cursor.fetchone()
         min_date, max_date, unique_ids = result or [None, None, 0]
 
         # Get duplicates count - second fetchone() call
-        cursor.execute(f"SELECT COUNT(*) - COUNT(DISTINCT ID) FROM {quoted_table}")
+        cursor.execute(f"SELECT COUNT(*) - COUNT(DISTINCT ID) FROM {quoted_table}")  # noqa: S608 - identifier quoted
         duplicates_result = cursor.fetchone()
         duplicates = duplicates_result[0] if duplicates_result else 0
 
@@ -191,10 +200,6 @@ def _validate_single_table(cursor: Any, table_name: str, entity_name: str) -> in
 def validate_oracle_connection() -> bool:
     """Validate Oracle connection using real connection manager."""
     try:
-        from gruponos_meltano_native.config import create_gruponos_meltano_settings
-        from gruponos_meltano_native.oracle.connection_manager_enhanced import (
-            GruponosMeltanoOracleConnectionManager,
-        )
 
         settings = create_gruponos_meltano_settings()
         oracle_config = settings.oracle
@@ -503,7 +508,7 @@ class TestOracleValidateSync:
         mock_test_connection: object,
     ) -> None:
         """Test validate_oracle_connection with connection failure."""
-        from flext_core import FlextResult
+        # FlextResult imported at top
 
         # Mock failed connection test
         mock_test_connection.return_value = FlextResult.fail("Connection failed")
@@ -533,7 +538,7 @@ class TestOracleValidateSync:
         mock_test_connection: object,
     ) -> None:
         """Test validate_oracle_connection with successful connection."""
-        from flext_core import FlextResult
+        # FlextResult imported at top
 
         # Mock successful connection test
         mock_test_connection.return_value = FlextResult.ok("Connection successful")
@@ -551,7 +556,7 @@ class TestOracleValidateSync:
             "gruponos_meltano_native.config.create_gruponos_meltano_settings",
         ) as mock_get_config:
             # Mock a basic config that will work with the real function
-            from gruponos_meltano_native.config import GruponosMeltanoSettings
+            # GruponosMeltanoSettings imported at top
 
             mock_config = GruponosMeltanoSettings()
             mock_get_config.return_value = mock_config

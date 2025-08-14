@@ -9,7 +9,9 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
+from flext_core import FlextResult
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+from flext_db_oracle.types import TDbOracleQueryResult
 
 from gruponos_meltano_native.config import (
     GruponosMeltanoOracleConnectionConfig,
@@ -104,8 +106,6 @@ class TestOracleTableRecreationReal:
     def test_table_ddl_execution_mock(self, mock_execute_ddl: Mock) -> None:
         """Test DDL execution for table recreation using mock."""
         # Mock successful DDL execution
-        from flext_core import FlextResult
-
         mock_execute_ddl.return_value = FlextResult.ok("DDL executed successfully")
 
         # Create a mock API instance
@@ -127,9 +127,6 @@ class TestOracleTableRecreationReal:
     @patch("flext_db_oracle.FlextDbOracleApi.query")
     def test_table_validation_query_mock(self, mock_query: Mock) -> None:
         """Test table validation queries using mock."""
-        from flext_core import FlextResult
-        from flext_db_oracle.types import TDbOracleQueryResult
-
         # Mock query result with table information
         mock_result_data = TDbOracleQueryResult(
             rows=[("TEST_TABLE", "ACTIVE")],
@@ -243,8 +240,6 @@ class TestTableRecreationErrorHandling:
     @patch("flext_db_oracle.FlextDbOracleApi.execute_ddl")
     def test_ddl_execution_failure(self, mock_execute_ddl: Mock) -> None:
         """Test handling of DDL execution failures."""
-        from flext_core import FlextResult
-
         # Mock DDL execution failure
         mock_execute_ddl.return_value = FlextResult.fail("Invalid SQL syntax")
 
@@ -266,26 +261,13 @@ class TestTableRecreationErrorHandling:
     def test_invalid_oracle_config(self) -> None:
         """Test handling of invalid Oracle configuration."""
         # Test with missing required fields
-        try:
+        with pytest.raises(Exception):
             GruponosMeltanoOracleConnectionConfig(
                 host="",  # Empty host should fail validation
                 service_name="TESTDB",
                 username="test",
                 password="test",
             )
-            # If we get here, validation didn't catch the empty host
-            # Let's check if validation method exists and works
-            config = GruponosMeltanoOracleConnectionConfig(
-                host="",
-                service_name="TESTDB",
-                username="test",
-                password="test",
-            )
-            validation_result = config.validate_semantic_rules()
-            assert validation_result.is_failure
-        except Exception:
-            # Expected - invalid configuration should raise exception
-            pass
 
 
 class TestTableRecreationIntegration:

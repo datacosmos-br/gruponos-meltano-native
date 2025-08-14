@@ -40,7 +40,6 @@ dependencies = [
     "click (>=8.2.1)",
     "meltano (>=3.8.0)",
     "flext-tap-oracle-wms @ file:///home/marlonsc/flext/flext-tap-oracle-wms",
-    "flext-target-oracle @ file:///home/marlonsc/flext/flext-target-oracle",
 ]
 [[project.authors]]
 name = "FLEXT Team"

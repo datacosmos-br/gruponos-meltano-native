@@ -1,9 +1,12 @@
 """Unit tests for FLEXT integration in GrupoNOS Meltano Native."""
 
+import importlib.util
 import os
 from unittest.mock import patch
 
 import pytest
+from flext_core import FlextResult
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 from pydantic import ValidationError
 
 import gruponos_meltano_native.monitoring.alert_manager as am_module
@@ -13,6 +16,7 @@ from gruponos_meltano_native.config import (
     GruponosMeltanoTargetOracleConfig,
     GruponosMeltanoWMSSourceConfig,
 )
+from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
 # Constants
 EXPECTED_DATA_COUNT = 3
@@ -171,8 +175,6 @@ class TestGrupoNOSOrchestrator:
         mock_config: GruponosMeltanoSettings,
     ) -> None:
         """Test orchestrator initialization with mock config."""
-        from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
-
         # Should not raise errors
         orchestrator = GruponosMeltanoOrchestrator(mock_config)
         # Verify basic properties
@@ -198,13 +200,13 @@ class TestConnectionManagerIntegration:
             # 🚨 ARCHITECTURAL VIOLATION FIXED: Level 6 cannot import flext-core
             # ✅ Use FlextResult pattern from core
 
-            from flext_core import FlextResult
+            # already imported at top
 
             # Test FlextResult integration works
             service_result = FlextResult.ok("test_service_working")
 
             # Test Oracle database integration via flext-db-oracle (works without circular imports)
-            from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+            # already imported at top
 
             oracle_config_dict = {
                 "host": "localhost",
@@ -244,12 +246,12 @@ class TestGruponosMeltanoAlertManagerIntegration:
         # Verify module uses flext logging (by checking imports in the module)
         try:
             # Test only if module exists, not specific functions
-            import importlib.util
+            # already imported at top
 
             _spec = importlib.util.find_spec("flext_core.logging")
 
             # Test only if module exists, not specific classes
-            import importlib.util
+            # already imported at top
 
             _spec = importlib.util.find_spec(
                 "gruponos_meltano_native.monitoring.alert_manager",

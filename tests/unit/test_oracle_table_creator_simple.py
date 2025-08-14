@@ -5,6 +5,7 @@ Tests the actual Oracle table creation logic with basic functionality.
 """
 
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+from pydantic import SecretStr
 
 
 class TestOracleTableCreatorSimple:
@@ -55,7 +56,6 @@ class TestOracleTableCreatorSimple:
             raise AssertionError(msg)
         assert config.username == "test_user"
         # Password is SecretStr for enterprise security - check actual value
-        from pydantic import SecretStr
 
         assert isinstance(config.password, SecretStr)
         if config.password.get_secret_value() != "test_pass":
