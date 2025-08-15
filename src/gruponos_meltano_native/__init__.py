@@ -1,42 +1,4 @@
-"""GrupoNOS Meltano Native - Enterprise ETL Pipeline Framework.
-
-A production-ready ETL pipeline implementation built on the FLEXT framework ecosystem,
-designed specifically for Oracle WMS to Oracle Database data integration operations.
-This module provides comprehensive orchestration, monitoring, and data validation
-capabilities with enterprise-grade reliability and observability.
-
-Key Components:
-    - Orchestrator: Main ETL pipeline orchestration with railway-oriented programming
-    - Configuration: Environment-aware settings with Pydantic validation
-    - Oracle Integration: Native Oracle database connectivity and operations
-    - Monitoring: Alert management and performance tracking
-    - Data Validation: Multi-layer validation with business rules enforcement
-
-Architecture:
-    Built on Clean Architecture principles with Domain-Driven Design patterns,
-    the module implements FLEXT core standards for consistent error handling,
-    dependency injection, and observability across the data pipeline.
-
-Integration:
-    - Built on flext-core foundation patterns (FlextResult, FlextContainer)
-    - Integrates with flext-observability for comprehensive monitoring
-    - Uses flext-db-oracle for optimized Oracle database operations
-    - Coordinates with Singer/Meltano ecosystem for data pipeline execution
-
-Example:
-    Basic ETL pipeline execution:
-
-    >>> from gruponos_meltano_native import create_gruponos_meltano_platform
-    >>> orchestrator = create_gruponos_meltano_platform()
-    >>> result = await orchestrator.execute_full_sync("GNOS", "DC01")
-    >>> if result.success:
-    ...     print(f"Processed {result.data.records_processed} records")
-
-Author: GrupoNOS FLEXT Team
-Version: 0.9.0
-License: MIT
-
-"""
+"""GrupoNOS Meltano Native - Enterprise ETL Pipeline Framework for Oracle WMS integration."""
 
 from __future__ import annotations
 
