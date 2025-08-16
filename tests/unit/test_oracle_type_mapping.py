@@ -16,8 +16,7 @@ class TestOracleConnectionConfiguration:
     """Test Oracle connection configuration with real implementation."""
 
     def test_oracle_connection_manager_types(self) -> None:
-        """Test Oracle connection manager type handling."""
-        # Test GrupoNOS Oracle connection configuration
+        """Test Oracle connection manager type handling."""        # Test GrupoNOS Oracle connection configuration
         config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
@@ -41,8 +40,7 @@ class TestOracleConnectionConfiguration:
         assert manager.config == config
 
     def test_oracle_api_type_handling(self) -> None:
-        """Test Oracle API type handling."""
-        # Test Oracle API configuration types
+        """Test Oracle API type handling."""        # Test Oracle API configuration types
         config_dict = {
             "host": "localhost",
             "port": 1521,
@@ -62,8 +60,7 @@ class TestOracleConnectionConfiguration:
         assert isinstance(config.service_name, str)  # VARCHAR2 type
 
     def test_oracle_field_pattern_recognition(self) -> None:
-        """Test Oracle field pattern recognition in configuration."""
-        # Test patterns in GrupoNOS configuration
+        """Test Oracle field pattern recognition in configuration."""        # Test patterns in GrupoNOS configuration
         config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
@@ -80,8 +77,7 @@ class TestOracleConnectionConfiguration:
         assert "password" in str(config.__dict__)  # VARCHAR2 field
 
     def test_oracle_configuration_field_types(self) -> None:
-        """Test Oracle configuration field type conversion."""
-        # Test basic field type inference
+        """Test Oracle configuration field type conversion."""        # Test basic field type inference
         config_dict = {
             "host": "localhost",  # String -> VARCHAR2
             "port": 1521,  # Integer -> NUMBER
@@ -103,8 +99,7 @@ class TestOracleConnectionConfiguration:
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
 
     def test_oracle_field_length_handling(self) -> None:
-        """Test Oracle field length handling in configuration."""
-        # Test configuration with reasonable field lengths
+        """Test Oracle field length handling in configuration."""        # Test configuration with reasonable field lengths
         config = GruponosMeltanoOracleConnectionConfig(
             host="very-long-hostname-for-testing-purposes",  # Long VARCHAR2
             port=1521,  # NUMBER
@@ -122,8 +117,7 @@ class TestOracleConnectionConfiguration:
         assert isinstance(config.port, int)  # NUMBER field
 
     def test_oracle_metadata_type_handling(self) -> None:
-        """Test Oracle metadata type handling in configuration."""
-        # Test configuration with different metadata approaches
+        """Test Oracle metadata type handling in configuration."""        # Test configuration with different metadata approaches
         config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",  # VARCHAR2 metadata
             port=1521,  # NUMBER metadata
@@ -141,8 +135,7 @@ class TestOracleConnectionConfiguration:
         assert config.password.get_secret_value() == "pass"  # VARCHAR2 type
 
     def test_oracle_comprehensive_integration(self) -> None:
-        """Test comprehensive Oracle integration functionality."""
-        # Test complete configuration integration
+        """Test comprehensive Oracle integration functionality."""        # Test complete configuration integration
         config = GruponosMeltanoOracleConnectionConfig(
             host="comprehensive-test-host",
             port=1521,
@@ -173,8 +166,7 @@ class TestOracleConnectionConfiguration:
         assert api is not None
 
     def test_oracle_type_validation(self) -> None:
-        """Test Oracle type validation in configuration."""
-        # Test that configuration validates types correctly
+        """Test Oracle type validation in configuration."""        # Test that configuration validates types correctly
         try:
             config = GruponosMeltanoOracleConnectionConfig(
                 host="localhost",

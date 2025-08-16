@@ -5,7 +5,7 @@ Tests the actual Oracle validation sync logic with comprehensive functionality.
 """
 
 import re
-from typing import Any
+from typing import Any, Protocol
 from unittest.mock import patch
 
 from flext_core import FlextResult
@@ -17,6 +17,20 @@ from gruponos_meltano_native.config import (
 from gruponos_meltano_native.oracle.connection_manager_enhanced import (
     GruponosMeltanoOracleConnectionManager,
 )
+
+
+class OracleCursor(Protocol):
+    """Protocol for Oracle cursor objects."""
+
+    def execute(
+        self, query: str, params: list[Any] | dict[str, Any] | None = None,
+    ) -> None:
+        """Execute a query."""
+        ...
+
+    def fetchone(self) -> list[Any] | None:
+        """Fetch one row."""
+        ...
 
 
 # Create working implementations using flext-db-oracle
@@ -54,7 +68,7 @@ def _get_table_list() -> list[tuple[str, str]]:
     ]
 
 
-def _check_table_exists(cursor: Any, table_name: str) -> bool:
+def _check_table_exists(cursor: OracleCursor, table_name: str) -> bool:
     """Check if Oracle table exists using cursor.
 
     Args:
@@ -79,7 +93,7 @@ def _check_table_exists(cursor: Any, table_name: str) -> bool:
         return False
 
 
-def _count_table_records(cursor: Any, table_name: str) -> int:
+def _count_table_records(cursor: OracleCursor, table_name: str) -> int:
     """Count records in Oracle table using cursor.
 
     Args:
@@ -120,7 +134,7 @@ def _count_table_records(cursor: Any, table_name: str) -> int:
         return 0
 
 
-def _get_table_details(cursor: Any, table_name: str) -> dict[str, Any]:
+def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, Any]:
     """Get Oracle table details using cursor.
 
     Args:
@@ -174,7 +188,7 @@ def _get_table_details(cursor: Any, table_name: str) -> dict[str, Any]:
         }
 
 
-def _validate_single_table(cursor: Any, table_name: str, entity_name: str) -> int:
+def _validate_single_table(cursor: OracleCursor, table_name: str) -> int:
     """Validate single Oracle table using cursor.
 
     Args:
@@ -200,7 +214,6 @@ def _validate_single_table(cursor: Any, table_name: str, entity_name: str) -> in
 def validate_oracle_connection() -> bool:
     """Validate Oracle connection using real connection manager."""
     try:
-
         settings = create_gruponos_meltano_settings()
         oracle_config = settings.oracle
 
@@ -286,8 +299,8 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query, params: None,
-                "fetchone": lambda self: [1],  # Table exists
+                "execute": lambda *_: None,
+                "fetchone": lambda: [1],  # Table exists
             },
         )()
 
@@ -301,8 +314,8 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query, params: None,
-                "fetchone": lambda self: [0],  # Table doesn't exist
+                "execute": lambda *_: None,
+                "fetchone": lambda: [0],  # Table doesn't exist
             },
         )()
 
@@ -318,10 +331,10 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query, params: (_ for _ in ()).throw(
+                "execute": lambda *_: (_ for _ in ()).throw(
                     OSError("Connection failed"),
                 ),
-                "fetchone": lambda self: None,
+                "fetchone": lambda: None,
             },
         )()
 
@@ -337,8 +350,8 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query: None,
-                "fetchone": lambda self: [1500],  # 1500 records
+                "execute": lambda *_: None,
+                "fetchone": lambda: [1500],  # 1500 records
             },
         )()
 
@@ -360,10 +373,10 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query: (_ for _ in ()).throw(
+                "execute": lambda *_: (_ for _ in ()).throw(
                     ValueError("SQL error"),
                 ),
-                "fetchone": lambda self: None,
+                "fetchone": lambda: None,
             },
         )()
 
@@ -377,7 +390,7 @@ class TestOracleValidateSync:
         # Mock cursor that returns valid details
         call_count = [0]  # Use list to allow modification in lambda
 
-        def mock_fetchone(self: Any) -> list[Any]:
+        def mock_fetchone() -> list[Any]:
             call_count[0] += 1
             if call_count[0] == 1:  # First call (MIN/MAX/COUNT query)
                 return ["2024-01-01", "2024-12-31", 1000]
@@ -387,7 +400,7 @@ class TestOracleValidateSync:
         mock_cursor = type(
             "MockCursor",
             (),
-            {"execute": lambda self, query: None, "fetchone": mock_fetchone},
+            {"execute": lambda *_: None, "fetchone": mock_fetchone},
         )()
 
         result = _get_table_details(mock_cursor, "WMS_ALLOCATION")
@@ -412,8 +425,8 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query: None,
-                "fetchone": lambda self: [None, None, 0],
+                "execute": lambda *_: None,
+                "fetchone": lambda: [None, None, 0],
             },
         )()
 
@@ -432,7 +445,7 @@ class TestOracleValidateSync:
         # Mock cursor for table that exists and has records
         call_count = [0]
 
-        def mock_fetchone(self: Any) -> list[Any]:
+        def mock_fetchone() -> list[Any]:
             call_count[0] += 1
             if call_count[0] == 1:  # table exists check
                 return [1]
@@ -447,12 +460,12 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query, params=None: None,
+                "execute": lambda *_: None,
                 "fetchone": mock_fetchone,
             },
         )()
 
-        result = _validate_single_table(mock_cursor, "WMS_ALLOCATION", "allocation")
+        result = _validate_single_table(mock_cursor, "WMS_ALLOCATION")
         if result != 1000:
             msg: str = f"Expected {1000}, got {result}"
             raise AssertionError(msg)
@@ -464,12 +477,12 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query, params=None: None,
-                "fetchone": lambda self: [0],  # Table doesn't exist
+                "execute": lambda *_: None,
+                "fetchone": lambda: [0],  # Table doesn't exist
             },
         )()
 
-        result = _validate_single_table(mock_cursor, "NONEXISTENT_TABLE", "nonexistent")
+        result = _validate_single_table(mock_cursor, "NONEXISTENT_TABLE")
         if result != 0:
             msg: str = f"Expected {0}, got {result}"
             raise AssertionError(msg)
@@ -479,7 +492,7 @@ class TestOracleValidateSync:
         # Mock cursor for table that exists but has no records
         call_count = [0]
 
-        def mock_fetchone(self: Any) -> list[Any]:
+        def mock_fetchone() -> list[Any]:
             call_count[0] += 1
             if call_count[0] == 1:  # First call - table exists check
                 return [1]  # Table exists
@@ -490,12 +503,12 @@ class TestOracleValidateSync:
             "MockCursor",
             (),
             {
-                "execute": lambda self, query, params=None: None,
+                "execute": lambda *_: None,
                 "fetchone": mock_fetchone,
             },
         )()
 
-        result = _validate_single_table(mock_cursor, "EMPTY_TABLE", "empty")
+        result = _validate_single_table(mock_cursor, "EMPTY_TABLE")
         if result != 0:
             msg: str = f"Expected {0}, got {result}"
             raise AssertionError(msg)

@@ -14,15 +14,13 @@ class TestOracleTypeMappingSimple:
     """Test Oracle type mapping with real implementation."""
 
     def test_type_mapping_constants_exist(self) -> None:
-        """Test type mapping constants exist."""
-        # Test that flext-db-oracle APIs exist
+        """Test type mapping constants exist."""        # Test that flext-db-oracle APIs exist
         assert FlextDbOracleApi is not None
         assert FlextDbOracleConfig is not None
         assert GruponosMeltanoOracleConnectionConfig is not None
 
     def test_wms_to_oracle_mappings(self) -> None:
-        """Test WMS to Oracle type mappings."""
-        # Test Oracle configuration mappings
+        """Test WMS to Oracle type mappings."""        # Test Oracle configuration mappings
         config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",  # String -> VARCHAR2 mapping
             port=1521,  # Integer -> NUMBER mapping
@@ -41,9 +39,7 @@ class TestOracleTypeMappingSimple:
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
 
     def test_oracle_type_constants(self) -> None:
-        """Test Oracle type constants."""
-        # Test that Oracle configuration handles expected types
-
+        """Test Oracle type constants."""        # Test that Oracle configuration handles expected types
         # Test that configuration creates proper Oracle type mappings
         config_dict = {
             "host": "localhost",  # VARCHAR2 type
@@ -62,8 +58,7 @@ class TestOracleTypeMappingSimple:
         assert isinstance(config.host, str)  # VARCHAR2 type validation
 
     def test_specific_type_mappings(self) -> None:
-        """Test specific type mapping values."""
-        # Test specific Oracle type mappings through configuration
+        """Test specific type mapping values."""        # Test specific Oracle type mappings through configuration
         config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,  # Primary key-like field -> NUMBER
@@ -85,8 +80,7 @@ class TestOracleTypeMappingSimple:
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
 
     def test_mapping_completeness(self) -> None:
-        """Test mapping completeness for WMS data types."""
-        # Test that Oracle configuration handles all required data types
+        """Test mapping completeness for WMS data types."""        # Test that Oracle configuration handles all required data types
         required_types = [
             "host",  # varchar -> VARCHAR2
             "port",  # integer/number -> NUMBER

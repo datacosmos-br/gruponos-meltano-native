@@ -10,8 +10,7 @@ from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
 
 def test_execute_with_metadata_method() -> None:
-    """Test that FlextDbOracleConnection can execute queries with metadata."""
-    # Create a mock configuration that matches the available API
+    """Test that FlextDbOracleConnection can execute queries with metadata."""    # Create a mock configuration that matches the available API
     config = GruponosMeltanoOracleConnectionConfig(
         host="localhost",
         port=1521,
@@ -44,8 +43,7 @@ def test_execute_with_metadata_method() -> None:
 
 
 def test_connection_manager_usage() -> None:
-    """Test that Oracle API can be used for connection management."""
-    # Create a connection config
+    """Test that Oracle API can be used for connection management."""    # Create a connection config
     config = GruponosMeltanoOracleConnectionConfig(
         host="localhost",
         port=1521,

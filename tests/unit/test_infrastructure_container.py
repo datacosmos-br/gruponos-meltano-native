@@ -13,11 +13,13 @@ from gruponos_meltano_native.infrastructure import (
 
 
 def test_get_flext_container_returns_container() -> None:
+    """Test get flext container returns container function."""
     container = get_flext_container()
     assert isinstance(container, FlextContainer)
 
 
 def test_get_gruponos_meltano_container_registers_core() -> None:
+    """Test get gruponos meltano container registers core function."""
     container = get_gruponos_meltano_container()
     # Ensure it is the same singleton instance type
     assert isinstance(container, FlextContainer)
