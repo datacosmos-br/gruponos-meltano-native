@@ -2,6 +2,7 @@
 
 These tests avoid fallbacks and exercise DI container wiring.
 """
+
 from __future__ import annotations
 
 from flext_core import FlextContainer, FlextResult

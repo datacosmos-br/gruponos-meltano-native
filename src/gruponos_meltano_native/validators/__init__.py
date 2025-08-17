@@ -56,8 +56,8 @@ def create_gruponos_meltano_validator_for_environment(
     base_validator = _create_validator_for_environment(environment)
     # DataValidator doesn't have config - pass the constructor args
     return GruponosMeltanoDataValidator(
-      rules=getattr(base_validator, "rules", None),
-      strict_mode=getattr(base_validator, "strict_mode", False),
+        rules=getattr(base_validator, "rules", None),
+        strict_mode=getattr(base_validator, "strict_mode", False),
     )
 
 

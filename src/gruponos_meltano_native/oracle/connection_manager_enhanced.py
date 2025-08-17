@@ -40,228 +40,228 @@ class GruponosMeltanoOracleConnectionManager:
     """
 
     def __init__(
-      self,
-      config: GruponosMeltanoOracleConnectionConfig | None = None,
+        self,
+        config: GruponosMeltanoOracleConnectionConfig | None = None,
     ) -> None:
-      """Inicializa gerenciador de conexão Oracle para GrupoNOS.
+        """Inicializa gerenciador de conexão Oracle para GrupoNOS.
 
-      Args:
-          config: Configuração de conexão Oracle opcional.
-                 Se None, usará configuração padrão.
+        Args:
+            config: Configuração de conexão Oracle opcional.
+                   Se None, usará configuração padrão.
 
-      """
-      # Apply provided config or sensible defaults expected by tests
-      if config is None:
-          # Provide a minimal, valid default config
-          config = GruponosMeltanoOracleConnectionConfig(
-              host="localhost",
-              service_name="ORCL",
-              username="user",
-              password="password",  # noqa: S106 - safe test default only
-              port=1521,
-          )
-      self.config = config
-      # Ensure default Oracle port (1521) when not explicitly provided
-      # Tests expect default port 1521 for minimal config
-      if getattr(self.config, "port", None) in {None, 0, 1522}:
-          self.config.port = 1521
-      self._connection: FlextDbOracleApi | None = None
+        """
+        # Apply provided config or sensible defaults expected by tests
+        if config is None:
+            # Provide a minimal, valid default config
+            config = GruponosMeltanoOracleConnectionConfig(
+                host="localhost",
+                service_name="ORCL",
+                username="user",
+                password="password",  # noqa: S106 - safe test default only
+                port=1521,
+            )
+        self.config = config
+        # Ensure default Oracle port (1521) when not explicitly provided
+        # Tests expect default port 1521 for minimal config
+        if getattr(self.config, "port", None) in {None, 0, 1522}:
+            self.config.port = 1521
+        self._connection: FlextDbOracleApi | None = None
 
     def get_connection(self) -> FlextResult[FlextDbOracleApi]:
-      """Obtém conexão com banco de dados Oracle para GrupoNOS.
+        """Obtém conexão com banco de dados Oracle para GrupoNOS.
 
-      Cria e configura uma conexão Oracle usando as configurações
-      do GrupoNOS, incluindo manipulação adequada de credenciais
-      SecretStr e mapeamento de SID/service_name.
+        Cria e configura uma conexão Oracle usando as configurações
+        do GrupoNOS, incluindo manipulação adequada de credenciais
+        SecretStr e mapeamento de SID/service_name.
 
-      Returns:
-          FlextResult[FlextDbOracleApi]: Resultado contendo a conexão
-          Oracle ou erro em caso de falha.
+        Returns:
+            FlextResult[FlextDbOracleApi]: Resultado contendo a conexão
+            Oracle ou erro em caso de falha.
 
-      Example:
-          >>> manager = GruponosMeltanoOracleConnectionManager()
-          >>> resultado = manager.get_connection()
-          >>> if resultado.success:
-          ...     conn = resultado.data
-          ...     # Usar conexão para operações
+        Example:
+            >>> manager = GruponosMeltanoOracleConnectionManager()
+            >>> resultado = manager.get_connection()
+            >>> if resultado.success:
+            ...     conn = resultado.data
+            ...     # Usar conexão para operações
 
-      """
-      try:
-          # Build connection config - password is always SecretStr now due to field override
-          password_value = self.config.password
+        """
+        try:
+            # Build connection config - password is always SecretStr now due to field override
+            password_value = self.config.password
 
-          # Convert SecretStr to string for FlextDbOracleConfig
-          password_str = (
-              password_value.get_secret_value()
-              if hasattr(password_value, "get_secret_value")
-              else str(password_value)
-          )
+            # Convert SecretStr to string for FlextDbOracleConfig
+            password_str = (
+                password_value.get_secret_value()
+                if hasattr(password_value, "get_secret_value")
+                else str(password_value)
+            )
 
-          # Determine service_name value
-          service_name: str
-          if self.config.service_name:
-              service_name = self.config.service_name
-          elif self.config.sid:
-              # FlextDbOracleConfig doesn't support sid, use as service_name
-              service_name = self.config.sid
-          else:
-              # Default service name if neither provided
-              service_name = "ORCL"
+            # Determine service_name value
+            service_name: str
+            if self.config.service_name:
+                service_name = self.config.service_name
+            elif self.config.sid:
+                # FlextDbOracleConfig doesn't support sid, use as service_name
+                service_name = self.config.sid
+            else:
+                # Default service name if neither provided
+                service_name = "ORCL"
 
-          # Create config using from_dict for better compatibility
-          config_data = {
-              "host": self.config.host,
-              "port": self.config.port,
-              "username": self.config.username,
-              "password": password_str,
-              "service_name": service_name,
-          }
+            # Create config using from_dict for better compatibility
+            config_data = {
+                "host": self.config.host,
+                "port": self.config.port,
+                "username": self.config.username,
+                "password": password_str,
+                "service_name": service_name,
+            }
 
-          # Use model_validate to build config directly
-          db_config = FlextDbOracleConfig.model_validate(config_data)
+            # Use model_validate to build config directly
+            db_config = FlextDbOracleConfig.model_validate(config_data)
 
-          # Create connection
-          self._connection = FlextDbOracleApi(db_config)
+            # Create connection
+            self._connection = FlextDbOracleApi(db_config)
 
-          return FlextResult.ok(self._connection)
+            return FlextResult.ok(self._connection)
 
-      except Exception as e:
-          return FlextResult.fail(f"Failed to create Oracle connection: {e}")
+        except Exception as e:
+            return FlextResult.fail(f"Failed to create Oracle connection: {e}")
 
     def test_connection(self) -> FlextResult[bool]:
-      """Testa conexão com banco de dados Oracle para GrupoNOS.
+        """Testa conexão com banco de dados Oracle para GrupoNOS.
 
-      Executa teste de conectividade com o banco Oracle usando
-      as configurações atuais, verificando se é possível estabelecer
-      uma conexão válida.
+        Executa teste de conectividade com o banco Oracle usando
+        as configurações atuais, verificando se é possível estabelecer
+        uma conexão válida.
 
-      Returns:
-          FlextResult[bool]: Resultado do teste - True se conexão
-          bem-sucedida, erro caso contrário.
+        Returns:
+            FlextResult[bool]: Resultado do teste - True se conexão
+            bem-sucedida, erro caso contrário.
 
-      Example:
-          >>> manager = GruponosMeltanoOracleConnectionManager()
-          >>> resultado = manager.test_connection()
-          >>> if resultado.success:
-          ...     print("Conexão Oracle OK")
-          ... else:
-          ...     print(f"Falha na conexão: {resultado.error}")
+        Example:
+            >>> manager = GruponosMeltanoOracleConnectionManager()
+            >>> resultado = manager.test_connection()
+            >>> if resultado.success:
+            ...     print("Conexão Oracle OK")
+            ... else:
+            ...     print(f"Falha na conexão: {resultado.error}")
 
-      """
-      connection_result = self.get_connection()
-      if not connection_result.success:
-          return FlextResult.fail(
-              f"Connection failed: {connection_result.error}",
-          )
+        """
+        connection_result = self.get_connection()
+        if not connection_result.success:
+            return FlextResult.fail(
+                f"Connection failed: {connection_result.error}",
+            )
 
-      connection = connection_result.data
-      if connection is None:
-          return FlextResult.fail("Connection is None")
+        connection = connection_result.data
+        if connection is None:
+            return FlextResult.fail("Connection is None")
 
-      success = False
-      error_message = ""
-      try:
-          if hasattr(connection, "health_check"):
-              health = connection.health_check()
-              success = bool(getattr(health, "success", True))
-              if not success:
-                  error_message = str(getattr(health, "error", "Health check failed"))
-          else:
-              test_result = connection.test_connection()
-              if hasattr(test_result, "success"):
-                  success = bool(test_result.success)
-                  if not success:
-                      error_message = f"Connection test failed: {test_result.error}"
-              else:
-                  success = bool(test_result)
-                  if not success:
-                      error_message = "Connection test returned False"
-      except Exception as e:
-          # In environments without DB, mocked connections should still pass
-          if "mock" in str(type(connection)).lower():
-              success = True
-          else:
-              success = False
-              error_message = str(e)
+        success = False
+        error_message = ""
+        try:
+            if hasattr(connection, "health_check"):
+                health = connection.health_check()
+                success = bool(getattr(health, "success", True))
+                if not success:
+                    error_message = str(getattr(health, "error", "Health check failed"))
+            else:
+                test_result = connection.test_connection()
+                if hasattr(test_result, "success"):
+                    success = bool(test_result.success)
+                    if not success:
+                        error_message = f"Connection test failed: {test_result.error}"
+                else:
+                    success = bool(test_result)
+                    if not success:
+                        error_message = "Connection test returned False"
+        except Exception as e:
+            # In environments without DB, mocked connections should still pass
+            if "mock" in str(type(connection)).lower():
+                success = True
+            else:
+                success = False
+                error_message = str(e)
 
-      return FlextResult.ok(data=True) if success else FlextResult.fail(error_message)
+        return FlextResult.ok(data=True) if success else FlextResult.fail(error_message)
 
     def validate_configuration(self) -> FlextResult[bool]:
-      """Valida a configuração de conexão Oracle.
+        """Valida a configuração de conexão Oracle.
 
-      Returns:
-          FlextResult[bool]: True se configuração válida, caso contrário erro.
+        Returns:
+            FlextResult[bool]: True se configuração válida, caso contrário erro.
 
-      """
-      try:
-          result = self.config.validate_domain_rules()
-          if hasattr(result, "is_failure") and result.is_failure:
-              return FlextResult.fail(result.error or "Invalid configuration")
-          return FlextResult.ok(data=True)
-      except Exception as exc:  # pydantic may raise ValueError
-          return FlextResult.fail(str(exc))
+        """
+        try:
+            result = self.config.validate_domain_rules()
+            if hasattr(result, "is_failure") and result.is_failure:
+                return FlextResult.fail(result.error or "Invalid configuration")
+            return FlextResult.ok(data=True)
+        except Exception as exc:  # pydantic may raise ValueError
+            return FlextResult.fail(str(exc))
 
     def close_connection(self) -> FlextResult[bool]:
-      """Fecha conexão Oracle.
+        """Fecha conexão Oracle.
 
-      Fecha adequadamente a conexão ativa com o banco Oracle
-      e limpa recursos associados.
+        Fecha adequadamente a conexão ativa com o banco Oracle
+        e limpa recursos associados.
 
-      Returns:
-          FlextResult[bool]: Resultado da operação de fechamento.
+        Returns:
+            FlextResult[bool]: Resultado da operação de fechamento.
 
-      Example:
-          >>> manager = GruponosMeltanoOracleConnectionManager()
-          >>> # ... usar conexão ...
-          >>> resultado = manager.close_connection()
-          >>> if resultado.success:
-          ...     print("Conexão fechada com sucesso")
+        Example:
+            >>> manager = GruponosMeltanoOracleConnectionManager()
+            >>> # ... usar conexão ...
+            >>> resultado = manager.close_connection()
+            >>> if resultado.success:
+            ...     print("Conexão fechada com sucesso")
 
-      """
-      try:
-          if self._connection:
-              # disconnect() returns the API instance, not a FlextResult
-              self._connection.disconnect()
-              self._connection = None
-              return FlextResult.ok(data=True)
-          return FlextResult.ok(data=True)
+        """
+        try:
+            if self._connection:
+                # disconnect() returns the API instance, not a FlextResult
+                self._connection.disconnect()
+                self._connection = None
+                return FlextResult.ok(data=True)
+            return FlextResult.ok(data=True)
 
-      except Exception as e:
-          return FlextResult.fail(f"Error closing connection: {e}")
+        except Exception as e:
+            return FlextResult.fail(f"Error closing connection: {e}")
 
     # Convenience lifecycle helpers used by integration tests
     def connect(self) -> FlextResult[bool]:
-      """Estabelece conexão ativa com Oracle."""
-      try:
-          result = self.get_connection()
-          if result.success and result.data is not None:
-              # Ensure underlying connection is opened
-              if hasattr(result.data, "connect"):
-                  result.data.connect()
-              self._connection = result.data
-              return FlextResult.ok(data=True)
-          return FlextResult.fail(result.error or "Failed to create connection")
-      except Exception as exc:
-          return FlextResult.fail(str(exc))
+        """Estabelece conexão ativa com Oracle."""
+        try:
+            result = self.get_connection()
+            if result.success and result.data is not None:
+                # Ensure underlying connection is opened
+                if hasattr(result.data, "connect"):
+                    result.data.connect()
+                self._connection = result.data
+                return FlextResult.ok(data=True)
+            return FlextResult.fail(result.error or "Failed to create connection")
+        except Exception as exc:
+            return FlextResult.fail(str(exc))
 
     def is_connected(self) -> bool:
-      """Retorna True se conexão estiver ativa."""
-      conn = self._connection
-      return bool(conn and getattr(conn, "connected", True))
+        """Retorna True se conexão estiver ativa."""
+        conn = self._connection
+        return bool(conn and getattr(conn, "connected", True))
 
     def get_connection_info(self) -> dict[str, object]:
-      """Retorna informações básicas da conexão."""
-      return {
-          "is_connected": self.is_connected(),
-          "host": getattr(self.config, "host", ""),
-          "port": getattr(self.config, "port", 0),
-          "service_name": getattr(self.config, "service_name", "")
-          or getattr(self.config, "sid", ""),
-      }
+        """Retorna informações básicas da conexão."""
+        return {
+            "is_connected": self.is_connected(),
+            "host": getattr(self.config, "host", ""),
+            "port": getattr(self.config, "port", 0),
+            "service_name": getattr(self.config, "service_name", "")
+            or getattr(self.config, "sid", ""),
+        }
 
     def disconnect(self) -> FlextResult[bool]:
-      """Encerra conexão ativa."""
-      return self.close_connection()
+        """Encerra conexão ativa."""
+        return self.close_connection()
 
 
 # =============================================

@@ -41,19 +41,19 @@ class _ContainerSingleton:
 
     @classmethod
     def get_instance(cls) -> FlextContainer:
-      """Obtém ou cria a instância do container.
+        """Obtém ou cria a instância do container.
 
-      Método de classe que retorna a instância singleton do container,
-      criando-a e configurando dependências se ainda não existir.
+        Método de classe que retorna a instância singleton do container,
+        criando-a e configurando dependências se ainda não existir.
 
-      Returns:
-          FlextContainer: Instância configurada do container de DI.
+        Returns:
+            FlextContainer: Instância configurada do container de DI.
 
-      """
-      if cls._instance is None:
-          cls._instance = get_flext_container()
-          _configure_dependencies(cls._instance)
-      return cls._instance
+        """
+        if cls._instance is None:
+            cls._instance = get_flext_container()
+            _configure_dependencies(cls._instance)
+        return cls._instance
 
 
 def get_gruponos_meltano_container() -> FlextContainer:
@@ -92,11 +92,11 @@ def _configure_dependencies(container: FlextContainer) -> None:
     # Register core FLEXT components
     result = container.register("flext_result", FlextResult)
     if not result.success:
-      logger.warning("Failed to register FlextResult: %s", result.error)
+        logger.warning("Failed to register FlextResult: %s", result.error)
 
     settings_result = container.register("flext_settings", FlextSettings)
     if not settings_result.success:
-      logger.warning(
-          "Failed to register FlextCoreSettings: %s",
-          settings_result.error,
-      )
+        logger.warning(
+            "Failed to register FlextCoreSettings: %s",
+            settings_result.error,
+        )
