@@ -16,7 +16,7 @@ item_usage_stats as (
         sum(quantity_ordered) as total_quantity_ordered_last_90_days,
         avg(unit_price) as avg_unit_price_last_90_days,
         max(order_date) as last_order_date
-    from {{ ref('stg_wms_orders') }} o
+from {{ ref('stg_wms_orders') }} o
     join {{ source('wms_raw', 'order_dtl') }} d on o.order_id = d.order_id
     where o.order_date >= current_date - 90
     group by item_id
@@ -33,7 +33,7 @@ item_allocation_stats as (
             extract(minute from (last_updated_at - created_at)) * 60 + 
             extract(second from (last_updated_at - created_at))
         end) as avg_fulfillment_time_seconds
-    from {{ ref('stg_wms_allocation') }}
+from {{ ref('stg_wms_allocation') }}
     where created_at >= current_date - 90
     group by item_id
 ),
@@ -99,7 +99,7 @@ item_enriched as (
         -- Surrogate key
         {{ dbt_utils.surrogate_key(['item_id']) }} as item_key
         
-    from item_master i
+from item_master i
     left join item_usage_stats u on i.item_id = u.item_id
     left join item_allocation_stats a on i.item_id = a.item_id
 )

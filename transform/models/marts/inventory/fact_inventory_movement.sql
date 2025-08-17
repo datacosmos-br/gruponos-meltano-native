@@ -29,7 +29,7 @@ with allocation_movements as (
         priority_level,
         data_quality_score
         
-    from {{ ref('stg_wms_allocation') }}
+from {{ ref('stg_wms_allocation') }}
 ),
 
 -- Generate inbound movements (simulated from order receipts)
@@ -51,7 +51,7 @@ simulated_inbound as (
         1 as priority_level,
         'Good' as data_quality_score
         
-    from {{ ref('stg_wms_orders') }} o
+from {{ ref('stg_wms_orders') }} o
     join {{ source('wms_raw', 'order_dtl') }} d on o.order_id = d.order_id
     where o.order_status in ('COMPLETED', 'SHIPPED')
       and o.order_date >= current_date - 90  -- Last 90 days only
@@ -109,7 +109,7 @@ movement_analysis as (
         -- Percentile analysis for benchmarking
         {{ oracle_percentile_analysis('quantity', ['item_id', 'movement_type']) }}
         
-    from combined_movements m
+from combined_movements m
 ),
 
 item_velocity_context as (
@@ -132,7 +132,7 @@ item_velocity_context as (
         avg(processing_time_seconds) as avg_processing_time_seconds,
         percentile_cont(0.5) within group (order by processing_time_seconds) as median_processing_time_seconds
         
-    from movement_analysis
+from movement_analysis
     where movement_date >= current_date - 90
     group by item_id, movement_type
 ),
@@ -192,7 +192,7 @@ final as (
         current_timestamp as fact_created_at,
         current_timestamp as fact_updated_at
         
-    from movement_analysis m
+from movement_analysis m
     left join item_velocity_context v on m.item_id = v.item_id and m.movement_type = v.movement_type
 )
 

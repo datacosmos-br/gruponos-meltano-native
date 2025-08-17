@@ -1,29 +1,53 @@
 """Unit tests for Oracle connection functionality."""
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-from flext_core import get_logger
+from gruponos_meltano_native import (
+    GruponosMeltanoOracleConnectionConfig,
+    GruponosMeltanoOracleConnectionManager,
+)
 
-from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
+# Mock dependencies at module level
+flext_db_oracle = Mock()
+flext_observability_logging = Mock()
+
+# Configure mocks
+flext_db_oracle.OracleConnectionManager = Mock()
+flext_observability_logging.get_logger = Mock(return_value=Mock())
+
+# Patch the module
+pytest_plugins = [
+    "pytest_mock",
+]
+
+# Mock the entire module
+mocker = Mock()
+mocker.patch.dict(
+    "sys.modules",
+    {
+        "flext_db_oracle": flext_db_oracle,
+        "flext_observability.logging": flext_observability_logging,
+    },
+)
 
 # Constants
 EXPECTED_DATA_COUNT = 3
 
-logger = get_logger(__name__)
+logger = Mock()  # This line was removed from the new_code, so it's removed here.
 
 # Mock flext_db_oracle module before importing connection_manager
-with patch.dict(
-    "sys.modules",
-    {
-        "flext_db_oracle": Mock(),
-        "flext_db_oracle.connection": Mock(),
-        "flext_observability": Mock(),
-        "flext_observability.logging": Mock(),
-    },
-):
-    from gruponos_meltano_native.oracle.connection_manager_enhanced import (
-        GruponosMeltanoOracleConnectionManager,
-    )
+# with patch.dict(
+#     "sys.modules",
+#     {
+#         "flext_db_oracle": Mock(),
+#         "flext_db_oracle.connection": Mock(),
+#         "flext_observability": Mock(),
+#         "flext_observability.logging": Mock(),
+#     },
+# ):
+# from gruponos_meltano_native import (
+#         GruponosMeltanoOracleConnectionManager,
+#     )
 
 
 class TestOracleConnections:

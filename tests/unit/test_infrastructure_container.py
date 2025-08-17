@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from flext_core import FlextContainer, FlextResult
 
-from gruponos_meltano_native.infrastructure import (
+from gruponos_meltano_native import (
     get_flext_container,
     get_gruponos_meltano_container,
 )

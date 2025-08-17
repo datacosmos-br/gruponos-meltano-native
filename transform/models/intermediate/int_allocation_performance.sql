@@ -55,7 +55,7 @@ allocation_metrics as (
         
         data_quality_score
         
-    from allocation_base
+from allocation_base
 ),
 
 location_performance as (
@@ -73,7 +73,7 @@ location_performance as (
         -- Quality metrics
         count(case when data_quality_score = 'Excellent' end) * 100.0 / count(*) as excellent_quality_rate_pct
         
-    from allocation_metrics
+from allocation_metrics
     group by location_id
 ),
 
@@ -92,7 +92,7 @@ user_performance as (
         count(distinct item_id) as unique_items_handled,
         count(distinct location_id) as unique_locations_used
         
-    from allocation_metrics
+from allocation_metrics
     where allocated_by_user != 'SYSTEM'
     group by allocated_by_user
 ),
@@ -124,7 +124,7 @@ final as (
             else 'System Allocation'
         end as processing_performance_vs_user
         
-    from allocation_metrics a
+from allocation_metrics a
     left join location_performance l on a.location_id = l.location_id
     left join user_performance u on a.allocated_by_user = u.allocated_by_user
 )

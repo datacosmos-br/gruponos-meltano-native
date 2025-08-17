@@ -58,7 +58,7 @@ daily_allocation_summary as (
         min(created_at) as first_allocation_time,
         max(last_updated_at) as last_allocation_update_time
         
-    from allocation_performance
+from allocation_performance
     group by 
         date_trunc('day', created_at),
         location_id,
@@ -121,7 +121,7 @@ enriched_facts as (
         current_timestamp as fact_created_at,
         current_timestamp as fact_updated_at
         
-    from daily_allocation_summary f
+from daily_allocation_summary f
 )
 
 select * from enriched_facts

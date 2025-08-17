@@ -35,6 +35,7 @@ from gruponos_meltano_native.config import (
     GruponosMeltanoSettings,
     GruponosMeltanoTargetOracleConfig,
     GruponosMeltanoWMSSourceConfig,
+    create_gruponos_meltano_settings,
 )
 
 # Monitoring & Alerts
@@ -89,15 +90,15 @@ def create_gruponos_meltano_platform() -> GruponosMeltanoOrchestrator:
     - Propagação de erro orientada por railway
 
     Returns:
-        GruponosMeltanoOrchestrator: Instância do orquestrador totalmente configurada
-        pronta para execução de pipeline ETL com monitoramento empresarial e
-        capacidades de tratamento de erro.
+      GruponosMeltanoOrchestrator: Instância do orquestrador totalmente configurada
+      pronta para execução de pipeline ETL com monitoramento empresarial e
+      capacidades de tratamento de erro.
 
     Example:
-        >>> platform = create_gruponos_meltano_platform()
-        >>> result = await platform.execute_full_sync("GNOS", "DC01")
-        >>> if result.success:
-        ...     print(f"ETL completado: {result.data.summary}")
+      >>> platform = create_gruponos_meltano_platform()
+      >>> result = await platform.execute_full_sync("GNOS", "DC01")
+      >>> if result.success:
+      ...     print(f"ETL completado: {result.data.summary}")
 
     """
     settings = GruponosMeltanoSettings()
@@ -120,15 +121,15 @@ def create_gruponos_meltano_oracle_manager() -> GruponosMeltanoOracleConnectionM
     - Integração com padrões de observabilidade FLEXT
 
     Returns:
-        GruponosMeltanoOracleConnectionManager: Gerenciador de conexão Oracle
-        configurado com pooling de conexões e monitoramento de nível empresarial.
+      GruponosMeltanoOracleConnectionManager: Gerenciador de conexão Oracle
+      configurado com pooling de conexões e monitoramento de nível empresarial.
 
     Example:
-        >>> manager = create_gruponos_meltano_oracle_manager()
-        >>> connection_result = await manager.get_connection()
-        >>> if connection_result.success:
-        ...     conn = connection_result.data
-        ...     # Usar conexão para operações ETL
+      >>> manager = create_gruponos_meltano_oracle_manager()
+      >>> connection_result = await manager.get_connection()
+      >>> if connection_result.success:
+      ...     conn = connection_result.data
+      ...     # Usar conexão para operações ETL
 
     """
     return create_gruponos_meltano_oracle_connection_manager()
@@ -167,12 +168,8 @@ __all__: list[str] = [
     "create_gruponos_meltano_orchestrator",
     "create_gruponos_meltano_pipeline_runner",
     "create_gruponos_meltano_platform",
+    "create_gruponos_meltano_settings",
     "create_gruponos_meltano_validator_for_environment",
     "get_flext_container",
     "gruponos_meltano_cli",
 ]
-
-# Library metadata
-__author__ = "GrupoNOS FLEXT Team"
-__license__ = "MIT"
-__copyright__ = "Copyright (c) 2025 GrupoNOS FLEXT Team"

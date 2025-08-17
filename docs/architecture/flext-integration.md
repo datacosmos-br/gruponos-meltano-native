@@ -120,9 +120,9 @@ def create_gruponos_application() -> FlextContainer:
 # Infrastructure configuration
 def configure_gruponos_container(container: FlextContainer) -> None:
     """Configure GrupoNOS-specific dependencies"""
-    from gruponos_meltano_native.config import GruponosMeltanoSettings
-    from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
-    from gruponos_meltano_native.oracle.connection_manager_enhanced import (
+from gruponos_meltano_native.config import GruponosMeltanoSettings
+from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
+from gruponos_meltano_native.oracle.connection_manager_enhanced import (
         GruponosMeltanoOracleConnectionManager
     )
 

@@ -32,28 +32,28 @@ class GruponosMeltanoError(FlextError):
     """
 
     def __init__(
-        self,
-        message: str = "GrupoNOS Meltano error",
-        *,
-        error_code: str | None = None,
-        context: dict[str, object] | None = None,
+      self,
+      message: str = "GrupoNOS Meltano error",
+      *,
+      error_code: str | None = None,
+      context: dict[str, object] | None = None,
     ) -> None:
-        """Inicializa erro Meltano GrupoNOS com contexto.
+      """Inicializa erro Meltano GrupoNOS com contexto.
 
-        Args:
-            message: Mensagem de erro descritiva.
-            error_code: Código de erro específico; padrão GENERIC_ERROR.
-            context: Contexto adicional do erro (detalhes estruturados).
+      Args:
+          message: Mensagem de erro descritiva.
+          error_code: Código de erro específico; padrão GENERIC_ERROR.
+          context: Contexto adicional do erro (detalhes estruturados).
 
-        """
-        # Ensure default code matches test expectation (GENERIC_ERROR)
-        # Call FlextError directly to avoid MRO conflicts with ConfigurationError
-        FlextError.__init__(
-            self,
-            message=message,
-            error_code=error_code or "GENERIC_ERROR",
-            context=context or {},
-        )
+      """
+      # Ensure default code matches test expectation (GENERIC_ERROR)
+      # Call FlextError directly to avoid MRO conflicts with ConfigurationError
+      FlextError.__init__(
+          self,
+          message=message,
+          error_code=error_code or "GENERIC_ERROR",
+          context=context or {},
+      )
 
 
 class GruponosMeltanoConfigurationError(GruponosMeltanoError, FlextConfigurationError):
@@ -64,30 +64,34 @@ class GruponosMeltanoConfigurationError(GruponosMeltanoError, FlextConfiguration
     """
 
     def __init__(
-        self,
-        message: str = "GrupoNOS configuration error",
-        *,
-        error_code: str | None = None,
-        context: dict[str, object] | None = None,
+      self,
+      message: str = "GrupoNOS configuration error",
+      *,
+      error_code: str | None = None,
+      context: dict[str, object] | None = None,
     ) -> None:
-        """Inicializa erro de configuração GrupoNOS.
+      """Inicializa erro de configuração GrupoNOS.
 
-        Args:
-            message: Mensagem descrevendo o problema de configuração.
-            error_code: Código de erro opcional.
-            context: Contexto adicional do erro.
+      Args:
+          message: Mensagem descrevendo o problema de configuração.
+          error_code: Código de erro opcional.
+          context: Contexto adicional do erro.
 
-        """
-        # Call GruponosMeltanoError to set generic error code and context, avoid
-        # passing error_code twice into FlextConfigurationError chain.
-        GruponosMeltanoError.__init__(
-            self, message=message, error_code=error_code, context=context,
-        )
+      """
+      # Call GruponosMeltanoError to set generic error code and context, avoid
+      # passing error_code twice into FlextConfigurationError chain.
+      GruponosMeltanoError.__init__(
+          self,
+          message=message,
+          error_code=error_code,
+          context=context,
+      )
 
 
 # Definir após ConfigurationError para suportar herança desejada no teste
 class GruponosMeltanoValidationError(
-    GruponosMeltanoConfigurationError, FlextValidationError,
+    GruponosMeltanoConfigurationError,
+    FlextValidationError,
 ):
     """Erros de validação GrupoNOS seguindo padrões flext-core.
 
@@ -96,24 +100,27 @@ class GruponosMeltanoValidationError(
     """
 
     def __init__(
-        self,
-        message: str = "GrupoNOS validation error",
-        *,
-        error_code: str | None = None,
-        context: dict[str, object] | None = None,
+      self,
+      message: str = "GrupoNOS validation error",
+      *,
+      error_code: str | None = None,
+      context: dict[str, object] | None = None,
     ) -> None:
-        """Inicializa erro de validação GrupoNOS.
+      """Inicializa erro de validação GrupoNOS.
 
-        Args:
-            message: Mensagem descrevendo o erro de validação.
-            error_code: Código de erro opcional.
-            context: Contexto adicional do erro.
+      Args:
+          message: Mensagem descrevendo o erro de validação.
+          error_code: Código de erro opcional.
+          context: Contexto adicional do erro.
 
-        """
-        # Initialize via base GruponosMeltanoError to avoid multiple error_code passing
-        GruponosMeltanoError.__init__(
-            self, message=message, error_code=error_code, context=context,
-        )
+      """
+      # Initialize via base GruponosMeltanoError to avoid multiple error_code passing
+      GruponosMeltanoError.__init__(
+          self,
+          message=message,
+          error_code=error_code,
+          context=context,
+      )
 
 
 class GruponosMeltanoConnectionError(FlextConnectionError):
@@ -124,13 +131,13 @@ class GruponosMeltanoConnectionError(FlextConnectionError):
     """
 
     def __init__(self, message: str = "GrupoNOS connection error") -> None:
-        """Inicializa erro de conexão GrupoNOS.
+      """Inicializa erro de conexão GrupoNOS.
 
-        Args:
-            message: Mensagem descrevendo o problema de conexão.
+      Args:
+          message: Mensagem descrevendo o problema de conexão.
 
-        """
-        super().__init__(message)
+      """
+      super().__init__(message)
 
 
 class GruponosMeltanoProcessingError(FlextProcessingError):
@@ -141,13 +148,13 @@ class GruponosMeltanoProcessingError(FlextProcessingError):
     """
 
     def __init__(self, message: str = "GrupoNOS processing error") -> None:
-        """Inicializa erro de processamento GrupoNOS.
+      """Inicializa erro de processamento GrupoNOS.
 
-        Args:
-            message: Mensagem descrevendo o erro de processamento.
+      Args:
+          message: Mensagem descrevendo o erro de processamento.
 
-        """
-        super().__init__(message)
+      """
+      super().__init__(message)
 
 
 class GruponosMeltanoAuthenticationError(FlextAuthenticationError):
@@ -158,13 +165,13 @@ class GruponosMeltanoAuthenticationError(FlextAuthenticationError):
     """
 
     def __init__(self, message: str = "GrupoNOS authentication error") -> None:
-        """Inicializa erro de autenticação GrupoNOS.
+      """Inicializa erro de autenticação GrupoNOS.
 
-        Args:
-            message: Mensagem descrevendo o problema de autenticação.
+      Args:
+          message: Mensagem descrevendo o problema de autenticação.
 
-        """
-        super().__init__(message)
+      """
+      super().__init__(message)
 
 
 class GruponosMeltanoTimeoutError(FlextTimeoutError):
@@ -175,13 +182,13 @@ class GruponosMeltanoTimeoutError(FlextTimeoutError):
     """
 
     def __init__(self, message: str = "GrupoNOS timeout error") -> None:
-        """Inicializa erro de timeout GrupoNOS.
+      """Inicializa erro de timeout GrupoNOS.
 
-        Args:
-            message: Mensagem descrevendo o problema de timeout.
+      Args:
+          message: Mensagem descrevendo o problema de timeout.
 
-        """
-        super().__init__(message)
+      """
+      super().__init__(message)
 
 
 # Specialized domain-specific errors extending base classes
@@ -193,16 +200,16 @@ class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
     """
 
     def __init__(
-        self,
-        message: str = "GrupoNOS orchestration failed",
+      self,
+      message: str = "GrupoNOS orchestration failed",
     ) -> None:
-        """Inicializa erro de orquestração GrupoNOS.
+      """Inicializa erro de orquestração GrupoNOS.
 
-        Args:
-            message: Mensagem descrevendo a falha de orquestração.
+      Args:
+          message: Mensagem descrevendo a falha de orquestração.
 
-        """
-        super().__init__(f"GrupoNOS orchestration: {message}")
+      """
+      super().__init__(f"GrupoNOS orchestration: {message}")
 
 
 class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
@@ -213,16 +220,16 @@ class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
     """
 
     def __init__(
-        self,
-        message: str = "GrupoNOS pipeline failed",
+      self,
+      message: str = "GrupoNOS pipeline failed",
     ) -> None:
-        """Inicializa erro de pipeline GrupoNOS.
+      """Inicializa erro de pipeline GrupoNOS.
 
-        Args:
-            message: Mensagem descrevendo a falha do pipeline.
+      Args:
+          message: Mensagem descrevendo a falha do pipeline.
 
-        """
-        super().__init__(f"GrupoNOS pipeline: {message}")
+      """
+      super().__init__(f"GrupoNOS pipeline: {message}")
 
 
 # Monitoring error hierarchy

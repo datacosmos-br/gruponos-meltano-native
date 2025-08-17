@@ -12,7 +12,7 @@ from unittest.mock import patch
 import pytest
 
 import gruponos_meltano_native.validators.data_validator
-from gruponos_meltano_native.validators.data_validator import (
+from gruponos_meltano_native import (
     DataValidator,
     ValidationError,
     ValidationRule,
@@ -28,1392 +28,1392 @@ class TestValidationError:
     """Test ValidationError class."""
 
     def test_validation_error_with_field_name(self) -> None:
-        """Test ValidationError with field name."""
-        error = ValidationError(
-            "Test message",
-            validation_details={"field": "test_field"},
-        )
-        if "[VALIDATION_ERROR] Test message" not in str(error):
-            msg: str = f"Expected '[VALIDATION_ERROR] Test message', got {error!s}"
-            raise AssertionError(msg)
-        assert error.context.get("field") == "test_field"
+      """Test ValidationError with field name."""
+      error = ValidationError(
+          "Test message",
+          validation_details={"field": "test_field"},
+      )
+      if "[VALIDATION_ERROR] Test message" not in str(error):
+          msg: str = f"Expected '[VALIDATION_ERROR] Test message', got {error!s}"
+          raise AssertionError(msg)
+      assert error.context.get("field") == "test_field"
 
     def test_validation_error_without_field_name(self) -> None:
-        """Test ValidationError without field name."""
-        error = ValidationError("Test message")
-        if str(error) != "[VALIDATION_ERROR] Test message":
-            msg: str = f"Expected {'[VALIDATION_ERROR] Test message'}, got {error!s}"
-            raise AssertionError(msg)
-        assert error.context.get("field") is None
+      """Test ValidationError without field name."""
+      error = ValidationError("Test message")
+      if str(error) != "[VALIDATION_ERROR] Test message":
+          msg: str = f"Expected {'[VALIDATION_ERROR] Test message'}, got {error!s}"
+          raise AssertionError(msg)
+      assert error.context.get("field") is None
 
 
 class TestValidationRule:
     """Test ValidationRule class."""
 
     def test_validation_rule_basic(self) -> None:
-        """Test basic validation rule creation."""
-        rule = ValidationRule("test_field", "required")
+      """Test basic validation rule creation."""
+      rule = ValidationRule("test_field", "required")
 
-        if rule.field_name != "test_field":
-            msg: str = f"Expected {'test_field'}, got {rule.field_name}"
-            raise AssertionError(msg)
-        assert rule.rule_type == "required"
-        if rule.parameters != {}:
-            msg: str = f"Expected {{}}, got {rule.parameters}"
-            raise AssertionError(msg)
-        assert rule.params == {}  # Backward compatibility
+      if rule.field_name != "test_field":
+          msg: str = f"Expected {'test_field'}, got {rule.field_name}"
+          raise AssertionError(msg)
+      assert rule.rule_type == "required"
+      if rule.parameters != {}:
+          msg: str = f"Expected {{}}, got {rule.parameters}"
+          raise AssertionError(msg)
+      assert rule.params == {}  # Backward compatibility
 
     def test_validation_rule_with_parameters_dict(self) -> None:
-        """Test validation rule with parameters dictionary."""
-        params = {"max_length": 100, "min_value": 0}
-        rule = ValidationRule("test_field", "string", parameters=params)
+      """Test validation rule with parameters dictionary."""
+      params = {"max_length": 100, "min_value": 0}
+      rule = ValidationRule("test_field", "string", parameters=params)
 
-        if rule.field_name != "test_field":
-            msg: str = f"Expected {'test_field'}, got {rule.field_name}"
-            raise AssertionError(msg)
-        assert rule.rule_type == "string"
-        if rule.parameters != params:
-            msg: str = f"Expected {params}, got {rule.parameters}"
-            raise AssertionError(msg)
-        assert rule.params == params
+      if rule.field_name != "test_field":
+          msg: str = f"Expected {'test_field'}, got {rule.field_name}"
+          raise AssertionError(msg)
+      assert rule.rule_type == "string"
+      if rule.parameters != params:
+          msg: str = f"Expected {params}, got {rule.parameters}"
+          raise AssertionError(msg)
+      assert rule.params == params
 
     def test_validation_rule_with_kwargs(self) -> None:
-        """Test validation rule with kwargs parameters."""
-        rule = ValidationRule("test_field", "number", max_value=1000, min_value=1)
+      """Test validation rule with kwargs parameters."""
+      rule = ValidationRule("test_field", "number", max_value=1000, min_value=1)
 
-        if rule.field_name != "test_field":
-            msg: str = f"Expected {'test_field'}, got {rule.field_name}"
-            raise AssertionError(msg)
-        assert rule.rule_type == "number"
-        if rule.parameters != {"max_value": 1000, "min_value": 1}:
-            msg = (
-                f"Expected {{'max_value': 1000, 'min_value': 1}}, got {rule.parameters}"
-            )
-            raise AssertionError(msg)
+      if rule.field_name != "test_field":
+          msg: str = f"Expected {'test_field'}, got {rule.field_name}"
+          raise AssertionError(msg)
+      assert rule.rule_type == "number"
+      if rule.parameters != {"max_value": 1000, "min_value": 1}:
+          msg = (
+              f"Expected {{'max_value': 1000, 'min_value': 1}}, got {rule.parameters}"
+          )
+          raise AssertionError(msg)
 
     def test_validation_rule_with_parameters_and_kwargs(self) -> None:
-        """Test validation rule with both parameters dict and kwargs (merged)."""
-        params = {"max_length": 100}
-        rule = ValidationRule("test_field", "string", parameters=params, min_length=5)
+      """Test validation rule with both parameters dict and kwargs (merged)."""
+      params = {"max_length": 100}
+      rule = ValidationRule("test_field", "string", parameters=params, min_length=5)
 
-        if rule.field_name != "test_field":
-            msg: str = f"Expected {'test_field'}, got {rule.field_name}"
-            raise AssertionError(msg)
-        assert rule.rule_type == "string"
-        if rule.parameters != {"max_length": 100, "min_length": 5}:
-            msg: str = f"Expected {{'max_length': 100, 'min_length': 5}}, got {rule.parameters}"
-            raise AssertionError(msg)
+      if rule.field_name != "test_field":
+          msg: str = f"Expected {'test_field'}, got {rule.field_name}"
+          raise AssertionError(msg)
+      assert rule.rule_type == "string"
+      if rule.parameters != {"max_length": 100, "min_length": 5}:
+          msg: str = f"Expected {{'max_length': 100, 'min_length': 5}}, got {rule.parameters}"
+          raise AssertionError(msg)
 
 
 class TestDataValidator:
     """Test DataValidator class."""
 
     def test_data_validator_initialization_defaults(self) -> None:
-        """Test DataValidator initialization with defaults."""
-        validator = DataValidator()
+      """Test DataValidator initialization with defaults."""
+      validator = DataValidator()
 
-        if validator.rules != []:
-            msg: str = f"Expected {[]}, got {validator.rules}"
-            raise AssertionError(msg)
-        if validator.strict_mode:
-            msg: str = f"Expected False, got {validator.strict_mode}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats == {
-            "strings_converted_to_numbers": 0,
-            "dates_normalized": 0,
-            "nulls_handled": 0,
-            "validation_errors": 0,
-        }
+      if validator.rules != []:
+          msg: str = f"Expected {[]}, got {validator.rules}"
+          raise AssertionError(msg)
+      if validator.strict_mode:
+          msg: str = f"Expected False, got {validator.strict_mode}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats == {
+          "strings_converted_to_numbers": 0,
+          "dates_normalized": 0,
+          "nulls_handled": 0,
+          "validation_errors": 0,
+      }
 
     def test_data_validator_initialization_with_rules(self) -> None:
-        """Test DataValidator initialization with rules."""
-        rules = [ValidationRule("field1", "required")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test DataValidator initialization with rules."""
+      rules = [ValidationRule("field1", "required")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        if validator.rules != rules:
-            msg: str = f"Expected {rules}, got {validator.rules}"
-            raise AssertionError(msg)
-        if not (validator.strict_mode):
-            msg: str = f"Expected True, got {validator.strict_mode}"
-            raise AssertionError(msg)
+      if validator.rules != rules:
+          msg: str = f"Expected {rules}, got {validator.rules}"
+          raise AssertionError(msg)
+      if not (validator.strict_mode):
+          msg: str = f"Expected True, got {validator.strict_mode}"
+          raise AssertionError(msg)
 
     def test_validate_required_field_present(self) -> None:
-        """Test validation of present required field."""
-        rules = [ValidationRule("name", "required")]
-        validator = DataValidator(rules)
+      """Test validation of present required field."""
+      rules = [ValidationRule("name", "required")]
+      validator = DataValidator(rules)
 
-        data = {"name": "test value"}
-        errors = validator.validate(data)
+      data = {"name": "test value"}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_required_field_missing_non_strict(self) -> None:
-        """Test validation of missing required field in non-strict mode."""
-        rules = [ValidationRule("name", "required")]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test validation of missing required field in non-strict mode."""
+      rules = [ValidationRule("name", "required")]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data: dict[str, object] = {}
-        errors = validator.validate(data)
+      data: dict[str, object] = {}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Required field 'name' is missing" not in errors[0]:
-            msg: str = f"Expected {"Required field 'name' is missing"} in {errors[0]}"
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Required field 'name' is missing" not in errors[0]:
+          msg: str = f"Expected {"Required field 'name' is missing"} in {errors[0]}"
+          raise AssertionError(msg)
 
     def test_validate_required_field_missing_strict_mode(self) -> None:
-        """Test validation of missing required field in strict mode."""
-        rules = [ValidationRule("name", "required")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test validation of missing required field in strict mode."""
+      rules = [ValidationRule("name", "required")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data: dict[str, object] = {}
+      data: dict[str, object] = {}
 
-        with pytest.raises(ValidationError, match="Required field 'name' is missing"):
-            validator.validate(data)
+      with pytest.raises(ValidationError, match="Required field 'name' is missing"):
+          validator.validate(data)
 
     def test_validate_field_not_in_data_skip(self) -> None:
-        """Test validation skips fields not in data (non-required)."""
-        rules = [ValidationRule("optional_field", "string")]
-        validator = DataValidator(rules)
+      """Test validation skips fields not in data (non-required)."""
+      rules = [ValidationRule("optional_field", "string")]
+      validator = DataValidator(rules)
 
-        data = {"other_field": "value"}
-        errors = validator.validate(data)
+      data = {"other_field": "value"}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_decimal_valid(self) -> None:
-        """Test decimal validation with valid values."""
-        rules = [ValidationRule("amount", "decimal")]
-        validator = DataValidator(rules)
+      """Test decimal validation with valid values."""
+      rules = [ValidationRule("amount", "decimal")]
+      validator = DataValidator(rules)
 
-        # Test with Decimal
-        data = {"amount": Decimal("123.45")}
-        errors = validator.validate(data)
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      # Test with Decimal
+      data = {"amount": Decimal("123.45")}
+      errors = validator.validate(data)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
-        # Test with string (convertible)
-        data_str: dict[str, object] = {"amount": "123.45"}
-        errors = validator.validate(data_str)
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      # Test with string (convertible)
+      data_str: dict[str, object] = {"amount": "123.45"}
+      errors = validator.validate(data_str)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_decimal_invalid_non_strict(self) -> None:
-        """Test decimal validation with invalid value in non-strict mode."""
-        rules = [ValidationRule("amount", "decimal")]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test decimal validation with invalid value in non-strict mode."""
+      rules = [ValidationRule("amount", "decimal")]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"amount": "invalid_decimal"}
-        errors = validator.validate(data)
+      data = {"amount": "invalid_decimal"}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'amount' must be a valid decimal" not in errors[0]:
-            msg: str = (
-                f"Expected {"Field 'amount' must be a valid decimal"} in {errors[0]}"
-            )
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'amount' must be a valid decimal" not in errors[0]:
+          msg: str = (
+              f"Expected {"Field 'amount' must be a valid decimal"} in {errors[0]}"
+          )
+          raise AssertionError(msg)
 
     def test_validate_decimal_invalid_strict_mode(self) -> None:
-        """Test decimal validation with invalid value in strict mode."""
-        rules = [ValidationRule("amount", "decimal")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test decimal validation with invalid value in strict mode."""
+      rules = [ValidationRule("amount", "decimal")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"amount": "invalid_decimal"}
+      data = {"amount": "invalid_decimal"}
 
-        with pytest.raises(
-            ValidationError,
-            match="Field 'amount' must be a valid decimal",
-        ):
-            validator.validate(data)
+      with pytest.raises(
+          ValidationError,
+          match="Field 'amount' must be a valid decimal",
+      ):
+          validator.validate(data)
 
     def test_validate_string_valid(self) -> None:
-        """Test string validation with valid values."""
-        rules = [ValidationRule("name", "string")]
-        validator = DataValidator(rules)
+      """Test string validation with valid values."""
+      rules = [ValidationRule("name", "string")]
+      validator = DataValidator(rules)
 
-        data = {"name": "test string"}
-        errors = validator.validate(data)
+      data = {"name": "test string"}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_string_invalid_type_non_strict(self) -> None:
-        """Test string validation with invalid type in non-strict mode."""
-        rules = [ValidationRule("name", "string")]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test string validation with invalid type in non-strict mode."""
+      rules = [ValidationRule("name", "string")]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"name": 123}  # Not a string
-        errors = validator.validate(data)
+      data = {"name": 123}  # Not a string
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'name' must be a string" not in errors[0]:
-            msg: str = f"Expected {"Field 'name' must be a string"} in {errors[0]}"
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'name' must be a string" not in errors[0]:
+          msg: str = f"Expected {"Field 'name' must be a string"} in {errors[0]}"
+          raise AssertionError(msg)
 
     def test_validate_string_invalid_type_strict_mode(self) -> None:
-        """Test string validation with invalid type in strict mode."""
-        rules = [ValidationRule("name", "string")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test string validation with invalid type in strict mode."""
+      rules = [ValidationRule("name", "string")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"name": 123}
+      data = {"name": 123}
 
-        with pytest.raises(ValidationError, match="Field 'name' must be a string"):
-            validator.validate(data)
+      with pytest.raises(ValidationError, match="Field 'name' must be a string"):
+          validator.validate(data)
 
     def test_validate_string_max_length_valid(self) -> None:
-        """Test string validation with valid max length."""
-        rules = [ValidationRule("name", "string", parameters={"max_length": 10})]
-        validator = DataValidator(rules)
+      """Test string validation with valid max length."""
+      rules = [ValidationRule("name", "string", parameters={"max_length": 10})]
+      validator = DataValidator(rules)
 
-        data = {"name": "short"}
-        errors = validator.validate(data)
+      data = {"name": "short"}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_string_max_length_exceeded_non_strict(self) -> None:
-        """Test string validation with exceeded max length in non-strict mode."""
-        rules = [ValidationRule("name", "string", parameters={"max_length": 5})]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test string validation with exceeded max length in non-strict mode."""
+      rules = [ValidationRule("name", "string", parameters={"max_length": 5})]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"name": "very long string"}
-        errors = validator.validate(data)
+      data = {"name": "very long string"}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'name' exceeds maximum length 5" not in errors[0]:
-            msg: str = (
-                f"Expected {"Field 'name' exceeds maximum length 5"} in {errors[0]}"
-            )
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'name' exceeds maximum length 5" not in errors[0]:
+          msg: str = (
+              f"Expected {"Field 'name' exceeds maximum length 5"} in {errors[0]}"
+          )
+          raise AssertionError(msg)
 
     def test_validate_string_max_length_exceeded_strict_mode(self) -> None:
-        """Test string validation with exceeded max length in strict mode."""
-        rules = [ValidationRule("name", "string", parameters={"max_length": 5})]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test string validation with exceeded max length in strict mode."""
+      rules = [ValidationRule("name", "string", parameters={"max_length": 5})]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"name": "very long string"}
+      data = {"name": "very long string"}
 
-        with pytest.raises(
-            ValidationError,
-            match="Field 'name' exceeds maximum length 5",
-        ):
-            validator.validate(data)
+      with pytest.raises(
+          ValidationError,
+          match="Field 'name' exceeds maximum length 5",
+      ):
+          validator.validate(data)
 
     def test_validate_number_valid(self) -> None:
-        """Test number validation with valid values."""
-        rules = [ValidationRule("count", "number")]
-        validator = DataValidator(rules)
+      """Test number validation with valid values."""
+      rules = [ValidationRule("count", "number")]
+      validator = DataValidator(rules)
 
-        # Test with int
-        data = {"count": 42}
-        errors = validator.validate(data)
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      # Test with int
+      data = {"count": 42}
+      errors = validator.validate(data)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
-        # Test with float
-        data_float: dict[str, object] = {"count": 42.5}
-        errors = validator.validate(data_float)
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      # Test with float
+      data_float: dict[str, object] = {"count": 42.5}
+      errors = validator.validate(data_float)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_number_invalid_type_non_strict(self) -> None:
-        """Test number validation with invalid type in non-strict mode."""
-        rules = [ValidationRule("count", "number")]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test number validation with invalid type in non-strict mode."""
+      rules = [ValidationRule("count", "number")]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"count": "not a number"}
-        errors = validator.validate(data)
+      data = {"count": "not a number"}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'count' must be a number" not in errors[0]:
-            msg: str = f"Expected {"Field 'count' must be a number"} in {errors[0]}"
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'count' must be a number" not in errors[0]:
+          msg: str = f"Expected {"Field 'count' must be a number"} in {errors[0]}"
+          raise AssertionError(msg)
 
     def test_validate_number_invalid_type_strict_mode(self) -> None:
-        """Test number validation with invalid type in strict mode."""
-        rules = [ValidationRule("count", "number")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test number validation with invalid type in strict mode."""
+      rules = [ValidationRule("count", "number")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"count": "not a number"}
+      data = {"count": "not a number"}
 
-        with pytest.raises(ValidationError, match="Field 'count' must be a number"):
-            validator.validate(data)
+      with pytest.raises(ValidationError, match="Field 'count' must be a number"):
+          validator.validate(data)
 
     def test_validate_number_min_value_valid(self) -> None:
-        """Test number validation with valid min value."""
-        rules = [ValidationRule("count", "number", min_value=0)]
-        validator = DataValidator(rules)
+      """Test number validation with valid min value."""
+      rules = [ValidationRule("count", "number", min_value=0)]
+      validator = DataValidator(rules)
 
-        data = {"count": 10}
-        errors = validator.validate(data)
+      data = {"count": 10}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_number_below_min_value_non_strict(self) -> None:
-        """Test number validation below min value in non-strict mode."""
-        rules = [ValidationRule("count", "number", min_value=5)]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test number validation below min value in non-strict mode."""
+      rules = [ValidationRule("count", "number", min_value=5)]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"count": 3}
-        errors = validator.validate(data)
+      data = {"count": 3}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'count' below minimum value 5" not in errors[0]:
-            msg: str = (
-                f"Expected {"Field 'count' below minimum value 5"} in {errors[0]}"
-            )
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'count' below minimum value 5" not in errors[0]:
+          msg: str = (
+              f"Expected {"Field 'count' below minimum value 5"} in {errors[0]}"
+          )
+          raise AssertionError(msg)
 
     def test_validate_number_below_min_value_strict_mode(self) -> None:
-        """Test number validation below min value in strict mode."""
-        rules = [ValidationRule("count", "number", min_value=5)]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test number validation below min value in strict mode."""
+      rules = [ValidationRule("count", "number", min_value=5)]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"count": 3}
+      data = {"count": 3}
 
-        with pytest.raises(
-            ValidationError,
-            match="Field 'count' below minimum value 5",
-        ):
-            validator.validate(data)
+      with pytest.raises(
+          ValidationError,
+          match="Field 'count' below minimum value 5",
+      ):
+          validator.validate(data)
 
     def test_validate_number_max_value_valid(self) -> None:
-        """Test number validation with valid max value."""
-        rules = [ValidationRule("count", "number", max_value=100)]
-        validator = DataValidator(rules)
+      """Test number validation with valid max value."""
+      rules = [ValidationRule("count", "number", max_value=100)]
+      validator = DataValidator(rules)
 
-        data = {"count": 50}
-        errors = validator.validate(data)
+      data = {"count": 50}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_number_above_max_value_non_strict(self) -> None:
-        """Test number validation above max value in non-strict mode."""
-        rules = [ValidationRule("count", "number", max_value=10)]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test number validation above max value in non-strict mode."""
+      rules = [ValidationRule("count", "number", max_value=10)]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"count": 15}
-        errors = validator.validate(data)
+      data = {"count": 15}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'count' exceeds maximum value 10" not in errors[0]:
-            msg: str = (
-                f"Expected {"Field 'count' exceeds maximum value 10"} in {errors[0]}"
-            )
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'count' exceeds maximum value 10" not in errors[0]:
+          msg: str = (
+              f"Expected {"Field 'count' exceeds maximum value 10"} in {errors[0]}"
+          )
+          raise AssertionError(msg)
 
     def test_validate_number_above_max_value_strict_mode(self) -> None:
-        """Test number validation above max value in strict mode."""
-        rules = [ValidationRule("count", "number", max_value=10)]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test number validation above max value in strict mode."""
+      rules = [ValidationRule("count", "number", max_value=10)]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"count": 15}
+      data = {"count": 15}
 
-        with pytest.raises(
-            ValidationError,
-            match="Field 'count' exceeds maximum value 10",
-        ):
-            validator.validate(data)
+      with pytest.raises(
+          ValidationError,
+          match="Field 'count' exceeds maximum value 10",
+      ):
+          validator.validate(data)
 
     def test_validate_date_string_valid(self) -> None:
-        """Test date validation with valid string date."""
-        rules = [ValidationRule("created_date", "date")]
-        validator = DataValidator(rules)
+      """Test date validation with valid string date."""
+      rules = [ValidationRule("created_date", "date")]
+      validator = DataValidator(rules)
 
-        data = {"created_date": "2025-01-15"}
-        errors = validator.validate(data)
+      data = {"created_date": "2025-01-15"}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_date_string_custom_format(self) -> None:
-        """Test date validation with custom format."""
-        rules = [ValidationRule("created_date", "date", format="%m/%d/%Y")]
-        validator = DataValidator(rules)
+      """Test date validation with custom format."""
+      rules = [ValidationRule("created_date", "date", format="%m/%d/%Y")]
+      validator = DataValidator(rules)
 
-        data = {"created_date": "01/15/2025"}
-        errors = validator.validate(data)
+      data = {"created_date": "01/15/2025"}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_date_string_invalid_format_non_strict(self) -> None:
-        """Test date validation with invalid format in non-strict mode."""
-        rules = [ValidationRule("created_date", "date")]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test date validation with invalid format in non-strict mode."""
+      rules = [ValidationRule("created_date", "date")]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"created_date": "invalid-date"}
-        errors = validator.validate(data)
+      data = {"created_date": "invalid-date"}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'created_date' is not a valid date format %Y-%m-%d" not in errors[0]:
-            msg: str = f"Expected {"Field 'created_date' is not a valid date format %Y-%m-%d"} in {errors[0]}"
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'created_date' is not a valid date format %Y-%m-%d" not in errors[0]:
+          msg: str = f"Expected {"Field 'created_date' is not a valid date format %Y-%m-%d"} in {errors[0]}"
+          raise AssertionError(msg)
 
     def test_validate_date_string_invalid_format_strict_mode(self) -> None:
-        """Test date validation with invalid format in strict mode."""
-        rules = [ValidationRule("created_date", "date")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test date validation with invalid format in strict mode."""
+      rules = [ValidationRule("created_date", "date")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"created_date": "invalid-date"}
+      data = {"created_date": "invalid-date"}
 
-        with pytest.raises(
-            ValidationError,
-            match="Field 'created_date' is not a valid date format",
-        ):
-            validator.validate(data)
+      with pytest.raises(
+          ValidationError,
+          match="Field 'created_date' is not a valid date format",
+      ):
+          validator.validate(data)
 
     def test_validate_date_datetime_object_valid(self) -> None:
-        """Test date validation with datetime object."""
-        rules = [ValidationRule("created_date", "date")]
-        validator = DataValidator(rules)
+      """Test date validation with datetime object."""
+      rules = [ValidationRule("created_date", "date")]
+      validator = DataValidator(rules)
 
-        data = {"created_date": datetime(2025, 1, 15, tzinfo=UTC)}
-        errors = validator.validate(data)
+      data = {"created_date": datetime(2025, 1, 15, tzinfo=UTC)}
+      errors = validator.validate(data)
 
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_date_invalid_type_non_strict(self) -> None:
-        """Test date validation with invalid type in non-strict mode."""
-        rules = [ValidationRule("created_date", "date")]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test date validation with invalid type in non-strict mode."""
+      rules = [ValidationRule("created_date", "date")]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"created_date": 123}  # Not a date or string
-        errors = validator.validate(data)
+      data = {"created_date": 123}  # Not a date or string
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'created_date' must be a valid date" not in errors[0]:
-            msg = (
-                f"Expected {"Field 'created_date' must be a valid date"} in {errors[0]}"
-            )
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'created_date' must be a valid date" not in errors[0]:
+          msg = (
+              f"Expected {"Field 'created_date' must be a valid date"} in {errors[0]}"
+          )
+          raise AssertionError(msg)
 
     def test_validate_date_invalid_type_strict_mode(self) -> None:
-        """Test date validation with invalid type in strict mode."""
-        rules = [ValidationRule("created_date", "date")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test date validation with invalid type in strict mode."""
+      rules = [ValidationRule("created_date", "date")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"created_date": 123}
+      data = {"created_date": 123}
 
-        with pytest.raises(
-            ValidationError,
-            match="Field 'created_date' must be a valid date",
-        ):
-            validator.validate(data)
+      with pytest.raises(
+          ValidationError,
+          match="Field 'created_date' must be a valid date",
+      ):
+          validator.validate(data)
 
     def test_validate_boolean_valid(self) -> None:
-        """Test boolean validation with valid values."""
-        rules = [ValidationRule("active", "boolean")]
-        validator = DataValidator(rules)
+      """Test boolean validation with valid values."""
+      rules = [ValidationRule("active", "boolean")]
+      validator = DataValidator(rules)
 
-        data = {"active": True}
-        errors = validator.validate(data)
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      data = {"active": True}
+      errors = validator.validate(data)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
-        data = {"active": False}
-        errors = validator.validate(data)
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      data = {"active": False}
+      errors = validator.validate(data)
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_boolean_invalid_type_non_strict(self) -> None:
-        """Test boolean validation with invalid type in non-strict mode."""
-        rules = [ValidationRule("active", "boolean")]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test boolean validation with invalid type in non-strict mode."""
+      rules = [ValidationRule("active", "boolean")]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"active": "not a boolean"}
-        errors = validator.validate(data)
+      data = {"active": "not a boolean"}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        if "Field 'active' must be a boolean" not in errors[0]:
-            msg: str = f"Expected {"Field 'active' must be a boolean"} in {errors[0]}"
-            raise AssertionError(msg)
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      if "Field 'active' must be a boolean" not in errors[0]:
+          msg: str = f"Expected {"Field 'active' must be a boolean"} in {errors[0]}"
+          raise AssertionError(msg)
 
     def test_validate_boolean_invalid_type_strict_mode(self) -> None:
-        """Test boolean validation with invalid type in strict mode."""
-        rules = [ValidationRule("active", "boolean")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test boolean validation with invalid type in strict mode."""
+      rules = [ValidationRule("active", "boolean")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"active": "not a boolean"}
+      data = {"active": "not a boolean"}
 
-        with pytest.raises(ValidationError, match="Field 'active' must be a boolean"):
-            validator.validate(data)
+      with pytest.raises(ValidationError, match="Field 'active' must be a boolean"):
+          validator.validate(data)
 
     def test_validate_email_valid(self) -> None:
-        """Test email validation with valid email addresses."""
-        rules = [ValidationRule("email", "email")]
-        validator = DataValidator(rules)
+      """Test email validation with valid email addresses."""
+      rules = [ValidationRule("email", "email")]
+      validator = DataValidator(rules)
 
-        valid_emails = [
-            "test@example.com",
-            "user.name@domain.org",
-            "user+tag@domain.co.uk",
-            "123@domain123.com",
-        ]
+      valid_emails = [
+          "test@example.com",
+          "user.name@domain.org",
+          "user+tag@domain.co.uk",
+          "123@domain123.com",
+      ]
 
-        for email in valid_emails:
-            data = {"email": email}
-            errors = validator.validate(data)
-            if len(errors) != 0:
-                msg: str = f"Expected 0 errors for email {email}, got {len(errors)}"
-                raise AssertionError(msg)
+      for email in valid_emails:
+          data = {"email": email}
+          errors = validator.validate(data)
+          if len(errors) != 0:
+              msg: str = f"Expected 0 errors for email {email}, got {len(errors)}"
+              raise AssertionError(msg)
 
     def test_validate_email_invalid_non_strict(self) -> None:
-        """Test email validation with invalid emails in non-strict mode."""
-        rules = [ValidationRule("email", "email")]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test email validation with invalid emails in non-strict mode."""
+      rules = [ValidationRule("email", "email")]
+      validator = DataValidator(rules, strict_mode=False)
 
-        invalid_emails = [
-            "invalid",
-            "invalid@",
-            "@invalid.com",
-            "invalid@.com",
-            "invalid.com",
-            123,  # Not a string
-        ]
+      invalid_emails = [
+          "invalid",
+          "invalid@",
+          "@invalid.com",
+          "invalid@.com",
+          "invalid.com",
+          123,  # Not a string
+      ]
 
-        for email in invalid_emails:
-            data = {"email": email}
-            errors = validator.validate(data)
-            if len(errors) != 1:
-                msg: str = f"Expected 1 error for email {email}, got {len(errors)}"
-                raise AssertionError(msg)
-            if "Field 'email' must be a valid email address" not in errors[0]:
-                msg: str = f"Expected {"Field 'email' must be a valid email address"} in {errors[0]}"
-                raise AssertionError(msg)
+      for email in invalid_emails:
+          data = {"email": email}
+          errors = validator.validate(data)
+          if len(errors) != 1:
+              msg: str = f"Expected 1 error for email {email}, got {len(errors)}"
+              raise AssertionError(msg)
+          if "Field 'email' must be a valid email address" not in errors[0]:
+              msg: str = f"Expected {"Field 'email' must be a valid email address"} in {errors[0]}"
+              raise AssertionError(msg)
 
     def test_validate_email_invalid_strict_mode(self) -> None:
-        """Test email validation with invalid email in strict mode."""
-        rules = [ValidationRule("email", "email")]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test email validation with invalid email in strict mode."""
+      rules = [ValidationRule("email", "email")]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"email": "invalid-email"}
+      data = {"email": "invalid-email"}
 
-        with pytest.raises(
-            ValidationError,
-            match="Field 'email' must be a valid email address",
-        ):
-            validator.validate(data)
+      with pytest.raises(
+          ValidationError,
+          match="Field 'email' must be a valid email address",
+      ):
+          validator.validate(data)
 
     def test_validate_enum_valid(self) -> None:
-        """Test enum validation with valid values."""
-        allowed_values = ["active", "inactive", "pending"]
-        rules = [ValidationRule("status", "enum", allowed_values=allowed_values)]
-        validator = DataValidator(rules)
+      """Test enum validation with valid values."""
+      allowed_values = ["active", "inactive", "pending"]
+      rules = [ValidationRule("status", "enum", allowed_values=allowed_values)]
+      validator = DataValidator(rules)
 
-        for value in allowed_values:
-            data = {"status": value}
-            errors = validator.validate(data)
-            if len(errors) != 0:
-                msg: str = f"Expected 0 errors for status {value}, got {len(errors)}"
-                raise AssertionError(msg)
+      for value in allowed_values:
+          data = {"status": value}
+          errors = validator.validate(data)
+          if len(errors) != 0:
+              msg: str = f"Expected 0 errors for status {value}, got {len(errors)}"
+              raise AssertionError(msg)
 
     def test_validate_enum_invalid_non_strict(self) -> None:
-        """Test enum validation with invalid value in non-strict mode."""
-        allowed_values = ["active", "inactive", "pending"]
-        rules = [ValidationRule("status", "enum", allowed_values=allowed_values)]
-        validator = DataValidator(rules, strict_mode=False)
+      """Test enum validation with invalid value in non-strict mode."""
+      allowed_values = ["active", "inactive", "pending"]
+      rules = [ValidationRule("status", "enum", allowed_values=allowed_values)]
+      validator = DataValidator(rules, strict_mode=False)
 
-        data = {"status": "invalid_status"}
-        errors = validator.validate(data)
+      data = {"status": "invalid_status"}
+      errors = validator.validate(data)
 
-        if len(errors) != 1:
-            msg: str = f"Expected {1}, got {len(errors)}"
-            raise AssertionError(msg)
-        assert (
-            "Field 'status' must be one of ['active', 'inactive', 'pending']"
-            in errors[0]
-        )
+      if len(errors) != 1:
+          msg: str = f"Expected {1}, got {len(errors)}"
+          raise AssertionError(msg)
+      assert (
+          "Field 'status' must be one of ['active', 'inactive', 'pending']"
+          in errors[0]
+      )
 
     def test_validate_enum_invalid_strict_mode(self) -> None:
-        """Test enum validation with invalid value in strict mode."""
-        allowed_values = ["active", "inactive"]
-        rules = [ValidationRule("status", "enum", allowed_values=allowed_values)]
-        validator = DataValidator(rules, strict_mode=True)
+      """Test enum validation with invalid value in strict mode."""
+      allowed_values = ["active", "inactive"]
+      rules = [ValidationRule("status", "enum", allowed_values=allowed_values)]
+      validator = DataValidator(rules, strict_mode=True)
 
-        data = {"status": "invalid_status"}
+      data = {"status": "invalid_status"}
 
-        with pytest.raises(ValidationError, match="Field 'status' must be one of"):
-            validator.validate(data)
+      with pytest.raises(ValidationError, match="Field 'status' must be one of"):
+          validator.validate(data)
 
     def test_validate_unknown_rule_type_ignored(self) -> None:
-        """Test that unknown rule types are ignored."""
-        rules = [ValidationRule("field", "unknown_rule_type")]
-        validator = DataValidator(rules)
+      """Test that unknown rule types are ignored."""
+      rules = [ValidationRule("field", "unknown_rule_type")]
+      validator = DataValidator(rules)
 
-        data = {"field": "any value"}
-        errors = validator.validate(data)
+      data = {"field": "any value"}
+      errors = validator.validate(data)
 
-        # Unknown rule types should be ignored without error
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      # Unknown rule types should be ignored without error
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
     def test_validate_null_value_skipped(self) -> None:
-        """Test that null values are skipped for validation."""
-        rules = [ValidationRule("optional_field", "string")]
-        validator = DataValidator(rules)
+      """Test that null values are skipped for validation."""
+      rules = [ValidationRule("optional_field", "string")]
+      validator = DataValidator(rules)
 
-        data = {"optional_field": None}
-        errors = validator.validate(data)
+      data = {"optional_field": None}
+      errors = validator.validate(data)
 
-        # None values should be skipped
-        if len(errors) != 0:
-            msg: str = f"Expected {0}, got {len(errors)}"
-            raise AssertionError(msg)
+      # None values should be skipped
+      if len(errors) != 0:
+          msg: str = f"Expected {0}, got {len(errors)}"
+          raise AssertionError(msg)
 
 
 class TestRecordValidationAndConversion:
     """Test record validation and conversion functionality."""
 
     def test_validate_and_convert_record_no_schema_properties(self) -> None:
-        """Test record conversion with no schema properties."""
-        validator = DataValidator()
+      """Test record conversion with no schema properties."""
+      validator = DataValidator()
 
-        record = {"field1": "value1", "field2": "value2"}
-        schema: dict[str, object] = {}  # No properties
+      record = {"field1": "value1", "field2": "value2"}
+      schema: dict[str, object] = {}  # No properties
 
-        result = validator.validate_and_convert_record(record, schema)
+      result = validator.validate_and_convert_record(record, schema)
 
-        if result != record:  # Should return unchanged
-            msg: str = f"Expected record unchanged, got {result}"
-            raise AssertionError(msg)
+      if result != record:  # Should return unchanged
+          msg: str = f"Expected record unchanged, got {result}"
+          raise AssertionError(msg)
 
     def test_validate_and_convert_record_basic(self) -> None:
-        """Test basic record conversion."""
-        validator = DataValidator()
+      """Test basic record conversion."""
+      validator = DataValidator()
 
-        record = {"name": "test", "age": "25", "active": True}
-        schema = {
-            "properties": {
-                "name": {"type": "string"},
-                "age": {"type": "integer"},
-                "active": {"type": "boolean"},
-            },
-        }
+      record = {"name": "test", "age": "25", "active": True}
+      schema = {
+          "properties": {
+              "name": {"type": "string"},
+              "age": {"type": "integer"},
+              "active": {"type": "boolean"},
+          },
+      }
 
-        result = validator.validate_and_convert_record(record, schema)
+      result = validator.validate_and_convert_record(record, schema)
 
-        if result["name"] != "test":
-            msg: str = f"Expected {'test'}, got {result['name']}"
-            raise AssertionError(msg)
-        assert result["age"] == 25
-        if not (result["active"]):
-            msg: str = f"Expected True, got {result['active']}"
-            raise AssertionError(msg)
+      if result["name"] != "test":
+          msg: str = f"Expected {'test'}, got {result['name']}"
+          raise AssertionError(msg)
+      assert result["age"] == 25
+      if not (result["active"]):
+          msg: str = f"Expected True, got {result['active']}"
+          raise AssertionError(msg)
 
     def test_validate_and_convert_record_unknown_fields_preserved(self) -> None:
-        """Test that unknown fields are passed through unchanged."""
-        validator = DataValidator()
+      """Test that unknown fields are passed through unchanged."""
+      validator = DataValidator()
 
-        record = {"known_field": "value", "unknown_field": "preserve_me"}
-        schema = {
-            "properties": {
-                "known_field": {"type": "string"},
-            },
-        }
+      record = {"known_field": "value", "unknown_field": "preserve_me"}
+      schema = {
+          "properties": {
+              "known_field": {"type": "string"},
+          },
+      }
 
-        result = validator.validate_and_convert_record(record, schema)
+      result = validator.validate_and_convert_record(record, schema)
 
-        if result["known_field"] != "value":
-            msg: str = f"Expected {'value'}, got {result['known_field']}"
-            raise AssertionError(msg)
-        assert result["unknown_field"] == "preserve_me"
+      if result["known_field"] != "value":
+          msg: str = f"Expected {'value'}, got {result['known_field']}"
+          raise AssertionError(msg)
+      assert result["unknown_field"] == "preserve_me"
 
     def test_convert_field_null_and_empty_values(self) -> None:
-        """Test field conversion with null and empty values."""
-        validator = DataValidator()
+      """Test field conversion with null and empty values."""
+      validator = DataValidator()
 
-        field_schema = {"type": "string"}
+      field_schema = {"type": "string"}
 
-        # Test None
-        result = validator._convert_field(
-            value=None,
-            field_schema=field_schema,
-            field_name="test_field",
-        )
-        assert result is None
-        if validator.conversion_stats["nulls_handled"] != 1:
-            msg: str = (
-                f"Expected {1}, got {validator.conversion_stats['nulls_handled']}"
-            )
-            raise AssertionError(msg)
+      # Test None
+      result = validator._convert_field(
+          value=None,
+          field_schema=field_schema,
+          field_name="test_field",
+      )
+      assert result is None
+      if validator.conversion_stats["nulls_handled"] != 1:
+          msg: str = (
+              f"Expected {1}, got {validator.conversion_stats['nulls_handled']}"
+          )
+          raise AssertionError(msg)
 
-        # Test empty string
-        result = validator._convert_field(
-            value="",
-            field_schema=field_schema,
-            field_name="test_field",
-        )
-        assert result is None
-        if validator.conversion_stats["nulls_handled"] != EXPECTED_BULK_SIZE:
-            msg: str = (
-                f"Expected {2}, got {validator.conversion_stats['nulls_handled']}"
-            )
-            raise AssertionError(msg)
+      # Test empty string
+      result = validator._convert_field(
+          value="",
+          field_schema=field_schema,
+          field_name="test_field",
+      )
+      assert result is None
+      if validator.conversion_stats["nulls_handled"] != EXPECTED_BULK_SIZE:
+          msg: str = (
+              f"Expected {2}, got {validator.conversion_stats['nulls_handled']}"
+          )
+          raise AssertionError(msg)
 
     def test_convert_field_nullable_type_array(self) -> None:
-        """Test field conversion with nullable type array."""
-        validator = DataValidator()
+      """Test field conversion with nullable type array."""
+      validator = DataValidator()
 
-        field_schema = {"type": ["string", "null"]}
+      field_schema = {"type": ["string", "null"]}
 
-        result = validator._convert_field(
-            value="test_value",
-            field_schema=field_schema,
-            field_name="test_field",
-        )
+      result = validator._convert_field(
+          value="test_value",
+          field_schema=field_schema,
+          field_name="test_field",
+      )
 
-        if result != "test_value":
-            msg: str = f"Expected {'test_value'}, got {result}"
-            raise AssertionError(msg)
+      if result != "test_value":
+          msg: str = f"Expected {'test_value'}, got {result}"
+          raise AssertionError(msg)
 
     def test_convert_field_only_null_type_defaults_to_string(self) -> None:
-        """Test field conversion with only null type defaults to string."""
-        validator = DataValidator()
+      """Test field conversion with only null type defaults to string."""
+      validator = DataValidator()
 
-        field_schema = {"type": ["null"]}
+      field_schema = {"type": ["null"]}
 
-        result = validator._convert_field(
-            value="test_value",
-            field_schema=field_schema,
-            field_name="test_field",
-        )
+      result = validator._convert_field(
+          value="test_value",
+          field_schema=field_schema,
+          field_name="test_field",
+      )
 
-        if result != "test_value":
-            msg: str = f"Expected {'test_value'}, got {result}"
-            raise AssertionError(msg)
+      if result != "test_value":
+          msg: str = f"Expected {'test_value'}, got {result}"
+          raise AssertionError(msg)
 
     def test_convert_field_number_type(self) -> None:
-        """Test field conversion for number type."""
-        validator = DataValidator()
+      """Test field conversion for number type."""
+      validator = DataValidator()
 
-        field_schema = {"type": "number"}
+      field_schema = {"type": "number"}
 
-        # String to number
-        result = validator._convert_field(
-            value="123.45",
-            field_schema=field_schema,
-            field_name="test_field",
-        )
-        if result != 123.45:
-            msg: str = f"Expected {123.45}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["strings_converted_to_numbers"] == 1
+      # String to number
+      result = validator._convert_field(
+          value="123.45",
+          field_schema=field_schema,
+          field_name="test_field",
+      )
+      if result != 123.45:
+          msg: str = f"Expected {123.45}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["strings_converted_to_numbers"] == 1
 
     def test_convert_field_integer_type(self) -> None:
-        """Test field conversion for integer type."""
-        validator = DataValidator()
+      """Test field conversion for integer type."""
+      validator = DataValidator()
 
-        field_schema = {"type": "integer"}
+      field_schema = {"type": "integer"}
 
-        # String to integer
-        result = validator._convert_field(
-            value="42",
-            field_schema=field_schema,
-            field_name="test_field",
-        )
-        if result != 42:
-            msg: str = f"Expected {42}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["strings_converted_to_numbers"] == 1
+      # String to integer
+      result = validator._convert_field(
+          value="42",
+          field_schema=field_schema,
+          field_name="test_field",
+      )
+      if result != 42:
+          msg: str = f"Expected {42}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["strings_converted_to_numbers"] == 1
 
     def test_convert_field_boolean_type(self) -> None:
-        """Test field conversion for boolean type."""
-        validator = DataValidator()
+      """Test field conversion for boolean type."""
+      validator = DataValidator()
 
-        field_schema = {"type": "boolean"}
+      field_schema = {"type": "boolean"}
 
-        result = validator._convert_field(
-            value="true",
-            field_schema=field_schema,
-            field_name="test_field",
-        )
+      result = validator._convert_field(
+          value="true",
+          field_schema=field_schema,
+          field_name="test_field",
+      )
 
-        if not (result):
-            msg: str = f"Expected True, got {result}"
-            raise AssertionError(msg)
+      if not (result):
+          msg: str = f"Expected True, got {result}"
+          raise AssertionError(msg)
 
     def test_convert_field_date_format(self) -> None:
-        """Test field conversion for date format."""
-        validator = DataValidator()
+      """Test field conversion for date format."""
+      validator = DataValidator()
 
-        field_schema = {"type": "string", "format": "date"}
+      field_schema = {"type": "string", "format": "date"}
 
-        result = validator._convert_field(
-            value="2025-01-15",
-            field_schema=field_schema,
-            field_name="test_field",
-        )
+      result = validator._convert_field(
+          value="2025-01-15",
+          field_schema=field_schema,
+          field_name="test_field",
+      )
 
-        if result != "2025-01-15":
-            msg: str = f"Expected {'2025-01-15'}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      if result != "2025-01-15":
+          msg: str = f"Expected {'2025-01-15'}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_field_date_time_format(self) -> None:
-        """Test field conversion for date-time format."""
-        validator = DataValidator()
+      """Test field conversion for date-time format."""
+      validator = DataValidator()
 
-        field_schema = {"type": "string", "format": "date-time"}
+      field_schema = {"type": "string", "format": "date-time"}
 
-        result = validator._convert_field(
-            value="2025-01-15T10:00:00",
-            field_schema=field_schema,
-            field_name="test_field",
-        )
+      result = validator._convert_field(
+          value="2025-01-15T10:00:00",
+          field_schema=field_schema,
+          field_name="test_field",
+      )
 
-        if result != "2025-01-15T10:00:00":
-            msg: str = f"Expected {'2025-01-15T10:00:00'}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      if result != "2025-01-15T10:00:00":
+          msg: str = f"Expected {'2025-01-15T10:00:00'}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_field_string_default(self) -> None:
-        """Test field conversion defaults to string."""
-        validator = DataValidator()
+      """Test field conversion defaults to string."""
+      validator = DataValidator()
 
-        field_schema = {"type": "string"}
+      field_schema = {"type": "string"}
 
-        result = validator._convert_field(
-            value=123,
-            field_schema=field_schema,
-            field_name="test_field",
-        )
+      result = validator._convert_field(
+          value=123,
+          field_schema=field_schema,
+          field_name="test_field",
+      )
 
-        if result != "123":
-            msg: str = f"Expected {'123'}, got {result}"
-            raise AssertionError(msg)
+      if result != "123":
+          msg: str = f"Expected {'123'}, got {result}"
+          raise AssertionError(msg)
 
     def test_convert_field_conversion_error(self) -> None:
-        """Test field conversion error handling."""
-        validator = DataValidator()
+      """Test field conversion error handling."""
+      validator = DataValidator()
 
-        field_schema = {"type": "integer"}
+      field_schema = {"type": "integer"}
 
-        with pytest.raises(ValueError, match="Failed to convert field 'test_field'"):
-            validator._convert_field(
-                value="not a number",
-                field_schema=field_schema,
-                field_name="test_field",
-            )
+      with pytest.raises(ValueError, match="Failed to convert field 'test_field'"):
+          validator._convert_field(
+              value="not a number",
+              field_schema=field_schema,
+              field_name="test_field",
+          )
 
-        if validator.conversion_stats["validation_errors"] != 1:
-            msg: str = (
-                f"Expected {1}, got {validator.conversion_stats['validation_errors']}"
-            )
-            raise AssertionError(msg)
+      if validator.conversion_stats["validation_errors"] != 1:
+          msg: str = (
+              f"Expected {1}, got {validator.conversion_stats['validation_errors']}"
+          )
+          raise AssertionError(msg)
 
 
 class TestNumberConversion:
     """Test number conversion functionality."""
 
     def test_convert_to_number_already_number(self) -> None:
-        """Test converting number that's already a number."""
-        validator = DataValidator()
+      """Test converting number that's already a number."""
+      validator = DataValidator()
 
-        # Integer
-        result = validator._convert_to_number(42, "integer", "test_field")
-        if result != 42:
-            msg: str = f"Expected {42}, got {result}"
-            raise AssertionError(msg)
+      # Integer
+      result = validator._convert_to_number(42, "integer", "test_field")
+      if result != 42:
+          msg: str = f"Expected {42}, got {result}"
+          raise AssertionError(msg)
 
-        # Float
-        result = validator._convert_to_number(42.5, "number", "test_field")
-        if result != 42.5:
-            msg: str = f"Expected {42.5}, got {result}"
-            raise AssertionError(msg)
+      # Float
+      result = validator._convert_to_number(42.5, "number", "test_field")
+      if result != 42.5:
+          msg: str = f"Expected {42.5}, got {result}"
+          raise AssertionError(msg)
 
     def test_convert_to_number_string_input(self) -> None:
-        """Test converting string to number."""
-        validator = DataValidator()
+      """Test converting string to number."""
+      validator = DataValidator()
 
-        result = validator._convert_to_number("123", "integer", "test_field")
-        if result != 123:
-            msg: str = f"Expected {123}, got {result}"
-            raise AssertionError(msg)
+      result = validator._convert_to_number("123", "integer", "test_field")
+      if result != 123:
+          msg: str = f"Expected {123}, got {result}"
+          raise AssertionError(msg)
 
     def test_convert_to_number_other_types(self) -> None:
-        """Test converting other types to number."""
-        validator = DataValidator()
+      """Test converting other types to number."""
+      validator = DataValidator()
 
-        # None
-        result = validator._convert_other_to_number(None, "integer")
-        assert result is None
+      # None
+      result = validator._convert_other_to_number(None, "integer")
+      assert result is None
 
-        # Boolean to integer
-        result = validator._convert_other_to_number(True, "integer")
-        if result != 1:
-            msg: str = f"Expected {1}, got {result}"
-            raise AssertionError(msg)
+      # Boolean to integer
+      result = validator._convert_other_to_number(True, "integer")
+      if result != 1:
+          msg: str = f"Expected {1}, got {result}"
+          raise AssertionError(msg)
 
     def test_convert_string_to_number_cleaned(self) -> None:
-        """Test string to number conversion with cleaning."""
-        validator = DataValidator()
+      """Test string to number conversion with cleaning."""
+      validator = DataValidator()
 
-        # Test cleaning of currency and commas
-        result = validator._convert_string_to_number("$1,234.56", "number")
-        if result != 1234.56:
-            msg: str = f"Expected {1234.56}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["strings_converted_to_numbers"] == 1
+      # Test cleaning of currency and commas
+      result = validator._convert_string_to_number("$1,234.56", "number")
+      if result != 1234.56:
+          msg: str = f"Expected {1234.56}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["strings_converted_to_numbers"] == 1
 
     def test_convert_string_to_number_empty_string(self) -> None:
-        """Test string to number conversion with empty string."""
-        validator = DataValidator()
+      """Test string to number conversion with empty string."""
+      validator = DataValidator()
 
-        result = validator._convert_string_to_number("   ", "number")
-        assert result is None
+      result = validator._convert_string_to_number("   ", "number")
+      assert result is None
 
     def test_convert_string_to_number_invalid_string(self) -> None:
-        """Test string to number conversion with invalid string."""
-        validator = DataValidator()
+      """Test string to number conversion with invalid string."""
+      validator = DataValidator()
 
-        with pytest.raises(ValueError, match="Cannot convert 'invalid' to integer"):
-            validator._convert_string_to_number("invalid", "integer")
+      with pytest.raises(ValueError, match="Cannot convert 'invalid' to integer"):
+          validator._convert_string_to_number("invalid", "integer")
 
     def test_clean_numeric_string(self) -> None:
-        """Test numeric string cleaning."""
-        validator = DataValidator()
+      """Test numeric string cleaning."""
+      validator = DataValidator()
 
-        # Test cleaning of various formats
-        if validator._clean_numeric_string("  $1,234.56  ") != "1234.56":
-            msg: str = f"Expected {'1234.56'}, got {validator._clean_numeric_string('  $1,234.56  ')}"
-            raise AssertionError(msg)
-        assert validator._clean_numeric_string("$123") == "123"
-        if validator._clean_numeric_string("1,000") != "1000":
-            msg: str = (
-                f"Expected {'1000'}, got {validator._clean_numeric_string('1,000')}"
-            )
-            raise AssertionError(msg)
+      # Test cleaning of various formats
+      if validator._clean_numeric_string("  $1,234.56  ") != "1234.56":
+          msg: str = f"Expected {'1234.56'}, got {validator._clean_numeric_string('  $1,234.56  ')}"
+          raise AssertionError(msg)
+      assert validator._clean_numeric_string("$123") == "123"
+      if validator._clean_numeric_string("1,000") != "1000":
+          msg: str = (
+              f"Expected {'1000'}, got {validator._clean_numeric_string('1,000')}"
+          )
+          raise AssertionError(msg)
 
     def test_convert_to_integer_decimal_handling(self) -> None:
-        """Test integer conversion with decimal handling."""
-        validator = DataValidator()
+      """Test integer conversion with decimal handling."""
+      validator = DataValidator()
 
-        # Whole number as decimal
-        result = validator._convert_to_integer("42.0")
-        if result != 42:
-            msg: str = f"Expected {42}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["strings_converted_to_numbers"] == 1
+      # Whole number as decimal
+      result = validator._convert_to_integer("42.0")
+      if result != 42:
+          msg: str = f"Expected {42}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["strings_converted_to_numbers"] == 1
 
-        # Non-whole decimal should raise error
-        with pytest.raises(ValueError, match="Cannot convert decimal 42.5 to integer"):
-            validator._convert_to_integer("42.5")
+      # Non-whole decimal should raise error
+      with pytest.raises(ValueError, match="Cannot convert decimal 42.5 to integer"):
+          validator._convert_to_integer("42.5")
 
     def test_convert_to_integer_whole_number(self) -> None:
-        """Test integer conversion with whole number string."""
-        validator = DataValidator()
+      """Test integer conversion with whole number string."""
+      validator = DataValidator()
 
-        result = validator._convert_to_integer("123")
-        if result != 123:
-            msg: str = f"Expected {123}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["strings_converted_to_numbers"] == 1
+      result = validator._convert_to_integer("123")
+      if result != 123:
+          msg: str = f"Expected {123}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["strings_converted_to_numbers"] == 1
 
     def test_convert_other_to_number_error(self) -> None:
-        """Test error handling in other type conversion."""
-        validator = DataValidator()
+      """Test error handling in other type conversion."""
+      validator = DataValidator()
 
-        with pytest.raises(
-            ValueError,
-            match="Cannot convert <class 'str'> 'invalid' to integer",
-        ):
-            validator._convert_other_to_number("invalid", "integer")
+      with pytest.raises(
+          ValueError,
+          match="Cannot convert <class 'str'> 'invalid' to integer",
+      ):
+          validator._convert_other_to_number("invalid", "integer")
 
 
 class TestBooleanConversion:
     """Test boolean conversion functionality."""
 
     def test_convert_to_boolean_already_boolean(self) -> None:
-        """Test converting boolean that's already boolean."""
-        validator = DataValidator()
+      """Test converting boolean that's already boolean."""
+      validator = DataValidator()
 
-        assert (
-            validator._convert_to_boolean(value=True, _field_name="test", _strict=False)
-            is True
-        )
-        assert (
-            validator._convert_to_boolean(
-                value=False,
-                _field_name="test",
-                _strict=False,
-            )
-            is False
-        )
+      assert (
+          validator._convert_to_boolean(value=True, _field_name="test", _strict=False)
+          is True
+      )
+      assert (
+          validator._convert_to_boolean(
+              value=False,
+              _field_name="test",
+              _strict=False,
+          )
+          is False
+      )
 
     def test_convert_to_boolean_string_truthy(self) -> None:
-        """Test converting truthy string values to boolean."""
-        validator = DataValidator()
+      """Test converting truthy string values to boolean."""
+      validator = DataValidator()
 
-        truthy_values = ["true", "t", "yes", "y", "1", "on", "TRUE", "True", " TRUE "]
+      truthy_values = ["true", "t", "yes", "y", "1", "on", "TRUE", "True", " TRUE "]
 
-        for value in truthy_values:
-            result = validator._convert_to_boolean(
-                value=value,
-                _field_name="test",
-                _strict=False,
-            )
-            assert result is True, f"Value '{value}' should convert to True"
+      for value in truthy_values:
+          result = validator._convert_to_boolean(
+              value=value,
+              _field_name="test",
+              _strict=False,
+          )
+          assert result is True, f"Value '{value}' should convert to True"
 
     def test_convert_to_boolean_string_falsy(self) -> None:
-        """Test converting falsy string values to boolean."""
-        validator = DataValidator()
+      """Test converting falsy string values to boolean."""
+      validator = DataValidator()
 
-        falsy_values = [
-            "false",
-            "f",
-            "no",
-            "n",
-            "0",
-            "off",
-            "FALSE",
-            "False",
-            " FALSE ",
-        ]
+      falsy_values = [
+          "false",
+          "f",
+          "no",
+          "n",
+          "0",
+          "off",
+          "FALSE",
+          "False",
+          " FALSE ",
+      ]
 
-        for value in falsy_values:
-            result = validator._convert_to_boolean(
-                value=value,
-                _field_name="test",
-                _strict=False,
-            )
-            assert result is False, f"Value '{value}' should convert to False"
+      for value in falsy_values:
+          result = validator._convert_to_boolean(
+              value=value,
+              _field_name="test",
+              _strict=False,
+          )
+          assert result is False, f"Value '{value}' should convert to False"
 
     def test_convert_to_boolean_string_invalid(self) -> None:
-        """Test converting invalid string to boolean raises error."""
-        validator = DataValidator()
+      """Test converting invalid string to boolean raises error."""
+      validator = DataValidator()
 
-        with pytest.raises(
-            ValueError,
-            match="Cannot convert string 'maybe' to boolean",
-        ):
-            validator._convert_to_boolean(
-                value="maybe",
-                _field_name="test",
-                _strict=False,
-            )
+      with pytest.raises(
+          ValueError,
+          match="Cannot convert string 'maybe' to boolean",
+      ):
+          validator._convert_to_boolean(
+              value="maybe",
+              _field_name="test",
+              _strict=False,
+          )
 
     def test_convert_to_boolean_other_types(self) -> None:
-        """Test converting other types to boolean."""
-        validator = DataValidator()
+      """Test converting other types to boolean."""
+      validator = DataValidator()
 
-        # Truthy values
-        assert (
-            validator._convert_to_boolean(value=1, _field_name="test", _strict=False)
-            is True
-        )
-        assert (
-            validator._convert_to_boolean(value=42, _field_name="test", _strict=False)
-            is True
-        )
-        # Lists are not supported by _convert_to_boolean - test with numeric values
-        assert (
-            validator._convert_to_boolean(value=1.5, _field_name="test", _strict=False)
-            is True
-        )
+      # Truthy values
+      assert (
+          validator._convert_to_boolean(value=1, _field_name="test", _strict=False)
+          is True
+      )
+      assert (
+          validator._convert_to_boolean(value=42, _field_name="test", _strict=False)
+          is True
+      )
+      # Lists are not supported by _convert_to_boolean - test with numeric values
+      assert (
+          validator._convert_to_boolean(value=1.5, _field_name="test", _strict=False)
+          is True
+      )
 
-        # Falsy values
-        assert (
-            validator._convert_to_boolean(value=0, _field_name="test", _strict=False)
-            is False
-        )
-        assert (
-            validator._convert_to_boolean(value=0.0, _field_name="test", _strict=False)
-            is False
-        )
+      # Falsy values
+      assert (
+          validator._convert_to_boolean(value=0, _field_name="test", _strict=False)
+          is False
+      )
+      assert (
+          validator._convert_to_boolean(value=0.0, _field_name="test", _strict=False)
+          is False
+      )
 
 
 class TestDateConversion:
     """Test date conversion functionality."""
 
     def test_convert_to_date_datetime_object(self) -> None:
-        """Test converting datetime object to date string."""
-        validator = DataValidator()
+      """Test converting datetime object to date string."""
+      validator = DataValidator()
 
-        dt = datetime(2025, 1, 15, 10, 30, 45, tzinfo=UTC)
-        result = validator._convert_to_date(dt, "date-time", "test_field")
+      dt = datetime(2025, 1, 15, 10, 30, 45, tzinfo=UTC)
+      result = validator._convert_to_date(dt, "date-time", "test_field")
 
-        # ISO format includes timezone when present
-        if result not in {"2025-01-15T10:30:45", "2025-01-15T10:30:45+00:00"}:
-            msg: str = f"Expected '2025-01-15T10:30:45' or '2025-01-15T10:30:45+00:00', got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      # ISO format includes timezone when present
+      if result not in {"2025-01-15T10:30:45", "2025-01-15T10:30:45+00:00"}:
+          msg: str = f"Expected '2025-01-15T10:30:45' or '2025-01-15T10:30:45+00:00', got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_to_date_date_object(self) -> None:
-        """Test converting date object to date string."""
-        validator = DataValidator()
+      """Test converting date object to date string."""
+      validator = DataValidator()
 
-        d = date(2025, 1, 15)
-        result = validator._convert_to_date(d, "date", "test_field")
+      d = date(2025, 1, 15)
+      result = validator._convert_to_date(d, "date", "test_field")
 
-        if result != "2025-01-15":
-            msg: str = f"Expected {'2025-01-15'}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      if result != "2025-01-15":
+          msg: str = f"Expected {'2025-01-15'}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_to_date_string_iso_datetime(self) -> None:
-        """Test converting ISO datetime string."""
-        validator = DataValidator()
+      """Test converting ISO datetime string."""
+      validator = DataValidator()
 
-        result = validator._convert_to_date(
-            "2025-01-15T10:30:45",
-            "date-time",
-            "test_field",
-        )
+      result = validator._convert_to_date(
+          "2025-01-15T10:30:45",
+          "date-time",
+          "test_field",
+      )
 
-        if result != "2025-01-15T10:30:45":
-            msg: str = f"Expected {'2025-01-15T10:30:45'}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      if result != "2025-01-15T10:30:45":
+          msg: str = f"Expected {'2025-01-15T10:30:45'}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_to_date_string_iso_date(self) -> None:
-        """Test converting ISO date string."""
-        validator = DataValidator()
+      """Test converting ISO date string."""
+      validator = DataValidator()
 
-        result = validator._convert_to_date("2025-01-15", "date", "test_field")
+      result = validator._convert_to_date("2025-01-15", "date", "test_field")
 
-        if result != "2025-01-15":
-            msg: str = f"Expected {'2025-01-15'}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      if result != "2025-01-15":
+          msg: str = f"Expected {'2025-01-15'}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_to_date_string_us_format_slash(self) -> None:
-        """Test converting US format date with slashes."""
-        validator = DataValidator()
+      """Test converting US format date with slashes."""
+      validator = DataValidator()
 
-        result = validator._convert_to_date("01/15/2025", "date", "test_field")
+      result = validator._convert_to_date("01/15/2025", "date", "test_field")
 
-        if result != "01/15/2025":
-            msg: str = f"Expected {'01/15/2025'}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      if result != "01/15/2025":
+          msg: str = f"Expected {'01/15/2025'}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_to_date_string_us_format_dash(self) -> None:
-        """Test converting US format date with dashes."""
-        validator = DataValidator()
+      """Test converting US format date with dashes."""
+      validator = DataValidator()
 
-        result = validator._convert_to_date("01-15-2025", "date", "test_field")
+      result = validator._convert_to_date("01-15-2025", "date", "test_field")
 
-        if result != "01-15-2025":
-            msg: str = f"Expected {'01-15-2025'}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      if result != "01-15-2025":
+          msg: str = f"Expected {'01-15-2025'}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_to_date_string_invalid_format(self) -> None:
-        """Test converting invalid date string raises error."""
-        validator = DataValidator()
+      """Test converting invalid date string raises error."""
+      validator = DataValidator()
 
-        with pytest.raises(ValueError, match="Cannot parse date 'invalid-date-format'"):
-            validator._convert_to_date("invalid-date-format", "date", "test_field")
+      with pytest.raises(ValueError, match="Cannot parse date 'invalid-date-format'"):
+          validator._convert_to_date("invalid-date-format", "date", "test_field")
 
     def test_convert_to_date_string_whitespace_handling(self) -> None:
-        """Test date conversion handles whitespace."""
-        validator = DataValidator()
+      """Test date conversion handles whitespace."""
+      validator = DataValidator()
 
-        result = validator._convert_to_date("  2025-01-15  ", "date", "test_field")
+      result = validator._convert_to_date("  2025-01-15  ", "date", "test_field")
 
-        if result != "2025-01-15":
-            msg: str = f"Expected {'2025-01-15'}, got {result}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 1
+      if result != "2025-01-15":
+          msg: str = f"Expected {'2025-01-15'}, got {result}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 1
 
     def test_convert_to_date_non_string_non_datetime(self) -> None:
-        """Test converting non-string, non-datetime values."""
-        validator = DataValidator()
+      """Test converting non-string, non-datetime values."""
+      validator = DataValidator()
 
-        # Test invalid date string should raise ValueError
-        with pytest.raises(ValueError, match="Cannot parse date '123'"):
-            validator._convert_to_date("123", "date", "test_field")
+      # Test invalid date string should raise ValueError
+      with pytest.raises(ValueError, match="Cannot parse date '123'"):
+          validator._convert_to_date("123", "date", "test_field")
 
-        # Test None value should return None
-        result = validator._convert_to_date(None, "date", "test_field")
-        assert result is None
+      # Test None value should return None
+      result = validator._convert_to_date(None, "date", "test_field")
+      assert result is None
 
 
 class TestStatisticsAndUtilities:
     """Test statistics and utility functions."""
 
     def test_get_conversion_stats(self) -> None:
-        """Test getting conversion statistics."""
-        validator = DataValidator()
+      """Test getting conversion statistics."""
+      validator = DataValidator()
 
-        # Perform some conversions to update stats
-        validator._convert_to_number("123", "integer", "test")
-        validator._convert_to_date(datetime.now(UTC), "date-time", "test")
-        validator._convert_field(
-            value=None,
-            field_schema={"type": "string"},
-            field_name="test",
-        )
+      # Perform some conversions to update stats
+      validator._convert_to_number("123", "integer", "test")
+      validator._convert_to_date(datetime.now(UTC), "date-time", "test")
+      validator._convert_field(
+          value=None,
+          field_schema={"type": "string"},
+          field_name="test",
+      )
 
-        stats = validator.get_conversion_stats()
+      stats = validator.get_conversion_stats()
 
-        if stats["strings_converted_to_numbers"] != 1:
-            msg: str = f"Expected {1}, got {stats['strings_converted_to_numbers']}"
-            raise AssertionError(msg)
-        assert stats["dates_normalized"] == 1
-        if stats["nulls_handled"] != 1:
-            msg: str = f"Expected {1}, got {stats['nulls_handled']}"
-            raise AssertionError(msg)
-        assert stats["validation_errors"] == 0
+      if stats["strings_converted_to_numbers"] != 1:
+          msg: str = f"Expected {1}, got {stats['strings_converted_to_numbers']}"
+          raise AssertionError(msg)
+      assert stats["dates_normalized"] == 1
+      if stats["nulls_handled"] != 1:
+          msg: str = f"Expected {1}, got {stats['nulls_handled']}"
+          raise AssertionError(msg)
+      assert stats["validation_errors"] == 0
 
-        # Verify it's a copy
-        stats["strings_converted_to_numbers"] = 999
-        if validator.conversion_stats["strings_converted_to_numbers"] != 1:
-            msg: str = f"Expected {1}, got {validator.conversion_stats['strings_converted_to_numbers']}"
-            raise AssertionError(msg)
+      # Verify it's a copy
+      stats["strings_converted_to_numbers"] = 999
+      if validator.conversion_stats["strings_converted_to_numbers"] != 1:
+          msg: str = f"Expected {1}, got {validator.conversion_stats['strings_converted_to_numbers']}"
+          raise AssertionError(msg)
 
     def test_reset_stats(self) -> None:
-        """Test resetting conversion statistics."""
-        validator = DataValidator()
+      """Test resetting conversion statistics."""
+      validator = DataValidator()
 
-        # Update stats
-        validator.conversion_stats["strings_converted_to_numbers"] = 5
-        validator.conversion_stats["dates_normalized"] = 3
-        validator.conversion_stats["nulls_handled"] = 2
-        validator.conversion_stats["validation_errors"] = 1
+      # Update stats
+      validator.conversion_stats["strings_converted_to_numbers"] = 5
+      validator.conversion_stats["dates_normalized"] = 3
+      validator.conversion_stats["nulls_handled"] = 2
+      validator.conversion_stats["validation_errors"] = 1
 
-        # Reset
-        validator.reset_stats()
+      # Reset
+      validator.reset_stats()
 
-        if validator.conversion_stats["strings_converted_to_numbers"] != 0:
-            msg: str = f"Expected {0}, got {validator.conversion_stats['strings_converted_to_numbers']}"
-            raise AssertionError(msg)
-        assert validator.conversion_stats["dates_normalized"] == 0
-        if validator.conversion_stats["nulls_handled"] != 0:
-            msg: str = (
-                f"Expected {0}, got {validator.conversion_stats['nulls_handled']}"
-            )
-            raise AssertionError(msg)
-        assert validator.conversion_stats["validation_errors"] == 0
+      if validator.conversion_stats["strings_converted_to_numbers"] != 0:
+          msg: str = f"Expected {0}, got {validator.conversion_stats['strings_converted_to_numbers']}"
+          raise AssertionError(msg)
+      assert validator.conversion_stats["dates_normalized"] == 0
+      if validator.conversion_stats["nulls_handled"] != 0:
+          msg: str = (
+              f"Expected {0}, got {validator.conversion_stats['nulls_handled']}"
+          )
+          raise AssertionError(msg)
+      assert validator.conversion_stats["validation_errors"] == 0
 
     def test_create_validator_for_environment_dev(self) -> None:
-        """Test creating validator for development environment."""
-        validator = create_validator_for_environment("dev")
+      """Test creating validator for development environment."""
+      validator = create_validator_for_environment("dev")
 
-        assert isinstance(validator, DataValidator)
-        if validator.strict_mode:
-            msg: str = f"Expected False, got {validator.strict_mode}"
-            raise AssertionError(msg)
+      assert isinstance(validator, DataValidator)
+      if validator.strict_mode:
+          msg: str = f"Expected False, got {validator.strict_mode}"
+          raise AssertionError(msg)
 
     def test_create_validator_for_environment_prod(self) -> None:
-        """Test creating validator for production environment."""
-        validator = create_validator_for_environment("prod")
+      """Test creating validator for production environment."""
+      validator = create_validator_for_environment("prod")
 
-        assert isinstance(validator, DataValidator)
-        if not (validator.strict_mode):
-            msg: str = f"Expected True, got {validator.strict_mode}"
-            raise AssertionError(msg)
+      assert isinstance(validator, DataValidator)
+      if not (validator.strict_mode):
+          msg: str = f"Expected True, got {validator.strict_mode}"
+          raise AssertionError(msg)
 
     def test_create_validator_for_environment_default(self) -> None:
-        """Test creating validator with default environment."""
-        validator = create_validator_for_environment()
+      """Test creating validator with default environment."""
+      validator = create_validator_for_environment()
 
-        assert isinstance(validator, DataValidator)
-        if validator.strict_mode:
-            msg: str = f"Expected False, got {validator.strict_mode}"
-            raise AssertionError(msg)
+      assert isinstance(validator, DataValidator)
+      if validator.strict_mode:
+          msg: str = f"Expected False, got {validator.strict_mode}"
+          raise AssertionError(msg)
 
 
 class TestMainExecution:
     """Test main execution path."""
 
     def test_main_execution_path(self) -> None:
-        """Test the main execution path when module is run directly."""
-        # The actual main execution would happen here if __name__ == "__main__"
-        # We're testing that the functions exist and can be called
-        assert callable(gruponos_meltano_native.validators.data_validator.DataValidator)
-        assert callable(
-            gruponos_meltano_native.validators.data_validator.create_validator_for_environment,
-        )
+      """Test the main execution path when module is run directly."""
+      # The actual main execution would happen here if __name__ == "__main__"
+      # We're testing that the functions exist and can be called
+      assert callable(gruponos_meltano_native.validators.data_validator.DataValidator)
+      assert callable(
+          gruponos_meltano_native.validators.data_validator.create_validator_for_environment,
+      )
 
-        # Test that example code runs without error
-        with patch("gruponos_meltano_native.validators.data_validator.logger"):
-            validator = gruponos_meltano_native.validators.data_validator.DataValidator(
-                strict_mode=False,
-            )
+      # Test that example code runs without error
+      with patch("gruponos_meltano_native.validators.data_validator.logger"):
+          validator = gruponos_meltano_native.validators.data_validator.DataValidator(
+              strict_mode=False,
+          )
 
-            test_record = {
-                "id": "123",
-                "amount": "540.50",
-                "count": "42",
-                "active": "true",
-                "created_date": "2025-07-02T10:00:00",
-            }
+          test_record = {
+              "id": "123",
+              "amount": "540.50",
+              "count": "42",
+              "active": "true",
+              "created_date": "2025-07-02T10:00:00",
+          }
 
-            test_schema = {
-                "properties": {
-                    "id": {"type": "integer"},
-                    "amount": {"type": "number"},
-                    "count": {"type": "integer"},
-                    "active": {"type": "boolean"},
-                    "created_date": {"type": "string", "format": "date-time"},
-                },
-            }
+          test_schema = {
+              "properties": {
+                  "id": {"type": "integer"},
+                  "amount": {"type": "number"},
+                  "count": {"type": "integer"},
+                  "active": {"type": "boolean"},
+                  "created_date": {"type": "string", "format": "date-time"},
+              },
+          }
 
-            result = validator.validate_and_convert_record(test_record, test_schema)
-            stats = validator.get_conversion_stats()
+          result = validator.validate_and_convert_record(test_record, test_schema)
+          stats = validator.get_conversion_stats()
 
-            if result["id"] != 123:
-                msg: str = f"Expected {123}, got {result['id']}"
-                raise AssertionError(msg)
-            assert result["amount"] == 540.50
-            if result["count"] != 42:
-                msg: str = f"Expected {42}, got {result['count']}"
-                raise AssertionError(msg)
-            if not (result["active"]):
-                msg: str = f"Expected True, got {result['active']}"
-                raise AssertionError(msg)
-            if result["created_date"] != "2025-07-02T10:00:00":
-                msg: str = (
-                    f"Expected {'2025-07-02T10:00:00'}, got {result['created_date']}"
-                )
-                raise AssertionError(msg)
+          if result["id"] != 123:
+              msg: str = f"Expected {123}, got {result['id']}"
+              raise AssertionError(msg)
+          assert result["amount"] == 540.50
+          if result["count"] != 42:
+              msg: str = f"Expected {42}, got {result['count']}"
+              raise AssertionError(msg)
+          if not (result["active"]):
+              msg: str = f"Expected True, got {result['active']}"
+              raise AssertionError(msg)
+          if result["created_date"] != "2025-07-02T10:00:00":
+              msg: str = (
+                  f"Expected {'2025-07-02T10:00:00'}, got {result['created_date']}"
+              )
+              raise AssertionError(msg)
 
-            # Verify stats were updated
-            if (
-                stats["strings_converted_to_numbers"] != EXPECTED_DATA_COUNT
-            ):  # id, amount and count
-                msg: str = f"Expected {EXPECTED_DATA_COUNT} (id, amount and count), got {stats['strings_converted_to_numbers']}"
-                raise AssertionError(msg)
-            assert stats["dates_normalized"] == 1  # created_date
+          # Verify stats were updated
+          if (
+              stats["strings_converted_to_numbers"] != EXPECTED_DATA_COUNT
+          ):  # id, amount and count
+              msg: str = f"Expected {EXPECTED_DATA_COUNT} (id, amount and count), got {stats['strings_converted_to_numbers']}"
+              raise AssertionError(msg)
+          assert stats["dates_normalized"] == 1  # created_date

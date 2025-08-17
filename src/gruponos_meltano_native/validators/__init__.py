@@ -42,22 +42,22 @@ def create_gruponos_meltano_validator_for_environment(
     para o ambiente especificado (desenvolvimento vs produção).
 
     Args:
-        environment: Ambiente de destino (dev, prod, etc.).
-        **_kwargs: Parâmetros de configuração adicionais.
+      environment: Ambiente de destino (dev, prod, etc.).
+      **_kwargs: Parâmetros de configuração adicionais.
 
     Returns:
-        GruponosMeltanoDataValidator: Instância configurada do validador.
+      GruponosMeltanoDataValidator: Instância configurada do validador.
 
     Example:
-        >>> validator = create_gruponos_meltano_validator_for_environment("prod")
-        >>> erros = validator.validate(dados)
+      >>> validator = create_gruponos_meltano_validator_for_environment("prod")
+      >>> erros = validator.validate(dados)
 
     """
     base_validator = _create_validator_for_environment(environment)
     # DataValidator doesn't have config - pass the constructor args
     return GruponosMeltanoDataValidator(
-        rules=getattr(base_validator, "rules", None),
-        strict_mode=getattr(base_validator, "strict_mode", False),
+      rules=getattr(base_validator, "rules", None),
+      strict_mode=getattr(base_validator, "strict_mode", False),
     )
 
 
