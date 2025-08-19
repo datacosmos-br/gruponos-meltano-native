@@ -283,7 +283,7 @@ class ResilientConnectionManager:
                 return result
 
         # All connections failed
-        return FlextResult.fail("All database connections failed")
+        return FlextResult[None].fail("All database connections failed")
 
     async def _notify_failover_activated(self):
         """Notify operations team of failover activation."""
@@ -317,9 +317,9 @@ class TransactionManager:
 
             except Exception as e:
                 # Non-recoverable error
-                return FlextResult.fail(f"Operation failed: {str(e)}")
+                return FlextResult[None].fail(f"Operation failed: {str(e)}")
 
-        return FlextResult.fail(f"Operation failed after {max_retries} retries: {str(last_error)}")
+        return FlextResult[None].fail(f"Operation failed after {max_retries} retries: {str(last_error)}")
 ```
 
 ## Configuration
@@ -362,7 +362,7 @@ class MockOracleConnectionManager:
 
     async def get_connection(self):
         self.connection_calls.append(datetime.utcnow())
-        return FlextResult.ok(MockConnection(self.mock_data))
+        return FlextResult[None].ok(MockConnection(self.mock_data))
 
     def set_mock_data(self, table_name, data):
         self.mock_data[table_name] = data

@@ -123,10 +123,10 @@ class GruponosMeltanoOracleConnectionManager:
             # Create connection
             self._connection = FlextDbOracleApi(db_config)
 
-            return FlextResult.ok(self._connection)
+            return FlextResult[None].ok(self._connection)
 
         except Exception as e:
-            return FlextResult.fail(f"Failed to create Oracle connection: {e}")
+            return FlextResult[None].fail(f"Failed to create Oracle connection: {e}")
 
     def test_connection(self) -> FlextResult[bool]:
         """Testa conexão com banco de dados Oracle para GrupoNOS.
@@ -150,13 +150,13 @@ class GruponosMeltanoOracleConnectionManager:
         """
         connection_result = self.get_connection()
         if not connection_result.success:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 f"Connection failed: {connection_result.error}",
             )
 
         connection = connection_result.data
         if connection is None:
-            return FlextResult.fail("Connection is None")
+            return FlextResult[None].fail("Connection is None")
 
         success = False
         error_message = ""
@@ -184,7 +184,7 @@ class GruponosMeltanoOracleConnectionManager:
                 success = False
                 error_message = str(e)
 
-        return FlextResult.ok(data=True) if success else FlextResult.fail(error_message)
+        return FlextResult[None].ok(True) if success else FlextResult[None].fail(error_message)
 
     def validate_configuration(self) -> FlextResult[bool]:
         """Valida a configuração de conexão Oracle.
@@ -196,10 +196,10 @@ class GruponosMeltanoOracleConnectionManager:
         try:
             result = self.config.validate_domain_rules()
             if hasattr(result, "is_failure") and result.is_failure:
-                return FlextResult.fail(result.error or "Invalid configuration")
-            return FlextResult.ok(data=True)
+                return FlextResult[None].fail(result.error or "Invalid configuration")
+            return FlextResult[None].ok(True)
         except Exception as exc:  # pydantic may raise ValueError
-            return FlextResult.fail(str(exc))
+            return FlextResult[None].fail(str(exc))
 
     def close_connection(self) -> FlextResult[bool]:
         """Fecha conexão Oracle.
@@ -223,11 +223,11 @@ class GruponosMeltanoOracleConnectionManager:
                 # disconnect() returns the API instance, not a FlextResult
                 self._connection.disconnect()
                 self._connection = None
-                return FlextResult.ok(data=True)
-            return FlextResult.ok(data=True)
+                return FlextResult[None].ok(True)
+            return FlextResult[None].ok(True)
 
         except Exception as e:
-            return FlextResult.fail(f"Error closing connection: {e}")
+            return FlextResult[None].fail(f"Error closing connection: {e}")
 
     # Convenience lifecycle helpers used by integration tests
     def connect(self) -> FlextResult[bool]:
@@ -239,10 +239,10 @@ class GruponosMeltanoOracleConnectionManager:
                 if hasattr(result.data, "connect"):
                     result.data.connect()
                 self._connection = result.data
-                return FlextResult.ok(data=True)
-            return FlextResult.fail(result.error or "Failed to create connection")
+                return FlextResult[None].ok(True)
+            return FlextResult[None].fail(result.error or "Failed to create connection")
         except Exception as exc:
-            return FlextResult.fail(str(exc))
+            return FlextResult[None].fail(str(exc))
 
     def is_connected(self) -> bool:
         """Retorna True se conexão estiver ativa."""

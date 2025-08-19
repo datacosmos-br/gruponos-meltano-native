@@ -702,19 +702,19 @@ async def handle_pipeline_execution() -> FlextResult[PipelineResult]:
 
     except GruponosMeltanoConnectionError as e:
         logger.error("Connection failed", extra={"error": str(e), "context": e.context})
-        return FlextResult.failure(f"Oracle connection failed: {e}")
+        return FlextResult[None].fail(f"Oracle connection failed: {e}")
 
     except GruponosMeltanoValidationError as e:
         logger.warning("Validation failed", extra={"error": str(e), "context": e.context})
-        return FlextResult.failure(f"Data validation failed: {e}")
+        return FlextResult[None].fail(f"Data validation failed: {e}")
 
     except GruponosMeltanoProcessingError as e:
         logger.error("Processing failed", extra={"error": str(e), "context": e.context})
-        return FlextResult.failure(f"Pipeline processing failed: {e}")
+        return FlextResult[None].fail(f"Pipeline processing failed: {e}")
 
     except Exception as e:
         logger.error("Unexpected error", exc_info=True)
-        return FlextResult.failure(f"Unexpected error: {e}")
+        return FlextResult[None].fail(f"Unexpected error: {e}")
 ```
 
 ---

@@ -213,9 +213,9 @@ class BatchValidator:
                 print(f"Validation progress: {progress:.1f}%")
 
         if validation_errors:
-            return FlextResult.fail(f"Validation failed with {len(validation_errors)} errors")
+            return FlextResult[None].fail(f"Validation failed with {len(validation_errors)} errors")
 
-        return FlextResult.ok(validated_records)
+        return FlextResult[None].ok(validated_records)
 ```
 
 ### Custom Validation Rules
@@ -232,7 +232,7 @@ class WMSBusinessRules:
         location = record.get("location")
 
         if not WMSBusinessRules._is_valid_item_location_combination(item_code, location):
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 f"Item {item_code} cannot be allocated to location {location}"
             )
 
@@ -241,11 +241,11 @@ class WMSBusinessRules:
         max_quantity = WMSBusinessRules._get_max_quantity_for_location(location)
 
         if quantity > max_quantity:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 f"Quantity {quantity} exceeds maximum {max_quantity} for location {location}"
             )
 
-        return FlextResult.ok(record)
+        return FlextResult[None].ok(record)
 
     @staticmethod
     def validate_order_completion_rules(order_records: List[dict]) -> FlextResult[List[dict]]:
@@ -264,11 +264,11 @@ class WMSBusinessRules:
             order_validation = WMSBusinessRules._validate_single_order(order_lines)
 
             if order_validation.is_failure:
-                return FlextResult.fail(f"Order {order_id} validation failed: {order_validation.error}")
+                return FlextResult[None].fail(f"Order {order_id} validation failed: {order_validation.error}")
 
             validated_records.extend(order_validation.data)
 
-        return FlextResult.ok(validated_records)
+        return FlextResult[None].ok(validated_records)
 ```
 
 ## Data Quality Monitoring
@@ -401,9 +401,9 @@ class MockDataValidator:
         self.validation_calls.append(("allocation", len(data)))
 
         if self.should_pass:
-            return FlextResult.ok(data)
+            return FlextResult[None].ok(data)
         else:
-            return FlextResult.fail("Mock validation failure")
+            return FlextResult[None].fail("Mock validation failure")
 
     def get_validation_call_count(self):
         return len(self.validation_calls)

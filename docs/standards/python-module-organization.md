@@ -100,12 +100,12 @@ class WMSAllocation(FlextEntity):
     def validate_allocation_rules(self) -> FlextResult[None]:
         """Apply WMS business rules for allocation validation."""
         if self.quantity <= 0:
-            return FlextResult.fail("Allocation quantity must be positive")
+            return FlextResult[None].fail("Allocation quantity must be positive")
 
         if not self.facility_code:
-            return FlextResult.fail("Facility code is required")
+            return FlextResult[None].fail("Facility code is required")
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def transform_for_target(self) -> dict[str, Any]:
         """Transform allocation for target database format."""
@@ -183,7 +183,7 @@ from gruponos_meltano_native.oracle import create_gruponos_meltano_oracle_connec
 def create_oracle_repository(config: OracleConnectionConfig) -> FlextResult[OracleRepository]:
     """Create Oracle repository with connection management."""
     return (
-        FlextResult.ok(config)
+        FlextResult[None].ok(config)
         .flat_map(lambda cfg: validate_oracle_config(cfg))
         .map(lambda cfg: create_gruponos_meltano_oracle_connection_manager(cfg))
         .map(lambda manager: OracleRepository(manager))
@@ -239,9 +239,9 @@ class WMSDataValidator(DataValidator):
             validated_data.append(record)
 
         if validation_errors:
-            return FlextResult.fail(f"Validation errors: {'; '.join(validation_errors)}")
+            return FlextResult[None].fail(f"Validation errors: {'; '.join(validation_errors)}")
 
-        return FlextResult.ok(validated_data)
+        return FlextResult[None].ok(validated_data)
 ```
 
 ### **Exception Handling Layer**
@@ -268,7 +268,7 @@ def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
     """Extract data from Oracle WMS with proper exception handling."""
     try:
         # WMS extraction logic
-        return FlextResult.ok(extracted_data)
+        return FlextResult[None].ok(extracted_data)
     except ConnectionError as e:
         error = GruponosMeltanoOracleConnectionError(
             "Failed to connect to Oracle WMS",
@@ -279,7 +279,7 @@ def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
                 "company_code": config.company_code
             }
         )
-        return FlextResult.fail(str(error))
+        return FlextResult[None].fail(str(error))
 ```
 
 ---
@@ -698,16 +698,16 @@ async def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
         # WMS API call
         response = await wms_client.get_allocations(config)
         if response.status != 200:
-            return FlextResult.fail(f"WMS API error: {response.status}")
+            return FlextResult[None].fail(f"WMS API error: {response.status}")
 
-        return FlextResult.ok(response.data)
+        return FlextResult[None].ok(response.data)
 
     except ConnectionError as e:
-        return FlextResult.fail(f"WMS connection failed: {str(e)}")
+        return FlextResult[None].fail(f"WMS connection failed: {str(e)}")
     except TimeoutError as e:
-        return FlextResult.fail(f"WMS request timeout: {str(e)}")
+        return FlextResult[None].fail(f"WMS request timeout: {str(e)}")
     except Exception as e:
-        return FlextResult.fail(f"Unexpected WMS error: {str(e)}")
+        return FlextResult[None].fail(f"Unexpected WMS error: {str(e)}")
 
 # ✅ Chain ETL operations safely
 async def execute_etl_step(

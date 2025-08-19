@@ -156,7 +156,7 @@ def get_service_with_fallback(container, service_name, fallback_factory):
     # Create fallback service
     fallback_service = fallback_factory()
     container.register_singleton(service_name, lambda: fallback_service)
-    return FlextResult.ok(fallback_service)
+    return FlextResult[None].ok(fallback_service)
 ```
 
 ### Circuit Breaker Pattern

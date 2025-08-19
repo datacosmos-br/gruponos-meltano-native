@@ -161,7 +161,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
         if errors:
             # Raise to satisfy tests expecting constructor validation errors
             raise ValueError("; ".join(errors))
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def get_connection_string(self) -> str:
         username = self.username

@@ -109,7 +109,7 @@ def test_oracle_connection_with_mock(mock_oracle_api):
     """Test Oracle connection management with controlled mocks."""
     # Arrange
     mock_connection = Mock()
-    mock_oracle_api.return_value.get_connection.return_value = FlextResult.ok(mock_connection)
+    mock_oracle_api.return_value.get_connection.return_value = FlextResult[None].ok(mock_connection)
 
     config = create_test_oracle_config()
     manager = create_gruponos_meltano_oracle_connection_manager(config)
@@ -294,14 +294,14 @@ class MockFactory:
     def create_mock_alert_manager():
         """Create mock alert manager for testing."""
         mock_manager = Mock()
-        mock_manager.send_alert.return_value = FlextResult.ok("Alert sent")
+        mock_manager.send_alert.return_value = FlextResult[None].ok("Alert sent")
         return mock_manager
 
     @staticmethod
     def create_mock_validator():
         """Create mock data validator for testing."""
         mock_validator = Mock()
-        mock_validator.validate_allocation_data.return_value = FlextResult.ok([])
+        mock_validator.validate_allocation_data.return_value = FlextResult[None].ok([])
         return mock_validator
 ```
 

@@ -464,14 +464,14 @@ class GruponosMeltanoOrchestrator:
         # Check if target Oracle has required configuration
         target_oracle = self.settings.target_oracle
         if not target_oracle.target_schema:
-            return FlextResult.fail("Target Oracle not configured")
+            return FlextResult[None].fail("Target Oracle not configured")
 
         # Check if WMS source has required configuration
         wms_source = self.settings.wms_source
         if not wms_source.oracle:
-            return FlextResult.fail("WMS source not configured")
+            return FlextResult[None].fail("WMS source not configured")
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def run_full_sync(self) -> GruponosMeltanoPipelineResult:
         """Executa pipeline de sincronização completa para atualização total dos dados.

@@ -196,9 +196,9 @@ def _create_configuration() -> FlextResult[GruponosMeltanoSettings]:
     """
     try:
         config = create_gruponos_meltano_settings()
-        return FlextResult.ok(config)
+        return FlextResult[None].ok(config)
     except Exception as e:
-        return FlextResult.fail(f"Configuration creation failed: {e}")
+        return FlextResult[None].fail(f"Configuration creation failed: {e}")
 
 
 def _create_orchestrator(config: GruponosMeltanoSettings) -> FlextResult[object]:
@@ -214,9 +214,9 @@ def _create_orchestrator(config: GruponosMeltanoSettings) -> FlextResult[object]
     """
     try:
         orchestrator = create_gruponos_meltano_orchestrator(config)
-        return FlextResult.ok(orchestrator)
+        return FlextResult[None].ok(orchestrator)
     except Exception as e:
-        return FlextResult.fail(f"Orchestrator creation failed: {e}")
+        return FlextResult[None].fail(f"Orchestrator creation failed: {e}")
 
 
 def _check_oracle_connection(config: GruponosMeltanoSettings) -> str:

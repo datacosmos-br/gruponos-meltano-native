@@ -203,7 +203,7 @@ class TestConnectionManagerIntegration:
             # already imported at top
 
             # Test FlextResult integration works
-            service_result = FlextResult.ok("test_service_working")
+            service_result = FlextResult[None].ok("test_service_working")
 
             # Test Oracle database integration via flext-db-oracle (works without circular imports)
             # already imported at top

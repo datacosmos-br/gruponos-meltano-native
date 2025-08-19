@@ -125,7 +125,7 @@ class GruponosMeltanoOrchestrator:
                 context=result.to_dict()
             )
 
-            return FlextResult.ok(result)
+            return FlextResult[None].ok(result)
 
         except Exception as e:
             # Send failure notification
@@ -142,7 +142,7 @@ class GruponosMeltanoOrchestrator:
                 }
             )
 
-            return FlextResult.fail(f"Pipeline execution failed: {str(e)}")
+            return FlextResult[None].fail(f"Pipeline execution failed: {str(e)}")
 ```
 
 ### Custom Alert Configuration
@@ -304,7 +304,7 @@ class MockAlertManager:
 
     async def send_alert(self, **kwargs):
         self.sent_alerts.append(kwargs)
-        return FlextResult.ok("Alert sent successfully")
+        return FlextResult[None].ok("Alert sent successfully")
 
     def get_alerts_by_type(self, alert_type):
         return [alert for alert in self.sent_alerts if alert.get("alert_type") == alert_type]

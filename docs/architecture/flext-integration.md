@@ -94,10 +94,10 @@ class GruponosMeltanoOrchestrator:
         try:
             result = await self._run_meltano_pipeline()
             logger.info("Full sync completed successfully", extra={"records": result.count})
-            return FlextResult.success(result)
+            return FlextResult[None].ok(result)
         except Exception as e:
             logger.error("Full sync failed", extra={"error": str(e)}, exc_info=True)
-            return FlextResult.failure(f"Pipeline execution failed: {e}")
+            return FlextResult[None].fail(f"Pipeline execution failed: {e}")
 ```
 
 ### 3. Dependency Injection Container
@@ -229,7 +229,7 @@ class GruponosMeltanoOracleConnectionManager:
 
         async with self.connection_manager.get_connection() as conn:
             result = await conn.execute(query, {"table_name": "WMS_ALLOCATIONS"})
-            return FlextResult.success(len(result) > 0)
+            return FlextResult[None].ok(len(result) > 0)
 ```
 
 ## Singer/Meltano FLEXT Integration
@@ -302,7 +302,7 @@ async def validate_wms_data(data: dict) -> FlextResult[ValidatedData]:
     try:
         # Validation logic
         validated = await perform_validation(data)
-        return FlextResult.success(validated)
+        return FlextResult[None].ok(validated)
     except ValidationError as e:
         raise GruponosMeltanoValidationError(f"WMS data validation failed: {e}")
     except ConnectionError as e:
