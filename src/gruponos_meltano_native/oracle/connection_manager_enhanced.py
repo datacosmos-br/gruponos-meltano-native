@@ -165,7 +165,11 @@ class GruponosMeltanoOracleConnectionManager:
                 health = connection.health_check()
                 success = bool(health.success if hasattr(health, "success") else True)
                 if not success:
-                    error_message = str(health.error if hasattr(health, "error") else "Health check failed")
+                    error_message = str(
+                        health.error
+                        if hasattr(health, "error")
+                        else "Health check failed"
+                    )
             else:
                 test_result = connection.test_connection()
                 if hasattr(test_result, "success"):

@@ -9,7 +9,7 @@ from flext_core import (
     FlextSettings,
     FlextContainer,
     FlextResult,
-    FlextValueObject,
+    FlextValue,
     get_flext_container,
 )
 
@@ -143,7 +143,7 @@ __all__: list[str] = [
     "FlextSettings",
     "FlextContainer",
     "FlextResult",
-    "FlextValueObject",
+    "FlextValue",
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoAlertManager",

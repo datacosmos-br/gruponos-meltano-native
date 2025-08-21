@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 from enum import StrEnum
 
 import requests
-from flext_core import FlextResult, FlextValueObject, get_logger
+from flext_core import FlextResult, FlextValue, get_logger
 
 from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
 
@@ -71,7 +71,7 @@ class GruponosMeltanoAlertType(StrEnum):
     PERFORMANCE_DEGRADATION = "performance_degradation"
 
 
-class GruponosMeltanoAlert(FlextValueObject):
+class GruponosMeltanoAlert(FlextValue):
     """Estrutura de dados de alerta Meltano GrupoNOS.
 
     Value object que representa um alerta no sistema,
