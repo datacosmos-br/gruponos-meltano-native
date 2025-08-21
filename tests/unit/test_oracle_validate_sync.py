@@ -554,7 +554,9 @@ class TestOracleValidateSync:
         # FlextResult imported at top
 
         # Mock successful connection test
-        mock_test_connection.return_value = FlextResult[None].ok("Connection successful")
+        mock_test_connection.return_value = FlextResult[None].ok(
+            "Connection successful"
+        )
 
         result = validate_oracle_connection()
         assert result is True

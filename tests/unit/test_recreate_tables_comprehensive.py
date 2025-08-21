@@ -103,7 +103,9 @@ class TestOracleTableRecreationReal:
     def test_table_ddl_execution_mock(self, mock_execute_ddl: Mock) -> None:
         """Test DDL execution for table recreation using mock."""
         # Mock successful DDL execution
-        mock_execute_ddl.return_value = FlextResult[None].ok("DDL executed successfully")
+        mock_execute_ddl.return_value = FlextResult[None].ok(
+            "DDL executed successfully"
+        )
 
         # Create a mock API instance
         config = FlextDbOracleConfig(

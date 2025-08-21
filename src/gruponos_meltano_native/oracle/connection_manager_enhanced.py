@@ -184,7 +184,11 @@ class GruponosMeltanoOracleConnectionManager:
                 success = False
                 error_message = str(e)
 
-        return FlextResult[None].ok(True) if success else FlextResult[None].fail(error_message)
+        return (
+            FlextResult[None].ok(True)
+            if success
+            else FlextResult[None].fail(error_message)
+        )
 
     def validate_configuration(self) -> FlextResult[bool]:
         """Valida a configuração de conexão Oracle.
