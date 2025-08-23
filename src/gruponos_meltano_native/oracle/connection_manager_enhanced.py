@@ -189,7 +189,7 @@ class GruponosMeltanoOracleConnectionManager:
                 error_message = str(e)
 
         return (
-            FlextResult[None].ok(True)
+            FlextResult[None].ok(data=True)
             if success
             else FlextResult[None].fail(error_message)
         )
@@ -205,7 +205,7 @@ class GruponosMeltanoOracleConnectionManager:
             result = self.config.validate_domain_rules()
             if hasattr(result, "is_failure") and result.is_failure:
                 return FlextResult[None].fail(result.error or "Invalid configuration")
-            return FlextResult[None].ok(True)
+            return FlextResult[None].ok(data=True)
         except Exception as exc:  # pydantic may raise ValueError
             return FlextResult[None].fail(str(exc))
 
@@ -231,8 +231,8 @@ class GruponosMeltanoOracleConnectionManager:
                 # disconnect() returns the API instance, not a FlextResult
                 self._connection.disconnect()
                 self._connection = None
-                return FlextResult[None].ok(True)
-            return FlextResult[None].ok(True)
+                return FlextResult[None].ok(data=True)
+            return FlextResult[None].ok(data=True)
 
         except Exception as e:
             return FlextResult[None].fail(f"Error closing connection: {e}")
@@ -247,7 +247,7 @@ class GruponosMeltanoOracleConnectionManager:
                 if hasattr(result.data, "connect"):
                     result.data.connect()
                 self._connection = result.data
-                return FlextResult[None].ok(True)
+                return FlextResult[None].ok(data=True)
             return FlextResult[None].fail(result.error or "Failed to create connection")
         except Exception as exc:
             return FlextResult[None].fail(str(exc))

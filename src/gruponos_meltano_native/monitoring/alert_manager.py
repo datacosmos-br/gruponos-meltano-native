@@ -219,7 +219,7 @@ class GruponosMeltanoAlertService:
                 )
                 # Reset counter on successful alert
                 self._failure_count = 0
-                return FlextResult[None].ok(True)
+                return FlextResult[None].ok(data=True)
             error_messages = [
                 result.error or "Unknown error"
                 for result in results
@@ -264,7 +264,7 @@ class GruponosMeltanoAlertService:
             response.raise_for_status()
 
             logger.debug("Webhook alert sent successfully")
-            return FlextResult[None].ok(True)
+            return FlextResult[None].ok(data=True)
 
         except requests.RequestException as e:
             logger.warning("Webhook alert failed: %s", e)
@@ -301,7 +301,7 @@ class GruponosMeltanoAlertService:
             logger.info(
                 f"Email alert sent to {len(self.config.email_recipients)} recipients for severity: {alert.severity}",
             )
-            return FlextResult[None].ok(True)
+            return FlextResult[None].ok(data=True)
 
         except (RuntimeError, ValueError, TypeError) as e:
             logger.warning("Email alert failed: %s", e)
@@ -368,7 +368,7 @@ class GruponosMeltanoAlertService:
             response.raise_for_status()
 
             logger.debug("Slack alert sent successfully")
-            return FlextResult[None].ok(True)
+            return FlextResult[None].ok(data=True)
 
         except requests.RequestException as e:
             logger.warning("Slack alert failed: %s", e)
