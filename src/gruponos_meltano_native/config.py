@@ -273,7 +273,7 @@ class GruponosMeltanoWMSSourceConfig(FlextSettings):
                     host="localhost",
                     service_name="ORCL",
                     username="user",
-                    password="password",  # noqa: S106 - safe test default only
+                    password="password",
                 ),
             )
         # Normalize defaults that might be overridden by env in CI: ensure 600 timeout
@@ -491,7 +491,7 @@ class GruponosMeltanoSettings(FlextSettings):
             host="localhost",
             service_name="ORCL",
             username="user",
-            password="password",  # noqa: S106 - safe test default only
+            password="password",
             port=1521,
         )
 

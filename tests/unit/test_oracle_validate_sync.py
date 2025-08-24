@@ -126,7 +126,7 @@ def _count_table_records(cursor: OracleCursor, table_name: str) -> int:
             .isalpha()
         ):
             return 0
-        query = f"SELECT COUNT(*) FROM {table_name}"  # noqa: S608 - table name validated above
+        query = f"SELECT COUNT(*) FROM {table_name}"
         cursor.execute(query)
         result = cursor.fetchone()
         return result[0] if result else 0
@@ -161,13 +161,13 @@ def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, Any]:
         # For tests, we use identifier quoting to prevent injection
         quoted_table = f'"{table_name}"'  # Oracle identifier quoting
         cursor.execute(
-            f"SELECT MIN(DATE_COL), MAX(DATE_COL), COUNT(DISTINCT ID) FROM {quoted_table}",  # noqa: S608 - identifier quoted
+            f"SELECT MIN(DATE_COL), MAX(DATE_COL), COUNT(DISTINCT ID) FROM {quoted_table}",
         )
         result = cursor.fetchone()
         min_date, max_date, unique_ids = result or [None, None, 0]
 
         # Get duplicates count - second fetchone() call
-        cursor.execute(f"SELECT COUNT(*) - COUNT(DISTINCT ID) FROM {quoted_table}")  # noqa: S608 - identifier quoted
+        cursor.execute(f"SELECT COUNT(*) - COUNT(DISTINCT ID) FROM {quoted_table}")
         duplicates_result = cursor.fetchone()
         duplicates = duplicates_result[0] if duplicates_result else 0
 

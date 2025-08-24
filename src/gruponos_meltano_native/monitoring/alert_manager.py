@@ -193,7 +193,7 @@ class GruponosMeltanoAlertService:
                 logger.debug(
                     f"Alert threshold not reached: {self._failure_count}/{self.config.alert_threshold}",
                 )
-                return FlextResult[None].ok(False)
+                return FlextResult[bool].ok(False)
 
             # Send through enabled channels
             results = []
@@ -219,18 +219,18 @@ class GruponosMeltanoAlertService:
                 )
                 # Reset counter on successful alert
                 self._failure_count = 0
-                return FlextResult[None].ok(data=True)
+                return FlextResult[bool].ok(data=True)
             error_messages = [
                 result.error or "Unknown error"
                 for result in results
                 if not result.success
             ]
             combined_error = "; ".join(error_messages)
-            return FlextResult[None].fail(f"Failed to send alert: {combined_error}")
+            return FlextResult[bool].fail(f"Failed to send alert: {combined_error}")
 
         except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Alert sending failed with unexpected error")
-            return FlextResult[None].fail(f"Alert sending error: {e}")
+            return FlextResult[bool].fail(f"Alert sending error: {e}")
 
     def _send_webhook(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
         """Envia alerta via webhook.
@@ -244,7 +244,7 @@ class GruponosMeltanoAlertService:
         """
         try:
             if not self.config.webhook_url:
-                return FlextResult[None].fail("Webhook URL not configured")
+                return FlextResult[bool].fail("Webhook URL not configured")
 
             payload = {
                 "message": alert.message,
@@ -264,11 +264,11 @@ class GruponosMeltanoAlertService:
             response.raise_for_status()
 
             logger.debug("Webhook alert sent successfully")
-            return FlextResult[None].ok(data=True)
+            return FlextResult[bool].ok(data=True)
 
         except requests.RequestException as e:
             logger.warning("Webhook alert failed: %s", e)
-            return FlextResult[None].fail(f"Webhook failed: {e}")
+            return FlextResult[bool].fail(f"Webhook failed: {e}")
 
     def _send_email(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
         """Envia alerta via email usando configuração SMTP.
@@ -286,7 +286,7 @@ class GruponosMeltanoAlertService:
         """
         try:
             if not self.config.email_recipients:
-                return FlextResult[None].fail("No email recipients configured")
+                return FlextResult[bool].fail("No email recipients configured")
 
             # Email content
             subject = f"[{alert.severity.value}] {alert.alert_type.value}"
@@ -301,11 +301,11 @@ class GruponosMeltanoAlertService:
             logger.info(
                 f"Email alert sent to {len(self.config.email_recipients)} recipients for severity: {alert.severity}",
             )
-            return FlextResult[None].ok(data=True)
+            return FlextResult[bool].ok(data=True)
 
         except (RuntimeError, ValueError, TypeError) as e:
             logger.warning("Email alert failed: %s", e)
-            return FlextResult[None].fail(f"Email failed: {e}")
+            return FlextResult[bool].fail(f"Email failed: {e}")
 
     def _send_slack(self, alert: GruponosMeltanoAlert) -> FlextResult[bool]:
         """Envia alerta via webhook do Slack.
@@ -322,7 +322,7 @@ class GruponosMeltanoAlertService:
         """
         try:
             if not self.config.slack_webhook_url:
-                return FlextResult[None].fail("Slack webhook URL not configured")
+                return FlextResult[bool].fail("Slack webhook URL not configured")
 
             # Determine color based on severity
             color_map = {
@@ -368,11 +368,11 @@ class GruponosMeltanoAlertService:
             response.raise_for_status()
 
             logger.debug("Slack alert sent successfully")
-            return FlextResult[None].ok(data=True)
+            return FlextResult[bool].ok(data=True)
 
         except requests.RequestException as e:
             logger.warning("Slack alert failed: %s", e)
-            return FlextResult[None].fail(f"Slack failed: {e}")
+            return FlextResult[bool].fail(f"Slack failed: {e}")
 
     def reset_failure_count(self) -> None:
         """Reseta contador de falhas (para operações bem-sucedidas).

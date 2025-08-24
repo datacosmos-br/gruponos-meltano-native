@@ -115,7 +115,7 @@ def demonstrate_connection_manager_integration() -> None:
             port=1521,
             service_name="TESTDB",
             username="test",
-            password="test",  # noqa: S106 - Example password for configuration demo
+            password="test",
         )
 
         # Create connection manager using real factory function
