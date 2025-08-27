@@ -6,7 +6,7 @@ import importlib.metadata
 
 # FLEXT Core Foundation - Direct imports only
 from flext_core import (
-    FlextSettings,
+    FlextConfig,
     FlextContainer,
     FlextResult,
     FlextValue,
@@ -140,7 +140,7 @@ def create_gruponos_meltano_oracle_manager() -> GruponosMeltanoOracleConnectionM
 # ================================
 
 __all__: list[str] = [
-    "FlextSettings",
+    "FlextConfig",
     "FlextContainer",
     "FlextResult",
     "FlextValue",

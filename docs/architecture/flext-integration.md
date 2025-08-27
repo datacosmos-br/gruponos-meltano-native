@@ -110,7 +110,7 @@ from gruponos_meltano_native.infrastructure.di_container import configure_grupon
 
 def create_gruponos_application() -> FlextContainer:
     """Create configured application container"""
-    container = get_flext_container()
+    container = FlextContainer.get_global()
 
     # Register GrupoNOS-specific services
     configure_gruponos_container(container)
@@ -140,9 +140,9 @@ from gruponos_meltano_native.oracle.connection_manager_enhanced import (
 
 ```python
 # Base settings extending FLEXT patterns
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 
-class GruponosMeltanoSettings(FlextSettings):
+class GruponosMeltanoSettings(FlextConfig):
     """GrupoNOS Meltano configuration extending FLEXT base settings"""
 
     # Oracle WMS configuration
@@ -314,10 +314,10 @@ async def validate_wms_data(data: dict) -> FlextResult[ValidatedData]:
 FLEXT configuration patterns with environment-specific overrides:
 
 ```python
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 from pydantic import Field, SecretStr
 
-class GruponosMeltanoSettings(FlextSettings):
+class GruponosMeltanoSettings(FlextConfig):
     """FLEXT-standardized configuration management"""
 
     # FLEXT core settings inherited

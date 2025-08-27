@@ -15,10 +15,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import (
+    FlextConfig,
     FlextContainer,
     FlextResult,
-    FlextSettings,
-    get_flext_container,
     get_logger,
 )
 
@@ -51,7 +50,7 @@ class _ContainerSingleton:
 
         """
         if cls._instance is None:
-            cls._instance = get_flext_container()
+            cls._instance = FlextContainer.get_global()
             _configure_dependencies(cls._instance)
         return cls._instance
 
@@ -79,7 +78,7 @@ def _configure_dependencies(container: FlextContainer) -> None:
     """Configura dependências core para GrupoNOS Meltano.
 
     Registra componentes essenciais do FLEXT no container de DI,
-    incluindo tipos fundamentais como FlextResult e FlextSettings.
+    incluindo tipos fundamentais como FlextResult e FlextConfig.
 
     Args:
       container: Container de injeção de dependência a ser configurado.
@@ -94,7 +93,7 @@ def _configure_dependencies(container: FlextContainer) -> None:
     if not result.success:
         logger.warning("Failed to register FlextResult: %s", result.error)
 
-    settings_result = container.register("flext_settings", FlextSettings)
+    settings_result = container.register("flext_settings", FlextConfig)
     if not settings_result.success:
         logger.warning(
             "Failed to register FlextCoreSettings: %s",

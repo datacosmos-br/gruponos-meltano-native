@@ -230,7 +230,7 @@ await alert_manager.send_alert(
 
 - **Naming**: GruponosMeltano prefix for all public APIs
 - **Error Handling**: Railway-oriented programming with FlextResult
-- **Configuration**: FlextSettings with environment awareness
+- **Configuration**: FlextConfig with environment awareness
 - **Dependencies**: Use FLEXT ecosystem components consistently
 
 ### Testing Patterns

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from flext_core import FlextOracleModel, FlextResult, FlextSettings, TAnyDict
+from flext_core import FlextConfig, FlextOracleModel, FlextResult, TAnyDict
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
@@ -178,7 +178,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
         return f"{user_part}@{self.host}:{self.port}"
 
 
-class GruponosMeltanoWMSSourceConfig(FlextSettings):
+class GruponosMeltanoWMSSourceConfig(FlextConfig):
     """Configuração de fonte Oracle WMS para GrupoNOS.
 
     Classe que define as configurações necessárias para conexão e extração
@@ -288,7 +288,7 @@ class GruponosMeltanoWMSSourceConfig(FlextSettings):
     )
 
 
-class GruponosMeltanoTargetOracleConfig(FlextSettings):
+class GruponosMeltanoTargetOracleConfig(FlextConfig):
     """Configuração de destino Oracle para GrupoNOS.
 
     Classe que define as configurações para carregamento de dados no
@@ -333,7 +333,7 @@ class GruponosMeltanoTargetOracleConfig(FlextSettings):
             object.__setattr__(self, "target_schema", self.schema_name)
 
 
-class GruponosMeltanoJobConfig(FlextSettings):
+class GruponosMeltanoJobConfig(FlextConfig):
     """Configuração de job Meltano para GrupoNOS.
 
     Classe que define as configurações de execução de jobs ETL,
@@ -376,7 +376,7 @@ class GruponosMeltanoJobConfig(FlextSettings):
     )
 
 
-class GruponosMeltanoAlertConfig(FlextSettings):
+class GruponosMeltanoAlertConfig(FlextConfig):
     """Configuração de alertas para GrupoNOS.
 
     Classe que define as configurações do sistema de alertas,
@@ -420,7 +420,7 @@ class GruponosMeltanoAlertConfig(FlextSettings):
     )
 
 
-class GruponosMeltanoSettings(FlextSettings):
+class GruponosMeltanoSettings(FlextConfig):
     """Configurações principais do Meltano GrupoNOS.
 
     Classe principal que agrega todas as configurações necessárias

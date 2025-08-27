@@ -61,7 +61,7 @@ src/gruponos_meltano_native/
 All modules follow FLEXT ecosystem standards:
 
 - **FlextResult**: Railway-oriented programming for error handling
-- **FlextSettings**: Configuration with environment variable support
+- **FlextConfig**: Configuration with environment variable support
 - **FlextContainer**: Dependency injection for loose coupling
 - **Naming Conventions**: GruponosMeltano prefix for all public APIs
 
@@ -160,7 +160,7 @@ if connection_result.success:
 
 - **Naming**: GruponosMeltano prefix for all public APIs
 - **Error Handling**: FlextResult railway-oriented programming
-- **Configuration**: FlextSettings with environment awareness
+- **Configuration**: FlextConfig with environment awareness
 - **Testing**: FLEXT testing patterns and utilities
 
 ---

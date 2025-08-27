@@ -152,11 +152,11 @@ class HealthCheckResult(BaseModel):
 Main configuration class extending FLEXT base settings.
 
 ```python
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 from pydantic import Field, SecretStr, validator
 from typing import List, Optional
 
-class GruponosMeltanoSettings(FlextSettings):
+class GruponosMeltanoSettings(FlextConfig):
     """GrupoNOS Meltano configuration extending FLEXT base settings"""
 
     # FLEXT Core Settings (inherited)

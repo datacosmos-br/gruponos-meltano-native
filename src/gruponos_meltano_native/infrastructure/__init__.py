@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import (
-    FlextSettings,
+    FlextConfig,
     FlextContainer,
     get_flext_container,
 )
@@ -28,7 +28,7 @@ from gruponos_meltano_native.infrastructure.di_container import (
 # FLEXT Standard Infrastructure Exports - NO legacy functions
 __all__: list[str] = [
     # FLEXT Core Infrastructure
-    "FlextSettings",
+    "FlextConfig",
     "FlextContainer",
     "get_flext_container",
     # GrupoNOS Meltano Infrastructure

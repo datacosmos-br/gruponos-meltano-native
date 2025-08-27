@@ -55,7 +55,7 @@ from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 **Configuration Pattern**:
 
 ```python
-from flext_core import FlextSettings, FlextResult
+from flext_core import FlextConfig, FlextResult
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
 # Environment-aware configuration
@@ -360,7 +360,7 @@ def create_oracle_connection_manager() -> OracleConnectionManager:
 
 ```python
 # Core FLEXT patterns - always import these first
-from flext_core import FlextResult, FlextSettings, get_logger
+from flext_core import FlextResult, FlextConfig, get_logger
 from flext_observability import FlextMonitoringService
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
@@ -784,7 +784,7 @@ async def execute_incremental_sync(
 
 ```python
 # ✅ Standard FLEXT ecosystem imports
-from flext_core import FlextResult, FlextSettings, get_logger
+from flext_core import FlextResult, FlextConfig, get_logger
 from flext_observability import FlextMonitoringService, FlextMetricsCollector
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
@@ -811,10 +811,10 @@ async def sync_with_flext_patterns(
 ### **Configuration Integration**
 
 ```python
-# ✅ Extend FlextSettings for all configuration
-from flext_core import FlextSettings
+# ✅ Extend FlextConfig for all configuration
+from flext_core import FlextConfig
 
-class GruponosMeltanoSettings(FlextSettings):
+class GruponosMeltanoSettings(FlextConfig):
     """GrupoNOS Meltano Native configuration with FLEXT patterns."""
 
     # Application metadata
