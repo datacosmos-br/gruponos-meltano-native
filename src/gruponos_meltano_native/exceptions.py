@@ -12,22 +12,22 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import (
-    FlextAuthenticationError,
-    FlextConfigurationError,
-    FlextConnectionError,
-    FlextError,
+    FlextExceptions.AuthenticationError,
+    FlextExceptions.ConfigurationError,
+    FlextExceptions.ConnectionError,
+    FlextExceptions.Error,
     FlextProcessingError,
-    FlextTimeoutError,
-    FlextValidationError,
+    FlextExceptions.TimeoutError,
+    FlextExceptions.ValidationError,
 )
 
 
 # Definir hierarquia de exceções específica do GrupoNOS usando herança estática
-class GruponosMeltanoError(FlextError):
+class GruponosMeltanoError(FlextExceptions.Error):
     """Erro base Meltano GrupoNOS seguindo padrões flext-core.
 
     Classe base para todas as exceções específicas do sistema
-    Meltano GrupoNOS, estendendo FlextError para manter
+    Meltano GrupoNOS, estendendo FlextExceptions.Error para manter
     consistência arquitetural.
     """
 
@@ -47,8 +47,8 @@ class GruponosMeltanoError(FlextError):
 
         """
         # Ensure default code matches test expectation (GENERIC_ERROR)
-        # Call FlextError directly to avoid MRO conflicts with ConfigurationError
-        FlextError.__init__(
+        # Call FlextExceptions.Error directly to avoid MRO conflicts with ConfigurationError
+        FlextExceptions.Error.__init__(
             self,
             message=message,
             error_code=error_code or "GENERIC_ERROR",
@@ -56,7 +56,7 @@ class GruponosMeltanoError(FlextError):
         )
 
 
-class GruponosMeltanoConfigurationError(GruponosMeltanoError, FlextConfigurationError):
+class GruponosMeltanoConfigurationError(GruponosMeltanoError, FlextExceptions.ConfigurationError):
     """Erros de configuração GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando há problemas na configuração
@@ -79,7 +79,7 @@ class GruponosMeltanoConfigurationError(GruponosMeltanoError, FlextConfiguration
 
         """
         # Call GruponosMeltanoError to set generic error code and context, avoid
-        # passing error_code twice into FlextConfigurationError chain.
+        # passing error_code twice into FlextExceptions.ConfigurationError chain.
         GruponosMeltanoError.__init__(
             self,
             message=message,
@@ -91,7 +91,7 @@ class GruponosMeltanoConfigurationError(GruponosMeltanoError, FlextConfiguration
 # Definir após ConfigurationError para suportar herança desejada no teste
 class GruponosMeltanoValidationError(
     GruponosMeltanoConfigurationError,
-    FlextValidationError,
+    FlextExceptions.ValidationError,
 ):
     """Erros de validação GrupoNOS seguindo padrões flext-core.
 
@@ -123,7 +123,7 @@ class GruponosMeltanoValidationError(
         )
 
 
-class GruponosMeltanoConnectionError(FlextConnectionError):
+class GruponosMeltanoConnectionError(FlextExceptions.ConnectionError):
     """Erros de conexão GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando há falhas de conectividade
@@ -157,7 +157,7 @@ class GruponosMeltanoProcessingError(FlextProcessingError):
         super().__init__(message)
 
 
-class GruponosMeltanoAuthenticationError(FlextAuthenticationError):
+class GruponosMeltanoAuthenticationError(FlextExceptions.AuthenticationError):
     """Erros de autenticação GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando há falhas na autenticação
@@ -174,7 +174,7 @@ class GruponosMeltanoAuthenticationError(FlextAuthenticationError):
         super().__init__(message)
 
 
-class GruponosMeltanoTimeoutError(FlextTimeoutError):
+class GruponosMeltanoTimeoutError(FlextExceptions.TimeoutError):
     """Erros de timeout GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando operações excedem

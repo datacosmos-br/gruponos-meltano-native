@@ -19,17 +19,17 @@ from collections.abc import Callable
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 
-from flext_core import FlextValidationError, get_logger
+from flext_core import FlextExceptions.ValidationError, get_logger
 
 # Get dependencies via DI
 logger = get_logger(__name__)
 
 
 # Use FLEXT foundation pattern with proper error code for tests compatibility
-class ValidationError(FlextValidationError):
+class ValidationError(FlextExceptions.ValidationError):
     """Erro de validação com código de erro compatível com testes.
 
-    Estende FlextValidationError para fornecer erro de validação
+    Estende FlextExceptions.ValidationError para fornecer erro de validação
     consistente com código de erro específico para compatibilidade
     com suíte de testes existente.
     """

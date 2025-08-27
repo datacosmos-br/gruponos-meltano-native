@@ -58,9 +58,9 @@ class TestGruponosMeltanoBaseException:
         if error.message != "Test error":
             msg: str = f"Expected {'Test error'}, got {error.message}"
             raise AssertionError(msg)
-        # FlextError generates GENERIC_ERROR by default unless overridden
+        # FlextExceptions.Error generates GENERIC_ERROR by default unless overridden
         assert error.error_code == "GENERIC_ERROR"
-        # Context is stored directly in FlextError
+        # Context is stored directly in FlextExceptions.Error
         if error.context != context:
             msg: str = f"Expected {context}, got {error.context}"
             raise AssertionError(msg)
