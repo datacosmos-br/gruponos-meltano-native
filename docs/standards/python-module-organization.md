@@ -107,7 +107,7 @@ class WMSAllocation(FlextEntity):
 
         return FlextResult[None].ok(None)
 
-    def transform_for_target(self) -> dict[str, Any]:
+    def transform_for_target(self) -> dict[str, object]:
         """Transform allocation for target database format."""
         return {
             "ALLOCATION_ID": self.allocation_id,
@@ -490,7 +490,7 @@ Infrastructure  →  Validators  →  Configuration  (OK)
 
 ```python
 from flext_core import FlextResult
-from typing import List, Dict, Any
+from typing import List, Dict, object
 
 async def execute_etl_pipeline(
     source_config: OracleWMSSourceConfig,
@@ -653,7 +653,8 @@ def mock_wms_data():
 
 ```python
 # ✅ Complete type annotations for ETL operations
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Optional, Union
+
 from flext_core import FlextResult
 
 async def extract_wms_allocations(
@@ -667,7 +668,7 @@ async def extract_wms_allocations(
 
 def transform_allocation_data(
     allocations: List[WMSAllocation]
-) -> FlextResult[List[Dict[str, Any]]]:
+) -> FlextResult[List[Dict[str, object]]]:
     """Transform allocations for target database format."""
     # Implementation with type validation
     pass

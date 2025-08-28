@@ -353,7 +353,7 @@ class OracleWMSAPIClient:
         since_timestamp: Optional[datetime] = None,
         page_size: int = 500,
         page_number: int = 1
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, object]:
         """Get allocation data from Oracle WMS
 
         Args:
@@ -387,7 +387,7 @@ class OracleWMSAPIClient:
         since_timestamp: Optional[datetime] = None,
         order_status: Optional[List[str]] = None,
         page_size: int = 500
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, object]:
         """Get order header data from Oracle WMS"""
 
     async def get_order_details(
@@ -397,7 +397,7 @@ class OracleWMSAPIClient:
         order_hdr_ids: Optional[List[str]] = None,
         since_timestamp: Optional[datetime] = None,
         page_size: int = 500
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, object]:
         """Get order detail data from Oracle WMS"""
 ```
 
