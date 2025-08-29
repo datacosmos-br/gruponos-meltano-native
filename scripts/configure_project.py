@@ -11,10 +11,10 @@ import os
 from pathlib import Path
 
 import yaml
-from flext_core import get_logger
+from flext_core import FlextLogger
 
 # Setup logger
-log = get_logger(__name__)
+log = FlextLogger(__name__)
 
 
 def load_project_config() -> dict[str, object]:

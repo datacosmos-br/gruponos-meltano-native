@@ -19,10 +19,10 @@ from collections.abc import Callable
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 
-from flext_core import FlextExceptions.ValidationError, get_logger
+from flext_core import FlextExceptions.ValidationError, FlextLogger
 
 # Get dependencies via DI
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 # Use FLEXT foundation pattern with proper error code for tests compatibility

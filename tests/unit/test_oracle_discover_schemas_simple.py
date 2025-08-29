@@ -4,7 +4,7 @@ REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle schema discovery logic with basic functionality.
 """
 
-from flext_core import get_logger
+from flext_core import FlextLogger
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleMetadataManager
 
 
@@ -40,7 +40,7 @@ class TestOracleSchemaDiscoverySimple:
 
     def test_module_has_logger(self) -> None:
         """Test module has logger configured."""  # Test flext-core logger integration
-        logger = get_logger(__name__)
+        logger = FlextLogger(__name__)
         assert logger is not None
 
     def test_module_structure(self) -> None:

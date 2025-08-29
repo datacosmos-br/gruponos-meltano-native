@@ -86,10 +86,10 @@ assert validation_result.success
 **Domain Modeling Pattern**:
 
 ```python
-from flext_core import FlextEntity, FlextResult
+from flext_core import FlextModels.Entity, FlextResult
 from gruponos_meltano_native.models import WMSAllocation, OrderHeader
 
-class WMSAllocation(FlextEntity):
+class WMSAllocation(FlextModels.Entity):
     """WMS allocation entity with business rules."""
     allocation_id: str
     item_code: str
@@ -307,9 +307,9 @@ exceptions.py               # Domain-specific exception hierarchy
 
 ```python
 # Domain entities follow business terminology
-class WMSAllocation(FlextEntity):           # Business entity from WMS domain
-class OrderHeader(FlextEntity):             # Order management entity
-class AllocationPerformance(FlextEntity):   # Performance tracking entity
+class WMSAllocation(FlextModels.Entity):           # Business entity from WMS domain
+class OrderHeader(FlextModels.Entity):             # Order management entity
+class AllocationPerformance(FlextModels.Entity):   # Performance tracking entity
 
 # Service classes use descriptive names
 class GruponosMeltanoOrchestrator:          # Main pipeline orchestrator
@@ -360,7 +360,7 @@ def create_oracle_connection_manager() -> OracleConnectionManager:
 
 ```python
 # Core FLEXT patterns - always import these first
-from flext_core import FlextResult, FlextConfig, get_logger
+from flext_core import FlextResult, FlextConfig, FlextLogger
 from flext_observability import FlextMonitoringService
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
@@ -785,7 +785,7 @@ async def execute_incremental_sync(
 
 ```python
 # ✅ Standard FLEXT ecosystem imports
-from flext_core import FlextResult, FlextConfig, get_logger
+from flext_core import FlextResult, FlextConfig, FlextLogger
 from flext_observability import FlextMonitoringService, FlextMetricsCollector
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
@@ -797,7 +797,7 @@ async def sync_with_flext_patterns(
     """Synchronization using consistent FLEXT patterns."""
 
     # Initialize FLEXT services
-    logger = get_logger(__name__)
+    logger = FlextLogger(__name__)
     monitoring = FlextMonitoringService()
 
     return (

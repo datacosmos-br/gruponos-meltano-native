@@ -71,10 +71,10 @@ async def execute_pipeline() -> FlextResult[PipelineResult]:
 Structured logging following FLEXT standards:
 
 ```python
-from flext_core import get_logger
+from flext_core import FlextLogger
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class GruponosMeltanoOrchestrator:
     def __init__(self, settings: GruponosMeltanoSettings):

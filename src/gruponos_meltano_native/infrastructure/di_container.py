@@ -17,11 +17,11 @@ from __future__ import annotations
 from flext_core import (
     FlextConfig,
     FlextContainer,
+    FlextLogger,
     FlextResult,
-    get_logger,
 )
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class _ContainerSingleton:

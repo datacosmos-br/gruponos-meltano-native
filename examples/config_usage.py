@@ -9,7 +9,7 @@ Clean Architecture.
 Example files are exempt from architectural constraints for educational purposes.
 """
 
-from flext_core import get_logger
+from flext_core import FlextLogger
 
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionConfig,
@@ -18,7 +18,7 @@ from gruponos_meltano_native import (
     create_gruponos_meltano_settings,
 )
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 def demonstrate_config_usage() -> None:

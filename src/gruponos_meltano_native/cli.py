@@ -16,7 +16,7 @@ from contextlib import suppress
 
 import click
 import yaml
-from flext_core import FlextResult, get_logger
+from flext_core import FlextLogger, FlextResult
 from rich.console import Console
 
 from gruponos_meltano_native.config import (
@@ -28,7 +28,7 @@ from gruponos_meltano_native.orchestrator import (
     create_gruponos_meltano_pipeline_runner,
 )
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 def initialize_cli_environment(*, debug: bool = False) -> dict[str, object]:
@@ -198,7 +198,9 @@ def _create_configuration() -> FlextResult[GruponosMeltanoSettings]:
         config = create_gruponos_meltano_settings()
         return FlextResult[GruponosMeltanoSettings].ok(config)
     except Exception as e:
-        return FlextResult[GruponosMeltanoSettings].fail(f"Configuration creation failed: {e}")
+        return FlextResult[GruponosMeltanoSettings].fail(
+            f"Configuration creation failed: {e}"
+        )
 
 
 def _create_orchestrator(config: GruponosMeltanoSettings) -> FlextResult[object]:
