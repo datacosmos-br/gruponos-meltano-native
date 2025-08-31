@@ -9,7 +9,7 @@ from flext_core import (
     FlextConfig,
     FlextContainer,
     FlextResult,
-    FlextModels.Value,
+    FlextModels,
     get_flext_container,
 )
 

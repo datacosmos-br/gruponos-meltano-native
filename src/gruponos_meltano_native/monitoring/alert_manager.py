@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 from enum import StrEnum
 
 import requests
-from flext_core import FlextResult, FlextModels.Value, FlextLogger
+from flext_core import FlextLogger, FlextModels, FlextResult
 
 from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
 

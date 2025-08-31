@@ -126,7 +126,9 @@ class GruponosMeltanoOracleConnectionManager:
             return FlextResult[FlextDbOracleApi].ok(self._connection)
 
         except Exception as e:
-            return FlextResult[FlextDbOracleApi].fail(f"Failed to create Oracle connection: {e}")
+            return FlextResult[FlextDbOracleApi].fail(
+                f"Failed to create Oracle connection: {e}"
+            )
 
     def test_connection(self) -> FlextResult[bool]:
         """Testa conexão com banco de dados Oracle para GrupoNOS.

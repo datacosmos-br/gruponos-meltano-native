@@ -19,7 +19,7 @@ from collections.abc import Callable
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 
-from flext_core import FlextExceptions.ValidationError, FlextLogger
+from flext_core import FlextExceptions, FlextLogger
 
 # Get dependencies via DI
 logger = FlextLogger(__name__)

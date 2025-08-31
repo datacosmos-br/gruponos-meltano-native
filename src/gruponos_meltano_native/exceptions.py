@@ -11,15 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import (
-    FlextExceptions.AuthenticationError,
-    FlextExceptions.ConfigurationError,
-    FlextExceptions.ConnectionError,
-    FlextExceptions.Error,
-    FlextProcessingError,
-    FlextExceptions.TimeoutError,
-    FlextExceptions.ValidationError,
-)
+from flext_core import FlextExceptions
 
 
 # Definir hierarquia de exceções específica do GrupoNOS usando herança estática
@@ -56,7 +48,9 @@ class GruponosMeltanoError(FlextExceptions.Error):
         )
 
 
-class GruponosMeltanoConfigurationError(GruponosMeltanoError, FlextExceptions.ConfigurationError):
+class GruponosMeltanoConfigurationError(
+    GruponosMeltanoError, FlextExceptions.ConfigurationError
+):
     """Erros de configuração GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando há problemas na configuração
@@ -140,7 +134,7 @@ class GruponosMeltanoConnectionError(FlextExceptions.ConnectionError):
         super().__init__(message)
 
 
-class GruponosMeltanoProcessingError(FlextProcessingError):
+class GruponosMeltanoProcessingError(FlextExceptions.ProcessingError):
     """Erros de processamento GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada durante o processamento de dados,
