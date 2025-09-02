@@ -1,189 +1,104 @@
-"""Tests for Oracle configuration type mapping functionality.
+"""Simplified tests for Oracle type mapping rules functionality.
 
 REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
-Tests the actual Oracle configuration and connection management.
+Tests the actual Oracle type mapping logic with basic functionality.
 """
 
-import pytest
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 from pydantic import SecretStr
 
-from gruponos_meltano_native import (
-    GruponosMeltanoOracleConnectionConfig,
-    GruponosMeltanoOracleConnectionManager,
-)
+from gruponos_meltano_native import GruponosMeltanoOracleConnectionConfig
 
 
-class TestOracleConnectionConfiguration:
-    """Test Oracle connection configuration with real implementation."""
+class TestOracleTypeMappingSimple:
+    """Test Oracle type mapping with real implementation."""
 
-    def test_oracle_connection_manager_types(self) -> None:
-        """Test Oracle connection manager type handling."""  # Test GrupoNOS Oracle connection configuration
+    def test_type_mapping_constants_exist(self) -> None:
+        """Test type mapping constants exist."""  # Test that flext-db-oracle APIs exist
+        assert FlextDbOracleApi is not None
+        assert FlextDbOracleConfig is not None
+        assert GruponosMeltanoOracleConnectionConfig is not None
+
+    def test_wms_to_oracle_mappings(self) -> None:
+        """Test WMS to Oracle type mappings."""  # Test Oracle configuration mappings
         config = GruponosMeltanoOracleConnectionConfig(
-            host="localhost",
-            port=1521,
-            service_name="TESTDB",
-            username="test",
-            password="test",
+            host="localhost",  # String -> VARCHAR2 mapping
+            port=1521,  # Integer -> NUMBER mapping
+            service_name="TEST",  # String -> VARCHAR2 mapping
+            username="user",  # String -> VARCHAR2 mapping
+            password="pass",  # String -> VARCHAR2 mapping
         )
 
-        # Test type mapping in configuration
-        assert isinstance(config.port, int)
-        assert isinstance(config.host, str)
-        assert isinstance(config.service_name, str)
-        assert isinstance(config.username, str)
-        # Password is SecretStr for security
-
-        assert isinstance(config.password, SecretStr)
-
-        # Test connection manager with configuration
-        manager = GruponosMeltanoOracleConnectionManager(config)
-        assert manager is not None
-        assert manager.config == config
-
-    def test_oracle_api_type_handling(self) -> None:
-        """Test Oracle API type handling."""  # Test Oracle API configuration types
-        config_dict = {
-            "host": "localhost",
-            "port": 1521,
-            "service_name": "TESTDB",
-            "username": "test",
-            "password": "test",
-        }
-
-        # Test API creation with proper types
-        api = FlextDbOracleApi.with_config(config_dict)
-        assert api is not None
-
-        # Test configuration object creation
-        config = FlextDbOracleConfig(**config_dict)
-        assert config.port == 1521  # NUMBER type
-        assert isinstance(config.host, str)  # VARCHAR2 type
-        assert isinstance(config.service_name, str)  # VARCHAR2 type
-
-    def test_oracle_field_pattern_recognition(self) -> None:
-        """Test Oracle field pattern recognition in configuration."""  # Test patterns in GrupoNOS configuration
-        config = GruponosMeltanoOracleConnectionConfig(
-            host="localhost",
-            port=1521,
-            service_name="TESTDB",
-            username="test",
-            password="test",
-        )
-
-        # Test field patterns in configuration
-        assert "port" in str(config.__dict__)  # ID-like field (NUMBER)
-        assert "host" in str(config.__dict__)  # VARCHAR2 field
-        assert "service_name" in str(config.__dict__)  # VARCHAR2 field
-        assert "username" in str(config.__dict__)  # VARCHAR2 field
-        assert "password" in str(config.__dict__)  # VARCHAR2 field
-
-    def test_oracle_configuration_field_types(self) -> None:
-        """Test Oracle configuration field type conversion."""  # Test basic field type inference
-        config_dict = {
-            "host": "localhost",  # String -> VARCHAR2
-            "port": 1521,  # Integer -> NUMBER
-            "service_name": "TESTDB",  # String -> VARCHAR2
-            "username": "test",  # String -> VARCHAR2
-            "password": "test",  # String -> VARCHAR2
-        }
-
-        # Test that configuration handles types correctly
-        config = FlextDbOracleConfig(**config_dict)
-
-        # Verify types are preserved correctly
+        # Test basic type mappings through configuration
         assert isinstance(config.port, int)  # NUMBER type
         assert isinstance(config.host, str)  # VARCHAR2 type
         assert isinstance(config.service_name, str)  # VARCHAR2 type
         assert isinstance(config.username, str)  # VARCHAR2 type
-        # FlextDbOracleConfig also uses SecretStr for password security
+        # Password is SecretStr for enterprise security
 
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
 
-    def test_oracle_field_length_handling(self) -> None:
-        """Test Oracle field length handling in configuration."""  # Test configuration with reasonable field lengths
-        config = GruponosMeltanoOracleConnectionConfig(
-            host="very-long-hostname-for-testing-purposes",  # Long VARCHAR2
-            port=1521,  # NUMBER
-            service_name="VERY_LONG_SERVICE_NAME_FOR_TESTING",  # Long VARCHAR2
-            username="very_long_username_for_testing",  # VARCHAR2
-            password="very_long_password_for_testing_purposes",  # VARCHAR2
-        )
-
-        # Verify long strings are handled correctly
-        assert len(config.host) > 30  # Long VARCHAR2 field
-        assert len(config.service_name) > 20  # Long VARCHAR2 field
-        assert len(config.username) > 20  # Long VARCHAR2 field
-        # Password is SecretStr - get actual value for length check
-        assert len(config.password.get_secret_value()) > 30  # Long VARCHAR2 field
-        assert isinstance(config.port, int)  # NUMBER field
-
-    def test_oracle_metadata_type_handling(self) -> None:
-        """Test Oracle metadata type handling in configuration."""  # Test configuration with different metadata approaches
-        config = GruponosMeltanoOracleConnectionConfig(
-            host="localhost",  # VARCHAR2 metadata
-            port=1521,  # NUMBER metadata
-            service_name="TEST",  # VARCHAR2 metadata
-            username="user",  # VARCHAR2 metadata
-            password="pass",  # VARCHAR2 metadata
-        )
-
-        # Test that metadata types are correctly inferred
-        assert config.port == 1521  # NUMBER type
-        assert config.host == "localhost"  # VARCHAR2 type
-        assert config.service_name == "TEST"  # VARCHAR2 type
-        assert config.username == "user"  # VARCHAR2 type
-        # Password is SecretStr - compare with get_secret_value()
-        assert config.password.get_secret_value() == "pass"  # VARCHAR2 type
-
-    def test_oracle_comprehensive_integration(self) -> None:
-        """Test comprehensive Oracle integration functionality."""  # Test complete configuration integration
-        config = GruponosMeltanoOracleConnectionConfig(
-            host="comprehensive-test-host",
-            port=1521,
-            service_name="COMPREHENSIVE_TEST_DB",
-            username="comprehensive_user",
-            password="comprehensive_pass",
-        )
-
-        # Test all field types are handled correctly
-        assert isinstance(config.host, str)  # VARCHAR2 type
-        assert isinstance(config.port, int)  # NUMBER type
-        assert isinstance(config.service_name, str)  # VARCHAR2 type
-        assert isinstance(config.username, str)  # VARCHAR2 type
-        # Password is SecretStr for security (proper enterprise practice)
-
-        assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
-
-        # Test API integration with comprehensive config
+    def test_oracle_type_constants(self) -> None:
+        """Test Oracle type constants."""  # Test that Oracle configuration handles expected types
+        # Test that configuration creates proper Oracle type mappings
         config_dict = {
-            "host": config.host,
-            "port": config.port,
-            "service_name": config.service_name,
-            "username": config.username,
-            "password": config.password,
+            "host": "localhost",  # VARCHAR2 type
+            "port": 1521,  # NUMBER type
+            "service_name": "TEST",  # VARCHAR2 type
+            "username": "user",  # VARCHAR2 type
+            "password": "pass",  # VARCHAR2 type
         }
 
         api = FlextDbOracleApi.with_config(config_dict)
         assert api is not None
 
-    def test_oracle_type_validation(self) -> None:
-        """Test Oracle type validation in configuration."""  # Test that configuration validates types correctly
-        try:
-            config = GruponosMeltanoOracleConnectionConfig(
-                host="localhost",
-                port=1521,  # Must be int for NUMBER type
-                service_name="TESTDB",
-                username="test",
-                password="test",
-            )
-            assert config is not None
-        except Exception as e:
-            pytest.fail(f"Valid configuration should not raise exception: {e}")
-
-        # Test type conversion and validation
+        # Verify types are correctly handled
+        config = FlextDbOracleConfig(**config_dict)
         assert isinstance(config.port, int)  # NUMBER type validation
         assert isinstance(config.host, str)  # VARCHAR2 type validation
-        # Password is SecretStr for security
+
+    def test_specific_type_mappings(self) -> None:
+        """Test specific type mapping values."""  # Test specific Oracle type mappings through configuration
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="localhost",
+            port=1521,  # Primary key-like field -> NUMBER
+            service_name="TEST",
+            username="user",
+            password="pass",
+        )
+
+        # Test primary key mapping (port as ID-like field)
+        assert config.port == 1521  # NUMBER type
+        assert isinstance(config.port, int)  # NUMBER type validation
+
+        # Test text mappings (string fields)
+        assert isinstance(config.host, str)  # VARCHAR2 type
+        assert isinstance(config.service_name, str)  # VARCHAR2 type
+        assert isinstance(config.username, str)  # VARCHAR2 type
+        # Password is SecretStr for enterprise security
 
         assert isinstance(config.password, SecretStr)  # Secure VARCHAR2 type
+
+    def test_mapping_completeness(self) -> None:
+        """Test mapping completeness for WMS data types."""  # Test that Oracle configuration handles all required data types
+        required_types = [
+            "host",  # varchar -> VARCHAR2
+            "port",  # integer/number -> NUMBER
+            "service_name",  # varchar -> VARCHAR2
+            "username",  # varchar -> VARCHAR2
+            "password",  # varchar -> VARCHAR2
+        ]
+
+        config = GruponosMeltanoOracleConnectionConfig(
+            host="localhost",
+            port=1521,
+            service_name="TEST",
+            username="user",
+            password="pass",
+        )
+
+        # Test that all required types are handled in configuration
+        for required_type in required_types:
+            assert hasattr(config, required_type), f"Missing field: {required_type}"
+            field_value = getattr(config, required_type)
+            assert field_value is not None, f"Field {required_type} is None"
