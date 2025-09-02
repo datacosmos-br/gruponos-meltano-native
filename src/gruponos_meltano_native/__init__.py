@@ -143,7 +143,7 @@ __all__: list[str] = [
     "FlextConfig",
     "FlextContainer",
     "FlextResult",
-    "FlextModels.Value",
+    "FlextModels",
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoAlertManager",

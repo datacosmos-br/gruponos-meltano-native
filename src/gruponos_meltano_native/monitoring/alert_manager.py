@@ -71,7 +71,7 @@ class GruponosMeltanoAlertType(StrEnum):
     PERFORMANCE_DEGRADATION = "performance_degradation"
 
 
-class GruponosMeltanoAlert(FlextModels.Value):
+class GruponosMeltanoAlert(FlextModels):
     """Estrutura de dados de alerta Meltano GrupoNOS.
 
     Value object que representa um alerta no sistema,
