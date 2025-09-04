@@ -193,7 +193,7 @@ class GruponosMeltanoAlertService:
                 logger.debug(
                     f"Alert threshold not reached: {self._failure_count}/{self.config.alert_threshold}",
                 )
-                return FlextResult[bool].ok(False)
+                return FlextResult[bool].ok(data=False)
 
             # Send through enabled channels
             results = []
