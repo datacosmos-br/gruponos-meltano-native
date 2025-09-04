@@ -257,7 +257,7 @@ class TestGruponosMeltanoAlertManagerIntegration:
                 "gruponos_meltano_native.monitoring.alert_manager",
             )
         except ImportError as e:
-            pytest.skip(f"Alert manager module not available: {e}")
+            pytest.fail(f"Alert manager module not available: {e}")
         # Should use structlog (FLEXT standard) and GruponosMeltanoAlertService
         assert hasattr(am_module, "GruponosMeltanoAlertService")
         assert hasattr(am_module, "AlertSeverity")

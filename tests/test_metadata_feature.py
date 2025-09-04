@@ -21,25 +21,17 @@ def test_execute_with_metadata_method() -> None:
 
     # Test the connection object creation - this should succeed with available classes
     # Since we don't have actual Oracle connection, this tests interface compatibility
-    try:
-        # Create API instance - this should not fail with imports
-        api = FlextDbOracleApi.from_config(config)
-        assert api is not None
 
-        # The connection object should be creatable
-        connection = FlextDbOracleConnection(config)
-        assert connection is not None
+    # Create API instance - this should not fail with imports
+    api = FlextDbOracleApi.from_config(config)
+    assert api is not None
 
-        # Test passes if we can create the objects without import errors
-        assert True
+    # The connection object should be creatable
+    connection = FlextDbOracleConnection(config)
+    assert connection is not None
 
-    except ImportError as e:
-        msg: str = f"Import error while creating Oracle objects: {e}"
-        raise AssertionError(msg) from e
-    except Exception:
-        # Expected - we don't have actual Oracle server
-        # Test passes if imports work correctly
-        assert True
+    # Test passes if we can create the objects without import errors
+    assert True
 
 
 def test_connection_manager_usage() -> None:
@@ -53,22 +45,13 @@ def test_connection_manager_usage() -> None:
     )
 
     # Test that we can create an API instance with the config
-    try:
-        api = FlextDbOracleApi.from_config(config)
-        assert api is not None
+    api = FlextDbOracleApi.from_config(config)
+    assert api is not None
 
-        # Verify basic configuration handling works
-        assert config.host == "localhost"
-        assert config.port == 1521
-        assert config.service_name == "ORCL"
-
-    except ImportError as e:
-        msg: str = f"Import error in connection management: {e}"
-        raise AssertionError(msg) from e
-    except Exception:
-        # Expected - no actual Oracle server
-        # Test passes if interface compatibility works
-        assert True
+    # Verify basic configuration handling works
+    assert config.host == "localhost"
+    assert config.port == 1521
+    assert config.service_name == "ORCL"
 
 
 if __name__ == "__main__":
