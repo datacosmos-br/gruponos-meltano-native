@@ -107,7 +107,7 @@ class TestFlextConfig:
             # Even if some sub-configs are None due to incomplete environment setup
 
     def test_config_properties_integration(self) -> None:
-        """Test configuration properties work correctly with real FLEXT patterns."""
+        """Test configuration properties work correctly with real padrões empresariais."""
         # Create config using real constructor
         config = GruponosMeltanoSettings(
             project_name="test-project",
@@ -258,7 +258,7 @@ class TestGruponosMeltanoAlertManagerIntegration:
             )
         except ImportError as e:
             pytest.fail(f"Alert manager module not available: {e}")
-        # Should use structlog (FLEXT standard) and GruponosMeltanoAlertService
+        # Should use structlog (padrão empresarial) and GruponosMeltanoAlertService
         assert hasattr(am_module, "GruponosMeltanoAlertService")
         assert hasattr(am_module, "AlertSeverity")
         assert hasattr(am_module, "logger")  # Module-level logger

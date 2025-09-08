@@ -1,15 +1,14 @@
-"""Configuração de DI Meltano Native GrupoNOS - Padronizado FLEXT.
+"""Configuração de DI Meltano Native GrupoNOS.
 
-Configuração limpa de injeção de dependência usando apenas padrões FLEXT-core.
-SEM código de compatibilidade/legado mantido.
+Configuração limpa de injeção de dependência para integração Oracle WMS.
+Implementação sem código legado desnecessário.
 
 Fornece:
     - Container singleton para injeção de dependências
-    - Configuração de dependências core FLEXT
+    - Configuração de dependências principais
     - Padronização de registro de componentes
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations

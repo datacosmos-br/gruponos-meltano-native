@@ -1,6 +1,6 @@
 """Comprehensive tests for GrupoNOS Meltano Native exceptions module.
 
-Tests exception hierarchy, inheritance, and proper FLEXT standards compliance.
+Tests exception hierarchy, inheritance, and proper padrão empresarials compliance.
 """
 
 import pytest

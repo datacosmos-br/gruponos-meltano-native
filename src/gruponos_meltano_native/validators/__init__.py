@@ -1,7 +1,7 @@
-"""Validadores Meltano Native GrupoNOS - Validação padronizada FLEXT.
+"""Validadores Meltano Native GrupoNOS.
 
-Este módulo fornece capacidades de validação de dados seguindo padrões
-FLEXT e princípios de Clean Architecture.
+Este módulo fornece capacidades de validação de dados para sistemas WMS,
+seguindo princípios de Clean Architecture e type safety.
 
 Fornece classes e funções para:
     - Validação robusta de dados
@@ -9,12 +9,12 @@ Fornece classes e funções para:
     - Regras de validação configuráveis
     - Factory functions para diferentes ambientes
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
 
+from flext_core import FlextTypes
 
 from gruponos_meltano_native.validators.data_validator import (
     DataValidator as _DataValidator,
@@ -22,16 +22,16 @@ from gruponos_meltano_native.validators.data_validator import (
 )
 
 
-# FLEXT Standard Validation Classes
+# Classes de Validação Padrão Empresarial
 class GruponosMeltanoDataValidator(_DataValidator):
-    """Validador de dados Meltano GrupoNOS seguindo padrões FLEXT.
+    """Validador de dados Meltano GrupoNOS seguindo padrões empresariais.
 
     Estende o validador base com funcionalidades específicas
     do GrupoNOS para integração Oracle WMS.
     """
 
 
-# FLEXT Standard Factory Function
+# Função Factory Padrão Empresarial
 def create_gruponos_meltano_validator_for_environment(
     environment: str = "dev",
     **_kwargs: object,
@@ -67,13 +67,13 @@ create_validator_for_environment = (
     create_gruponos_meltano_validator_for_environment  # Legacy alias
 )
 
-# FLEXT Standard Validation Exports
-__all__: list[str] = [
+# Exportações de Validação Padrão Empresarial
+__all__: FlextTypes.Core.StringList = [
     # Legacy Compatibility (deprecated)
     "DataValidator",
-    # FLEXT Standard Classes
+    # Classes Padrão Empresarial
     "GruponosMeltanoDataValidator",
-    # FLEXT Standard Factory Functions
+    # Funções Factory Padrão Empresarial
     "create_gruponos_meltano_validator_for_environment",
     "create_validator_for_environment",
 ]

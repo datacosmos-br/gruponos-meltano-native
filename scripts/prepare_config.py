@@ -11,14 +11,15 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+from flext_core import FlextTypes
 
 
 def substitute_env_vars(
-    config_dict: dict[str, object],
-    env_vars: dict[str, str],
-) -> dict[str, object]:
+    config_dict: FlextTypes.Core.Dict,
+    env_vars: FlextTypes.Core.Headers,
+) -> FlextTypes.Core.Dict:
     """Substitui variáveis de ambiente na configuração."""
-    result: dict[str, object] = {}
+    result: FlextTypes.Core.Dict = {}
     for key, value in config_dict.items():
         if isinstance(value, dict):
             result[key] = substitute_env_vars(value, env_vars)
@@ -35,7 +36,7 @@ def substitute_env_vars(
     return result
 
 
-def _load_config_template() -> dict[str, object]:
+def _load_config_template() -> FlextTypes.Core.Dict:
     """Load configuration template from file or use default."""
     template_file = Path("target_config.json")
     if template_file.exists():
@@ -55,7 +56,9 @@ def _load_config_template() -> dict[str, object]:
     }
 
 
-def _generate_autonomous_dsn(resolved_config: dict[str, object]) -> dict[str, object]:
+def _generate_autonomous_dsn(
+    resolved_config: FlextTypes.Core.Dict,
+) -> FlextTypes.Core.Dict:
     """Generate DSN for Autonomous Database if configuration allows."""
     if not all(key in resolved_config for key in ["host", "port", "service_name"]):
         return resolved_config

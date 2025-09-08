@@ -1,10 +1,9 @@
-"""GrupoNOS Meltano Native CLI - FLEXT CLI Framework Integration.
+"""Interface de Linha de Comando GrupoNOS Meltano Native.
 
-Command-line interface using FLEXT CLI framework following FLEXT standards,
-Clean Architecture principles, and unified CLI patterns across the ecosystem.
+Interface de linha de comando para integração ETL Oracle WMS,
+seguindo princípios de Arquitetura Limpa e padrões CLI unificados.
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
@@ -31,7 +30,7 @@ from gruponos_meltano_native.orchestrator import (
 logger = FlextLogger(__name__)
 
 
-def initialize_cli_environment(*, debug: bool = False) -> dict[str, object]:
+def initialize_cli_environment(*, debug: bool = False) -> FlextTypes.Core.Dict:
     """Inicializa ambiente CLI usando padrões do framework FLEXT CLI.
 
     Esta função configura o ambiente CLI completo incluindo logging,
@@ -42,7 +41,7 @@ def initialize_cli_environment(*, debug: bool = False) -> dict[str, object]:
              Se False, usa configuração de produção.
 
     Returns:
-      dict[str, object]: Contexto do ambiente CLI com configuração e console.
+      FlextTypes.Core.Dict: Contexto do ambiente CLI com configuração e console.
 
     Note:
       Integração:
@@ -93,7 +92,7 @@ def cli(
 
     """
     try:
-        # Initialize CLI environment using FLEXT patterns
+        # Initialize CLI environment using padrões empresariais
         cli_context = initialize_cli_environment(debug=debug)
 
         # Note: config_file handling will be implemented in future sprint
@@ -138,11 +137,11 @@ def health(ctx: click.Context) -> None:
 
     """
     try:
-        cli_context: dict[str, object] = ctx.obj["cli_context"]
+        cli_context: FlextTypes.Core.Dict = ctx.obj["cli_context"]
         console = cli_context["console"]
         logger.info("Starting health check with FLEXT CLI framework")
 
-        # Create configuration using FLEXT patterns
+        # Create configuration using padrões empresariais
         config_result = _create_configuration()
         if config_result.is_failure:
             logger.error("Configuration creation failed: %s", config_result.error)
@@ -155,7 +154,7 @@ def health(ctx: click.Context) -> None:
         config = config_result.data
         health_status = {"configuration": "✅ Valid"}
 
-        # Create orchestrator using FLEXT patterns
+        # Create orchestrator using padrões empresariais
         orchestrator_result = _create_orchestrator(config)
         if orchestrator_result.is_failure:
             logger.error("Orchestrator creation failed: %s", orchestrator_result.error)

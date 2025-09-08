@@ -154,7 +154,7 @@ class TestDataValidator:
         rules = [ValidationRule("name", "required")]
         validator = DataValidator(rules, strict_mode=False)
 
-        data: dict[str, object] = {}
+        data: FlextTypes.Core.Dict = {}
         errors = validator.validate(data)
 
         if len(errors) != 1:
@@ -169,7 +169,7 @@ class TestDataValidator:
         rules = [ValidationRule("name", "required")]
         validator = DataValidator(rules, strict_mode=True)
 
-        data: dict[str, object] = {}
+        data: FlextTypes.Core.Dict = {}
 
         with pytest.raises(ValidationError, match="Required field 'name' is missing"):
             validator.validate(data)
@@ -199,7 +199,7 @@ class TestDataValidator:
             raise AssertionError(msg)
 
         # Test with string (convertible)
-        data_str: dict[str, object] = {"amount": "123.45"}
+        data_str: FlextTypes.Core.Dict = {"amount": "123.45"}
         errors = validator.validate(data_str)
         if len(errors) != 0:
             msg: str = f"Expected {0}, got {len(errors)}"
@@ -327,7 +327,7 @@ class TestDataValidator:
             raise AssertionError(msg)
 
         # Test with float
-        data_float: dict[str, object] = {"count": 42.5}
+        data_float: FlextTypes.Core.Dict = {"count": 42.5}
         errors = validator.validate(data_float)
         if len(errors) != 0:
             msg: str = f"Expected {0}, got {len(errors)}"
@@ -710,7 +710,7 @@ class TestRecordValidationAndConversion:
         validator = DataValidator()
 
         record = {"field1": "value1", "field2": "value2"}
-        schema: dict[str, object] = {}  # No properties
+        schema: FlextTypes.Core.Dict = {}  # No properties
 
         result = validator.validate_and_convert_record(record, schema)
 

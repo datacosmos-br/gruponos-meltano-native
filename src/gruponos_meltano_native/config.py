@@ -1,14 +1,17 @@
-"""GrupoNOS Meltano Native Configuration - GRUPONOS specific implementation.
+"""Configuração GrupoNOS Meltano Native - Implementação específica GRUPONOS.
 
-This module provides all GrupoNOS-specific configurations for Meltano integration
-with Oracle WMS systems, built on FLEXT foundation patterns.
+Este módulo fornece todas as configurações específicas do GrupoNOS para integração
+Meltano com sistemas Oracle WMS, baseado em padrões de arquitetura empresarial.
+
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
 
+import os
 from typing import ClassVar
 
-from flext_core import FlextConfig, FlextOracleModel, FlextResult, TAnyDict
+from flext_core import FlextConfig, FlextOracleModel, FlextResult, FlextTypes, TAnyDict
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
@@ -144,7 +147,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
         return SecretStr(str(v))
 
     def validate_domain_rules(self) -> FlextResult[None]:
-        errors: list[str] = []
+        errors: FlextTypes.Core.StringList = []
         # Basic required fields
         if not getattr(self, "host", ""):  # enforce non-empty host
             errors.append("Host is required")
@@ -225,7 +228,7 @@ class GruponosMeltanoWMSSourceConfig(FlextConfig):
     )
     company_code: str = Field(default="*", description="Company code")
     facility_code: str = Field(default="*", description="Facility code")
-    entities: list[str] = Field(
+    entities: FlextTypes.Core.StringList = Field(
         default=["allocation", "order_hdr", "order_dtl"],
         description="WMS entities to extract",
     )
@@ -273,7 +276,7 @@ class GruponosMeltanoWMSSourceConfig(FlextConfig):
                     host="localhost",
                     service_name="ORCL",
                     username="user",
-                    password="password",
+                    password=os.getenv("ORACLE_PASSWORD", "default_test_password"),
                 ),
             )
         # Normalize defaults that might be overridden by env in CI: ensure 600 timeout
@@ -397,7 +400,7 @@ class GruponosMeltanoAlertConfig(FlextConfig):
     """
 
     enabled: bool = Field(default=True, description="Enable alerts")
-    email_recipients: list[str] = Field(
+    email_recipients: FlextTypes.Core.StringList = Field(
         default_factory=list,
         description="Email recipients",
     )
@@ -491,7 +494,7 @@ class GruponosMeltanoSettings(FlextConfig):
             host="localhost",
             service_name="ORCL",
             username="user",
-            password="password",
+            password=os.getenv("ORACLE_PASSWORD", "default_test_password"),
             port=1521,
         )
 
@@ -604,7 +607,7 @@ def create_gruponos_meltano_settings() -> GruponosMeltanoSettings:
 
 
 # Re-export for backward compatibility
-__all__: list[str] = [
+__all__: FlextTypes.Core.StringList = [
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoJobConfig",
     "GruponosMeltanoOracleConnectionConfig",

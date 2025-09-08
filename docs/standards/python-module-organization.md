@@ -107,7 +107,7 @@ class WMSAllocation(FlextModels.Entity):
 
         return FlextResult[None].ok(None)
 
-    def transform_for_target(self) -> dict[str, object]:
+    def transform_for_target(self) -> FlextTypes.Core.Dict:
         """Transform allocation for target database format."""
         return {
             "ALLOCATION_ID": self.allocation_id,

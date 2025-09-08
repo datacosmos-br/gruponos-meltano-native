@@ -1,7 +1,7 @@
-"""Módulo de Monitoramento - Padronizado FLEXT.
+"""Módulo de Monitoramento GrupoNOS.
 
-Este módulo fornece capacidades de monitoramento e alertas seguindo padrões FLEXT,
-princípios de Clean Architecture e type safety adequado.
+Este módulo fornece capacidades de monitoramento e alertas para sistemas WMS,
+seguindo princípios de Clean Architecture e type safety adequado.
 
 Fornece classes e funções para:
     - Gerenciamento de alertas com múltiplos canais
@@ -9,12 +9,11 @@ Fornece classes e funções para:
     - Severidade e tipos de alerta
     - Integração com webhook, email e Slack
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
-
+from flext_core import FlextTypes
 from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlert,
     GruponosMeltanoAlertManager,
@@ -24,14 +23,14 @@ from gruponos_meltano_native.monitoring.alert_manager import (
     create_gruponos_meltano_alert_manager,
 )
 
-# Public API exports - FLEXT standard only
-__all__: list[str] = [
-    # FLEXT Standard Classes
+# Public API exports - padrão empresarial only
+__all__: FlextTypes.Core.StringList = [
+    # Classes Padrão Empresarial
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertManager",
     "GruponosMeltanoAlertService",
     "GruponosMeltanoAlertSeverity",
     "GruponosMeltanoAlertType",
-    # Factory Functions
+    # Funções Factory
     "create_gruponos_meltano_alert_manager",
 ]

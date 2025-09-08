@@ -1,12 +1,9 @@
-"""Exceções Nativas Meltano GrupoNOS seguindo padrões flext-core.
+"""Exceções Nativas Meltano GrupoNOS.
 
-Todas as exceções específicas do GrupoNOS estendendo abstrações centrais FLEXT usando
-herança estática adequada. Segue o princípio arquitetural de manter
-funcionalidade genérica em bibliotecas abstratas (flext-core) e usá-las
-corretamente em projetos concretos.
+Todas as exceções específicas do GrupoNOS para integração Oracle WMS,
+seguindo padrões arquiteturais estabelecidos e princípios de design limpo.
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
@@ -28,7 +25,7 @@ class GruponosMeltanoError(FlextExceptions.Error):
         message: str = "GrupoNOS Meltano error",
         *,
         error_code: str | None = None,
-        context: dict[str, object] | None = None,
+        context: FlextTypes.Core.Dict | None = None,
     ) -> None:
         """Inicializa erro Meltano GrupoNOS com contexto.
 
@@ -62,7 +59,7 @@ class GruponosMeltanoConfigurationError(
         message: str = "GrupoNOS configuration error",
         *,
         error_code: str | None = None,
-        context: dict[str, object] | None = None,
+        context: FlextTypes.Core.Dict | None = None,
     ) -> None:
         """Inicializa erro de configuração GrupoNOS.
 
@@ -98,7 +95,7 @@ class GruponosMeltanoValidationError(
         message: str = "GrupoNOS validation error",
         *,
         error_code: str | None = None,
-        context: dict[str, object] | None = None,
+        context: FlextTypes.Core.Dict | None = None,
     ) -> None:
         """Inicializa erro de validação GrupoNOS.
 
@@ -356,7 +353,7 @@ class GruponosMeltanoTargetError(GruponosMeltanoSingerError):
     """
 
 
-__all__: list[str] = [
+__all__: FlextTypes.Core.StringList = [
     "GruponosMeltanoAlertDeliveryError",
     "GruponosMeltanoAlertError",
     "GruponosMeltanoAuthenticationError",

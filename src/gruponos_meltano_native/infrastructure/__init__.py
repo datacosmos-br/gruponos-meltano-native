@@ -1,16 +1,15 @@
-"""Camada de infraestrutura para Meltano Native GrupoNOS - Padronizado FLEXT.
+"""Camada de infraestrutura para Meltano Native GrupoNOS.
 
-Este módulo fornece componentes de infraestrutura padrão FLEXT seguindo
-princípios de Clean Architecture e Domain-Driven Design.
+Este módulo fornece componentes de infraestrutura para integração Oracle WMS,
+seguindo princípios de Clean Architecture e Domain-Driven Design.
 
 Fornece:
     - Container de injeção de dependência
-    - Configurações de infraestrutura FLEXT
+    - Configurações de infraestrutura
     - Padrões de registro de componentes
-    - Integração com flext-core
+    - Integração com bibliotecas base
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
@@ -25,8 +24,8 @@ from gruponos_meltano_native.infrastructure.di_container import (
     get_gruponos_meltano_container,
 )
 
-# FLEXT Standard Infrastructure Exports - NO legacy functions
-__all__: list[str] = [
+# Exportações de Infraestrutura Padrão Empresarial - NO legacy functions
+__all__: FlextTypes.Core.StringList = [
     # FLEXT Core Infrastructure
     "FlextConfig",
     "FlextContainer",

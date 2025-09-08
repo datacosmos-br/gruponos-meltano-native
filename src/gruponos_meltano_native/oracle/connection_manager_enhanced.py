@@ -1,20 +1,21 @@
-"""Gerenciador de Conexão Oracle Meltano Native GrupoNOS - Implementação específica GRUPONOS.
+"""Gerenciador de Conexão Oracle Meltano Native GrupoNOS.
 
-Gerenciamento profissional de conexões Oracle seguindo padrões FLEXT
-e princípios de Clean Architecture com type safety adequado.
+Gerenciamento profissional de conexões Oracle para sistemas WMS,
+seguindo princípios de Clean Architecture com type safety adequado.
 
 Fornece:
     - Gerenciamento seguro de conexões Oracle
-    - Integração com flext-db-oracle
+    - Integração com bibliotecas Oracle
     - Teste de conectividade
     - Manipulação adequada de credenciais SecretStr
     - Factory functions para criação de instâncias
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
+
+import os
 
 from flext_core import FlextResult
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
@@ -57,7 +58,7 @@ class GruponosMeltanoOracleConnectionManager:
                 host="localhost",
                 service_name="ORCL",
                 username="user",
-                password="password",
+                password=os.getenv("ORACLE_PASSWORD", "default_test_password"),
                 port=1521,
             )
         self.config = config
@@ -108,7 +109,7 @@ class GruponosMeltanoOracleConnectionManager:
                 # Default service name if neither provided
                 service_name = "ORCL"
 
-            # Create config using from_dict for better compatibility
+            # Criar configuração usando from_dict for better compatibility
             config_data = {
                 "host": self.config.host,
                 "port": self.config.port,
@@ -259,7 +260,7 @@ class GruponosMeltanoOracleConnectionManager:
         conn = self._connection
         return bool(conn and getattr(conn, "connected", True))
 
-    def get_connection_info(self) -> dict[str, object]:
+    def get_connection_info(self) -> FlextTypes.Core.Dict:
         """Retorna informações básicas da conexão."""
         return {
             "is_connected": self.is_connected(),
@@ -312,7 +313,7 @@ def create_gruponos_meltano_oracle_connection_manager(
 # =============================================
 
 
-__all__: list[str] = [
+__all__: FlextTypes.Core.StringList = [
     "GruponosMeltanoOracleConnectionManager",
     "create_gruponos_meltano_oracle_connection_manager",
 ]

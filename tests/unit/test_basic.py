@@ -166,7 +166,7 @@ class TestBasicIntegration:
         mock_run_pipeline.assert_called_once_with("test_pipeline")
 
     def test_service_result_pattern(self) -> None:
-        """Test that FLEXT FlextResult pattern is used."""
+        """Test that FlextResult pattern is used."""
         # Test success
         success_result = FlextResult[None].ok("test_value")
         assert success_result.success

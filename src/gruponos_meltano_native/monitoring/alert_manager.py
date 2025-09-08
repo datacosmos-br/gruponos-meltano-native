@@ -1,10 +1,9 @@
-"""GrupoNOS Meltano Native Alert Manager - FLEXT standardized.
+"""GrupoNOS Meltano Native Alert Manager.
 
-Enterprise alert management following FLEXT patterns and Clean Architecture
-principles with proper type safety and no fallbacks.
+Gerenciamento empresarial de alertas seguindo padrões de Clean Architecture
+com type safety adequado e sem fallbacks desnecessários.
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
@@ -90,7 +89,7 @@ class GruponosMeltanoAlert(FlextModels):
     message: str
     severity: GruponosMeltanoAlertSeverity
     alert_type: GruponosMeltanoAlertType
-    context: dict[str, object]
+    context: FlextTypes.Core.Dict
     timestamp: str
     pipeline_name: str | None = None
 
@@ -418,7 +417,7 @@ class GruponosMeltanoAlertManager:
         self,
         pipeline_name: str,
         error_message: str,
-        context: dict[str, object] | None = None,
+        context: FlextTypes.Core.Dict | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de falha de pipeline.
 
@@ -455,7 +454,7 @@ class GruponosMeltanoAlertManager:
         self,
         target: str,
         error_message: str,
-        context: dict[str, object] | None = None,
+        context: FlextTypes.Core.Dict | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de falha de conectividade.
 
@@ -491,7 +490,7 @@ class GruponosMeltanoAlertManager:
         self,
         issue_description: str,
         pipeline_name: str | None = None,
-        context: dict[str, object] | None = None,
+        context: FlextTypes.Core.Dict | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de problema de qualidade de dados.
 
@@ -526,7 +525,7 @@ class GruponosMeltanoAlertManager:
         return self.alert_service.send_alert(alert)
 
 
-# Factory function
+# Função factory
 def create_gruponos_meltano_alert_manager(
     config: GruponosMeltanoAlertConfig | None = None,
 ) -> GruponosMeltanoAlertManager:
@@ -561,15 +560,15 @@ def create_gruponos_meltano_alert_manager(
 AlertSeverity = GruponosMeltanoAlertSeverity
 
 # Public API exports
-__all__: list[str] = [
+__all__: FlextTypes.Core.StringList = [
     # Compatibility aliases
     "AlertSeverity",
-    # FLEXT Standard Classes
+    # Classes Padrão Empresarial
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertManager",
     "GruponosMeltanoAlertService",
     "GruponosMeltanoAlertSeverity",
     "GruponosMeltanoAlertType",
-    # Factory Functions
+    # Funções Factory
     "create_gruponos_meltano_alert_manager",
 ]

@@ -1,7 +1,9 @@
 """Orquestrador Nativo Meltano GrupoNOS - Implementação específica GrupoNOS.
 
 Este módulo fornece toda a orquestração específica do GrupoNOS para pipelines Meltano
-com sistemas Oracle WMS, construído sobre padrões de fundação FLEXT.
+com sistemas Oracle WMS, construído sobre padrões de arquitetura empresarial.
+
+Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
@@ -13,7 +15,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes
 
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
@@ -44,7 +46,7 @@ class GruponosMeltanoPipelineResult:
     execution_time: float
     output: str
     error: str | None = None
-    metadata: dict[str, object] | None = None
+    metadata: FlextTypes.Core.Dict | None = None
 
 
 # =============================================
@@ -216,7 +218,7 @@ class GruponosMeltanoPipelineRunner:
                 metadata={"exception": type(e).__name__},
             )
 
-    def _build_environment(self) -> dict[str, str]:
+    def _build_environment(self) -> FlextTypes.Core.Headers:
         """Constrói variáveis de ambiente para pipelines GrupoNOS.
 
         Cria um dicionário completo de variáveis de ambiente necessárias
@@ -224,7 +226,7 @@ class GruponosMeltanoPipelineRunner:
         do GrupoNOS para Oracle WMS.
 
         Returns:
-            dict[str, str]: Dicionário com todas as variáveis de ambiente
+            FlextTypes.Core.Headers: Dicionário com todas as variáveis de ambiente
             configuradas, incluindo conexões Oracle e configurações WMS.
 
         """
@@ -417,7 +419,7 @@ class GruponosMeltanoOrchestrator:
       - Uses GruponosMeltanoSettings for environment-aware configuration
       - Integrates with GruponosMeltanoPipelineRunner for execution
       - Coordinates with monitoring systems for observability
-      - Implements FLEXT patterns for consistent error handling
+      - Implements padrões empresariais for consistent error handling
 
     """
 
@@ -589,7 +591,7 @@ class GruponosMeltanoOrchestrator:
         """
         return self.pipeline_runner.run_pipeline(job_name)
 
-    def list_jobs(self) -> list[str]:
+    def list_jobs(self) -> FlextTypes.Core.StringList:
         """Lista todos os jobs de pipeline disponíveis.
 
         Este método retorna uma lista de todos os jobs Meltano disponíveis para
@@ -597,7 +599,7 @@ class GruponosMeltanoOrchestrator:
         e podem incluir tanto jobs ETL padrão quanto operações customizadas.
 
         Returns:
-            list[str]: Lista de nomes de jobs disponíveis que podem ser executados
+            FlextTypes.Core.StringList: Lista de nomes de jobs disponíveis que podem ser executados
             via método run_job().
 
         Example:
@@ -614,11 +616,11 @@ class GruponosMeltanoOrchestrator:
         # Based on meltano.yml configuration
         return ["full-sync-job", "incremental-sync-job"]
 
-    def list_pipelines(self) -> list[str]:
+    def list_pipelines(self) -> FlextTypes.Core.StringList:
         """Lista pipelines disponíveis (alias para list_jobs).
 
         Returns:
-            list[str]: Lista de nomes de pipelines disponíveis.
+            FlextTypes.Core.StringList: Lista de nomes de pipelines disponíveis.
 
         """
         return self.list_jobs()
@@ -647,14 +649,14 @@ class GruponosMeltanoOrchestrator:
             **kwargs,
         )
 
-    def get_job_status(self, job_name: str) -> dict[str, object]:
+    def get_job_status(self, job_name: str) -> FlextTypes.Core.Dict:
         """Obtém status de um job específico.
 
         Args:
             job_name: Nome do job para verificar status.
 
         Returns:
-            dict[str, object]: Informações de status do job incluindo
+            FlextTypes.Core.Dict: Informações de status do job incluindo
             disponibilidade e configurações.
 
         """
@@ -702,7 +704,7 @@ def create_gruponos_meltano_pipeline_runner(
 
 
 # Re-export for backward compatibility
-__all__: list[str] = [
+__all__: FlextTypes.Core.StringList = [
     "GruponosMeltanoOrchestrator",
     "GruponosMeltanoPipelineResult",
     "GruponosMeltanoPipelineRunner",
