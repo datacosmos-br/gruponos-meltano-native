@@ -5,7 +5,7 @@ Tests the actual Oracle validation sync logic with comprehensive functionality.
 """
 
 import re
-from typing import Any, Protocol
+from typing import Protocol, object
 from unittest.mock import patch
 
 from flext_core import FlextResult
@@ -23,12 +23,12 @@ class OracleCursor(Protocol):
     def execute(
         self,
         query: str,
-        params: list[Any] | dict[str, Any] | None = None,
+        params: list[object] | dict[str, object] | None = None,
     ) -> None:
         """Execute a query."""
         ...
 
-    def fetchone(self) -> list[Any] | None:
+    def fetchone(self) -> list[object] | None:
         """Fetch one row."""
         ...
 
@@ -134,7 +134,7 @@ def _count_table_records(cursor: OracleCursor, table_name: str) -> int:
         return 0
 
 
-def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, Any]:
+def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, object]:
     """Get Oracle table details using cursor.
 
     Args:
@@ -390,7 +390,7 @@ class TestOracleValidateSync:
         # Mock cursor that returns valid details
         call_count = [0]  # Use list to allow modification in lambda
 
-        def mock_fetchone() -> list[Any]:
+        def mock_fetchone() -> list[object]:
             call_count[0] += 1
             if call_count[0] == 1:  # First call (MIN/MAX/COUNT query)
                 return ["2024-01-01", "2024-12-31", 1000]
@@ -445,7 +445,7 @@ class TestOracleValidateSync:
         # Mock cursor for table that exists and has records
         call_count = [0]
 
-        def mock_fetchone() -> list[Any]:
+        def mock_fetchone() -> list[object]:
             call_count[0] += 1
             if call_count[0] == 1:  # table exists check
                 return [1]
@@ -492,7 +492,7 @@ class TestOracleValidateSync:
         # Mock cursor for table that exists but has no records
         call_count = [0]
 
-        def mock_fetchone() -> list[Any]:
+        def mock_fetchone() -> list[object]:
             call_count[0] += 1
             if call_count[0] == 1:  # First call - table exists check
                 return [1]  # Table exists
@@ -518,7 +518,7 @@ class TestOracleValidateSync:
     )
     def test_validate_oracle_connection_no_config(
         self,
-        mock_test_connection: Any,
+        mock_test_connection: object,
     ) -> None:
         """Test validate_oracle_connection with connection failure."""
         # FlextResult imported at top
@@ -532,7 +532,7 @@ class TestOracleValidateSync:
     @patch("flext_db_oracle.FlextDbOracleApi.with_config")
     def test_validate_sync_connection_error(
         self,
-        mock_with_config: Any,
+        mock_with_config: object,
     ) -> None:
         """Test validate_sync with connection error."""
         # Mock FlextDbOracleApi.with_config to raise exception
@@ -548,7 +548,7 @@ class TestOracleValidateSync:
     )
     def test_validate_oracle_connection_success(
         self,
-        mock_test_connection: Any,
+        mock_test_connection: object,
     ) -> None:
         """Test validate_oracle_connection with successful connection."""
         # FlextResult imported at top
