@@ -11,8 +11,8 @@ import importlib.metadata
 from flext_core import (
     FlextConfig,
     FlextContainer,
-    FlextResult,
     FlextModels,
+    FlextResult,
     get_flext_container,
 )
 
@@ -95,8 +95,8 @@ def create_gruponos_meltano_oracle_manager() -> GruponosMeltanoOracleConnectionM
 __all__: FlextTypes.Core.StringList = [
     "FlextConfig",
     "FlextContainer",
-    "FlextResult",
     "FlextModels",
+    "FlextResult",
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoAlertManager",

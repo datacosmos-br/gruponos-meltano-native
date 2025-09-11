@@ -13,7 +13,9 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 """
 
 from __future__ import annotations
+
 from flext_core import FlextTypes
+
 from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlert,
     GruponosMeltanoAlertManager,
