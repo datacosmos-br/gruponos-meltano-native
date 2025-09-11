@@ -148,7 +148,7 @@ make validate              # Full validation (lint + type + security + test)
 make check                 # Quick lint + type check + security
 make test                  # Run all tests (90% coverage requirement)
 make lint                  # Code linting
-make type-check            # Type checking
+make type-check
 make format                # Code formatting
 make security              # Security scanning
 ```

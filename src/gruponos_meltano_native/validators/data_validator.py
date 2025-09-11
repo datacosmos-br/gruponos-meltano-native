@@ -510,7 +510,6 @@ class DataValidator:
             self.conversion_stats["nulls_handled"] += 1
             return None
 
-        # Type check field_schema
         if not isinstance(field_schema, dict):
             return value  # Pass through if schema is not a dict
 
@@ -603,13 +602,12 @@ class DataValidator:
             return None
         try:
             if expected_type == "integer":
-                # Type narrowing: int() can handle various numeric types
                 return (
                     int(value)
                     if isinstance(value, (int, float, bool, str))
                     else int(str(value))
                 )
-            # Type narrowing: float() can handle various numeric types
+
             return (
                 float(value)
                 if isinstance(value, (int, float, bool, str))

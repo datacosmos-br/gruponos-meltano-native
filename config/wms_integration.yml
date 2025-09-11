@@ -90,7 +90,7 @@ target_oracle:
   enable_historical_versioning: ${TARGET_ENABLE_HISTORY:-false}
   historical_versioning_column: ${TARGET_HISTORY_COLUMN:-mod_ts}
   
-  # Type Configuration
+
   enable_smart_typing: ${TARGET_SMART_TYPING:-true}
   enable_column_patterns: ${TARGET_COLUMN_PATTERNS:-true}
   varchar_max_length: ${TARGET_VARCHAR_MAX:-4000}
