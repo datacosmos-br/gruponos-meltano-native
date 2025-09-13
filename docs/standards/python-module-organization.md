@@ -490,7 +490,7 @@ Infrastructure  →  Validators  →  Configuration  (OK)
 
 ```python
 from flext_core import FlextResult
-from typing import List, Dict, object
+from typing import List, Dict
 
 async def execute_etl_pipeline(
     source_config: OracleWMSSourceConfig,

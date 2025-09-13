@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import os
 
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig

@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 import yaml
-from flext_core import FlextLogger
+from flext_core import FlextLogger, FlextTypes
 
 # Setup logger
 log = FlextLogger(__name__)

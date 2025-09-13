@@ -663,7 +663,7 @@ class GruponosMeltanoOrchestrator:
         return {
             "job_name": job_name,
             "available": job_name in self.list_jobs(),
-            "settings": self.settings.dict(),
+            "settings": self.settings.model_dump(),
         }
 
 

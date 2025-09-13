@@ -17,6 +17,7 @@ from __future__ import annotations
 from flext_core import (
     FlextConfig,
     FlextContainer,
+    FlextTypes,
     get_flext_container,
 )
 

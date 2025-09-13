@@ -197,7 +197,6 @@ FLEXT_TARGET_ORACLE_SCHEMA=...        # Default target schema name
 The project defines two main job patterns:
 
 1. **Full Sync Job** (`tap-oracle-wms-full` → `target-oracle-full`)
-
    - Complete data extraction for all entities
    - Scheduled weekly via `@weekly` cron
    - Uses append-only load method

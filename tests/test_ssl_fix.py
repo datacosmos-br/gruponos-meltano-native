@@ -1,10 +1,3 @@
-"""Grupo Nós - Native Meltano Integration Platform.
-
-Copyright (c) 2025 Grupo Nós. Todos os direitos reservados.
-Licença: Proprietária
-"""
-
-# !/usr/bin/env python3
 """Test script to verify SSL certificate validation fix."""
 
 import os

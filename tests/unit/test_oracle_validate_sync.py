@@ -5,7 +5,7 @@ Tests the actual Oracle validation sync logic with comprehensive functionality.
 """
 
 import re
-from typing import Protocol, object
+from typing import Protocol
 from unittest.mock import patch
 
 from flext_core import FlextResult

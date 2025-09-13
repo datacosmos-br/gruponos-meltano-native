@@ -13,7 +13,7 @@ from flext_core import (
     FlextContainer,
     FlextModels,
     FlextResult,
-    get_flext_container,
+    FlextTypes,
 )
 
 # Version Management
@@ -39,6 +39,12 @@ from gruponos_meltano_native.config import (
     GruponosMeltanoTargetOracleConfig,
     GruponosMeltanoWMSSourceConfig,
     create_gruponos_meltano_settings,
+)
+
+# Import factory functions from dedicated module
+from gruponos_meltano_native.factory_functions import (
+    create_gruponos_meltano_oracle_manager,
+    create_gruponos_meltano_platform,
 )
 
 # Monitoring & Alerts
@@ -71,22 +77,6 @@ from gruponos_meltano_native.validators import (
     GruponosMeltanoDataValidator,
     create_gruponos_meltano_validator_for_environment,
 )
-
-# ================================
-# FACTORY FUNCTIONS
-# ================================
-
-
-def create_gruponos_meltano_platform() -> GruponosMeltanoOrchestrator:
-    """Cria instância da plataforma Meltano GrupoNOS com padrões empresariais."""
-    settings = GruponosMeltanoSettings()
-    return GruponosMeltanoOrchestrator(settings)
-
-
-def create_gruponos_meltano_oracle_manager() -> GruponosMeltanoOracleConnectionManager:
-    """Cria um gerenciador de conexão Oracle Meltano GrupoNOS."""
-    return create_gruponos_meltano_oracle_connection_manager()
-
 
 # ================================
 # API PÚBLICA - PADRÃO APENAS
@@ -123,6 +113,5 @@ __all__: FlextTypes.Core.StringList = [
     "create_gruponos_meltano_platform",
     "create_gruponos_meltano_settings",
     "create_gruponos_meltano_validator_for_environment",
-    "get_flext_container",
     "gruponos_meltano_cli",
 ]

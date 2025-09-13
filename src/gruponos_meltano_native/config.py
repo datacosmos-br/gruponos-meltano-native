@@ -9,9 +9,9 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import os
-from typing import ClassVar
+from typing import Any, ClassVar
 
-from flext_core import FlextConfig, FlextOracleModel, FlextResult, FlextTypes, TAnyDict
+from flext_core import FlextConfig, FlextModels, FlextResult, FlextTypes
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
@@ -20,7 +20,7 @@ from pydantic_settings import SettingsConfigDict
 # =============================================
 
 
-class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
+class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
     """Configuração de conexão Oracle WMS para GrupoNOS com segurança empresarial.
 
     Esta classe de configuração estende o modelo Oracle FLEXT para fornecer
@@ -119,7 +119,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
         validate_assignment=True,
     )
 
-    def model_post_init(self, /, __context: TAnyDict | None = None) -> None:
+    def model_post_init(self, /, __context: dict[str, Any] | None = None) -> None:
         """Enforce domain validation at construction time.
 
         Raises:
@@ -147,6 +147,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
         return SecretStr(str(v))
 
     def validate_domain_rules(self) -> FlextResult[None]:
+        """Validate domain-specific business rules for Oracle connection."""
         errors: FlextTypes.Core.StringList = []
         # Basic required fields
         if not getattr(self, "host", ""):  # enforce non-empty host
@@ -167,6 +168,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextOracleModel):
         return FlextResult[None].ok(None)
 
     def get_connection_string(self) -> str:
+        """Generate Oracle connection string from configuration."""
         username = self.username
         pwd = (
             self.password.get_secret_value()
@@ -249,7 +251,7 @@ class GruponosMeltanoWMSSourceConfig(FlextConfig):
         description="Start date for extraction",
     )
 
-    def model_post_init(self, /, __context: TAnyDict | None = None) -> None:
+    def model_post_init(self, /, __context: dict[str, Any] | None = None) -> None:
         """Validação pós-inicialização para configuração de fonte WMS.
 
         Args:
@@ -331,7 +333,8 @@ class GruponosMeltanoTargetOracleConfig(FlextConfig):
     oracle: GruponosMeltanoOracleConnectionConfig | None = Field(default=None)
     schema_name: str | None = Field(default=None)
 
-    def model_post_init(self, /, __context: TAnyDict | None = None) -> None:
+    def model_post_init(self, /, __context: dict[str, Any] | None = None) -> None:
+        """Initialize model with backward compatibility for schema_name."""
         if self.schema_name and not self.target_schema:
             object.__setattr__(self, "target_schema", self.schema_name)
 
@@ -505,10 +508,12 @@ class GruponosMeltanoSettings(FlextConfig):
 
     @property
     def wms_source(self) -> GruponosMeltanoWMSSourceConfig:
+        """Get WMS source configuration with default fallback."""
         return self.wms_source_value or GruponosMeltanoWMSSourceConfig()
 
     @property
     def target_oracle(self) -> GruponosMeltanoTargetOracleConfig:
+        """Get target Oracle configuration with default fallback."""
         return self.target_oracle_value or GruponosMeltanoTargetOracleConfig()
 
     @property

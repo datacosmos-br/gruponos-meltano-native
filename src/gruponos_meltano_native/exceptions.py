@@ -8,7 +8,7 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-from flext_core import FlextExceptions
+from flext_core import FlextExceptions, FlextTypes
 
 
 # Definir hierarquia de exceções específica do GrupoNOS usando herança estática

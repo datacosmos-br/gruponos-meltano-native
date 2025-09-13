@@ -15,7 +15,7 @@ from contextlib import suppress
 
 import click
 import yaml
-from flext_core import FlextLogger, FlextResult
+from flext_core import FlextLogger, FlextResult, FlextTypes
 from rich.console import Console
 
 from gruponos_meltano_native.config import (
