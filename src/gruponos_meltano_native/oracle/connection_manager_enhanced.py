@@ -183,7 +183,11 @@ class GruponosMeltanoOracleConnectionManager:
         except Exception as e:
             # In environments without DB, use connection type to determine behavior
             connection_type = str(type(connection).__name__).lower()
-            if connection_type in {"testconnection", "stubconnection", "fakeconnection"}:
+            if connection_type in {
+                "testconnection",
+                "stubconnection",
+                "fakeconnection",
+            }:
                 # Test/development connections should pass validation
                 success = True
             else:

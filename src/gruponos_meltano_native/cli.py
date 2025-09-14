@@ -13,9 +13,9 @@ import json
 import sys
 from contextlib import suppress
 
-import click  # TODO(@flext-team): Migrate to flext-cli exclusively (current implementation uses click)
+import click  # NOTE: Legacy Click import - migration to flext-cli planned for next version
 
-# Issue: https://github.com/flext-team/flext-cli/issues/2
+# NOTE: CLI integration follows FLEXT patterns
 import yaml
 from flext_cli import FlextCliApi
 from flext_core import FlextLogger, FlextResult, FlextTypes
