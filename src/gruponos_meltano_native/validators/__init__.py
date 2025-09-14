@@ -16,21 +16,20 @@ from __future__ import annotations
 
 from flext_core import FlextTypes
 
-# Import validator classes and functions from dedicated module
-from gruponos_meltano_native.validators.validator_classes import (
+# Import validator classes and functions from data_validator module
+from gruponos_meltano_native.validators.data_validator import (
     DataValidator,
-    GruponosMeltanoDataValidator,
-    create_gruponos_meltano_validator_for_environment,
+    ValidationError,
+    ValidationRule,
     create_validator_for_environment,
 )
 
 # Exportações de Validação Padrão Empresarial
 __all__: FlextTypes.Core.StringList = [
-    # Legacy Compatibility (deprecated)
+    # Core Classes
     "DataValidator",
-    # Classes Padrão Empresarial
-    "GruponosMeltanoDataValidator",
-    # Funções Factory Padrão Empresarial
-    "create_gruponos_meltano_validator_for_environment",
+    "ValidationError",
+    "ValidationRule",
+    # Factory Functions
     "create_validator_for_environment",
 ]

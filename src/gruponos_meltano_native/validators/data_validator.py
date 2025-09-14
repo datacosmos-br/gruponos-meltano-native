@@ -28,7 +28,7 @@ logger = FlextLogger(__name__)
 
 
 # Use padrão de arquitetura empresarial with proper error code for tests compatibility
-class ValidationError(FlextExceptions.ValidationError):
+class ValidationError(FlextExceptions._ValidationError):
     """Erro de validação com código de erro compatível com testes.
 
     Estende FlextExceptions.ValidationError para fornecer erro de validação

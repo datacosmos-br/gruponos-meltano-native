@@ -41,12 +41,36 @@ from gruponos_meltano_native.config import (
     create_gruponos_meltano_settings,
 )
 
-# Import factory functions from dedicated module
-from gruponos_meltano_native.factory_functions import (
-    create_gruponos_meltano_oracle_manager,
-    create_gruponos_meltano_platform,
+# Exceptions
+from gruponos_meltano_native.exceptions import (
+    GruponosMeltanoAlertDeliveryError,
+    GruponosMeltanoAlertError,
+    GruponosMeltanoAuthenticationError,
+    GruponosMeltanoConfigurationError,
+    GruponosMeltanoConnectionError,
+    GruponosMeltanoDataError,
+    GruponosMeltanoDataQualityError,
+    GruponosMeltanoDataValidationError,
+    GruponosMeltanoError,
+    GruponosMeltanoMissingConfigError,
+    GruponosMeltanoMonitoringError,
+    GruponosMeltanoOracleConnectionError,
+    GruponosMeltanoOracleError,
+    GruponosMeltanoOracleQueryError,
+    GruponosMeltanoOracleTimeoutError,
+    GruponosMeltanoOrchestrationError,
+    GruponosMeltanoPipelineError,
+    GruponosMeltanoPipelineTimeoutError,
+    GruponosMeltanoPipelineValidationError,
+    GruponosMeltanoProcessingError,
+    GruponosMeltanoSingerError,
+    GruponosMeltanoTapError,
+    GruponosMeltanoTargetError,
+    GruponosMeltanoTimeoutError,
+    GruponosMeltanoValidationError,
 )
 
+# Factory functions will be added when needed
 # Monitoring & Alerts
 from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlert,
@@ -74,8 +98,10 @@ from gruponos_meltano_native.orchestrator import (
 
 # Data Validation
 from gruponos_meltano_native.validators import (
-    GruponosMeltanoDataValidator,
-    create_gruponos_meltano_validator_for_environment,
+    DataValidator,
+    ValidationError,
+    ValidationRule,
+    create_validator_for_environment,
 )
 
 # ================================
@@ -83,35 +109,60 @@ from gruponos_meltano_native.validators import (
 # ================================
 
 __all__: FlextTypes.Core.StringList = [
+    "DataValidator",
     "FlextConfig",
     "FlextContainer",
     "FlextModels",
     "FlextResult",
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertConfig",
+    "GruponosMeltanoAlertDeliveryError",
+    "GruponosMeltanoAlertError",
     "GruponosMeltanoAlertManager",
     "GruponosMeltanoAlertService",
     "GruponosMeltanoAlertSeverity",
     "GruponosMeltanoAlertType",
-    "GruponosMeltanoDataValidator",
+    "GruponosMeltanoAuthenticationError",
+    "GruponosMeltanoConfigurationError",
+    "GruponosMeltanoConnectionError",
+    "GruponosMeltanoDataError",
+    "GruponosMeltanoDataQualityError",
+    "GruponosMeltanoDataValidationError",
+    "GruponosMeltanoError",
     "GruponosMeltanoJobConfig",
+    "GruponosMeltanoMissingConfigError",
+    "GruponosMeltanoMonitoringError",
     "GruponosMeltanoOracleConnectionConfig",
+    "GruponosMeltanoOracleConnectionError",
     "GruponosMeltanoOracleConnectionManager",
+    "GruponosMeltanoOracleError",
+    "GruponosMeltanoOracleQueryError",
+    "GruponosMeltanoOracleTimeoutError",
+    "GruponosMeltanoOrchestrationError",
     "GruponosMeltanoOrchestrator",
+    "GruponosMeltanoPipelineError",
     "GruponosMeltanoPipelineResult",
     "GruponosMeltanoPipelineRunner",
+    "GruponosMeltanoPipelineTimeoutError",
+    "GruponosMeltanoPipelineValidationError",
+    "GruponosMeltanoProcessingError",
     "GruponosMeltanoSettings",
+    "GruponosMeltanoSingerError",
+    "GruponosMeltanoTapError",
+    "GruponosMeltanoTargetError",
     "GruponosMeltanoTargetOracleConfig",
+    "GruponosMeltanoTimeoutError",
+    "GruponosMeltanoValidationError",
     "GruponosMeltanoWMSSourceConfig",
+    "ValidationError",
+    "ValidationRule",
     "__version__",
     "__version_info__",
     "create_gruponos_meltano_alert_manager",
     "create_gruponos_meltano_oracle_connection_manager",
-    "create_gruponos_meltano_oracle_manager",
     "create_gruponos_meltano_orchestrator",
     "create_gruponos_meltano_pipeline_runner",
-    "create_gruponos_meltano_platform",
     "create_gruponos_meltano_settings",
-    "create_gruponos_meltano_validator_for_environment",
+    "create_validator_for_environment",
     "gruponos_meltano_cli",
 ]

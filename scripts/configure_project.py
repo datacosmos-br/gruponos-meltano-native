@@ -119,7 +119,10 @@ def generate_meltano_config() -> FlextTypes.Core.Dict:
         },
     }
 
-    extractors = config["plugins"]["extractors"]
+    plugins = config.get("plugins", {})
+    if not isinstance(plugins, dict):
+        plugins = {}
+    extractors = plugins.get("extractors", [])
     if isinstance(extractors, list):
         extractors.extend([full_tap, incremental_tap])
 
@@ -139,7 +142,10 @@ def generate_meltano_config() -> FlextTypes.Core.Dict:
             "config": {"entities": [entity]},
         }
 
-        extractors = config["plugins"]["extractors"]
+        plugins = config.get("plugins", {})
+        if not isinstance(plugins, dict):
+            plugins = {}
+        extractors = plugins.get("extractors", [])
         if isinstance(extractors, list):
             extractors.extend([entity_tap_full, entity_tap_inc])
 
@@ -191,7 +197,10 @@ def generate_meltano_config() -> FlextTypes.Core.Dict:
         },
     }
 
-    loaders = config["plugins"]["loaders"]
+    plugins = config.get("plugins", {})
+    if not isinstance(plugins, dict):
+        plugins = {}
+    loaders = plugins.get("loaders", [])
     if isinstance(loaders, list):
         loaders.extend([full_target, incremental_target])
 

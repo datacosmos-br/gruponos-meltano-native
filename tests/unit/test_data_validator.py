@@ -1038,7 +1038,9 @@ class TestNumberConversion:
         assert validator.conversion_stats["strings_converted_to_numbers"] == 1
 
         # Non-whole decimal should raise error
-        with pytest.raises(ValueError, match=r"Cannot convert decimal 42\.5 to integer"):
+        with pytest.raises(
+            ValueError, match=r"Cannot convert decimal 42\.5 to integer"
+        ):
             validator._convert_to_integer("42.5")
 
     def test_convert_to_integer_whole_number(self) -> None:

@@ -18,7 +18,6 @@ from flext_core import (
     FlextConfig,
     FlextContainer,
     FlextTypes,
-    get_flext_container,
 )
 
 from gruponos_meltano_native.infrastructure.di_container import (
@@ -30,7 +29,6 @@ __all__: FlextTypes.Core.StringList = [
     # FLEXT Core Infrastructure
     "FlextConfig",
     "FlextContainer",
-    "get_flext_container",
     # GrupoNOS Meltano Infrastructure
     "get_gruponos_meltano_container",
 ]

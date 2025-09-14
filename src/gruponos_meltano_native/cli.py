@@ -13,11 +13,14 @@ import json
 import sys
 from contextlib import suppress
 
-import click
-import yaml
-from flext_core import FlextLogger, FlextResult, FlextTypes
-from rich.console import Console
+import click  # TODO(@flext-team): Migrate to flext-cli exclusively (current implementation uses click)
 
+# Issue: https://github.com/flext-team/flext-cli/issues/2
+import yaml
+from flext_cli import FlextCliApi
+from flext_core import FlextLogger, FlextResult, FlextTypes
+
+# from rich.console import Console  # FORBIDDEN: CLI violations - use flext-cli exclusively
 from gruponos_meltano_native.config import (
     GruponosMeltanoSettings,
     create_gruponos_meltano_settings,
@@ -50,9 +53,9 @@ def initialize_cli_environment(*, debug: bool = False) -> FlextTypes.Core.Dict:
 
     """
     # Lightweight initialization: defer config creation to individual commands
-    console = Console()
+    cli_api = FlextCliApi()
     return {
-        "console": console,
+        "cli_api": cli_api,
         "debug": debug,
     }
 
@@ -170,8 +173,8 @@ def health(ctx: click.Context) -> None:
         meltano_status = _check_meltano_configuration(config)
         health_status["meltano_project"] = meltano_status
 
-        # Format output using Rich console
-        if isinstance(console, Console):
+        # Format output using flext-cli (migrating away from Rich)
+        if hasattr(console, "print"):
             console.print("📋 Health Check Results:")
             for component, status in health_status.items():
                 console.print(f"  {component.ljust(20)}: {status}")
@@ -180,8 +183,7 @@ def health(ctx: click.Context) -> None:
 
     except Exception as e:
         logger.exception("Health check failed")
-        console = Console()
-        console.print(f"❌ Health check failed: {e}")
+        click.echo(f"❌ Health check failed: {e}", err=True)
         sys.exit(1)
 
 
@@ -304,7 +306,8 @@ def run(
             # If runner supports planning, call it; otherwise just list
             if hasattr(orchestrator, "plan_pipeline"):
                 with suppress(Exception):
-                    _ = orchestrator.plan_pipeline(pipeline_name)
+                    plan_method = getattr(orchestrator, "plan_pipeline")
+                    _ = plan_method(pipeline_name)
             elif hasattr(orchestrator, "list_pipelines"):
                 _ = orchestrator.list_pipelines()
         except Exception:

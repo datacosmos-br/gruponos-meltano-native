@@ -9,7 +9,7 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import os
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from flext_core import FlextConfig, FlextModels, FlextResult, FlextTypes
 from pydantic import ConfigDict, Field, SecretStr, field_validator
@@ -71,8 +71,23 @@ class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
 
     """
 
-    # Inherited from FlextOracleModel: host, service_name, sid, username
-    # Override fields to ensure proper validation and types
+    # Required database connection fields
+    host: str = Field(
+        default="localhost",
+        description="Oracle database hostname or IP address",
+    )
+    username: str = Field(
+        default="",
+        description="Oracle database username",
+    )
+    service_name: str = Field(
+        default="",
+        description="Oracle service name",
+    )
+    sid: str | None = Field(
+        default=None,
+        description="Oracle SID (alternative to service name)",
+    )
     port: int = Field(
         default=1522,
         ge=1,
@@ -119,7 +134,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
         validate_assignment=True,
     )
 
-    def model_post_init(self, /, __context: dict[str, Any] | None = None) -> None:
+    def model_post_init(self, /, __context: dict[str, object] | None = None) -> None:
         """Enforce domain validation at construction time.
 
         Raises:
@@ -152,7 +167,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
         # Basic required fields
         if not getattr(self, "host", ""):  # enforce non-empty host
             errors.append("Host is required")
-        if not (self.service_name or self.sid):
+        if not (self.service_name or getattr(self, "sid", None)):
             errors.append("Either SID or service_name must be provided")
         # pool settings exist on base model; if present, ensure consistency
         pool_min = getattr(self, "pool_min", 1)
@@ -178,7 +193,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
         user_part = f"{username}/{pwd}" if pwd else username
         if self.service_name:
             return f"{user_part}@{self.host}:{self.port}/{self.service_name}"
-        if self.sid:
+        if getattr(self, "sid", None):
             return f"{user_part}@{self.host}:{self.port}:{self.sid}"
         return f"{user_part}@{self.host}:{self.port}"
 
@@ -251,7 +266,7 @@ class GruponosMeltanoWMSSourceConfig(FlextConfig):
         description="Start date for extraction",
     )
 
-    def model_post_init(self, /, __context: dict[str, Any] | None = None) -> None:
+    def model_post_init(self, /, __context: dict[str, object] | None = None) -> None:
         """Validação pós-inicialização para configuração de fonte WMS.
 
         Args:
@@ -333,7 +348,7 @@ class GruponosMeltanoTargetOracleConfig(FlextConfig):
     oracle: GruponosMeltanoOracleConnectionConfig | None = Field(default=None)
     schema_name: str | None = Field(default=None)
 
-    def model_post_init(self, /, __context: dict[str, Any] | None = None) -> None:
+    def model_post_init(self, /, __context: dict[str, object] | None = None) -> None:
         """Initialize model with backward compatibility for schema_name."""
         if self.schema_name and not self.target_schema:
             object.__setattr__(self, "target_schema", self.schema_name)
@@ -446,9 +461,9 @@ class GruponosMeltanoSettings(FlextConfig):
 
     """
 
-    environment: str = Field(
-        default="dev",
-        description="Environment (dev/staging/prod)",
+    environment: FlextTypes.Config.Environment = Field(
+        default="development",
+        description="Environment (development/staging/production/test/local)",
     )
     project_name: str = Field(default="gruponos-meltano", description="Project name")
     app_name: str = Field(
@@ -575,7 +590,7 @@ class GruponosMeltanoSettings(FlextConfig):
         user_part = f"{username}/{pwd}" if pwd else f"{username}"
         if conn.service_name:
             return f"{user_part}@{conn.host}:{conn.port}/{conn.service_name}"
-        if conn.sid:
+        if getattr(conn, "sid", None):
             return f"{user_part}@{conn.host}:{conn.port}:{conn.sid}"
         return f"{user_part}@{conn.host}:{conn.port}"
 

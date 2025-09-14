@@ -41,7 +41,8 @@ def _load_config_template() -> FlextTypes.Core.Dict:
     template_file = Path("target_config.json")
     if template_file.exists():
         with template_file.open(encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
     # Fallback para template básico se arquivo não existir
     return {
         "username": "${FLEXT_TARGET_ORACLE_USERNAME}",
@@ -102,7 +103,11 @@ def prepare_target_config(env_file: str = ".env") -> None:
     for field, default_value in [("port", 1521), ("batch_size", 500), ("pool_size", 1)]:
         if field in resolved_config:
             try:
-                resolved_config[field] = int(resolved_config[field])
+                value = resolved_config[field]
+                if isinstance(value, (str, int, float)):
+                    resolved_config[field] = int(value)
+                else:
+                    resolved_config[field] = default_value
             except (ValueError, TypeError):
                 resolved_config[field] = default_value
     # Converte booleanos

@@ -113,8 +113,8 @@ def demonstrate_connection_manager_integration() -> None:
         oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
-            service_name="TESTDB",
-            username="test",
+            name="TESTDB",
+            user="test",
             password="test",
         )
 

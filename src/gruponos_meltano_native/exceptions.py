@@ -12,7 +12,7 @@ from flext_core import FlextExceptions, FlextTypes
 
 
 # Definir hierarquia de exceções específica do GrupoNOS usando herança estática
-class GruponosMeltanoError(FlextExceptions.Error):
+class GruponosMeltanoError(FlextExceptions._Error):
     """Erro base Meltano GrupoNOS seguindo padrões flext-core.
 
     Classe base para todas as exceções específicas do sistema
@@ -37,7 +37,7 @@ class GruponosMeltanoError(FlextExceptions.Error):
         """
         # Ensure default code matches test expectation (GENERIC_ERROR)
         # Call FlextExceptions.Error directly to avoid MRO conflicts with ConfigurationError
-        FlextExceptions.Error.__init__(
+        FlextExceptions._Error.__init__(
             self,
             message=message,
             error_code=error_code or "GENERIC_ERROR",
@@ -46,7 +46,7 @@ class GruponosMeltanoError(FlextExceptions.Error):
 
 
 class GruponosMeltanoConfigurationError(
-    GruponosMeltanoError, FlextExceptions.ConfigurationError
+    GruponosMeltanoError, FlextExceptions._ConfigurationError
 ):
     """Erros de configuração GrupoNOS seguindo padrões flext-core.
 
@@ -82,7 +82,7 @@ class GruponosMeltanoConfigurationError(
 # Definir após ConfigurationError para suportar herança desejada no teste
 class GruponosMeltanoValidationError(
     GruponosMeltanoConfigurationError,
-    FlextExceptions.ValidationError,
+    FlextExceptions._ValidationError,
 ):
     """Erros de validação GrupoNOS seguindo padrões flext-core.
 
@@ -96,6 +96,9 @@ class GruponosMeltanoValidationError(
         *,
         error_code: str | None = None,
         context: FlextTypes.Core.Dict | None = None,
+        field: str | None = None,
+        value: object = None,
+        validation_details: object = None,
     ) -> None:
         """Inicializa erro de validação GrupoNOS.
 
@@ -103,18 +106,24 @@ class GruponosMeltanoValidationError(
             message: Mensagem descrevendo o erro de validação.
             error_code: Código de erro opcional.
             context: Contexto adicional do erro.
+            field: Campo que falhou na validação.
+            value: Valor que falhou na validação.
+            validation_details: Detalhes da validação.
 
         """
-        # Initialize via base GruponosMeltanoError to avoid multiple error_code passing
-        GruponosMeltanoError.__init__(
+        # Call _ValidationError directly to handle validation-specific context
+        FlextExceptions._ValidationError.__init__(
             self,
             message=message,
+            field=field,
+            value=value,
+            validation_details=validation_details,
+            context=context or {},
             error_code=error_code,
-            context=context,
         )
 
 
-class GruponosMeltanoConnectionError(FlextExceptions.ConnectionError):
+class GruponosMeltanoConnectionError(FlextExceptions._ConnectionError):
     """Erros de conexão GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando há falhas de conectividade
@@ -131,7 +140,7 @@ class GruponosMeltanoConnectionError(FlextExceptions.ConnectionError):
         super().__init__(message)
 
 
-class GruponosMeltanoProcessingError(FlextExceptions.ProcessingError):
+class GruponosMeltanoProcessingError(FlextExceptions._ProcessingError):
     """Erros de processamento GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada durante o processamento de dados,
@@ -148,7 +157,7 @@ class GruponosMeltanoProcessingError(FlextExceptions.ProcessingError):
         super().__init__(message)
 
 
-class GruponosMeltanoAuthenticationError(FlextExceptions.AuthenticationError):
+class GruponosMeltanoAuthenticationError(FlextExceptions._AuthenticationError):
     """Erros de autenticação GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando há falhas na autenticação
@@ -165,7 +174,7 @@ class GruponosMeltanoAuthenticationError(FlextExceptions.AuthenticationError):
         super().__init__(message)
 
 
-class GruponosMeltanoTimeoutError(FlextExceptions.TimeoutError):
+class GruponosMeltanoTimeoutError(FlextExceptions._TimeoutError):
     """Erros de timeout GrupoNOS seguindo padrões flext-core.
 
     Exceção lançada quando operações excedem

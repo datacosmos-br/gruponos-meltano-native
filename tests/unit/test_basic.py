@@ -24,8 +24,8 @@ class TestBasicIntegration:
         oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="localhost",
             port=1521,
-            service_name="TEST",
-            username="test_user",
+            name="TEST",
+            user="test_user",
             password="test_pass",
         )
 
@@ -33,16 +33,16 @@ class TestBasicIntegration:
             msg: str = f"Expected {'localhost'}, got {oracle_config.host}"
             raise AssertionError(msg)
         assert oracle_config.port == 1521
-        if oracle_config.service_name != "TEST":
-            msg: str = f"Expected {'TEST'}, got {oracle_config.service_name}"
+        if oracle_config.name != "TEST":
+            msg: str = f"Expected {'TEST'}, got {oracle_config.name}"
             raise AssertionError(msg)
 
     def test_wms_source_config(self) -> None:
         """Test WMS source configuration."""
         oracle_config = GruponosMeltanoOracleConnectionConfig(
             host="wms.local",
-            service_name="WMS",
-            username="user",
+            name="WMS",
+            user="user",
             password="pass",
         )
 
@@ -50,7 +50,7 @@ class TestBasicIntegration:
             oracle=oracle_config,
         )
 
-        if wms_config.oracle.host != "wms.local":
+        if wms_config.oracle and wms_config.oracle.host != "wms.local":
             msg: str = f"Expected {'wms.local'}, got {wms_config.oracle.host}"
             raise AssertionError(msg)
         assert wms_config.api_enabled is True  # default value
@@ -61,15 +61,15 @@ class TestBasicIntegration:
         # Create minimal config
         oracle_source = GruponosMeltanoOracleConnectionConfig(
             host="source.local",
-            service_name="SOURCE",
-            username="user",
+            name="SOURCE",
+            user="user",
             password="pass",
         )
 
         oracle_target = GruponosMeltanoOracleConnectionConfig(
             host="target.local",
-            service_name="TARGET",
-            username="user",
+            name="TARGET",
+            user="user",
             password="pass",
         )
 
@@ -82,7 +82,7 @@ class TestBasicIntegration:
         # Add required Meltano config
         meltano_config = GruponosMeltanoSettings(
             project_id="test-project",
-            environment="dev",
+            environment="development",
         )
 
         config = GruponosMeltanoSettings(
@@ -121,15 +121,15 @@ class TestBasicIntegration:
         # Create minimal config
         oracle_source = GruponosMeltanoOracleConnectionConfig(
             host="source.local",
-            service_name="SOURCE",
-            username="user",
+            name="SOURCE",
+            user="user",
             password="pass",
         )
 
         oracle_target = GruponosMeltanoOracleConnectionConfig(
             host="target.local",
-            service_name="TARGET",
-            username="user",
+            name="TARGET",
+            user="user",
             password="pass",
         )
 
@@ -142,7 +142,7 @@ class TestBasicIntegration:
         # Add required Meltano config
         meltano_config = GruponosMeltanoSettings(
             project_id="test-project",
-            environment="dev",
+            environment="development",
         )
 
         config = GruponosMeltanoSettings(
@@ -168,7 +168,7 @@ class TestBasicIntegration:
     def test_service_result_pattern(self) -> None:
         """Test that FlextResult pattern is used."""
         # Test success
-        success_result = FlextResult[None].ok("test_value")
+        success_result = FlextResult[str].ok("test_value")
         assert success_result.success
         if success_result.data != "test_value":
             msg: str = f"Expected {'test_value'}, got {success_result.data}"
@@ -176,7 +176,7 @@ class TestBasicIntegration:
         assert success_result.error is None
 
         # Test failure
-        failure_result: FlextResult[str] = FlextResult[None].fail("test_error")
+        failure_result: FlextResult[str] = FlextResult[str].fail("test_error")
         assert not failure_result.success
         assert failure_result.data is None
         if failure_result.error != "test_error":
