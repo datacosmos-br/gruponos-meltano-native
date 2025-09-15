@@ -9,6 +9,8 @@ from typing import Protocol
 from unittest.mock import patch
 
 from flext_core import FlextResult
+from sqlalchemy import MetaData, Table, select
+from sqlalchemy.sql import Select
 
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionManager,
@@ -126,8 +128,11 @@ def _count_table_records(cursor: OracleCursor, table_name: str) -> int:
             .isalpha()
         ):
             return 0
-        query = f"SELECT COUNT(*) FROM {table_name}"
-        cursor.execute(query)
+        # Use SQLAlchemy 2.0 Core API - NO STRING CONCATENATION
+        metadata = MetaData()
+        table = Table(table_name, metadata)
+        count_stmt: Select = select(table.c.ID.count())
+        cursor.execute(str(count_stmt.compile(compile_kwargs={"literal_binds": True})))
         result = cursor.fetchone()
         return result[0] if result else 0
     except Exception:
@@ -156,18 +161,25 @@ def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, objec
                 "table_name": table_name,
             }
 
-        # Get min/max dates and unique ID count - mock query returns these in fetchone()
-        # Note: In production code, table names should be validated against allowlist
-        # For tests, we use identifier quoting to prevent injection
-        quoted_table = f'"{table_name}"'  # Oracle identifier quoting
-        cursor.execute(
-            f"SELECT MIN(DATE_COL), MAX(DATE_COL), COUNT(DISTINCT ID) FROM {quoted_table}",
+        # Get min/max dates and unique ID count using SQLAlchemy 2.0 Core API - NO STRING CONCATENATION
+        metadata = MetaData()
+        table = Table(table_name, metadata)
+
+        # Build proper SQLAlchemy SELECT statement - NO STRING CONCATENATION
+        stats_stmt: Select = select(
+            table.c.DATE_COL.min(),
+            table.c.DATE_COL.max(),
+            table.c.ID.distinct().count()
         )
+        cursor.execute(str(stats_stmt.compile(compile_kwargs={"literal_binds": True})))
         result = cursor.fetchone()
         min_date, max_date, unique_ids = result or [None, None, 0]
 
-        # Get duplicates count - second fetchone() call
-        cursor.execute(f"SELECT COUNT(*) - COUNT(DISTINCT ID) FROM {quoted_table}")
+        # Get duplicates count using SQLAlchemy 2.0 Core API - NO STRING CONCATENATION
+        duplicates_stmt: Select = select(
+            table.c.ID.count() - table.c.ID.distinct().count()
+        )
+        cursor.execute(str(duplicates_stmt.compile(compile_kwargs={"literal_binds": True})))
         duplicates_result = cursor.fetchone()
         duplicates = duplicates_result[0] if duplicates_result else 0
 
