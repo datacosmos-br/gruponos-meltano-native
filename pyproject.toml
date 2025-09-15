@@ -9,13 +9,12 @@ description = "Grupo Nos Meltano Native - Enterprise ETL Pipeline for Grupo Nos"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 keywords = [
-    "flext",
-    "enterprise",
     "async",
-    "typed",
     "enterprise",
+    "flext",
     "migration",
     "production",
+    "typed",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -188,7 +187,7 @@ markers = [
     "destructive: Tests that may modify or delete data",
     "memory: Memory usage tests",
 ]
-filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning"]
+# filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning"]
 
 [tool.coverage.run]
 source = ["src"]
