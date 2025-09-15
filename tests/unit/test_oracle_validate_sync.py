@@ -169,7 +169,7 @@ def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, objec
         stats_stmt: Select = select(
             table.c.DATE_COL.min(),
             table.c.DATE_COL.max(),
-            table.c.ID.distinct().count()
+            table.c.ID.distinct().count(),
         )
         cursor.execute(str(stats_stmt.compile(compile_kwargs={"literal_binds": True})))
         result = cursor.fetchone()
@@ -179,7 +179,9 @@ def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, objec
         duplicates_stmt: Select = select(
             table.c.ID.count() - table.c.ID.distinct().count()
         )
-        cursor.execute(str(duplicates_stmt.compile(compile_kwargs={"literal_binds": True})))
+        cursor.execute(
+            str(duplicates_stmt.compile(compile_kwargs={"literal_binds": True}))
+        )
         duplicates_result = cursor.fetchone()
         duplicates = duplicates_result[0] if duplicates_result else 0
 
