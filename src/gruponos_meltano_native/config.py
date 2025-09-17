@@ -11,9 +11,10 @@ from __future__ import annotations
 import os
 from typing import ClassVar
 
-from flext_core import FlextConfig, FlextModels, FlextResult, FlextTypes
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
+
+from flext_core import FlextConfig, FlextModels, FlextResult, FlextTypes
 
 # =============================================
 # GRUPONOS ORACLE WMS CONFIGURATION

@@ -16,7 +16,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from flext_core import FlextResult, FlextTypes
-
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
 # =============================================

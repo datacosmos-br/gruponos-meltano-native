@@ -19,7 +19,6 @@ import os
 
 from flext_core import FlextResult, FlextTypes
 from flext_db_oracle import FlextDbOracleApi, OracleConfig
-
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
 # =============================================

@@ -13,8 +13,8 @@ from email.mime.text import MIMEText
 from enum import StrEnum
 
 import requests
-from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
 
+from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
 from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
 
 logger = FlextLogger(__name__)

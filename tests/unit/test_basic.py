@@ -3,8 +3,8 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from flext_core import FlextResult
 
+from flext_core import FlextResult
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoOrchestrator,
