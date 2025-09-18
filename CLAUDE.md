@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Hierarchy**: This document provides project-specific standards based on workspace-level patterns defined in [../CLAUDE.md](../CLAUDE.md). For architectural principles, quality gates, and MCP server usage, reference the main workspace standards.
+
+## 🔗 MCP SERVER INTEGRATION
+
+| MCP Server | Purpose | Status |
+|------------|---------|--------|
+| **serena** | Meltano project codebase analysis and ETL pipeline patterns | **ACTIVE** |
+| **sequential-thinking** | Meltano architecture and data integration problem solving | **ACTIVE** |
+| **github** | Meltano ecosystem integration and pipeline PRs | **ACTIVE** |
+
+**Usage**: `claude mcp list` for available servers, leverage for Meltano-specific development patterns and ETL pipeline analysis.
+
 ## Project Overview
 
 GrupoNOS Meltano Native is an enterprise-grade ETL pipeline implementation for Grupo Nos. This project provides specialized Oracle WMS (Warehouse Management System) integration using Meltano 3.8.0 as the orchestration platform, with Python 3.13 and strict type safety.
