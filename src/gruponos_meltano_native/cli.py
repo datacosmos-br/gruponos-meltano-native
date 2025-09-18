@@ -9,27 +9,28 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import sys
+from datetime import UTC, datetime
 
 # FLEXT ARCHITECTURE COMPLIANCE: Using flext-cli foundation exclusively
-from flext_cli import FlextCliApi, FlextCliMain
+from flext_cli import FlextCliApi, FlextCliMain, FlextCliModels
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
 # from rich.console import Console  # FORBIDDEN: CLI violations - use flext-cli exclusively
 
 
 # Handler function implementations
-def handle_health_command() -> FlextResult[dict]:
+def handle_health_command() -> FlextResult[dict[str, str]]:
     """Handle health check command."""
-    return FlextResult[dict].ok(
+    return FlextResult[dict[str, str]].ok(
         {"status": "healthy", "timestamp": "2025-01-27T00:00:00Z"}
     )
 
 
 def handle_run_command(
     pipeline_name: str, *, dry_run: bool = False, force: bool = False
-) -> FlextResult[dict]:
+) -> FlextResult[dict[str, str | bool]]:
     """Handle pipeline run command."""
-    return FlextResult[dict].ok(
+    return FlextResult[dict[str, str | bool]].ok(
         {
             "pipeline": pipeline_name,
             "status": "started",
@@ -39,26 +40,32 @@ def handle_run_command(
     )
 
 
-def handle_list_command() -> FlextResult[list]:
+def handle_list_command() -> FlextResult[list[str]]:
     """Handle list pipelines command."""
-    return FlextResult[list].ok(["pipeline1", "pipeline2"])
+    return FlextResult[list[str]].ok(["pipeline1", "pipeline2"])
 
 
-def handle_validate_command(output_format: str = "table") -> FlextResult[dict]:
+def handle_validate_command(
+    output_format: str = "table",
+) -> FlextResult[dict[str, str]]:
     """Handle validate command."""
-    return FlextResult[dict].ok({"validation": "passed", "format": output_format})
+    return FlextResult[dict[str, str]].ok(
+        {"validation": "passed", "format": output_format}
+    )
 
 
-def handle_show_config_command(output_format: str = "yaml") -> FlextResult[dict]:
+def handle_show_config_command(
+    output_format: str = "yaml",
+) -> FlextResult[dict[str, str]]:
     """Handle show config command."""
-    return FlextResult[dict].ok({"config": "loaded", "format": output_format})
+    return FlextResult[dict[str, str]].ok({"config": "loaded", "format": output_format})
 
 
 def handle_run_with_retry_command(
     pipeline_name: str, max_retries: int = 3, *, retry_delay: int = 5
-) -> FlextResult[dict]:
+) -> FlextResult[dict[str, str | int]]:
     """Handle run with retry command."""
-    return FlextResult[dict].ok(
+    return FlextResult[dict[str, str | int]].ok(
         {"pipeline": pipeline_name, "retries": max_retries, "retry_delay": retry_delay}
     )
 
@@ -103,82 +110,41 @@ def create_gruponos_cli() -> FlextResult[FlextCliMain]:
             version="0.9.0",
         )
 
-        # Register commands through flext-cli abstraction
+        # Create proper CliCommand instances
         commands = {
-            "health": {
-                "description": "Check system health and configuration",
-                "handler": handle_health_command,
-                "options": [],
-            },
-            "run": {
-                "description": "Execute a Meltano pipeline",
-                "handler": handle_run_command,
-                "arguments": ["pipeline_name"],
-                "options": [
-                    {
-                        "name": "--dry-run",
-                        "is_flag": True,
-                        "help": "Show what would run without executing",
-                    },
-                    {
-                        "name": "--force",
-                        "is_flag": True,
-                        "help": "Force pipeline execution ignoring previous state",
-                    },
-                ],
-            },
-            "list": {
-                "description": "List available pipelines",
-                "handler": handle_list_command,
-                "options": [],
-            },
-            "validate": {
-                "description": "Validate configuration and environment",
-                "handler": handle_validate_command,
-                "options": [
-                    {
-                        "name": "--output-format",
-                        "type": "choice",
-                        "choices": ["json", "yaml", "table"],
-                        "default": "table",
-                        "help": "Output format",
-                    }
-                ],
-            },
-            "show-config": {
-                "description": "Show current configuration",
-                "handler": handle_show_config_command,
-                "options": [
-                    {
-                        "name": "--output-format",
-                        "type": "choice",
-                        "choices": ["json", "yaml"],
-                        "default": "yaml",
-                        "help": "Output format",
-                    },
-                    {
-                        "name": "--show-secrets",
-                        "is_flag": True,
-                        "help": "Include secrets in output",
-                    },
-                ],
-            },
-            "run-with-retry": {
-                "description": "Execute pipeline with retry logic",
-                "handler": handle_run_with_retry_command,
-                "arguments": ["pipeline_name"],
-                "options": [
-                    {
-                        "name": "--max-retries",
-                        "type": "int",
-                        "default": 3,
-                        "help": "Maximum number of retries",
-                    }
-                ],
-            },
+            "health": FlextCliModels.CliCommand(
+                id="health_command",
+                command_line="health",
+                execution_time=datetime.now(UTC),
+            ),
+            "run": FlextCliModels.CliCommand(
+                id="run_command",
+                command_line="run",
+                execution_time=datetime.now(UTC),
+            ),
+            "list": FlextCliModels.CliCommand(
+                id="list_command",
+                command_line="list",
+                execution_time=datetime.now(UTC),
+            ),
+            "validate": FlextCliModels.CliCommand(
+                id="validate_command",
+                command_line="validate",
+                execution_time=datetime.now(UTC),
+            ),
+            "show-config": FlextCliModels.CliCommand(
+                id="show_config_command",
+                command_line="show-config",
+                execution_time=datetime.now(UTC),
+            ),
+            "run-with-retry": FlextCliModels.CliCommand(
+                id="run_with_retry_command",
+                command_line="run-with-retry",
+                execution_time=datetime.now(UTC),
+            ),
         }
 
-        register_result = cli_main.register_commands(commands)
+        register_result = cli_main.register_command_group("gruponos", commands)
         if register_result.is_failure:
             return FlextResult[FlextCliMain].fail(
                 f"Commands registration failed: {register_result.error}"

@@ -242,7 +242,7 @@ await alert_manager.send_alert(
 
 ---
 
-**Framework**: FLEXT Ecosystem v0.9.0  
+**Framework**: FLEXT Ecosystem v0.9.9  
 **Architecture**: Clean Architecture + Domain-Driven Design  
 **Testing**: 90% coverage with comprehensive validation  
 **Documentation**: Enterprise-grade with practical examples

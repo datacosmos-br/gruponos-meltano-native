@@ -61,7 +61,7 @@ from gruponos_meltano_native.config import GruponosMeltanoSettings
 # Environment-aware configuration
 settings = create_gruponos_meltano_settings()
 assert settings.app_name == "gruponos-meltano-native"
-assert settings.version == "0.9.0"
+assert settings.version == "0.9.9"
 
 # Oracle WMS configuration with validation
 wms_config = settings.oracle_wms
@@ -820,7 +820,7 @@ class GruponosMeltanoSettings(FlextConfig):
 
     # Application metadata
     app_name: str = "gruponos-meltano-native"
-    version: str = "0.9.0"
+    version: str = "0.9.9"
     environment: str = "dev"
 
     # FLEXT integration settings
@@ -875,4 +875,4 @@ def create_gruponos_meltano_settings() -> GruponosMeltanoSettings:
 **Last Updated**: August 4, 2025  
 **Target Audience**: GrupoNOS ETL developers and FLEXT ecosystem contributors  
 **Scope**: Python module organization for enterprise ETL pipelines  
-**Framework**: FLEXT Ecosystem v0.9.0 | Clean Architecture + Domain-Driven Design
+**Framework**: FLEXT Ecosystem v0.9.9 | Clean Architecture + Domain-Driven Design

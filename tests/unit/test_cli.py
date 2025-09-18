@@ -116,7 +116,7 @@ class TestCLIComprehensive:
                 raise AssertionError(msg)
             # Health command logs errors but doesn't output to stdout on failure
             # Just verify that the command failed with exit code 1
-            assert result.output.strip() == "" or len(result.output.strip()) == 0
+            assert not result.output.strip() or len(result.output.strip()) == 0
 
     def test_health_command_runtime_error(self) -> None:
         """Test health command RuntimeError handling."""

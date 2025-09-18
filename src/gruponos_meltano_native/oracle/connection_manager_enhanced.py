@@ -18,7 +18,7 @@ from __future__ import annotations
 import os
 
 from flext_core import FlextResult, FlextTypes
-from flext_db_oracle import FlextDbOracleApi, OracleConfig
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
 
 # =============================================
@@ -109,10 +109,10 @@ class GruponosMeltanoOracleConnectionManager:
                 service_name = "ORCL"
 
             # Create proper OracleConfig instance
-            oracle_config = OracleConfig(
+            oracle_config = FlextDbOracleModels.OracleConfig(
                 host=self.config.host,
                 port=self.config.port,
-                user=self.config.username,
+                username=self.config.username,
                 password=password_str,
                 name=service_name,
             )

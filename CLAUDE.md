@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🔗 MCP SERVER INTEGRATION
 
-| MCP Server | Purpose | Status |
-|------------|---------|--------|
-| **serena** | Meltano project codebase analysis and ETL pipeline patterns | **ACTIVE** |
-| **sequential-thinking** | Meltano architecture and data integration problem solving | **ACTIVE** |
-| **github** | Meltano ecosystem integration and pipeline PRs | **ACTIVE** |
+| MCP Server              | Purpose                                                     | Status     |
+| ----------------------- | ----------------------------------------------------------- | ---------- |
+| **serena**              | Meltano project codebase analysis and ETL pipeline patterns | **ACTIVE** |
+| **sequential-thinking** | Meltano architecture and data integration problem solving   | **ACTIVE** |
+| **github**              | Meltano ecosystem integration and pipeline PRs              | **ACTIVE** |
 
 **Usage**: `claude mcp list` for available servers, leverage for Meltano-specific development patterns and ETL pipeline analysis.
 

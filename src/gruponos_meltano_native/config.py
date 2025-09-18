@@ -149,7 +149,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
             # Pydantic v2: model_fields_set contains fields explicitly provided by caller
             provided_fields: set[str] = getattr(self, "model_fields_set", set())
             if "port" not in provided_fields:
-                object.__setattr__(self, "port", 1521)
+                setattr(self, "port", 1521)
 
     # pool_increment now a declared field above for test compatibility
 
@@ -281,13 +281,13 @@ class GruponosMeltanoWMSSourceConfig(FlextConfig):
             # Use base_url as fallback for api_base_url
             if self.base_url:
                 # Set api_base_url to base_url if not provided
-                object.__setattr__(self, "api_base_url", self.base_url)
+                setattr(self, "api_base_url", self.base_url)
             else:
                 msg = "api_base_url is required when api_enabled is True"
                 raise ValueError(msg)
         # Create a minimal, valid Oracle config if missing to satisfy downstream access
         if self.oracle is None:
-            object.__setattr__(
+            setattr(
                 self,
                 "oracle",
                 GruponosMeltanoOracleConnectionConfig(
@@ -300,7 +300,7 @@ class GruponosMeltanoWMSSourceConfig(FlextConfig):
         # Normalize defaults that might be overridden by env in CI: ensure 600 timeout
         default_wms_timeout_seconds = 600
         if self.timeout < default_wms_timeout_seconds:
-            object.__setattr__(self, "timeout", default_wms_timeout_seconds)
+            setattr(self, "timeout", default_wms_timeout_seconds)
 
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
         env_prefix="TAP_ORACLE_WMS_",
@@ -352,7 +352,7 @@ class GruponosMeltanoTargetOracleConfig(FlextConfig):
     def model_post_init(self, /, __context: dict[str, object] | None = None) -> None:
         """Initialize model with backward compatibility for schema_name."""
         if self.schema_name and not self.target_schema:
-            object.__setattr__(self, "target_schema", self.schema_name)
+            setattr(self, "target_schema", self.schema_name)
 
 
 class GruponosMeltanoJobConfig(FlextConfig):

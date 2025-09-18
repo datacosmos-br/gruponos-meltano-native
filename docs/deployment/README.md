@@ -345,7 +345,7 @@ metadata:
   namespace: gruponos-etl
   labels:
     app: gruponos-meltano
-    version: v0.9.0
+    version: v0.9.9
 spec:
   replicas: 3
   strategy:
@@ -360,7 +360,7 @@ spec:
     metadata:
       labels:
         app: gruponos-meltano
-        version: v0.9.0
+        version: v0.9.9
     spec:
       serviceAccountName: gruponos-meltano
       securityContext:
@@ -369,7 +369,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: gruponos-meltano
-          image: gruponos-meltano:v0.9.0
+          image: gruponos-meltano:v0.9.9
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -487,7 +487,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: gruponos-full-sync
-              image: gruponos-meltano:v0.9.0
+              image: gruponos-meltano:v0.9.9
               command:
                 - "poetry"
                 - "run"
@@ -527,7 +527,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: gruponos-incremental-sync
-              image: gruponos-meltano:v0.9.0
+              image: gruponos-meltano:v0.9.9
               command:
                 - "poetry"
                 - "run"

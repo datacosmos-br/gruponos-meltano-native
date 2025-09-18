@@ -506,7 +506,7 @@ class DataValidator:
         strict: bool = False,
     ) -> object:
         """Convert a single field according to its schema."""
-        if value is None or value == "":
+        if value is None or not value:
             self.conversion_stats["nulls_handled"] += 1
             return None
 
