@@ -177,10 +177,10 @@ def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, objec
 
         # Get duplicates count using SQLAlchemy 2.0 Core API - NO STRING CONCATENATION
         duplicates_stmt: Select = select(
-            table.c.ID.count() - table.c.ID.distinct().count()
+            table.c.ID.count() - table.c.ID.distinct().count(),
         )
         cursor.execute(
-            str(duplicates_stmt.compile(compile_kwargs={"literal_binds": True}))
+            str(duplicates_stmt.compile(compile_kwargs={"literal_binds": True})),
         )
         duplicates_result = cursor.fetchone()
         duplicates = duplicates_result[0] if duplicates_result else 0
@@ -569,7 +569,7 @@ class TestOracleValidateSync:
 
         # Mock successful connection test
         mock_test_connection.return_value = FlextResult[None].ok(
-            "Connection successful"
+            "Connection successful",
         )
 
         result = validate_oracle_connection()

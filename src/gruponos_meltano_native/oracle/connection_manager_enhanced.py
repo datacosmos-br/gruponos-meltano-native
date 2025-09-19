@@ -92,7 +92,7 @@ class GruponosMeltanoOracleConnectionManager:
 
             # Convert SecretStr to string for FlextDbOracleConfig
             password_str = (
-                getattr(password_value, "get_secret_value")()
+                password_value.get_secret_value()
                 if hasattr(password_value, "get_secret_value")
                 else str(password_value)
             )
@@ -123,7 +123,7 @@ class GruponosMeltanoOracleConnectionManager:
 
         except Exception as e:
             return FlextResult[FlextDbOracleApi].fail(
-                f"Failed to create Oracle connection: {e}"
+                f"Failed to create Oracle connection: {e}",
             )
 
     def test_connection(self) -> FlextResult[bool]:
@@ -160,14 +160,14 @@ class GruponosMeltanoOracleConnectionManager:
         error_message = ""
         try:
             if hasattr(connection, "health_check"):
-                health_check_method = getattr(connection, "health_check")
+                health_check_method = connection.health_check
                 health = health_check_method()
                 success = bool(health.success if hasattr(health, "success") else True)
                 if not success:
                     error_message = str(
                         health.error
                         if hasattr(health, "error")
-                        else "Health check failed"
+                        else "Health check failed",
                     )
             else:
                 test_result = connection.test_connection()

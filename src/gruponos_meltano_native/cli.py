@@ -22,12 +22,12 @@ from flext_core import FlextLogger, FlextResult, FlextTypes
 def handle_health_command() -> FlextResult[dict[str, str]]:
     """Handle health check command."""
     return FlextResult[dict[str, str]].ok(
-        {"status": "healthy", "timestamp": "2025-01-27T00:00:00Z"}
+        {"status": "healthy", "timestamp": "2025-01-27T00:00:00Z"},
     )
 
 
 def handle_run_command(
-    pipeline_name: str, *, dry_run: bool = False, force: bool = False
+    pipeline_name: str, *, dry_run: bool = False, force: bool = False,
 ) -> FlextResult[dict[str, str | bool]]:
     """Handle pipeline run command."""
     return FlextResult[dict[str, str | bool]].ok(
@@ -36,7 +36,7 @@ def handle_run_command(
             "status": "started",
             "dry_run": dry_run,
             "force": force,
-        }
+        },
     )
 
 
@@ -50,7 +50,7 @@ def handle_validate_command(
 ) -> FlextResult[dict[str, str]]:
     """Handle validate command."""
     return FlextResult[dict[str, str]].ok(
-        {"validation": "passed", "format": output_format}
+        {"validation": "passed", "format": output_format},
     )
 
 
@@ -62,11 +62,11 @@ def handle_show_config_command(
 
 
 def handle_run_with_retry_command(
-    pipeline_name: str, max_retries: int = 3, *, retry_delay: int = 5
+    pipeline_name: str, max_retries: int = 3, *, retry_delay: int = 5,
 ) -> FlextResult[dict[str, str | int]]:
     """Handle run with retry command."""
     return FlextResult[dict[str, str | int]].ok(
-        {"pipeline": pipeline_name, "retries": max_retries, "retry_delay": retry_delay}
+        {"pipeline": pipeline_name, "retries": max_retries, "retry_delay": retry_delay},
     )
 
 
@@ -147,7 +147,7 @@ def create_gruponos_cli() -> FlextResult[FlextCliMain]:
         register_result = cli_main.register_command_group("gruponos", commands)
         if register_result.is_failure:
             return FlextResult[FlextCliMain].fail(
-                f"Commands registration failed: {register_result.error}"
+                f"Commands registration failed: {register_result.error}",
             )
 
         return FlextResult[FlextCliMain].ok(cli_main)

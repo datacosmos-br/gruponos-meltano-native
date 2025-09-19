@@ -46,7 +46,7 @@ class GruponosMeltanoError(FlextExceptions._Error):
 
 
 class GruponosMeltanoConfigurationError(
-    GruponosMeltanoError, FlextExceptions._ConfigurationError
+    GruponosMeltanoError, FlextExceptions._ConfigurationError,
 ):
     """Erros de configuração GrupoNOS seguindo padrões flext-core.
 

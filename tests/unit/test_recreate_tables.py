@@ -104,7 +104,7 @@ class TestOracleTableRecreationReal:
         """Test DDL execution for table recreation using mock."""
         # Mock successful DDL execution
         mock_execute_ddl.return_value = FlextResult[None].ok(
-            "DDL executed successfully"
+            "DDL executed successfully",
         )
 
         # Create a mock API instance

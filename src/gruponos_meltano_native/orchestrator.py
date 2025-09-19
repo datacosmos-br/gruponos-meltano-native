@@ -246,9 +246,7 @@ class GruponosMeltanoPipelineRunner:
                 "FLEXT_TARGET_ORACLE_HOST": self.settings.oracle_connection.host,
                 "FLEXT_TARGET_ORACLE_PORT": str(self.settings.oracle_connection.port),
                 "FLEXT_TARGET_ORACLE_USERNAME": self.settings.oracle_connection.username,
-                "FLEXT_TARGET_ORACLE_PASSWORD": getattr(
-                    self.settings.oracle_connection.password, "get_secret_value"
-                )()
+                "FLEXT_TARGET_ORACLE_PASSWORD": self.settings.oracle_connection.password.get_secret_value()
                 if hasattr(self.settings.oracle_connection.password, "get_secret_value")
                 else str(self.settings.oracle_connection.password),
                 "FLEXT_TARGET_ORACLE_SCHEMA": self.settings.target_oracle.target_schema,
