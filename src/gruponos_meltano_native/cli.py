@@ -27,7 +27,10 @@ def handle_health_command() -> FlextResult[dict[str, str]]:
 
 
 def handle_run_command(
-    pipeline_name: str, *, dry_run: bool = False, force: bool = False,
+    pipeline_name: str,
+    *,
+    dry_run: bool = False,
+    force: bool = False,
 ) -> FlextResult[dict[str, str | bool]]:
     """Handle pipeline run command."""
     return FlextResult[dict[str, str | bool]].ok(
@@ -62,7 +65,10 @@ def handle_show_config_command(
 
 
 def handle_run_with_retry_command(
-    pipeline_name: str, max_retries: int = 3, *, retry_delay: int = 5,
+    pipeline_name: str,
+    max_retries: int = 3,
+    *,
+    retry_delay: int = 5,
 ) -> FlextResult[dict[str, str | int]]:
     """Handle run with retry command."""
     return FlextResult[dict[str, str | int]].ok(

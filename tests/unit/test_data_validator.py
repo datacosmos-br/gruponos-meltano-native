@@ -1039,7 +1039,8 @@ class TestNumberConversion:
 
         # Non-whole decimal should raise error
         with pytest.raises(
-            ValueError, match=r"Cannot convert decimal 42\.5 to integer",
+            ValueError,
+            match=r"Cannot convert decimal 42\.5 to integer",
         ):
             validator._convert_to_integer("42.5")
 

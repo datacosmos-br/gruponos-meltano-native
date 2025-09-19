@@ -8,14 +8,7 @@ version = "0.9.0"
 description = "Grupo Nos Meltano Native - Enterprise ETL Pipeline for Grupo Nos"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-keywords = [
-    "async",
-    "enterprise",
-    "flext",
-    "migration",
-    "production",
-    "typed",
-]
+keywords = ["async", "enterprise", "flext", "migration", "production", "typed"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -68,7 +61,7 @@ strict = true
 check_untyped_defs = true
 disallow_any_decorated = false
 disallow_any_explicit = true
-disallow_any_expr = false          # Too restrictive for real-world usage
+disallow_any_expr = false           # Too restrictive for real-world usage
 disallow_any_generics = true
 disallow_any_unimported = true
 disallow_incomplete_defs = true
