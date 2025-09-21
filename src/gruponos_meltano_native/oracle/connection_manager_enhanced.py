@@ -147,12 +147,12 @@ class GruponosMeltanoOracleConnectionManager:
 
         """
         connection_result = self.get_connection()
-        if not connection_result.success:
+        if not connection_result.is_success:
             return FlextResult[bool].fail(
                 f"Connection failed: {connection_result.error}",
             )
 
-        connection = connection_result.data
+        connection = connection_result.value
         if connection is None:
             return FlextResult[bool].fail("Connection is None")
 
@@ -172,7 +172,7 @@ class GruponosMeltanoOracleConnectionManager:
             else:
                 test_result = connection.test_connection()
                 if hasattr(test_result, "success"):
-                    success = bool(test_result.success)
+                    success = bool(test_result.is_success)
                     if not success:
                         error_message = f"Connection test failed: {test_result.error}"
                 else:
@@ -247,11 +247,11 @@ class GruponosMeltanoOracleConnectionManager:
         """Estabelece conexão ativa com Oracle."""
         try:
             result = self.get_connection()
-            if result.success and result.data is not None:
+            if result.is_success and result.value is not None:
                 # Ensure underlying connection is opened
-                if hasattr(result.data, "connect"):
-                    result.data.connect()
-                self._connection = result.data
+                if hasattr(result.value, "connect"):
+                    result.value.connect()
+                self._connection = result.value
                 return FlextResult[bool].ok(data=True)
             return FlextResult[bool].fail(result.error or "Failed to create connection")
         except Exception as exc:

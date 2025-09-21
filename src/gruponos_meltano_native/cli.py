@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import sys
 from datetime import UTC, datetime
+from typing import cast
 
 # FLEXT ARCHITECTURE COMPLIANCE: Using flext-cli foundation exclusively
 from flext_cli import FlextCliApi, FlextCliMain, FlextCliModels
@@ -113,7 +114,6 @@ def create_gruponos_cli() -> FlextResult[FlextCliMain]:
         cli_main = FlextCliMain(
             name="gruponos-meltano-native",
             description="GrupoNOS Meltano Native - Gerenciador de Pipeline ETL Empresarial",
-            version="0.9.0",
         )
 
         # Create proper CliCommand instances
@@ -150,7 +150,9 @@ def create_gruponos_cli() -> FlextResult[FlextCliMain]:
             ),
         }
 
-        register_result = cli_main.register_command_group("gruponos", commands)
+        register_result = cli_main.register_command_group(
+            "gruponos", cast("dict[str, object]", commands)
+        )
         if register_result.is_failure:
             return FlextResult[FlextCliMain].fail(
                 f"Commands registration failed: {register_result.error}",
@@ -175,13 +177,13 @@ def cli(*, debug: bool = False, config_file: str | None = None) -> None:
         # Create and execute the flext-cli implementation
         cli_result = create_gruponos_cli()
         if cli_result.is_failure:
-            logger.error("Failed to create CLI: %s", cli_result.error)
+            logger.error(f"Failed to create CLI: {cli_result.error}")
             sys.exit(1)
 
         cli_main = cli_result.unwrap()
         execution_result = cli_main.execute()
         if execution_result.is_failure:
-            logger.error("CLI execution failed: %s", execution_result.error)
+            logger.error(f"CLI execution failed: {execution_result.error}")
             sys.exit(1)
 
     except ValueError:

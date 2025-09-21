@@ -12,7 +12,7 @@ from flext_core import FlextExceptions, FlextTypes
 
 
 # Definir hierarquia de exceções específica do GrupoNOS usando herança estática
-class GruponosMeltanoError(FlextExceptions._Error):
+class GruponosMeltanoError(FlextExceptions.Error):
     """Erro base Meltano GrupoNOS seguindo padrões flext-core.
 
     Classe base para todas as exceções específicas do sistema
@@ -37,7 +37,7 @@ class GruponosMeltanoError(FlextExceptions._Error):
         """
         # Ensure default code matches test expectation (GENERIC_ERROR)
         # Call FlextExceptions.Error directly to avoid MRO conflicts with ConfigurationError
-        FlextExceptions._Error.__init__(
+        FlextExceptions.Error.__init__(
             self,
             message=message,
             error_code=error_code or "GENERIC_ERROR",
@@ -113,7 +113,7 @@ class GruponosMeltanoValidationError(
 
         """
         # Call _ValidationError directly to handle validation-specific context
-        FlextExceptions._ValidationError.__init__(
+        FlextExceptions.ValidationError.__init__(
             self,
             message=message,
             field=field,

@@ -9,12 +9,12 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import os
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
-from flext_core import FlextConfig, FlextModels, FlextResult, FlextTypes
+from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult, FlextTypes
 
 # =============================================
 # GRUPONOS ORACLE WMS CONFIGURATION
@@ -28,47 +28,6 @@ class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
     configurações específicas do GrupoNOS para conexão com banco de dados Oracle,
     com validação abrangente, recursos de segurança e gerenciamento de configuração
     consciente do ambiente.
-
-    Recursos Principais:
-      - Gerenciamento seguro de credenciais com campos SecretStr
-      - Integração com variáveis de ambiente com prefixo GRUPONOS_
-      - Validação de conexão com mecanismos de retry
-      - Configuração específica de protocolo (TCP/TCPS para SSL)
-      - Configurações de pool de conexão prontas para produção
-
-    Attributes:
-      Herdados de FlextOracleModel:
-      host: Hostname ou endereço IP do banco Oracle.
-      port: Porta do banco (tipicamente 1521 para TCP, 1522 para TCPS).
-      service_name: Nome do serviço Oracle para conexão.
-      sid: SID Oracle (alternativa ao service_name).
-      username: Nome de usuário para conexão no banco.
-      password: Senha de conexão no banco (SecretStr).
-      protocol: Protocolo de conexão (TCP padrão, TCPS para SSL/TLS).
-      timeout: Timeout de conexão em segundos.
-      ssl_enabled: Habilita conexão SSL/TLS.
-      pool_min: Número mínimo de conexões no pool.
-      pool_max: Número máximo de conexões no pool.
-
-    Example:
-      Configuração baseada em variáveis de ambiente:
-
-      >>> import os
-      >>> # Definir variáveis de ambiente
-      >>> os.environ["GRUPONOS_ORACLE_HOST"] = "oracle-prod.company.com"
-      >>> os.environ["GRUPONOS_ORACLE_USERNAME"] = "etl_user"
-      >>> os.environ["GRUPONOS_ORACLE_PASSWORD"] = "secure_password"
-      >>>
-      >>> # Carregar configuração
-      >>> config = GruponosMeltanoOracleConnectionConfig()
-      >>> print(f"Conectando em: {config.host}:{config.port}")
-
-    Note:
-      Segurança:
-      - Senhas são armazenadas como SecretStr e excluídas da representação string
-      - Variáveis de ambiente são preferidas a valores hardcoded
-      - Suporte SSL/TLS via configuração de protocolo TCPS
-      - Validação de conexão antes do uso
 
     """
 
@@ -106,7 +65,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
         description="Connection protocol (TCP for standard, TCPS for SSL/TLS)",
     )
     timeout: int = Field(
-        default=30,
+        default=FlextConstants.Network.DEFAULT_TIMEOUT,  # SOURCE OF TRUTH
         ge=1,
         description="Connection timeout in seconds (minimum 1 second)",
     )
@@ -120,7 +79,7 @@ class GruponosMeltanoOracleConnectionConfig(FlextModels.Entity):
         description="Minimum number of connections in pool",
     )
     pool_max: int = Field(
-        default=10,
+        default=FlextConstants.Container.DEFAULT_WORKERS * 5,  # 10
         ge=1,
         description="Maximum number of connections in pool",
     )
@@ -252,12 +211,27 @@ class GruponosMeltanoWMSSourceConfig(FlextConfig):
     )
     organization_id: str = Field(default="*", description="Organization ID")
     source_schema: str = Field(default="WMS", description="Source schema name")
-    batch_size: int = Field(default=1000, description="Processing batch size")
-    parallel_jobs: int = Field(default=1, description="Number of parallel jobs")
-    extract_mode: str = Field(default="incremental", description="Extract mode")
-    page_size: int = Field(default=500, description="API page size")
-    timeout: int = Field(default=600, description="Request timeout in seconds")
-    max_retries: int = Field(default=3, description="Maximum retry attempts")
+    batch_size: int = Field(
+        default=FlextConstants.Performance.DEFAULT_BATCH_SIZE,
+        description="Processing batch size",
+    )  # SOURCE OF TRUTH
+    parallel_jobs: int = Field(
+        default=1, description="Number of parallel jobs"
+    )  # Keep as 1 for WMS-specific processing
+    extract_mode: str = Field(
+        default="incremental", description="Extract mode"
+    )  # Domain-specific
+    page_size: int = Field(
+        default=FlextConstants.Defaults.PAGE_SIZE * 5, description="API page size"
+    )  # SOURCE OF TRUTH
+    timeout: int = Field(
+        default=FlextConstants.Network.DEFAULT_TIMEOUT * 20,
+        description="Request timeout in seconds",
+    )  # SOURCE OF TRUTH - 600s for WMS
+    max_retries: int = Field(
+        default=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+        description="Maximum retry attempts",
+    )  # SOURCE OF TRUTH
     enable_incremental: bool = Field(
         default=False,
         description="Enable incremental extraction",
@@ -333,7 +307,10 @@ class GruponosMeltanoTargetOracleConfig(FlextConfig):
     parallel_workers: int = Field(default=1, description="Number of parallel workers")
     drop_target_tables: bool = Field(default=False, description="Drop target tables")
     enable_compression: bool = Field(default=True, description="Enable compression")
-    batch_size: int = Field(default=5000, description="Batch size for loading")
+    batch_size: int = Field(
+        default=FlextConstants.Performance.DEFAULT_BATCH_SIZE * 5,
+        description="Batch size for loading",
+    )  # 5000
     load_method: str = Field(
         default="append_only",
         description="Load method (append_only/upsert)",
@@ -384,10 +361,16 @@ class GruponosMeltanoJobConfig(FlextConfig):
         default=False,
         description="Enable DBT transformation",
     )
-    timeout_minutes: int = Field(default=60, description="Job timeout in minutes")
-    retry_attempts: int = Field(default=3, description="Number of retry attempts")
+    timeout_minutes: int = Field(
+        default=FlextConstants.Utilities.SECONDS_PER_MINUTE,
+        description="Job timeout in minutes",
+    )  # 60
+    retry_attempts: int = Field(
+        default=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+        description="Number of retry attempts",
+    )  # 3
     retry_delay_seconds: int = Field(
-        default=30,
+        default=FlextConstants.Network.DEFAULT_TIMEOUT,  # 30
         description="Delay between retries in seconds",
     )
 
@@ -463,7 +446,9 @@ class GruponosMeltanoSettings(FlextConfig):
     """
 
     environment: FlextTypes.Config.Environment = Field(
-        default="development",
+        default=cast(
+            "FlextTypes.Config.Environment", FlextConstants.Defaults.ENVIRONMENT
+        ),  # SOURCE OF TRUTH
         description="Environment (development/staging/production/test/local)",
     )
     project_name: str = Field(default="gruponos-meltano", description="Project name")
@@ -471,9 +456,13 @@ class GruponosMeltanoSettings(FlextConfig):
         default="gruponos-meltano-native",
         description="Application name",
     )
-    version: str = Field(default="0.9.0", description="Application version")
+    version: str = Field(
+        default=FlextConstants.Core.VERSION, description="Application version"
+    )  # SOURCE OF TRUTH
     debug: bool = Field(default=False, description="Debug mode")
-    log_level: str = Field(default="INFO", description="Log level")
+    log_level: str = Field(
+        default=FlextConstants.Logging.DEFAULT_LEVEL, description="Log level"
+    )  # SOURCE OF TRUTH
     # Compatibility fields used in tests
     project_id: str | None = Field(default=None)
     wms_source_value: GruponosMeltanoWMSSourceConfig | None = Field(
@@ -570,12 +559,6 @@ class GruponosMeltanoSettings(FlextConfig):
 
         Returns:
             str: String de conexão Oracle formatada.
-
-        Example:
-            >>> settings = GruponosMeltanoSettings()
-            >>> conn_str = settings.get_oracle_connection_string()
-            >>> print(conn_str)
-            user@host:1521/service_name
 
         """
         conn = self.oracle_connection
