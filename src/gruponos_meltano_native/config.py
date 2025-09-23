@@ -14,7 +14,13 @@ from typing import ClassVar, cast
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
-from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult, FlextTypes
+from flext_core import (
+    FlextConfig,
+    FlextConstants,
+    FlextModels,
+    FlextResult,
+    FlextTypes,
+)
 
 # =============================================
 # GRUPONOS ORACLE WMS CONFIGURATION
@@ -302,7 +308,9 @@ class GruponosMeltanoTargetOracleConfig(FlextConfig):
 
     """
 
-    target_schema: str = Field(default="default", description="Target schema")
+    target_schema: str = Field(
+        default=FlextConstants.Mixins.IDENTIFIER_DEFAULT, description="Target schema"
+    )
     table_prefix: str = Field(default="", description="Table prefix")
     parallel_workers: int = Field(default=1, description="Number of parallel workers")
     drop_target_tables: bool = Field(default=False, description="Drop target tables")

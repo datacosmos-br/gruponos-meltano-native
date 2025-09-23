@@ -12,7 +12,7 @@ from pathlib import Path
 
 import yaml
 
-from flext_core import FlextLogger, FlextTypes
+from flext_core import FlextConstants, FlextLogger, FlextTypes
 
 # Setup logger
 log = FlextLogger(__name__)
@@ -175,7 +175,11 @@ def generate_meltano_config() -> FlextTypes.Core.Dict:
         "config": {
             **base_target_config,
             "batch_size": int(
-                get_env_value("TARGET_BATCH_SIZE", "1000") or "1000",
+                get_env_value(
+                    "TARGET_BATCH_SIZE",
+                    str(FlextConstants.Performance.DEFAULT_BATCH_SIZE),
+                )
+                or str(FlextConstants.Performance.DEFAULT_BATCH_SIZE)
             ),
             "load_method": "append_only",
         },
@@ -192,7 +196,11 @@ def generate_meltano_config() -> FlextTypes.Core.Dict:
         "config": {
             **base_target_config,
             "batch_size": int(
-                get_env_value("TARGET_BATCH_SIZE", "5000") or "5000",
+                get_env_value(
+                    "TARGET_BATCH_SIZE",
+                    str(FlextConstants.Performance.MAX_BATCH_ITEMS // 2),
+                )
+                or str(FlextConstants.Performance.MAX_BATCH_ITEMS // 2)
             ),
             "load_method": "upsert",
         },
