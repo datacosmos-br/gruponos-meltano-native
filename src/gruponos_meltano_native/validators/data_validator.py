@@ -21,14 +21,14 @@ from collections.abc import Callable
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 
-from flext_core import FlextExceptions, FlextLogger, FlextTypes
+from flext_core import FlextExceptions, FlextLogger, FlextResult, FlextTypes
 
 # Get dependencies via DI
 logger = FlextLogger(__name__)
 
 
 # Use padrão de arquitetura empresarial with proper error code for tests compatibility
-class ValidationError(FlextExceptions._ValidationError):
+class ValidationError(FlextExceptions._ValidationError):  # noqa: SLF001
     """Erro de validação com código de erro compatível com testes.
 
     Estende FlextExceptions.ValidationError para fornecer erro de validação
@@ -429,7 +429,7 @@ class DataValidator:
         errors: FlextTypes.Core.StringList,
     ) -> None:
         """Validate enum field."""
-        allowed_values_raw = rule.parameters.get("allowed_values", [])
+        allowed_values_raw: list[object] = rule.parameters.get("allowed_values", [])
         allowed_values = (
             allowed_values_raw
             if isinstance(allowed_values_raw, (list, tuple, set))
@@ -475,7 +475,9 @@ class DataValidator:
         Example:
             >>> validator = DataValidator()
             >>> schema = {"properties": {"id": {"type": "integer"}}}
-            >>> resultado = validator.validate_and_convert_record({"id": "123"}, schema)
+            >>> resultado: FlextResult[object] = validator.validate_and_convert_record(
+            ...     {"id": "123"}, schema
+            ... )
             >>> print(resultado)  # {"id": 123}
 
         """
@@ -665,7 +667,7 @@ class DataValidator:
             raise ValueError(msg)
         return str(value) if value is not None else None
 
-    def get_conversion_stats(self) -> dict[str, int]:
+    def get_conversion_stats(self: object) -> dict[str, int]:
         """Obtém estatísticas de conversão.
 
         Returns:
@@ -675,7 +677,7 @@ class DataValidator:
         """
         return self.conversion_stats.copy()
 
-    def reset_stats(self) -> None:
+    def reset_stats(self: object) -> None:
         """Reseta estatísticas de conversão.
 
         Zera todos os contadores de estatísticas de conversão
@@ -728,6 +730,8 @@ if __name__ == "__main__":
             "created_date": {"type": "string", "format": "date-time"},
         },
     }
-    result = validator.validate_and_convert_record(test_record, test_schema)
+    result: FlextResult[object] = validator.validate_and_convert_record(
+        test_record, test_schema
+    )
     logger.info("Converted record: %s", result)
     logger.info("Stats: %s", validator.get_conversion_stats())

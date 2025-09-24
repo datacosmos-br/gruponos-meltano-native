@@ -77,7 +77,7 @@ class GruponosMeltanoPipelineRunner:
 
       >>> settings = GruponosMeltanoSettings()
       >>> runner = GruponosMeltanoPipelineRunner(settings)
-      >>> result = runner.run_pipeline("full-sync-job")
+      >>> result: FlextResult[object] = runner.run_pipeline("full-sync-job")
       >>> print(f"Pipeline result: {result.success}")
 
     Security:
@@ -133,7 +133,7 @@ class GruponosMeltanoPipelineRunner:
 
         Example:
             >>> runner = GruponosMeltanoPipelineRunner(settings)
-            >>> resultado = runner.run_pipeline("full-sync-job")
+            >>> resultado: FlextResult[object] = runner.run_pipeline("full-sync-job")
             >>> if resultado.success:
             ...     print(f"Pipeline executado em {resultado.execution_time:.2f}s")
 
@@ -217,7 +217,7 @@ class GruponosMeltanoPipelineRunner:
                 metadata={"exception": type(e).__name__},
             )
 
-    def _build_environment(self) -> FlextTypes.Core.Headers:
+    def _build_environment(self: object) -> FlextTypes.Core.Headers:
         """Constrói variáveis de ambiente para pipelines GrupoNOS.
 
         Cria um dicionário completo de variáveis de ambiente necessárias
@@ -336,7 +336,9 @@ class GruponosMeltanoPipelineRunner:
 
         Example:
             >>> runner = GruponosMeltanoPipelineRunner(settings)
-            >>> resultado = await runner.run_with_retry("sync-job", max_retries=5)
+            >>> resultado: FlextResult[object] = await runner.run_with_retry(
+            ...     "sync-job", max_retries=5
+            ... )
             >>> print(f"Sucesso: {resultado.success}")
 
         """
@@ -410,7 +412,7 @@ class GruponosMeltanoOrchestrator:
       Basic orchestrator usage:
 
       >>> orchestrator = GruponosMeltanoOrchestrator()
-      >>> result = orchestrator.run_full_sync()
+      >>> result: FlextResult[object] = orchestrator.run_full_sync()
       >>> if result.success:
       ...     print(f"Pipeline completed in {result.execution_time:.2f}s")
       ... else:
@@ -459,7 +461,9 @@ class GruponosMeltanoOrchestrator:
 
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
-            >>> resultado = await orchestrator.validate_configuration()
+            >>> resultado: FlextResult[
+            ...     object
+            ... ] = await orchestrator.validate_configuration()
             >>> if resultado.success:
             ...     print("Configuração válida")
 
@@ -476,7 +480,7 @@ class GruponosMeltanoOrchestrator:
 
         return FlextResult[None].ok(None)
 
-    def run_full_sync(self) -> GruponosMeltanoPipelineResult:
+    def run_full_sync(self: object) -> GruponosMeltanoPipelineResult:
         """Executa pipeline de sincronização completa para atualização total dos dados.
 
         Este método executa o pipeline ETL completo que extrai todos os dados
@@ -501,7 +505,7 @@ class GruponosMeltanoOrchestrator:
 
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
-            >>> resultado = orchestrator.run_full_sync()
+            >>> resultado: FlextResult[object] = orchestrator.run_full_sync()
             >>> if resultado.success:
             ...     print(f"Sync completo em {resultado.execution_time:.2f}s")
             ...     print(f"Saída: {resultado.output}")
@@ -516,7 +520,7 @@ class GruponosMeltanoOrchestrator:
         """
         return self.pipeline_runner.run_pipeline("full-sync-job")
 
-    def run_incremental_sync(self) -> GruponosMeltanoPipelineResult:
+    def run_incremental_sync(self: object) -> GruponosMeltanoPipelineResult:
         """Executa pipeline de sincronização incremental para atualizações em tempo real.
 
         Este método executa o pipeline ETL incremental que extrai apenas
@@ -540,7 +544,7 @@ class GruponosMeltanoOrchestrator:
 
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
-            >>> resultado = orchestrator.run_incremental_sync()
+            >>> resultado: FlextResult[object] = orchestrator.run_incremental_sync()
             >>> if resultado.success:
             ...     print(f"Sync incremental completo: {resultado.execution_time:.2f}s")
             ...     # Acessar métricas incrementais via resultado.metadata
@@ -577,7 +581,9 @@ class GruponosMeltanoOrchestrator:
 
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
-            >>> resultado = orchestrator.run_job("custom-data-quality-check")
+            >>> resultado: FlextResult[object] = orchestrator.run_job(
+            ...     "custom-data-quality-check"
+            ... )
             >>> if resultado.success:
             ...     print(f"Job '{resultado.job_name}' completado com sucesso")
             ... else:
@@ -592,7 +598,7 @@ class GruponosMeltanoOrchestrator:
         """
         return self.pipeline_runner.run_pipeline(job_name)
 
-    def list_jobs(self) -> FlextTypes.Core.StringList:
+    def list_jobs(self: object) -> FlextTypes.Core.StringList:
         """Lista todos os jobs de pipeline disponíveis.
 
         Este método retorna uma lista de todos os jobs Meltano disponíveis para
@@ -617,7 +623,7 @@ class GruponosMeltanoOrchestrator:
         # Based on meltano.yml configuration
         return ["full-sync-job", "incremental-sync-job"]
 
-    def list_pipelines(self) -> FlextTypes.Core.StringList:
+    def list_pipelines(self: object) -> FlextTypes.Core.StringList:
         """Lista pipelines disponíveis (alias para list_jobs).
 
         Returns:

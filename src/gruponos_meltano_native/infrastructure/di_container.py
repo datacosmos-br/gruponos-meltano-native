@@ -38,7 +38,7 @@ class _ContainerSingleton:
     _instance: FlextContainer | None = None
 
     @classmethod
-    def get_instance(cls) -> FlextContainer:
+    def get_instance(cls: object) -> FlextContainer:
         """Obtém ou cria a instância do container.
 
         Método de classe que retorna a instância singleton do container,
@@ -65,7 +65,7 @@ def get_gruponos_meltano_container() -> FlextContainer:
 
     Example:
       >>> container = get_gruponos_meltano_container()
-      >>> resultado = container.resolve("flext_result")
+      >>> resultado: FlextResult[object] = container.resolve("flext_result")
       >>> if resultado.success:
       ...     component = resultado.data
 
@@ -88,11 +88,13 @@ def _configure_dependencies(container: FlextContainer) -> None:
 
     """
     # Register core FLEXT components
-    result = container.register("flext_result", FlextResult)
+    result: FlextResult[object] = container.register("flext_result", FlextResult)
     if not result.success:
         logger.warning("Failed to register FlextResult: %s", result.error)
 
-    settings_result = container.register("flext_settings", FlextConfig)
+    settings_result: FlextResult[object] = container.register(
+        "flext_settings", FlextConfig
+    )
     if not settings_result.success:
         logger.warning(
             "Failed to register FlextCoreSettings: %s",

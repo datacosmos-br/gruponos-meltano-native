@@ -53,21 +53,21 @@ class GruponosMeltanoOracleConnectionManager:
         # Apply provided config or sensible defaults expected by tests
         if config is None:
             # Provide a minimal, valid default config
-            config = GruponosMeltanoOracleConnectionConfig(
+            config: dict[str, object] = GruponosMeltanoOracleConnectionConfig(
                 host="localhost",
                 service_name="ORCL",
                 username="user",
                 password=os.getenv("ORACLE_PASSWORD", "default_test_password"),
                 port=1521,
             )
-        self.config = config
+        self.config: dict[str, object] = config
         # Ensure default Oracle port (1521) when not explicitly provided
         # Tests expect default port 1521 for minimal config
         if getattr(self.config, "port", None) in {None, 0, 1522}:
-            self.config.port = 1521
+            self.config.port: dict[str, object] = 1521
         self._connection: FlextDbOracleApi | None = None
 
-    def get_connection(self) -> FlextResult[FlextDbOracleApi]:
+    def get_connection(self: object) -> FlextResult[FlextDbOracleApi]:
         """Obtém conexão com banco de dados Oracle para GrupoNOS.
 
         Cria e configura uma conexão Oracle usando as configurações
@@ -80,7 +80,7 @@ class GruponosMeltanoOracleConnectionManager:
 
         Example:
             >>> manager = GruponosMeltanoOracleConnectionManager()
-            >>> resultado = manager.get_connection()
+            >>> resultado: FlextResult[object] = manager.get_connection()
             >>> if resultado.success:
             ...     conn = resultado.data
             ...     # Usar conexão para operações
@@ -126,7 +126,7 @@ class GruponosMeltanoOracleConnectionManager:
                 f"Failed to create Oracle connection: {e}",
             )
 
-    def test_connection(self) -> FlextResult[bool]:
+    def test_connection(self: object) -> FlextResult[bool]:
         """Testa conexão com banco de dados Oracle para GrupoNOS.
 
         Executa teste de conectividade com o banco Oracle usando
@@ -139,14 +139,14 @@ class GruponosMeltanoOracleConnectionManager:
 
         Example:
             >>> manager = GruponosMeltanoOracleConnectionManager()
-            >>> resultado = manager.test_connection()
+            >>> resultado: FlextResult[object] = manager.test_connection()
             >>> if resultado.success:
             ...     print("Conexão Oracle OK")
             ... else:
             ...     print(f"Falha na conexão: {resultado.error}")
 
         """
-        connection_result = self.get_connection()
+        connection_result: FlextResult[object] = self.get_connection()
         if not connection_result.is_success:
             return FlextResult[bool].fail(
                 f"Connection failed: {connection_result.error}",
@@ -170,7 +170,7 @@ class GruponosMeltanoOracleConnectionManager:
                         else "Health check failed",
                     )
             else:
-                test_result = connection.test_connection()
+                test_result: FlextResult[object] = connection.test_connection()
                 if hasattr(test_result, "success"):
                     success = bool(test_result.is_success)
                     if not success:
@@ -199,7 +199,7 @@ class GruponosMeltanoOracleConnectionManager:
             else FlextResult[bool].fail(error_message)
         )
 
-    def validate_configuration(self) -> FlextResult[bool]:
+    def validate_configuration(self: object) -> FlextResult[bool]:
         """Valida a configuração de conexão Oracle.
 
         Returns:
@@ -207,14 +207,14 @@ class GruponosMeltanoOracleConnectionManager:
 
         """
         try:
-            result = self.config.validate_domain_rules()
+            result: FlextResult[object] = self.config.validate_domain_rules()
             if hasattr(result, "is_failure") and result.is_failure:
                 return FlextResult[bool].fail(result.error or "Invalid configuration")
             return FlextResult[bool].ok(data=True)
         except Exception as exc:  # pydantic may raise ValueError
             return FlextResult[bool].fail(str(exc))
 
-    def close_connection(self) -> FlextResult[bool]:
+    def close_connection(self: object) -> FlextResult[bool]:
         """Fecha conexão Oracle.
 
         Fecha adequadamente a conexão ativa com o banco Oracle
@@ -226,7 +226,7 @@ class GruponosMeltanoOracleConnectionManager:
         Example:
             >>> manager = GruponosMeltanoOracleConnectionManager()
             >>> # ... usar conexão ...
-            >>> resultado = manager.close_connection()
+            >>> resultado: FlextResult[object] = manager.close_connection()
             >>> if resultado.success:
             ...     print("Conexão fechada com sucesso")
 
@@ -243,10 +243,10 @@ class GruponosMeltanoOracleConnectionManager:
             return FlextResult[bool].fail(f"Error closing connection: {e}")
 
     # Convenience lifecycle helpers used by integration tests
-    def connect(self) -> FlextResult[bool]:
+    def connect(self: object) -> FlextResult[bool]:
         """Estabelece conexão ativa com Oracle."""
         try:
-            result = self.get_connection()
+            result: FlextResult[object] = self.get_connection()
             if result.is_success and result.value is not None:
                 # Ensure underlying connection is opened
                 if hasattr(result.value, "connect"):
@@ -257,12 +257,12 @@ class GruponosMeltanoOracleConnectionManager:
         except Exception as exc:
             return FlextResult[bool].fail(str(exc))
 
-    def is_connected(self) -> bool:
+    def is_connected(self: object) -> bool:
         """Retorna True se conexão estiver ativa."""
         conn = self._connection
         return bool(conn and getattr(conn, "connected", True))
 
-    def get_connection_info(self) -> FlextTypes.Core.Dict:
+    def get_connection_info(self: object) -> FlextTypes.Core.Dict:
         """Retorna informações básicas da conexão."""
         return {
             "is_connected": self.is_connected(),
@@ -272,7 +272,7 @@ class GruponosMeltanoOracleConnectionManager:
             or getattr(self.config, "sid", ""),
         }
 
-    def disconnect(self) -> FlextResult[bool]:
+    def disconnect(self: object) -> FlextResult[bool]:
         """Encerra conexão ativa."""
         return self.close_connection()
 
@@ -303,7 +303,9 @@ def create_gruponos_meltano_oracle_connection_manager(
       >>> manager = create_gruponos_meltano_oracle_connection_manager()
       >>>
       >>> # Usar configuração customizada
-      >>> config = GruponosMeltanoOracleConnectionConfig(host="custom-db")
+      >>> config: dict[str, object] = GruponosMeltanoOracleConnectionConfig(
+      ...     host="custom-db"
+      ... )
       >>> manager = create_gruponos_meltano_oracle_connection_manager(config)
 
     """

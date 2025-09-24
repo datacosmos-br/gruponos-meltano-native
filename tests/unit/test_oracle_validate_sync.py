@@ -20,7 +20,7 @@ from gruponos_meltano_native import (
 
 
 class OracleCursor(Protocol):
-    """Protocol for Oracle cursor Anys."""
+    """Protocol for Oracle cursor objects."""
 
     def execute(
         self,

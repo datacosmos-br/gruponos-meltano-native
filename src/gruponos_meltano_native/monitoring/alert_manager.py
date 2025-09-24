@@ -93,7 +93,7 @@ class GruponosMeltanoAlert(FlextModels.Value):
     timestamp: str
     pipeline_name: str | None = None
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_domain_rules(self: object) -> FlextResult[None]:
         """Valida regras de domínio do alerta.
 
         Verifica se o alerta atende aos critérios de domínio,
@@ -116,7 +116,7 @@ class GruponosMeltanoAlert(FlextModels.Value):
 
         return FlextResult[None].ok(None)
 
-    def validate_business_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self: object) -> FlextResult[None]:
         """Valida regras de negócio do alerta.
 
         Executa validações de regras de negócio específicas
@@ -148,7 +148,7 @@ class GruponosMeltanoAlertService:
             config: Instância da configuração de alertas.
 
         """
-        self.config = config
+        self.config: dict[str, object] = config
         self._failure_count = 0
 
         logger.info(
@@ -176,7 +176,7 @@ class GruponosMeltanoAlertService:
         Example:
             >>> service = GruponosMeltanoAlertService(config)
             >>> alert = GruponosMeltanoAlert(message="Pipeline falhou", ...)
-            >>> resultado = service.send_alert(alert)
+            >>> resultado: FlextResult[object] = service.send_alert(alert)
             >>> if resultado.success:
             ...     print("Alerta enviado com sucesso")
 
@@ -198,15 +198,15 @@ class GruponosMeltanoAlertService:
             results = []
 
             if self.config.webhook_enabled:
-                webhook_result = self._send_webhook(alert)
+                webhook_result: FlextResult[object] = self._send_webhook(alert)
                 results.append(webhook_result)
 
             if self.config.email_enabled:
-                email_result = self._send_email(alert)
+                email_result: FlextResult[object] = self._send_email(alert)
                 results.append(email_result)
 
             if self.config.slack_enabled:
-                slack_result = self._send_slack(alert)
+                slack_result: FlextResult[object] = self._send_slack(alert)
                 results.append(slack_result)
 
             # Check if any channel succeeded
@@ -373,7 +373,7 @@ class GruponosMeltanoAlertService:
             logger.warning("Slack alert failed: %s", e)
             return FlextResult[bool].fail(f"Slack failed: {e}")
 
-    def reset_failure_count(self) -> None:
+    def reset_failure_count(self: object) -> None:
         """Reseta contador de falhas (para operações bem-sucedidas).
 
         Usado para resetar o contador interno quando uma operação
@@ -382,7 +382,7 @@ class GruponosMeltanoAlertService:
         self._failure_count = 0
         logger.debug("Alert failure count reset")
 
-    def get_failure_count(self) -> int:
+    def get_failure_count(self: object) -> int:
         """Obtém contador atual de falhas.
 
         Returns:
@@ -545,12 +545,12 @@ def create_gruponos_meltano_alert_manager(
       >>> manager = create_gruponos_meltano_alert_manager()
       >>>
       >>> # Usar configuração customizada
-      >>> config = GruponosMeltanoAlertConfig(webhook_enabled=True)
+      >>> config: dict[str, object] = GruponosMeltanoAlertConfig(webhook_enabled=True)
       >>> manager = create_gruponos_meltano_alert_manager(config)
 
     """
     if config is None:
-        config = GruponosMeltanoAlertConfig()
+        config: dict[str, object] = GruponosMeltanoAlertConfig()
 
     alert_service = GruponosMeltanoAlertService(config)
     return GruponosMeltanoAlertManager(alert_service)
