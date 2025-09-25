@@ -195,7 +195,7 @@ class GruponosMeltanoAlertService:
                 return FlextResult[bool].ok(data=False)
 
             # Send through enabled channels
-            results = []
+            results: list[FlextResult[object]] = []
 
             if self.config.webhook_enabled:
                 webhook_result: FlextResult[object] = self._send_webhook(alert)

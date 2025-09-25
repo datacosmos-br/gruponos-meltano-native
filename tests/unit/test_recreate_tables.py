@@ -80,7 +80,7 @@ class TestOracleTableRecreationReal:
         assert settings.environment == "dev"
 
     @patch("flext_db_oracle.FlextDbOracleApi.with_config")
-    def test_oracle_api_creation_mock(self, mock_with_config: Mock) -> None:
+    def test_api_creation_mock(self, mock_with_config: Mock) -> None:
         """Test Oracle API creation using mock (for error scenarios)."""
         # Mock successful API creation
         mock_api = Mock()
@@ -100,7 +100,7 @@ class TestOracleTableRecreationReal:
         mock_with_config.assert_called_once_with(config_dict)
 
     @patch("flext_db_oracle.FlextDbOracleApi.execute_ddl")
-    def test_table_ddl_execution_mock(self, mock_execute_ddl: Mock) -> None:
+    def test_execute_ddl_mock(self, mock_execute_ddl: Mock) -> None:
         """Test DDL execution for table recreation using mock."""
         # Mock successful DDL execution
         mock_execute_ddl.return_value = FlextResult[None].ok(
@@ -124,7 +124,7 @@ class TestOracleTableRecreationReal:
         mock_execute_ddl.assert_called_once_with(ddl_sql)
 
     @patch("flext_db_oracle.FlextDbOracleApi.query")
-    def test_table_validation_query_mock(self, mock_query: Mock) -> None:
+    def test_self(self, mock_query: Mock) -> None:
         """Test table validation queries using mock."""
         # Mock query result with table information
         mock_result_data = TDbOracleQueryResult(
@@ -237,7 +237,7 @@ class TestTableRecreationErrorHandling:
             FlextDbOracleApi.with_config(config_dict)
 
     @patch("flext_db_oracle.FlextDbOracleApi.execute_ddl")
-    def test_ddl_execution_failure(self, mock_execute_ddl: Mock) -> None:
+    def test_execute_ddl_failure(self, mock_execute_ddl: Mock) -> None:
         """Test handling of DDL execution failures."""
         # Mock DDL execution failure
         mock_execute_ddl.return_value = FlextResult[None].fail("Invalid SQL syntax")

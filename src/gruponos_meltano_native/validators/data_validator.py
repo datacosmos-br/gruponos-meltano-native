@@ -301,7 +301,7 @@ class DataValidator:
             )
             errors.append(error_msg)
         else:
-            # Check numeric range constraints - value is now confirmed to be int | float
+            # Check numeric range constraints - value is now confirmed to be Union[int, float]
             min_value = rule.parameters.get("min_value")
             max_value = rule.parameters.get("max_value")
             if (

@@ -54,7 +54,7 @@ class TestPerformanceBasics:
         performance_config: GruponosMeltanoOracleConnectionConfig,
     ) -> None:
         """Test Oracle connection establishment performance."""
-        connection_times = []
+        connection_times: list[int | bool] = []
 
         # Skip if database is not actually reachable in this environment
         precheck_manager = GruponosMeltanoOracleConnectionManager(performance_config)
