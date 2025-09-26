@@ -14,6 +14,7 @@ import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import override
 
 from flext_core import FlextResult, FlextTypes
 from gruponos_meltano_native.config import GruponosMeltanoSettings
@@ -87,6 +88,8 @@ class GruponosMeltanoPipelineRunner:
 
     """
 
+    @override
+    @override
     def __init__(self, settings: GruponosMeltanoSettings) -> None:
         """Inicializa o executor de pipeline com configurações GrupoNOS.
 
@@ -426,6 +429,8 @@ class GruponosMeltanoOrchestrator:
 
     """
 
+    @override
+    @override
     def __init__(self, settings: GruponosMeltanoSettings | None = None) -> None:
         """Inicializa orquestrador com configurações GrupoNOS.
 

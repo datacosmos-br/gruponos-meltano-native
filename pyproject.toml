@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core>=1.9.0"]
+requires = [ "poetry-core>=1.9.0",]
 build-backend = "poetry.core.masonry.api"
 
 [project]
@@ -8,31 +8,9 @@ version = "0.9.0"
 description = "Grupo Nos Meltano Native - Enterprise ETL Pipeline for Grupo Nos"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-keywords = ["async", "enterprise", "flext", "migration", "production", "typed"]
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Typing :: Typed",
-    "Topic :: System :: Systems Administration",
-]
-dependencies = [
-    "pydantic (>=2.11.7)",
-    "flext-core @ file:///home/marlonsc/flext/flext-core",
-    "flext-observability @ file:///home/marlonsc/flext/flext-observability",
-    "dotenv (>=0.9.9)",
-    "flext-db-oracle @ file:///home/marlonsc/flext/flext-db-oracle",
-    "requests (>=2.32.4)",
-    "structlog (>=25.4.0)",
-    "pyyaml (>=6.0.2)",
-    "click (>=8.2.1)",
-    "meltano (>=3.8.0)",
-    "flext-tap-oracle-wms @ file:///home/marlonsc/flext/flext-tap-oracle-wms",
-]
+keywords = [ "async", "enterprise", "flext", "migration", "production", "typed",]
+classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3.13", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Libraries :: Python Modules", "Typing :: Typed", "Topic :: System :: Systems Administration",]
+dependencies = [ "pydantic (>=2.11.7)", "flext-core @ file:///home/marlonsc/flext/flext-core", "flext-observability @ file:///home/marlonsc/flext/flext-observability", "dotenv (>=0.9.9)", "flext-db-oracle @ file:///home/marlonsc/flext/flext-db-oracle", "requests (>=2.32.4)", "structlog (>=25.4.0)", "pyyaml (>=6.0.2)", "click (>=8.2.1)", "meltano (>=3.8.0)", "flext-tap-oracle-wms @ file:///home/marlonsc/flext/flext-tap-oracle-wms",]
 [[project.authors]]
 name = "FLEXT Team"
 email = "team@flext.sh"
@@ -51,102 +29,10 @@ Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 
 [tool.ruff]
 extend = "../ruff-shared.toml"
-lint.isort.known-first-party = ["gruponos_meltano_native"]
-
-[tool.mypy]
-# Strict mode - enables all recommended checks
-strict = true
-
-# Additional strict checks beyond default strict mode
-check_untyped_defs = true
-disallow_any_decorated = false
-disallow_any_explicit = true
-disallow_any_expr = false           # Too restrictive for real-world usage
-disallow_any_generics = true
-disallow_any_unimported = true
-disallow_incomplete_defs = true
-disallow_subclassing_any = true
-disallow_untyped_calls = true
-disallow_untyped_decorators = false
-disallow_untyped_defs = true
-
-# Warning controls - maximum safety
-warn_no_return = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-warn_unused_ignores = false
-
-# Optional type checking
-no_implicit_optional = true
-strict_optional = true
-
-# Import handling
-ignore_missing_imports = false
-follow_imports = "normal"
-follow_imports_for_stubs = false
-
-# Error reporting
-show_error_codes = true
-show_error_context = true
-show_column_numbers = true
-show_traceback = true
-pretty = true
-color_output = true
-error_summary = true
-
-# Python version and execution
-python_version = "3.13"
-platform = "linux"
-
-# Package structure
-explicit_package_bases = true
-namespace_packages = true
-mypy_path = ["src"]
-files = ["src", "tests"]
-
-# Plugins
-plugins = ["pydantic.mypy"]
-
-# Cache
-# sqlite_cache = true
-cache_dir = ".mypy_cache"
-
-# Advanced checks
-strict_equality = true
-extra_checks = true
-local_partial_types = true
-no_implicit_reexport = true
-
-# Performance
-incremental = true
-warn_incomplete_stub = true
-
-exclude = [
-    "__pycache__/",
-    ".*/generate_config.py",
-    ".*/manage.py",
-    ".coverage.*",
-    ".git/",
-    ".mypy_cache/",
-    ".ruff_cache/",
-    ".pytest_cache/",
-    ".venv/",
-    "build/",
-    "dist/",
-    "node_modules/",
-    "vendor/",
-]
-[tool.pydantic-mypy]
-init_forbid_extra = true
-init_typed = true
-warn_required_dynamic_aliases = true
-warn_untyped_fields = true
 
 [tool.bandit]
-exclude_dirs = ["tests", "build", "dist"]
-skips = ["B101", "B601"]
+exclude_dirs = [ "tests", "build", "dist",]
+skips = [ "B101", "B601",]
 
 [tool.poetry]
 [[tool.poetry.packages]]
@@ -154,52 +40,30 @@ include = "gruponos_meltano_native"
 from = "src"
 
 [tool.deptry]
-known_first_party = ["gruponos_meltano_native"]
+known_first_party = [ "gruponos_meltano_native",]
+
+[tool.pyrefly]
+python_version = "3.13"
+target_version = "3.13"
+show_error_codes = true
+
+[tool.poetry.dependencies]
+python = ">=3.13,<3.14"
 
 [tool.pytest.ini_options]
 minversion = "8.0"
 asyncio_mode = "auto"
-addopts = [
-    "-ra",
-    "--strict-markers",
-    "--strict-config",
-    "--maxfail=1",
-    "--tb=short",
-    "--cov-fail-under=90",
-]
-testpaths = ["tests"]
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "slow: Slow tests",
-    "smoke: Smoke tests",
-    "e2e: End-to-end tests",
-    "wms: WMS integration tests",
-    "oracle: Oracle database tests",
-    "performance: Performance tests",
-    "destructive: Tests that may modify or delete data",
-    "memory: Memory usage tests",
-]
-# filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning"]
+addopts = [ "-ra", "--strict-markers", "--strict-config", "--maxfail=1", "--tb=short", "--cov-fail-under=90",]
+testpaths = [ "tests",]
+markers = [ "unit: Unit tests", "integration: Integration tests", "slow: Slow tests", "smoke: Smoke tests", "e2e: End-to-end tests", "wms: WMS integration tests", "oracle: Oracle database tests", "performance: Performance tests", "destructive: Tests that may modify or delete data", "memory: Memory usage tests",]
 
 [tool.coverage.run]
-source = ["src"]
+source = [ "src",]
 branch = true
-omit = ["*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*"]
+omit = [ "*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*",]
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
+exclude_lines = [ "pragma: no cover", "def __repr__", "if self.debug:", "if settings.DEBUG", "raise AssertionError", "raise NotImplementedError", "if 0:", "if __name__ == .__main__.:", "class .*\\bProtocol\\):", "@(abc\\.)?abstractmethod",]
 
 [tool.coverage.html]
 directory = "reports/coverage"
@@ -207,8 +71,8 @@ directory = "reports/coverage"
 [tool.coverage.xml]
 output = "reports/coverage.xml"
 
-[tool.poetry.dependencies]
-python = ">=3.13,<3.14"
+[tool.ruff.lint.isort]
+known-first-party = [ "gruponos_meltano_native",]
 
 [tool.poetry.dependencies.flext-core]
 path = "../flext-core"
@@ -230,7 +94,6 @@ develop = true
 ruff = ">=0.12.3"
 black = ">=25.1.0"
 isort = ">=6.0.1"
-mypy = ">=1.13.0"
 pylint = ">=3.3.0"
 pre-commit = ">=4.0.1"
 vulture = ">=2.13"
@@ -241,6 +104,7 @@ autoflake = ">=2.3.1"
 deptry = ">=0.23.0"
 detect-secrets = ">=1.5.0"
 commitizen = ">=4.8.3"
+pyrefly = "^0.34.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = ">=8.4.0"

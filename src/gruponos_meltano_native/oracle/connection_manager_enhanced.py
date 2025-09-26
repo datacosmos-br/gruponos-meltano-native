@@ -16,6 +16,7 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import os
+from typing import override
 
 from flext_core import FlextResult, FlextTypes
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
@@ -39,6 +40,7 @@ class GruponosMeltanoOracleConnectionManager:
 
     """
 
+    @override
     def __init__(
         self,
         config: GruponosMeltanoOracleConnectionConfig | None = None,

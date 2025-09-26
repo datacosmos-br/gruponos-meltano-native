@@ -23,39 +23,39 @@ setup: install-dev ## Complete project setup
 	$(POETRY) run pre-commit install
 
 # Quality gates
-validate: lint type-check security test ## Run all quality gates
+validate: lint type-check security test ## Run all quality gates (MANDATORY ORDER)
 
 check: lint type-check ## Quick health check
 
-lint: ## Run linting
-	$(POETRY) run ruff check $(SRC_DIR) $(TESTS_DIR)
+lint: ## Run linting (ZERO TOLERANCE)
+	$(POETRY) run ruff check .
 
 format: ## Format code
-	$(POETRY) run ruff format $(SRC_DIR) $(TESTS_DIR)
+	$(POETRY) run ruff format .
 
-type-check: ## Run type checking
-	$(POETRY) run mypy $(SRC_DIR) --strict
+type-check: ## Run type checking with Pyrefly (ZERO TOLERANCE)
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pyrefly check .
 
 security: ## Run security scanning
 	$(POETRY) run bandit -r $(SRC_DIR)
 	$(POETRY) run pip-audit
 
 fix: ## Auto-fix issues
-	$(POETRY) run ruff check $(SRC_DIR) $(TESTS_DIR) --fix
-	$(POETRY) run ruff format $(SRC_DIR) $(TESTS_DIR)
+	$(POETRY) run ruff check . --fix
+	$(POETRY) run ruff format .
 
 # Testing
-test: ## Run tests with coverage
+test: ## Run tests with 100% coverage (MANDATORY)
 	$(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=term-missing --cov-fail-under=$(MIN_COVERAGE)
 
 test-unit: ## Run unit tests
-	$(POETRY) run pytest $(TESTS_DIR) -m "not integration" -v
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest -m "not integration" -v
 
-test-integration: ## Run integration tests
-	$(POETRY) run pytest $(TESTS_DIR) -m integration -v
+test-integration: ## Run integration tests with Docker
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest -m integration -v
 
 test-fast: ## Run tests without coverage
-	$(POETRY) run pytest $(TESTS_DIR) -v
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest -v
 
 coverage-html: ## Generate HTML coverage report
 	$(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=html
@@ -89,16 +89,16 @@ env-setup: ## Setup environment variables
 	@if [ ! -f .env ]; then cp .env.example .env; echo "Created .env from template"; fi
 
 env-validate: ## Validate environment configuration
-	$(POETRY) run python -c "from src.gruponos_meltano_native.config import Settings; settings = Settings(); print('Environment configuration valid')"
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from src.gruponos_meltano_native.config import Settings; settings = Settings(); print('Environment configuration valid')"
 
 oracle-test: ## Test Oracle WMS connection
-	$(POETRY) run python -c "from src.gruponos_meltano_native.oracle.connection_manager import OracleConnectionManager; import asyncio; asyncio.run(OracleConnectionManager().test_connection())"
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from src.gruponos_meltano_native.oracle.connection_manager import OracleConnectionManager; import asyncio; asyncio.run(OracleConnectionManager().test_connection())"
 
 ldap-test: ## Test LDAP connection
-	$(POETRY) run python -c "from src.gruponos_meltano_native.ldap.client import LDAPClient; client = LDAPClient(); result = client.test_connection(); print(f'LDAP connection: {result}')"
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from src.gruponos_meltano_native.ldap.client import LDAPClient; client = LDAPClient(); result = client.test_connection(); print(f'LDAP connection: {result}')"
 
 validate-schemas: ## Validate database schemas
-	$(POETRY) run python -c "from src.gruponos_meltano_native.validators import SchemaValidator; validator = SchemaValidator(); validator.validate_all(); print('Schemas validated')"
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from src.gruponos_meltano_native.validators import SchemaValidator; validator = SchemaValidator(); validator.validate_all(); print('Schemas validated')"
 
 enterprise-validate: env-validate oracle-test ldap-test validate-schemas ## Validate all enterprise operations
 
@@ -127,14 +127,14 @@ deps-audit: ## Audit dependencies
 
 # Development
 shell: ## Open Python shell
-	$(POETRY) run python
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run python
 
 pre-commit: ## Run pre-commit hooks
 	$(POETRY) run pre-commit run --all-files
 
 # Maintenance
 clean: ## Clean build artifacts
-	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ htmlcov/ .coverage .mypy_cache/ .ruff_cache/
+	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ htmlcov/ .coverage .mypy_cache/ .pyrefly_cache/ .ruff_cache/
 	rm -rf .meltano/
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
@@ -149,7 +149,7 @@ diagnose: ## Project diagnostics
 	@echo "Python: $$(python --version)"
 	@echo "Poetry: $$($(POETRY) --version)"
 	@echo "Meltano: $$($(POETRY) run meltano --version 2>/dev/null || echo 'Not available')"
-	@echo "GrupoNOS Native: $$($(POETRY) run python -c 'import gruponos_meltano_native; print(getattr(gruponos_meltano_native, \"__version__\", \"dev\"))' 2>/dev/null || echo 'Not available')"
+	@echo "GrupoNOS Native: $$(PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c 'import gruponos_meltano_native; print(getattr(gruponos_meltano_native, \"__version__\", \"dev\"))' 2>/dev/null || echo 'Not available')"
 	@$(POETRY) env info
 
 doctor: diagnose check ## Health check

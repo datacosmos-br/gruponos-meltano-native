@@ -20,6 +20,7 @@ import re
 from collections.abc import Callable
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
+from typing import override
 
 from flext_core import FlextExceptions, FlextLogger, FlextResult, FlextTypes
 
@@ -28,7 +29,7 @@ logger = FlextLogger(__name__)
 
 
 # Use padrão de arquitetura empresarial with proper error code for tests compatibility
-class ValidationError(FlextExceptions._ValidationError):  # noqa: SLF001
+class ValidationError(FlextExceptions.ValidationError):
     """Erro de validação com código de erro compatível com testes.
 
     Estende FlextExceptions.ValidationError para fornecer erro de validação
@@ -36,6 +37,9 @@ class ValidationError(FlextExceptions._ValidationError):  # noqa: SLF001
     com suíte de testes existente.
     """
 
+    @override
+    @override
+    @override
     def __init__(
         self,
         message: str,
@@ -75,6 +79,9 @@ class ValidationRule:
 
     """
 
+    @override
+    @override
+    @override
     def __init__(
         self,
         field_name: str,
@@ -112,6 +119,9 @@ class DataValidator:
 
     """
 
+    @override
+    @override
+    @override
     def __init__(
         self,
         rules: list[ValidationRule] | None = None,
@@ -181,6 +191,7 @@ class DataValidator:
         if validation_method is not None and value is not None:
             validation_method(rule, value, errors)
 
+    @override
     def validate(self, data: FlextTypes.Core.Dict) -> FlextTypes.Core.StringList:
         """Valida dados contra regras configuradas.
 
@@ -199,7 +210,7 @@ class DataValidator:
 
         Example:
             >>> validator = DataValidator([ValidationRule("id", "required")])
-            >>> erros = validator.validate({"nome": "João"})
+            >>> erros = validator.validate({"nome": João})
             >>> print(erros)  # ['Required field "id" is missing']
 
         """
@@ -301,7 +312,7 @@ class DataValidator:
             )
             errors.append(error_msg)
         else:
-            # Check numeric range constraints - value is now confirmed to be Union[int, float]
+            # Check numeric range constraints - value is now confirmed to be int | float
             min_value = rule.parameters.get("min_value")
             max_value = rule.parameters.get("max_value")
             if (
@@ -474,9 +485,9 @@ class DataValidator:
 
         Example:
             >>> validator = DataValidator()
-            >>> schema = {"properties": {"id": {"type": "integer"}}}
+            >>> schema = {"properties": {"id": {"type": integer}}}
             >>> resultado: FlextResult[object] = validator.validate_and_convert_record(
-            ...     {"id": "123"}, schema
+            ...     {"id": 123}, schema
             ... )
             >>> print(resultado)  # {"id": 123}
 
@@ -715,19 +726,19 @@ if __name__ == "__main__":
     # Test the validator
     validator = DataValidator(strict_mode=False)
     test_record: FlextTypes.Core.Dict = {
-        "id": "123",
-        "amount": "540.50",
-        "count": "42",
-        "active": "true",
+        "id": 123,
+        "amount": 540.50,
+        "count": 42,
+        "active": true,
         "created_date": "2025-07-02T10:00:00",
     }
     test_schema: FlextTypes.Core.Dict = {
         "properties": {
-            "id": {"type": "integer"},
-            "amount": {"type": "number"},
-            "count": {"type": "integer"},
-            "active": {"type": "boolean"},
-            "created_date": {"type": "string", "format": "date-time"},
+            "id": {"type": integer},
+            "amount": {"type": number},
+            "count": {"type": integer},
+            "active": {"type": boolean},
+            "created_date": {"type": string, "format": date - time},
         },
     }
     result: FlextResult[object] = validator.validate_and_convert_record(

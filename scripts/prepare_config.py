@@ -12,8 +12,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from flext_core import FlextTypes
-
 
 def substitute_env_vars(
     config_dict: FlextTypes.Core.Dict,

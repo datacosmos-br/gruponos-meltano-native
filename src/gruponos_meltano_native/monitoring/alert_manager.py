@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from email.mime.text import MIMEText
 from enum import StrEnum
+from typing import override
 
 import requests
 
@@ -141,6 +142,8 @@ class GruponosMeltanoAlertService:
 
     """
 
+    @override
+    @override
     def __init__(self, config: GruponosMeltanoAlertConfig) -> None:
         """Inicializa serviço de alertas com configuração.
 
@@ -325,10 +328,10 @@ class GruponosMeltanoAlertService:
 
             # Determine color based on severity
             color_map = {
-                GruponosMeltanoAlertSeverity.LOW: "good",
-                GruponosMeltanoAlertSeverity.MEDIUM: "warning",
-                GruponosMeltanoAlertSeverity.HIGH: "danger",
-                GruponosMeltanoAlertSeverity.CRITICAL: "danger",
+                GruponosMeltanoAlertSeverity.LOW: good,
+                GruponosMeltanoAlertSeverity.MEDIUM: warning,
+                GruponosMeltanoAlertSeverity.HIGH: danger,
+                GruponosMeltanoAlertSeverity.CRITICAL: danger,
             }
 
             payload = {
@@ -403,6 +406,8 @@ class GruponosMeltanoAlertManager:
 
     """
 
+    @override
+    @override
     def __init__(self, alert_service: GruponosMeltanoAlertService) -> None:
         """Inicializa gerenciador de alertas com serviço.
 
