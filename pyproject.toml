@@ -1,138 +1,223 @@
 [build-system]
-requires = [ "poetry-core>=1.9.0",]
-build-backend = "poetry.core.masonry.api"
+    requires = [
+        "poetry-core>=1.9.0",
+    ]
+    build-backend = "poetry.core.masonry.api"
 
 [project]
-name = "gruponos-meltano-native"
-version = "0.9.0"
-description = "Grupo Nos Meltano Native - Enterprise ETL Pipeline for Grupo Nos"
-readme = "README.md"
-requires-python = ">=3.13,<3.14"
-keywords = [ "async", "enterprise", "flext", "migration", "production", "typed",]
-classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3.13", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Libraries :: Python Modules", "Typing :: Typed", "Topic :: System :: Systems Administration",]
-dependencies = [ "pydantic (>=2.11.7)", "flext-core @ file:///home/marlonsc/flext/flext-core", "flext-observability @ file:///home/marlonsc/flext/flext-observability", "dotenv (>=0.9.9)", "flext-db-oracle @ file:///home/marlonsc/flext/flext-db-oracle", "requests (>=2.32.4)", "structlog (>=25.4.0)", "pyyaml (>=6.0.2)", "click (>=8.2.1)", "meltano (>=3.8.0)", "flext-tap-oracle-wms @ file:///home/marlonsc/flext/flext-tap-oracle-wms",]
+    name = "gruponos-meltano-native"
+    version = "0.9.0"
+    description = "Grupo Nos Meltano Native - Enterprise ETL Pipeline for Grupo Nos"
+    readme = "README.md"
+    requires-python = ">=3.13,<3.14"
+    keywords = [
+        "async",
+        "enterprise",
+        "flext",
+        "migration",
+        "production",
+        "typed",
+    ]
+    classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3 :: Only",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Typing :: Typed",
+        "Topic :: System :: Systems Administration",
+    ]
+    dependencies = [
+        "pydantic (>=2.11.7)",
+        "flext-core @ file:///home/marlonsc/flext/flext-core",
+        "flext-observability @ file:///home/marlonsc/flext/flext-observability",
+        "dotenv (>=0.9.9)",
+        "flext-db-oracle @ file:///home/marlonsc/flext/flext-db-oracle",
+        "requests (>=2.32.4)",
+        "structlog (>=25.4.0)",
+        "pyyaml (>=6.0.2)",
+        "click (>=8.2.1)",
+        "meltano (>=3.8.0)",
+        "flext-tap-oracle-wms @ file:///home/marlonsc/flext/flext-tap-oracle-wms",
+    ]
 [[project.authors]]
-name = "FLEXT Team"
-email = "team@flext.sh"
+    name  = "FLEXT Team"
+    email = "team@flext.sh"
 
 [[project.maintainers]]
-name = "FLEXT Team"
-email = "team@flext.sh"
+    name  = "FLEXT Team"
+    email = "team@flext.sh"
 
 [project.license]
-text = "MIT"
+    text = "MIT"
 
 [project.urls]
-Homepage = "https://github.com/flext-sh/flext"
-Repository = "https://github.com/flext-sh/flext"
-Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
+    Homepage      = "https://github.com/flext-sh/flext"
+    Repository    = "https://github.com/flext-sh/flext"
+    Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 
 [tool.ruff]
-extend = "../ruff-shared.toml"
+    extend = "../ruff-shared.toml"
 
 [tool.bandit]
-exclude_dirs = [ "tests", "build", "dist",]
-skips = [ "B101", "B601",]
+    exclude_dirs = [
+        "tests",
+        "build",
+        "dist",
+    ]
+    skips = [
+        "B101",
+        "B601",
+    ]
 
 [tool.poetry]
 [[tool.poetry.packages]]
-include = "gruponos_meltano_native"
-from = "src"
+    include = "gruponos_meltano_native"
+    from    = "src"
 
 [tool.deptry]
-known_first_party = [ "gruponos_meltano_native",]
-
-[tool.pyrefly]
-python_version = "3.13"
-target_version = "3.13"
-show_error_codes = true
+    known_first_party = [
+        "gruponos_meltano_native",
+    ]
 
 [tool.poetry.dependencies]
-python = ">=3.13,<3.14"
+    python = ">=3.13,<3.14"
 
 [tool.pytest.ini_options]
-minversion = "8.0"
-asyncio_mode = "auto"
-addopts = [ "-ra", "--strict-markers", "--strict-config", "--maxfail=1", "--tb=short", "--cov-fail-under=90",]
-testpaths = [ "tests",]
-markers = [ "unit: Unit tests", "integration: Integration tests", "slow: Slow tests", "smoke: Smoke tests", "e2e: End-to-end tests", "wms: WMS integration tests", "oracle: Oracle database tests", "performance: Performance tests", "destructive: Tests that may modify or delete data", "memory: Memory usage tests",]
+    minversion = "8.0"
+    asyncio_mode = "auto"
+    addopts = [
+        "-ra",
+        "--strict-markers",
+        "--strict-config",
+        "--maxfail=1",
+        "--tb=short",
+        "--cov-fail-under=90",
+    ]
+    testpaths = [
+        "tests",
+    ]
+    markers = [
+        "unit: Unit tests",
+        "integration: Integration tests",
+        "slow: Slow tests",
+        "smoke: Smoke tests",
+        "e2e: End-to-end tests",
+        "wms: WMS integration tests",
+        "oracle: Oracle database tests",
+        "performance: Performance tests",
+        "destructive: Tests that may modify or delete data",
+        "memory: Memory usage tests",
+    ]
 
 [tool.coverage.run]
-source = [ "src",]
-branch = true
-omit = [ "*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*",]
+    source = [
+        "src",
+    ]
+    branch = true
+    omit = [
+        "*/tests/*",
+        "*/test_*",
+        "*/__pycache__/*",
+        "*/venv/*",
+        "*/.venv/*",
+    ]
 
 [tool.coverage.report]
-exclude_lines = [ "pragma: no cover", "def __repr__", "if self.debug:", "if settings.DEBUG", "raise AssertionError", "raise NotImplementedError", "if 0:", "if __name__ == .__main__.:", "class .*\\bProtocol\\):", "@(abc\\.)?abstractmethod",]
+    exclude_lines = [
+        "pragma: no cover",
+        "def __repr__",
+        "if self.debug:",
+        "if settings.DEBUG",
+        "raise AssertionError",
+        "raise NotImplementedError",
+        "if 0:",
+        "if __name__ == .__main__.:",
+        "class .*\\bProtocol\\):",
+        "@(abc\\.)?abstractmethod",
+    ]
 
 [tool.coverage.html]
-directory = "reports/coverage"
+    directory = "reports/coverage"
 
 [tool.coverage.xml]
-output = "reports/coverage.xml"
+    output = "reports/coverage.xml"
 
 [tool.ruff.lint.isort]
-known-first-party = [ "gruponos_meltano_native",]
+    known-first-party = [
+        "gruponos_meltano_native",
+    ]
 
 [tool.poetry.dependencies.flext-core]
-path = "../flext-core"
-develop = true
+    path    = "../flext-core"
+    develop = true
 
 [tool.poetry.dependencies.flext-observability]
-path = "../flext-observability"
-develop = true
+    path    = "../flext-observability"
+    develop = true
 
 [tool.poetry.dependencies.flext-ldap]
-path = "../flext-ldap"
-develop = true
+    path    = "../flext-ldap"
+    develop = true
 
 [tool.poetry.dependencies.flext-ldif]
-path = "../flext-ldif"
-develop = true
+    path    = "../flext-ldif"
+    develop = true
 
 [tool.poetry.group.dev.dependencies]
-ruff = ">=0.12.3"
-black = ">=25.1.0"
-isort = ">=6.0.1"
-pylint = ">=3.3.0"
-pre-commit = ">=4.0.1"
-vulture = ">=2.13"
-radon = ">=6.0.1"
-codespell = ">=2.3.0"
-pyupgrade = ">=3.19.0"
-autoflake = ">=2.3.1"
-deptry = ">=0.23.0"
-detect-secrets = ">=1.5.0"
-commitizen = ">=4.8.3"
-pyrefly = "^0.34.0"
+    ruff           = ">=0.12.3"
+    black          = ">=25.1.0"
+    isort          = ">=6.0.1"
+    pylint         = ">=3.3.0"
+    pre-commit     = ">=4.0.1"
+    vulture        = ">=2.13"
+    radon          = ">=6.0.1"
+    codespell      = ">=2.3.0"
+    pyupgrade      = ">=3.19.0"
+    autoflake      = ">=2.3.1"
+    deptry         = ">=0.23.0"
+    detect-secrets = ">=1.5.0"
+    commitizen     = ">=4.8.3"
+    pyrefly        = "^0.34.0"
 
 [tool.poetry.group.test.dependencies]
-pytest = ">=8.4.0"
-pytest-asyncio = ">=1.0.0"
-pytest-cov = ">=6.2.0"
-pytest-xdist = ">=3.8.0"
-pytest-mock = ">=3.14.0"
-pytest-timeout = ">=2.4.0"
-pytest-benchmark = ">=5.1.0"
-pytest-randomly = ">=3.16.0"
-pytest-sugar = ">=1.0.0"
-pytest-clarity = ">=1.0.1"
-pytest-deadfixtures = ">=2.2.1"
-pytest-env = ">=1.1.5"
-pytest-httpx = ">=0.35.0"
-hypothesis = ">=6.125.0"
-factory-boy = ">=3.3.1"
-faker = ">=37.4.0"
+    pytest              = ">=8.4.0"
+    pytest-asyncio      = ">=1.0.0"
+    pytest-cov          = ">=6.2.0"
+    pytest-xdist        = ">=3.8.0"
+    pytest-mock         = ">=3.14.0"
+    pytest-timeout      = ">=2.4.0"
+    pytest-benchmark    = ">=5.1.0"
+    pytest-randomly     = ">=3.16.0"
+    pytest-sugar        = ">=1.0.0"
+    pytest-clarity      = ">=1.0.1"
+    pytest-deadfixtures = ">=2.2.1"
+    pytest-env          = ">=1.1.5"
+    pytest-httpx        = ">=0.35.0"
+    hypothesis          = ">=6.125.0"
+    factory-boy         = ">=3.3.1"
+    faker               = ">=37.4.0"
 
 [tool.poetry.group.typings.dependencies]
-types-python-dateutil = ">=2.9.0"
-types-pyyaml = ">=6.0.12"
-types-setuptools = ">=80.9.0"
-types-toml = ">=0.10.8.20240310"
-types-requests = ">=2.32.4"
-types-redis = ">=4.6.0"
-types-psutil = ">=7.0.0"
+    types-python-dateutil = ">=2.9.0"
+    types-pyyaml          = ">=6.0.12"
+    types-setuptools      = ">=80.9.0"
+    types-toml            = ">=0.10.8.20240310"
+    types-requests        = ">=2.32.4"
+    types-redis           = ">=4.6.0"
+    types-psutil          = ">=7.0.0"
 
 [tool.poetry.group.security.dependencies]
-bandit = ">=1.8.0"
-pip-audit = ">=2.7.3"
+    bandit    = ">=1.8.0"
+    pip-audit = ">=2.7.3"
+
+[tool.pyrefly]
+    python-version = "3.13"
+    search-path = [
+        "examples",
+        "scripts",
+        "src",
+        "tests",
+    ]

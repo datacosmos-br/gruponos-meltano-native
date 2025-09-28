@@ -2,6 +2,7 @@
 
 from decimal import Decimal
 
+from flext_core import FlextTypes
 from gruponos_meltano_native import (
     DataValidator,
     ValidationError,

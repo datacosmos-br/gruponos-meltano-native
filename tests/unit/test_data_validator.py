@@ -12,6 +12,7 @@ from unittest.mock import patch
 import pytest
 
 import gruponos_meltano_native.validators.data_validator
+from flext_core import FlextTypes
 from gruponos_meltano_native import (
     DataValidator,
     ValidationError,

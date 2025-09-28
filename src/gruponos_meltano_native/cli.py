@@ -23,7 +23,7 @@ from flext_core import FlextLogger, FlextResult, FlextTypes
 def handle_health_command() -> FlextResult[dict[str, str]]:
     """Handle health check command."""
     return FlextResult[dict[str, str]].ok(
-        {"status": healthy, "timestamp": "2025-01-27T00:00:00Z"},
+        {"status": "healthy", "timestamp": "2025-01-27T00:00:00Z"},
     )
 
 
@@ -54,7 +54,7 @@ def handle_validate_command(
 ) -> FlextResult[dict[str, str]]:
     """Handle validate command."""
     return FlextResult[dict[str, str]].ok(
-        {"validation": passed, "format": output_format},
+        {"validation": "passed", "format": output_format},
     )
 
 
@@ -62,7 +62,7 @@ def handle_show_config_command(
     output_format: str = "yaml",
 ) -> FlextResult[dict[str, str]]:
     """Handle show config command."""
-    return FlextResult[dict[str, str]].ok({"config": loaded, "format": output_format})
+    return FlextResult[dict[str, str]].ok({"config": "loaded", "format": output_format})
 
 
 def handle_run_with_retry_command(

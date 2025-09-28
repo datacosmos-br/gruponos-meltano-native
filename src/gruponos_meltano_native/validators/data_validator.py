@@ -723,16 +723,16 @@ if __name__ == "__main__":
         "id": 123,
         "amount": 540.50,
         "count": 42,
-        "active": true,
+        "active": True,
         "created_date": "2025-07-02T10:00:00",
     }
     test_schema: FlextTypes.Core.Dict = {
         "properties": {
-            "id": {"type": integer},
-            "amount": {"type": number},
-            "count": {"type": integer},
-            "active": {"type": boolean},
-            "created_date": {"type": string, "format": date - time},
+            "id": {"type": "integer"},
+            "amount": {"type": "number"},
+            "count": {"type": "integer"},
+            "active": {"type": "boolean"},
+            "created_date": {"type": "string", "format": "date-time"},
         },
     }
     result: FlextResult[object] = validator.validate_and_convert_record(

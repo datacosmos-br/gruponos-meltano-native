@@ -23,8 +23,6 @@ class GruponosMeltanoError(FlextExceptions.Error):
     """
 
     @override
-    @override
-    @override
     def __init__(
         self,
         message: str = "GrupoNOS Meltano error",
@@ -60,8 +58,6 @@ class GruponosMeltanoConfigurationError(
     do sistema, como parâmetros ausentes ou inválidos.
     """
 
-    @override
-    @override
     @override
     def __init__(
         self,
@@ -99,8 +95,6 @@ class GruponosMeltanoValidationError(
     nas validações do sistema GrupoNOS.
     """
 
-    @override
-    @override
     @override
     def __init__(
         self,
@@ -143,8 +137,6 @@ class GruponosMeltanoConnectionError(FlextExceptions._ConnectionError):
     """
 
     @override
-    @override
-    @override
     def __init__(self, message: str = "GrupoNOS connection error") -> None:
         """Inicializa erro de conexão GrupoNOS.
 
@@ -162,8 +154,6 @@ class GruponosMeltanoProcessingError(FlextExceptions._ProcessingError):
     incluindo transformações e operações ETL.
     """
 
-    @override
-    @override
     @override
     def __init__(self, message: str = "GrupoNOS processing error") -> None:
         """Inicializa erro de processamento GrupoNOS.
@@ -183,8 +173,6 @@ class GruponosMeltanoAuthenticationError(FlextExceptions._AuthenticationError):
     """
 
     @override
-    @override
-    @override
     def __init__(self, message: str = "GrupoNOS authentication error") -> None:
         """Inicializa erro de autenticação GrupoNOS.
 
@@ -202,8 +190,6 @@ class GruponosMeltanoTimeoutError(FlextExceptions._TimeoutError):
     o tempo limite estabelecido.
     """
 
-    @override
-    @override
     @override
     def __init__(self, message: str = "GrupoNOS timeout error") -> None:
         """Inicializa erro de timeout GrupoNOS.
@@ -223,8 +209,6 @@ class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
     de pipelines ETL ou coordenação de componentes.
     """
 
-    @override
-    @override
     @override
     def __init__(
         self,
@@ -246,8 +230,6 @@ class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
     na execução de pipelines individuais.
     """
 
-    @override
-    @override
     @override
     def __init__(
         self,

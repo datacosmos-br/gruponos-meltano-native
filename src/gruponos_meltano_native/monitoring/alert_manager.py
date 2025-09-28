@@ -327,10 +327,10 @@ class GruponosMeltanoAlertService:
 
             # Determine color based on severity
             color_map = {
-                GruponosMeltanoAlertSeverity.LOW: good,
-                GruponosMeltanoAlertSeverity.MEDIUM: warning,
-                GruponosMeltanoAlertSeverity.HIGH: danger,
-                GruponosMeltanoAlertSeverity.CRITICAL: danger,
+                GruponosMeltanoAlertSeverity.LOW: "good",
+                GruponosMeltanoAlertSeverity.MEDIUM: "warning",
+                GruponosMeltanoAlertSeverity.HIGH: "danger",
+                GruponosMeltanoAlertSeverity.CRITICAL: "danger",
             }
 
             payload = {
