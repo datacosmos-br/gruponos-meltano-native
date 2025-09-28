@@ -25,12 +25,6 @@ class GruponosMeltanoError(FlextExceptions.Error):
     @override
     @override
     @override
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     def __init__(
         self,
         message: str = "GrupoNOS Meltano error",
@@ -66,12 +60,6 @@ class GruponosMeltanoConfigurationError(
     do sistema, como parâmetros ausentes ou inválidos.
     """
 
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     @override
     @override
     @override
@@ -111,12 +99,6 @@ class GruponosMeltanoValidationError(
     nas validações do sistema GrupoNOS.
     """
 
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     @override
     @override
     @override
@@ -163,12 +145,6 @@ class GruponosMeltanoConnectionError(FlextExceptions._ConnectionError):
     @override
     @override
     @override
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     def __init__(self, message: str = "GrupoNOS connection error") -> None:
         """Inicializa erro de conexão GrupoNOS.
 
@@ -186,12 +162,6 @@ class GruponosMeltanoProcessingError(FlextExceptions._ProcessingError):
     incluindo transformações e operações ETL.
     """
 
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     @override
     @override
     @override
@@ -215,12 +185,6 @@ class GruponosMeltanoAuthenticationError(FlextExceptions._AuthenticationError):
     @override
     @override
     @override
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     def __init__(self, message: str = "GrupoNOS authentication error") -> None:
         """Inicializa erro de autenticação GrupoNOS.
 
@@ -238,12 +202,6 @@ class GruponosMeltanoTimeoutError(FlextExceptions._TimeoutError):
     o tempo limite estabelecido.
     """
 
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     @override
     @override
     @override
@@ -268,12 +226,6 @@ class GruponosMeltanoOrchestrationError(GruponosMeltanoError):
     @override
     @override
     @override
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     def __init__(
         self,
         message: str = "GrupoNOS orchestration failed",
@@ -294,12 +246,6 @@ class GruponosMeltanoPipelineError(GruponosMeltanoOrchestrationError):
     na execução de pipelines individuais.
     """
 
-    @override
-    @override
-    @override
-    @override
-    @override
-    @override
     @override
     @override
     @override

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import override
 
 from flext_core import FlextResult, FlextTypes
-from gruponos_meltano_native.config import GruponosMeltanoSettings
+from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 
 # =============================================
 # RESULTADOS DE PIPELINE GRUPONOS
@@ -76,7 +76,7 @@ class GruponosMeltanoPipelineRunner:
     Example:
       Direct runner usage (typically used via GruponosMeltanoOrchestrator):
 
-      >>> settings = GruponosMeltanoSettings()
+      >>> settings = GruponosMeltanoNativeConfig()
       >>> runner = GruponosMeltanoPipelineRunner(settings)
       >>> result: FlextResult[object] = runner.run_pipeline("full-sync-job")
       >>> print(f"Pipeline result: {result.success}")
@@ -89,8 +89,7 @@ class GruponosMeltanoPipelineRunner:
     """
 
     @override
-    @override
-    def __init__(self, settings: GruponosMeltanoSettings) -> None:
+    def __init__(self, settings: GruponosMeltanoNativeConfig) -> None:
         """Inicializa o executor de pipeline com configurações GrupoNOS.
 
         Args:
@@ -104,7 +103,7 @@ class GruponosMeltanoPipelineRunner:
             FileNotFoundError: Se o diretório meltano_project_root não existir.
 
         Example:
-            >>> settings = GruponosMeltanoSettings()
+            >>> settings = GruponosMeltanoNativeConfig()
             >>> runner = GruponosMeltanoPipelineRunner(settings)
             >>> # Runner está pronto para execução de pipeline
 
@@ -422,7 +421,7 @@ class GruponosMeltanoOrchestrator:
       ...     print(f"Pipeline failed: {result.error}")
 
     Integration:
-      - Uses GruponosMeltanoSettings for environment-aware configuration
+      - Uses GruponosMeltanoNativeConfig for environment-aware configuration
       - Integrates with GruponosMeltanoPipelineRunner for execution
       - Coordinates with monitoring systems for observability
       - Implements padrões empresariais for consistent error handling
@@ -430,8 +429,7 @@ class GruponosMeltanoOrchestrator:
     """
 
     @override
-    @override
-    def __init__(self, settings: GruponosMeltanoSettings | None = None) -> None:
+    def __init__(self, settings: GruponosMeltanoNativeConfig | None = None) -> None:
         """Inicializa orquestrador com configurações GrupoNOS.
 
         Args:
@@ -448,11 +446,11 @@ class GruponosMeltanoOrchestrator:
             >>> orchestrator = GruponosMeltanoOrchestrator()
 
             >>> # Usar configurações customizadas
-            >>> custom_settings = GruponosMeltanoSettings(environment="production")
+            >>> custom_settings = GruponosMeltanoNativeConfig(environment="production")
             >>> orchestrator = GruponosMeltanoOrchestrator(custom_settings)
 
         """
-        self.settings = settings or GruponosMeltanoSettings()
+        self.settings = settings or GruponosMeltanoNativeConfig()
         self.pipeline_runner = GruponosMeltanoPipelineRunner(self.settings)
 
     async def validate_configuration(self) -> FlextResult[None]:
@@ -685,7 +683,7 @@ class GruponosMeltanoOrchestrator:
 
 
 def create_gruponos_meltano_orchestrator(
-    settings: GruponosMeltanoSettings | None = None,
+    settings: GruponosMeltanoNativeConfig | None = None,
 ) -> GruponosMeltanoOrchestrator:
     """Cria instância do orquestrador Meltano GrupoNOS.
 
@@ -700,7 +698,7 @@ def create_gruponos_meltano_orchestrator(
 
 
 def create_gruponos_meltano_pipeline_runner(
-    settings: GruponosMeltanoSettings | None = None,
+    settings: GruponosMeltanoNativeConfig | None = None,
 ) -> GruponosMeltanoPipelineRunner:
     """Cria instância do executor de pipeline GrupoNOS.
 
@@ -711,7 +709,7 @@ def create_gruponos_meltano_pipeline_runner(
       GruponosMeltanoPipelineRunner: Instância configurada do executor.
 
     """
-    pipeline_settings = settings or GruponosMeltanoSettings()
+    pipeline_settings = settings or GruponosMeltanoNativeConfig()
     return GruponosMeltanoPipelineRunner(pipeline_settings)
 
 

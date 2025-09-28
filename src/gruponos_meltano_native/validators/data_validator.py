@@ -38,8 +38,6 @@ class ValidationError(FlextExceptions.ValidationError):
     """
 
     @override
-    @override
-    @override
     def __init__(
         self,
         message: str,
@@ -80,8 +78,6 @@ class ValidationRule:
     """
 
     @override
-    @override
-    @override
     def __init__(
         self,
         field_name: str,
@@ -119,8 +115,6 @@ class DataValidator:
 
     """
 
-    @override
-    @override
     @override
     def __init__(
         self,
