@@ -15,6 +15,8 @@ from typing import cast
 # FLEXT ARCHITECTURE COMPLIANCE: Using flext-cli foundation exclusively
 from flext_cli import FlextCliApi, FlextCliCommands, FlextCliModels
 from flext_core import FlextLogger, FlextResult, FlextTypes
+from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
+from gruponos_meltano_native.utilities import GruponosMeltanoNativeUtilities
 
 # from rich.console import Console  # FORBIDDEN: CLI violations - use flext-cli exclusively
 
@@ -33,36 +35,145 @@ def handle_run_command(
     dry_run: bool = False,
     force: bool = False,
 ) -> FlextResult[dict[str, str | bool]]:
-    """Handle pipeline run command."""
-    return FlextResult[dict[str, str | bool]].ok(
-        {
+    """Handle pipeline run command using GruponosMeltanoNativeUtilities.
+
+    ZERO TOLERANCE FIX: Now actually uses utilities for pipeline execution.
+    """
+    # ZERO TOLERANCE FIX: Use GruponosMeltanoNativeUtilities for pipeline execution
+    from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
+    from gruponos_meltano_native.utilities import GruponosMeltanoNativeUtilities
+
+    utilities = GruponosMeltanoNativeUtilities()
+    config = GruponosMeltanoNativeConfig()
+
+    if dry_run:
+        # Use utilities for dry run validation
+        validation_result = (
+            utilities.MeltanoPipelineManagement.validate_meltano_configuration(
+                config.model_dump()
+            )
+        )
+        if validation_result.is_failure:
+            return FlextResult[dict[str, str | bool]].fail(
+                f"Pipeline validation failed: {validation_result.error}"
+            )
+
+        return FlextResult[dict[str, str | bool]].ok({
             "pipeline": pipeline_name,
-            "status": "started",
-            "dry_run": dry_run,
+            "status": "validated",
+            "dry_run": True,
             "force": force,
-        },
+        })
+
+    # Use utilities for actual pipeline execution
+    execution_result = utilities.MeltanoPipelineManagement.execute_meltano_job(
+        job_name=pipeline_name, config=config.model_dump()
     )
+
+    if execution_result.is_failure:
+        return FlextResult[dict[str, str | bool]].fail(
+            f"Pipeline execution failed: {execution_result.error}"
+        )
+
+    return FlextResult[dict[str, str | bool]].ok({
+        "pipeline": pipeline_name,
+        "status": "completed",
+        "dry_run": dry_run,
+        "force": force,
+    })
 
 
 def handle_list_command() -> FlextResult[list[str]]:
-    """Handle list pipelines command."""
-    return FlextResult[list[str]].ok(["pipeline1", "pipeline2"])
+    """Handle list pipelines command using GruponosMeltanoNativeUtilities.
+
+    ZERO TOLERANCE FIX: Now actually uses utilities for pipeline listing.
+    """
+    # ZERO TOLERANCE FIX: Use GruponosMeltanoNativeUtilities for pipeline listing
+    utilities = GruponosMeltanoNativeUtilities()
+    config = GruponosMeltanoNativeConfig()
+
+    # Use utilities for actual pipeline listing
+    jobs_result = utilities.MeltanoPipelineManagement.list_available_jobs(
+        config.model_dump()
+    )
+
+    if jobs_result.is_failure:
+        return FlextResult[list[str]].fail(
+            f"Failed to list pipelines: {jobs_result.error}"
+        )
+
+    return FlextResult[list[str]].ok(jobs_result.unwrap())
 
 
 def handle_validate_command(
     output_format: str = "table",
 ) -> FlextResult[dict[str, str]]:
-    """Handle validate command."""
-    return FlextResult[dict[str, str]].ok(
-        {"validation": "passed", "format": output_format},
+    """Handle validate command using GruponosMeltanoNativeUtilities.
+
+    ZERO TOLERANCE FIX: Now actually uses utilities for validation.
+    """
+    # ZERO TOLERANCE FIX: Use GruponosMeltanoNativeUtilities for validation
+    utilities = GruponosMeltanoNativeUtilities()
+    config = GruponosMeltanoNativeConfig()
+
+    # Use utilities for comprehensive validation
+    validation_result = (
+        utilities.MeltanoPipelineManagement.validate_meltano_configuration(
+            config.model_dump()
+        )
     )
+
+    if validation_result.is_failure:
+        return FlextResult[dict[str, str]].fail(
+            f"Validation failed: {validation_result.error}"
+        )
+
+    # Additional WMS API validation using utilities
+    wms_validation_result = utilities.WmsApiOperations.validate_wms_connection(
+        config.wms_source.model_dump()
+    )
+
+    if wms_validation_result.is_failure:
+        return FlextResult[dict[str, str]].fail(
+            f"WMS connection validation failed: {wms_validation_result.error}"
+        )
+
+    return FlextResult[dict[str, str]].ok({
+        "validation": "passed",
+        "format": output_format,
+        "config_status": "valid",
+        "wms_connection": "valid",
+    })
 
 
 def handle_show_config_command(
     output_format: str = "yaml",
 ) -> FlextResult[dict[str, str]]:
-    """Handle show config command."""
-    return FlextResult[dict[str, str]].ok({"config": "loaded", "format": output_format})
+    """Handle show config command using GruponosMeltanoNativeUtilities.
+
+    ZERO TOLERANCE FIX: Now actually uses utilities for configuration display.
+    """
+    # ZERO TOLERANCE FIX: Use GruponosMeltanoNativeUtilities for config operations
+    utilities = GruponosMeltanoNativeUtilities()
+    config = GruponosMeltanoNativeConfig()
+
+    # Use utilities for configuration formatting and display
+    config_display_result = (
+        utilities.MeltanoPipelineManagement.format_configuration_for_display(
+            config=config.model_dump(), output_format=output_format
+        )
+    )
+
+    if config_display_result.is_failure:
+        return FlextResult[dict[str, str]].fail(
+            f"Failed to format configuration: {config_display_result.error}"
+        )
+
+    return FlextResult[dict[str, str]].ok({
+        "config": "loaded",
+        "format": output_format,
+        "content": config_display_result.unwrap(),
+    })
 
 
 def handle_run_with_retry_command(
@@ -71,10 +182,35 @@ def handle_run_with_retry_command(
     *,
     retry_delay: int = 5,
 ) -> FlextResult[dict[str, str | int]]:
-    """Handle run with retry command."""
-    return FlextResult[dict[str, str | int]].ok(
-        {"pipeline": pipeline_name, "retries": max_retries, "retry_delay": retry_delay},
+    """Handle run with retry command using GruponosMeltanoNativeUtilities.
+
+    ZERO TOLERANCE FIX: Now actually uses utilities for retry execution.
+    """
+    # ZERO TOLERANCE FIX: Use GruponosMeltanoNativeUtilities for retry execution
+    utilities = GruponosMeltanoNativeUtilities()
+    config = GruponosMeltanoNativeConfig()
+
+    # Use utilities for pipeline execution with retry logic
+    retry_result = utilities.MeltanoPipelineManagement.execute_meltano_job_with_retry(
+        job_name=pipeline_name,
+        config=config.model_dump(),
+        max_retries=max_retries,
+        retry_delay=retry_delay,
     )
+
+    if retry_result.is_failure:
+        return FlextResult[dict[str, str | int]].fail(
+            f"Pipeline execution with retry failed: {retry_result.error}"
+        )
+
+    retry_data = retry_result.unwrap()
+    return FlextResult[dict[str, str | int]].ok({
+        "pipeline": pipeline_name,
+        "retries": max_retries,
+        "retry_delay": retry_delay,
+        "attempts_used": retry_data.get("attempts_used", 1),
+        "status": "completed",
+    })
 
 
 logger = FlextLogger(__name__)

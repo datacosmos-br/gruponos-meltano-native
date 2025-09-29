@@ -18,6 +18,7 @@ from typing import override
 
 from flext_core import FlextResult, FlextTypes
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
+from gruponos_meltano_native.utilities import GruponosMeltanoNativeUtilities
 
 # =============================================
 # RESULTADOS DE PIPELINE GRUPONOS
@@ -410,6 +411,8 @@ class GruponosMeltanoOrchestrator:
       the orchestrator serves as the main application service layer that
       coordinates between domain logic and infrastructure concerns.
 
+      CRITICAL: Now uses GruponosMeltanoNativeUtilities for ALL business operations.
+
     Example:
       Basic orchestrator usage:
 
@@ -425,6 +428,7 @@ class GruponosMeltanoOrchestrator:
       - Integrates with GruponosMeltanoPipelineRunner for execution
       - Coordinates with monitoring systems for observability
       - Implements padrões empresariais for consistent error handling
+      - MANDATORY: Uses GruponosMeltanoNativeUtilities for ALL business logic
 
     """
 
@@ -453,6 +457,9 @@ class GruponosMeltanoOrchestrator:
         self.settings = settings or GruponosMeltanoNativeConfig()
         self.pipeline_runner = GruponosMeltanoPipelineRunner(self.settings)
 
+        # ZERO TOLERANCE FIX: Use GruponosMeltanoNativeUtilities for ALL business logic
+        self._utilities = GruponosMeltanoNativeUtilities()
+
     async def validate_configuration(self) -> FlextResult[None]:
         """Valida configuração do orquestrador usando padrões FLEXT.
 
@@ -471,17 +478,10 @@ class GruponosMeltanoOrchestrator:
             ...     print("Configuração válida")
 
         """
-        # Check if target Oracle has required configuration
-        target_oracle = self.settings.target_oracle
-        if not target_oracle.target_schema:
-            return FlextResult[None].fail("Target Oracle not configured")
-
-        # Check if WMS source has required configuration
-        wms_source = self.settings.wms_source
-        if not wms_source.oracle:
-            return FlextResult[None].fail("WMS source not configured")
-
-        return FlextResult[None].ok(None)
+        # ZERO TOLERANCE FIX: Use utilities for configuration validation
+        return self._utilities.MeltanoPipelineManagement.validate_meltano_configuration(
+            self.settings.model_dump()
+        )
 
     def run_full_sync(self: object) -> GruponosMeltanoPipelineResult:
         """Executa pipeline de sincronização completa para atualização total dos dados.
@@ -521,7 +521,30 @@ class GruponosMeltanoOrchestrator:
             - Agendamento recomendado: Semanal ou sob demanda
 
         """
-        return self.pipeline_runner.run_pipeline("full-sync-job")
+        # ZERO TOLERANCE FIX: Use utilities for full sync operation
+        sync_result = (
+            self._utilities.MeltanoPipelineManagement.execute_full_sync_pipeline(
+                config=self.settings.model_dump(), job_name="full-sync-job"
+            )
+        )
+
+        if sync_result.is_failure:
+            return GruponosMeltanoPipelineResult(
+                success=False,
+                job_name="full-sync-job",
+                execution_time=0.0,
+                output="",
+                error=sync_result.error,
+            )
+
+        pipeline_data = sync_result.unwrap()
+        return GruponosMeltanoPipelineResult(
+            success=True,
+            job_name="full-sync-job",
+            execution_time=pipeline_data.get("execution_time", 0.0),
+            output=pipeline_data.get("output", ""),
+            metadata=pipeline_data.get("metadata", {}),
+        )
 
     def run_incremental_sync(self: object) -> GruponosMeltanoPipelineResult:
         """Executa pipeline de sincronização incremental para atualizações em tempo real.
@@ -560,7 +583,30 @@ class GruponosMeltanoOrchestrator:
             - Agendamento recomendado: A cada 2 horas
 
         """
-        return self.pipeline_runner.run_pipeline("incremental-sync-job")
+        # ZERO TOLERANCE FIX: Use utilities for incremental sync operation
+        sync_result = (
+            self._utilities.MeltanoPipelineManagement.execute_incremental_sync_pipeline(
+                config=self.settings.model_dump(), job_name="incremental-sync-job"
+            )
+        )
+
+        if sync_result.is_failure:
+            return GruponosMeltanoPipelineResult(
+                success=False,
+                job_name="incremental-sync-job",
+                execution_time=0.0,
+                output="",
+                error=sync_result.error,
+            )
+
+        pipeline_data = sync_result.unwrap()
+        return GruponosMeltanoPipelineResult(
+            success=True,
+            job_name="incremental-sync-job",
+            execution_time=pipeline_data.get("execution_time", 0.0),
+            output=pipeline_data.get("output", ""),
+            metadata=pipeline_data.get("metadata", {}),
+        )
 
     def run_job(self, job_name: str) -> GruponosMeltanoPipelineResult:
         """Executa um job específico de pipeline por nome.
@@ -599,7 +645,28 @@ class GruponosMeltanoOrchestrator:
             - Jobs customizados conforme definido em meltano.yml
 
         """
-        return self.pipeline_runner.run_pipeline(job_name)
+        # ZERO TOLERANCE FIX: Use utilities for job execution
+        job_result = self._utilities.MeltanoPipelineManagement.execute_meltano_job(
+            job_name=job_name, config=self.settings.model_dump()
+        )
+
+        if job_result.is_failure:
+            return GruponosMeltanoPipelineResult(
+                success=False,
+                job_name=job_name,
+                execution_time=0.0,
+                output="",
+                error=job_result.error,
+            )
+
+        job_data = job_result.unwrap()
+        return GruponosMeltanoPipelineResult(
+            success=True,
+            job_name=job_name,
+            execution_time=job_data.get("execution_time", 0.0),
+            output=job_data.get("output", ""),
+            metadata=job_data.get("metadata", {}),
+        )
 
     def list_jobs(self: object) -> FlextTypes.Core.StringList:
         """Lista todos os jobs de pipeline disponíveis.
@@ -623,8 +690,16 @@ class GruponosMeltanoOrchestrator:
             para ler dinamicamente da configuração meltano.yml em versões futuras.
 
         """
-        # Based on meltano.yml configuration
-        return ["full-sync-job", "incremental-sync-job"]
+        # ZERO TOLERANCE FIX: Use utilities for job listing
+        jobs_result = self._utilities.MeltanoPipelineManagement.list_available_jobs(
+            self.settings.model_dump()
+        )
+
+        if jobs_result.is_failure:
+            # Fallback to hardcoded list if utilities fail
+            return ["full-sync-job", "incremental-sync-job"]
+
+        return jobs_result.unwrap()
 
     def list_pipelines(self: object) -> FlextTypes.Core.StringList:
         """Lista pipelines disponíveis (alias para list_jobs).
@@ -650,14 +725,38 @@ class GruponosMeltanoOrchestrator:
             GruponosMeltanoPipelineResult: Resultado da execução do pipeline.
 
         """
+        # ZERO TOLERANCE FIX: Use utilities for async pipeline execution
         # Execute in thread pool to avoid blocking
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None,
-            self.pipeline_runner.run_pipeline,
-            pipeline_name,
-            **kwargs,
-        )
+        asyncio.get_event_loop()
+
+        def _sync_pipeline_wrapper() -> GruponosMeltanoPipelineResult:
+            pipeline_result = (
+                self._utilities.MeltanoPipelineManagement.execute_meltano_job(
+                    job_name=pipeline_name,
+                    config=self.settings.model_dump(),
+                    extra_args=kwargs,
+                )
+            )
+
+            if pipeline_result.is_failure:
+                return GruponosMeltanoPipelineResult(
+                    success=False,
+                    job_name=pipeline_name,
+                    execution_time=0.0,
+                    output="",
+                    error=pipeline_result.error,
+                )
+
+            pipeline_data = pipeline_result.unwrap()
+            return GruponosMeltanoPipelineResult(
+                success=True,
+                job_name=pipeline_name,
+                execution_time=pipeline_data.get("execution_time", 0.0),
+                output=pipeline_data.get("output", ""),
+                metadata=pipeline_data.get("metadata", {}),
+            )
+
+        return await _async_pipeline_wrapper()
 
     def get_job_status(self, job_name: str) -> FlextTypes.Core.Dict:
         """Obtém status de um job específico.
@@ -670,11 +769,20 @@ class GruponosMeltanoOrchestrator:
             disponibilidade e configurações.
 
         """
-        return {
-            "job_name": job_name,
-            "available": job_name in self.list_jobs(),
-            "settings": self.settings.model_dump(),
-        }
+        # ZERO TOLERANCE FIX: Use utilities for job status
+        status_result = self._utilities.MeltanoPipelineManagement.get_job_status(
+            job_name=job_name, config=self.settings.model_dump()
+        )
+
+        if status_result.is_failure:
+            return {
+                "job_name": job_name,
+                "available": job_name in self.list_jobs(),
+                "settings": self.settings.model_dump(),
+                "error": status_result.error,
+            }
+
+        return status_result.unwrap()
 
 
 # =============================================

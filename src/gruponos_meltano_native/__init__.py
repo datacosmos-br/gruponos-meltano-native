@@ -95,6 +95,7 @@ from gruponos_meltano_native.orchestrator import (
     create_gruponos_meltano_orchestrator,
     create_gruponos_meltano_pipeline_runner,
 )
+from gruponos_meltano_native.protocols import GruponosMeltanoNativeProtocols
 
 # Data Validation
 from gruponos_meltano_native.validators import (
@@ -133,6 +134,7 @@ __all__: FlextTypes.Core.StringList = [
     "GruponosMeltanoMissingConfigError",
     "GruponosMeltanoMonitoringError",
     "GruponosMeltanoNativeConfig",
+    "GruponosMeltanoNativeProtocols",
     "GruponosMeltanoOracleConnectionConfig",
     "GruponosMeltanoOracleConnectionError",
     "GruponosMeltanoOracleConnectionManager",
