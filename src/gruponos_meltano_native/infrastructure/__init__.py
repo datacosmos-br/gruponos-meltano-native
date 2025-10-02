@@ -23,11 +23,8 @@ from gruponos_meltano_native.infrastructure.di_container import (
     get_gruponos_meltano_container,
 )
 
-# Exportações de Infraestrutura Padrão Empresarial - NO legacy functions
 __all__: FlextTypes.Core.StringList = [
-    # FLEXT Core Infrastructure
     "FlextConfig",
     "FlextContainer",
-    # GrupoNOS Meltano Infrastructure
     "get_gruponos_meltano_container",
 ]

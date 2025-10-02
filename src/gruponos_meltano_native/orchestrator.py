@@ -8,14 +8,15 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-import contextlib
 import os
+import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import override
 
 from flext_core import FlextResult, FlextTypes
+
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.utilities import GruponosMeltanoNativeUtilities
 
@@ -154,30 +155,28 @@ class GruponosMeltanoPipelineRunner:
 
             # Executar pipeline via subprocess para atender política de segurança
             def _run() -> tuple[int, str, str]:
-                proc = create_subprocess_exec(
-                    *cmd,
-                    cwd=str(self.project_root),
-                    env=env,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
                 try:
-                    stdout_b, stderr_b = wait_for(
-                        proc.communicate(),
+                    # Synchronous subprocess execution
+                    result = subprocess.run(
+                        cmd,
+                        cwd=str(self.project_root),
+                        env=env,
+                        capture_output=True,
+                        text=True,
                         timeout=3600,
+                        check=False,
                     )
-                except TimeoutError:
-                    with contextlib.suppress(ProcessLookupError):
-                        proc.kill()
-                    proc.wait()
-                    raise TimeoutError from None
-                return (
-                    int(proc.returncode or 0),
-                    (stdout_b.decode("utf-8", errors="replace") if stdout_b else ""),
-                    (stderr_b.decode("utf-8", errors="replace") if stderr_b else ""),
-                )
+                    stdout_text = result.stdout
+                    stderr_text = result.stderr
+                    return_code = result.returncode
+                except subprocess.TimeoutExpired:
+                    # Handle timeout synchronously
+                    stdout_text = ""
+                    stderr_text = "Process timed out after 3600 seconds"
+                    return_code = -1
+                return return_code, stdout_text, stderr_text
 
-            return_code, stdout_text, stderr_text = run(_run())
+            return_code, stdout_text, stderr_text = _run()
 
             execution_time = time.time() - start_time
 
@@ -347,21 +346,15 @@ class GruponosMeltanoPipelineRunner:
         last_result = None
         for attempt in range(max_retries + 1):
             try:
-                # Execute in thread pool to avoid blocking
-                loop = get_event_loop()
-                result = loop.run_in_executor(
-                    None,
-                    self.run_pipeline,
-                    job_name,
-                    **kwargs,
-                )
+                # Execute synchronously
+                result = self.run_pipeline(job_name, **kwargs)
 
                 if result.success:
                     return result
 
                 last_result = result
                 if attempt < max_retries:
-                    sleep(2**attempt)  # Exponential backoff
+                    time.sleep(2**attempt)  # Exponential backoff
 
             except Exception as e:
                 last_result = GruponosMeltanoPipelineResult(
@@ -374,7 +367,7 @@ class GruponosMeltanoPipelineRunner:
                 )
 
                 if attempt < max_retries:
-                    sleep(2**attempt)
+                    time.sleep(2**attempt)
 
         return last_result or GruponosMeltanoPipelineResult(
             success=False,
@@ -723,8 +716,7 @@ class GruponosMeltanoOrchestrator:
 
         """
         # ZERO TOLERANCE FIX: Use utilities for pipeline execution
-        # Execute in thread pool to avoid blocking
-        get_event_loop()
+        # Execute synchronously
 
         def _sync_pipeline_wrapper() -> GruponosMeltanoPipelineResult:
             pipeline_result = (
@@ -753,7 +745,7 @@ class GruponosMeltanoOrchestrator:
                 metadata=pipeline_data.get("metadata", {}),
             )
 
-        return _pipeline_wrapper()
+        return _sync_pipeline_wrapper()
 
     def get_job_status(self, job_name: str) -> FlextTypes.Core.Dict:
         """Obtém status de um job específico.

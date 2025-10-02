@@ -227,6 +227,48 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         default=None,
         description="Oracle WMS facility code",
     )
+
+    # Backward compatibility properties for old attribute names
+    @property
+    def host(self) -> str | None:
+        """Backward compatibility property for oracle_host."""
+        return self.oracle_host
+
+    @property
+    def port(self) -> int:
+        """Backward compatibility property for oracle_port."""
+        return self.oracle_port
+
+    @property
+    def service_name(self) -> str | None:
+        """Backward compatibility property for oracle_service_name."""
+        return self.oracle_service_name
+
+    @property
+    def username(self) -> str | None:
+        """Backward compatibility property for oracle_username."""
+        return self.oracle_username
+
+    @property
+    def protocol(self) -> str:
+        """Backward compatibility property for connection protocol."""
+        return "tcps"  # Default protocol for Oracle connections
+
+    @property
+    def ssl_enabled(self) -> bool:
+        """Backward compatibility property for SSL configuration."""
+        return True  # Default SSL enabled for Oracle connections
+
+    @property
+    def pool_min(self) -> int:
+        """Backward compatibility property for minimum pool size."""
+        return 1  # Default minimum pool size
+
+    @property
+    def pool_max(self) -> int:
+        """Backward compatibility property for maximum pool size."""
+        return self.oracle_pool_size
+
     wms_timeout: int = Field(
         default=30,
         ge=5,

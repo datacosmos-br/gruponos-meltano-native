@@ -20,10 +20,7 @@ from gruponos_meltano_native.oracle.connection_manager_enhanced import (
     create_gruponos_meltano_oracle_connection_manager,
 )
 
-# Public API exports - padrão empresarial only
 __all__: FlextTypes.Core.StringList = [
-    # Classes Padrão Empresarial
     "GruponosMeltanoOracleConnectionManager",
-    # Funções Factory
     "create_gruponos_meltano_oracle_connection_manager",
 ]

@@ -15,6 +15,7 @@ from typing import cast
 # FLEXT ARCHITECTURE COMPLIANCE: Using flext-cli foundation exclusively
 from flext_cli import FlextCli, FlextCliCommands, FlextCliModels
 from flext_core import FlextLogger, FlextResult, FlextTypes
+
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.utilities import GruponosMeltanoNativeUtilities
 

@@ -24,14 +24,11 @@ from gruponos_meltano_native.monitoring.alert_manager import (
     create_gruponos_meltano_alert_manager,
 )
 
-# Public API exports - padrão empresarial only
 __all__: FlextTypes.Core.StringList = [
-    # Classes Padrão Empresarial
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertManager",
     "GruponosMeltanoAlertService",
     "GruponosMeltanoAlertSeverity",
     "GruponosMeltanoAlertType",
-    # Funções Factory
     "create_gruponos_meltano_alert_manager",
 ]

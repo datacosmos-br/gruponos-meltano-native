@@ -255,7 +255,7 @@ class TestTableRecreationErrorHandling:
         result = api.execute_ddl(invalid_sql)
 
         assert result.is_failure
-        assert "Invalid SQL syntax" in result.error
+        assert result.error is not None and "Invalid SQL syntax" in result.error
 
     def test_invalid_oracle_config(self) -> None:
         """Test handling of invalid Oracle configuration."""

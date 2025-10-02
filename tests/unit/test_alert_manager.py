@@ -101,7 +101,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
             result = service.send_alert(alert)
 
             assert not result.success
-            assert "Webhook failed" in result.error
+            assert result.error is not None and "Webhook failed" in result.error
 
     def test_send_alert_webhook_exception_os_error(self) -> None:
         """Test webhook alert sending OSError exception."""
@@ -126,7 +126,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
 
             result = service.send_alert(alert)
             assert not result.success
-            assert "Webhook failed" in result.error
+            assert result.error is not None and "Webhook failed" in result.error
 
     def test_send_alert_webhook_exception_value_error(self) -> None:
         """Test webhook alert sending ValueError exception."""
@@ -149,7 +149,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         with patch("requests.post", side_effect=ValueError("Invalid JSON")):
             result = service.send_alert(alert)
             assert not result.success
-            assert "Alert sending error" in result.error
+            assert result.error is not None and "Alert sending error" in result.error
 
     def test_send_alert_webhook_exception_runtime_error(self) -> None:
         """Test webhook alert sending RuntimeError exception."""
@@ -172,7 +172,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         with patch("requests.post", side_effect=RuntimeError("Runtime error")):
             result = service.send_alert(alert)
             assert not result.success
-            assert "Alert sending error" in result.error
+            assert result.error is not None and "Alert sending error" in result.error
 
     def test_send_alert_webhook_disabled(self) -> None:
         """Test alert sending when webhook is disabled."""
@@ -194,7 +194,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         result = service.send_alert(alert)
         # With no enabled channels, it should return failure
         assert not result.success
-        assert "Failed to send alert" in result.error
+        assert result.error is not None and "Failed to send alert" in result.error
 
     def test_send_alert_webhook_no_url(self) -> None:
         """Test alert sending when webhook URL is not set."""
@@ -217,7 +217,7 @@ class TestGruponosMeltanoAlertServiceComprehensive:
         result = service.send_alert(alert)
         # Should fail because webhook URL is not configured
         assert not result.success
-        assert "Webhook URL not configured" in result.error
+        assert result.error is not None and "Webhook URL not configured" in result.error
 
     def test_failure_count_management(self) -> None:
         """Test failure count management in alert service."""

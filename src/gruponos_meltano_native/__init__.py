@@ -6,8 +6,8 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import importlib.metadata
+from typing import Final
 
-# Bibliotecas base - Importações diretas apenas
 from flext_core import (
     FlextConfig,
     FlextContainer,
@@ -16,20 +16,13 @@ from flext_core import (
     FlextTypes,
 )
 
-# Version Management
+from gruponos_meltano_native.version import VERSION, GruponosMeltanoNativeVersion
+
 try:
     __version__ = importlib.metadata.version("gruponos-meltano-native")
 except importlib.metadata.PackageNotFoundError:
     __version__ = "0.9.0"
 
-__version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
-
-# ================================
-# IMPORTAÇÕES DIRETAS PADRÃO
-# ================================
-
-# Configuration Management
-# CLI
 from gruponos_meltano_native.cli import cli as gruponos_meltano_cli
 from gruponos_meltano_native.config import (
     GruponosMeltanoAlertConfig,
@@ -41,10 +34,8 @@ from gruponos_meltano_native.config import (
     create_gruponos_meltano_settings,
 )
 
-# Alias for backward compatibility
 GruponosMeltanoSettings = GruponosMeltanoNativeConfig
 
-# Exceptions
 from gruponos_meltano_native.exceptions import (
     GruponosMeltanoAlertDeliveryError,
     GruponosMeltanoAlertError,
@@ -72,9 +63,6 @@ from gruponos_meltano_native.exceptions import (
     GruponosMeltanoTimeoutError,
     GruponosMeltanoValidationError,
 )
-
-# Factory functions will be added when needed
-# Monitoring & Alerts
 from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlert,
     GruponosMeltanoAlertManager,
@@ -83,14 +71,10 @@ from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlertType,
     create_gruponos_meltano_alert_manager,
 )
-
-# Oracle Integration
 from gruponos_meltano_native.oracle.connection_manager_enhanced import (
     GruponosMeltanoOracleConnectionManager,
     create_gruponos_meltano_oracle_connection_manager,
 )
-
-# Orchestration
 from gruponos_meltano_native.orchestrator import (
     GruponosMeltanoOrchestrator,
     GruponosMeltanoPipelineResult,
@@ -99,8 +83,6 @@ from gruponos_meltano_native.orchestrator import (
     create_gruponos_meltano_pipeline_runner,
 )
 from gruponos_meltano_native.protocols import GruponosMeltanoNativeProtocols
-
-# Data Validation
 from gruponos_meltano_native.validators import (
     DataValidator,
     ValidationError,
@@ -108,16 +90,20 @@ from gruponos_meltano_native.validators import (
     create_validator_for_environment,
 )
 
-# ================================
-# API PÚBLICA - PADRÃO APENAS
-# ================================
+PROJECT_VERSION: Final[GruponosMeltanoNativeVersion] = VERSION
 
-__all__: FlextTypes.Core.StringList = [
+__version__: str = VERSION.version
+__version_info__: tuple[int | str, ...] = VERSION.version_info
+
+__all__ = [
+    "PROJECT_VERSION",
+    "VERSION",
     "DataValidator",
     "FlextConfig",
     "FlextContainer",
     "FlextModels",
     "FlextResult",
+    "FlextTypes",
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoAlertDeliveryError",
@@ -138,6 +124,7 @@ __all__: FlextTypes.Core.StringList = [
     "GruponosMeltanoMonitoringError",
     "GruponosMeltanoNativeConfig",
     "GruponosMeltanoNativeProtocols",
+    "GruponosMeltanoNativeVersion",
     "GruponosMeltanoOracleConnectionConfig",
     "GruponosMeltanoOracleConnectionError",
     "GruponosMeltanoOracleConnectionManager",

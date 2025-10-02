@@ -10,7 +10,7 @@ SPDX-License-Identifier: Proprietary
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Final
+from typing import ClassVar, Final
 
 from flext_core import FlextConstants
 
@@ -181,12 +181,12 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_SALT_LENGTH: Final[int] = 32
 
         # Supported algorithms
-        SUPPORTED_ENCRYPTION_ALGORITHMS: Final[list[str]] = [
+        SUPPORTED_ENCRYPTION_ALGORITHMS: ClassVar[list[str]] = [
             "AES-256-GCM",
             "AES-128-GCM",
             "ChaCha20-Poly1305",
         ]
-        SUPPORTED_HASH_ALGORITHMS: Final[list[str]] = [
+        SUPPORTED_HASH_ALGORITHMS: ClassVar[list[str]] = [
             "SHA-256",
             "SHA-512",
             "BLAKE2b",

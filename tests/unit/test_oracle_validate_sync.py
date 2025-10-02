@@ -28,11 +28,9 @@ class OracleCursor(Protocol):
         params: list[object] | dict[str, object] | None = None,
     ) -> None:
         """Execute a query."""
-        ...
 
     def fetchone(self) -> list[object] | None:
         """Fetch one row."""
-        ...
 
 
 # Create working implementations using flext-db-oracle

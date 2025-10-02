@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from pydantic import (
     ConfigDict,
@@ -65,7 +64,7 @@ class GruponosMeltanoNativeModels(FlextModels):
             default=GruponosMeltanoNativeConstants.Status.PENDING.value,
             description="Entity status",
         )
-        metadata: dict[str, Any] = Field(
+        metadata: dict[str, object] = Field(
             default_factory=dict, description="Additional metadata"
         )
 
