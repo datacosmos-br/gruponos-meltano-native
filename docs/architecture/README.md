@@ -176,7 +176,7 @@ make validate  # lint + type + security + test + oracle-test
 
 ### Core Technologies
 
-- **Python 3.13**: Modern async/await patterns with strict typing
+- **Python 3.13**: Modern /patterns with strict typing
 - **Meltano 3.8.0**: Data integration orchestration platform
 - **dbt**: SQL-based data transformation framework
 - **Oracle Database**: Enterprise-grade data storage

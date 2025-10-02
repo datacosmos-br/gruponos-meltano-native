@@ -49,11 +49,11 @@ All operations return `FlextResult<T>` for consistent error handling:
 from flext_core import FlextResult
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
-async def execute_pipeline() -> FlextResult[PipelineResult]:
+def execute_pipeline() -> FlextResult[PipelineResult]:
     orchestrator = GruponosMeltanoOrchestrator()
 
     # All FLEXT operations return FlextResult
-    result = await orchestrator.execute_full_sync(
+    result = orchestrator.execute_full_sync(
         company_code="GNOS",
         facility_code="DC01"
     )
@@ -80,7 +80,7 @@ class GruponosMeltanoOrchestrator:
     def __init__(self, settings: GruponosMeltanoSettings):
         self.settings = settings
 
-    async def execute_full_sync(self) -> FlextResult[PipelineResult]:
+    def execute_full_sync(self) -> FlextResult[PipelineResult]:
         logger.info(
             "Starting full sync",
             extra={
@@ -92,7 +92,7 @@ class GruponosMeltanoOrchestrator:
 
         # Pipeline execution with structured logging
         try:
-            result = await self._run_meltano_pipeline()
+            result = self._run_meltano_pipeline()
             logger.info("Full sync completed successfully", extra={"records": result.count})
             return FlextResult[None].ok(result)
         except Exception as e:
@@ -177,7 +177,7 @@ class GruponosMeltanoMonitoring:
         self.metrics: MetricsClient = get_metrics_client()
         self.tracer = get_tracer("gruponos-meltano-native")
 
-    async def track_pipeline_execution(self, pipeline_name: str):
+    def track_pipeline_execution(self, pipeline_name: str):
         """Track pipeline execution metrics"""
         with self.tracer.start_span("pipeline_execution") as span:
             span.set_attribute("pipeline.name", pipeline_name)
@@ -221,14 +221,14 @@ class GruponosMeltanoOracleConnectionManager:
             password=settings.oracle_password.get_secret_value()
         )
 
-    async def validate_target_schema(self) -> FlextResult[bool]:
+    def validate_target_schema(self) -> FlextResult[bool]:
         """Validate target database schema exists"""
         query = OracleQueryBuilder().select("1").from_table("user_tables").where(
             "table_name = :table_name"
         ).build()
 
-        async with self.connection_manager.get_connection() as conn:
-            result = await conn.execute(query, {"table_name": "WMS_ALLOCATIONS"})
+        with self.connection_manager.get_connection() as conn:
+            result = conn.execute(query, {"table_name": "WMS_ALLOCATIONS"})
             return FlextResult[None].ok(len(result) > 0)
 ```
 
@@ -298,10 +298,10 @@ GruponosMeltanoConnectionError = _exceptions["GruponosMeltanoConnectionError"]
 GruponosMeltanoProcessingError = _exceptions["GruponosMeltanoProcessingError"]
 
 # Usage in business logic
-async def validate_wms_data(data: dict) -> FlextResult[ValidatedData]:
+def validate_wms_data(data: dict) -> FlextResult[ValidatedData]:
     try:
         # Validation logic
-        validated = await perform_validation(data)
+        validated = perform_validation(data)
         return FlextResult[None].ok(validated)
     except ValidationError as e:
         raise GruponosMeltanoValidationError(f"WMS data validation failed: {e}")

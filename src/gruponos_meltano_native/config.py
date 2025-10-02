@@ -252,6 +252,22 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         description="Logging level",
     )
 
+    # Meltano-specific configuration
+    meltano_project_root: str | None = Field(
+        default=None,
+        description="Meltano project root directory",
+    )
+
+    meltano_environment: str = Field(
+        default="production",
+        description="Meltano environment",
+    )
+
+    meltano_state_backend: str = Field(
+        default="filesystem",
+        description="Meltano state backend",
+    )
+
     # Field validators
     @field_validator("job_environment")
     @classmethod

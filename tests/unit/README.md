@@ -80,7 +80,7 @@ def test_successful_pipeline_execution():
     orchestrator = create_test_orchestrator()
 
     # Act
-    result = await orchestrator.execute_full_sync("GNOS", "DC01")
+    result = orchestrator.execute_full_sync("GNOS", "DC01")
 
     # Assert
     assert result.success
@@ -94,7 +94,7 @@ def test_pipeline_error_propagation():
     mock_validator_failure()  # Mock validation failure
 
     # Act
-    result = await orchestrator.execute_full_sync("GNOS", "DC01")
+    result = orchestrator.execute_full_sync("GNOS", "DC01")
 
     # Assert
     assert result.is_failure
@@ -115,7 +115,7 @@ def test_oracle_connection_with_mock(mock_oracle_api):
     manager = create_gruponos_meltano_oracle_connection_manager(config)
 
     # Act
-    result = await manager.get_connection()
+    result = manager.get_connection()
 
     # Assert
     assert result.success
@@ -201,7 +201,7 @@ def test_schema_validation_success():
     ]
 
     # Act
-    result = await validator.validate_schema(valid_data)
+    result = validator.validate_schema(valid_data)
 
     # Assert
     assert result.success
@@ -223,7 +223,7 @@ def test_business_rule_validation_failure():
     ]
 
     # Act
-    result = await validator.validate_business_rules(invalid_data)
+    result = validator.validate_business_rules(invalid_data)
 
     # Assert
     assert result.is_failure
@@ -245,7 +245,7 @@ def test_alert_delivery_success():
     )
 
     # Act
-    result = await alert_manager.send_alert(
+    result = alert_manager.send_alert(
         title="Test Alert",
         message="This is a test alert",
         severity=GruponosMeltanoAlertSeverity.INFO
@@ -265,9 +265,9 @@ def test_alert_rate_limiting():
     )
 
     # Act - Send 3 alerts within rate limit window
-    result1 = await alert_manager.send_alert("Alert 1", "Message 1")
-    result2 = await alert_manager.send_alert("Alert 2", "Message 2")
-    result3 = await alert_manager.send_alert("Alert 3", "Message 3")
+    result1 = alert_manager.send_alert("Alert 1", "Message 1")
+    result2 = alert_manager.send_alert("Alert 2", "Message 2")
+    result3 = alert_manager.send_alert("Alert 3", "Message 3")
 
     # Assert
     assert result1.success
@@ -286,7 +286,7 @@ class MockFactory:
     def create_mock_oracle_connection():
         """Create mock Oracle connection for testing."""
         mock_conn = Mock()
-        mock_conn.execute.return_value = AsyncMock()
+        mock_conn.execute.return_value = Mock()
         mock_conn.fetchall.return_value = []
         return mock_conn
 

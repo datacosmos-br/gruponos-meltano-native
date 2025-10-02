@@ -217,7 +217,7 @@ class TestConnectionManagerIntegration:
             }
 
             # Test that API can be created from config dict
-            oracle_api = FlextDbOracleApi.with_config(oracle_config_dict)
+            oracle_api = FlextDbOracleApi.from_config(oracle_config_dict)
             assert oracle_api is not None
 
             # Test configuration object creation

@@ -55,18 +55,18 @@ class GruponosMeltanoOracleConnectionManager:
         # Apply provided config or sensible defaults expected by tests
         if config is None:
             # Provide a minimal, valid default config
-            config: dict[str, object] = GruponosMeltanoOracleConnectionConfig(
+            config = GruponosMeltanoOracleConnectionConfig(
                 host="localhost",
                 service_name="ORCL",
                 username="user",
                 password=os.getenv("ORACLE_PASSWORD", "default_test_password"),
                 port=1521,
             )
-        self.config: dict[str, object] = config
+        self.config: GruponosMeltanoOracleConnectionConfig = config
         # Ensure default Oracle port (1521) when not explicitly provided
         # Tests expect default port 1521 for minimal config
         if getattr(self.config, "port", None) in {None, 0, 1522}:
-            self.config.port: dict[str, object] = 1521
+            self.config.port = 1521
         self._connection: FlextDbOracleApi | None = None
 
     def get_connection(self: object) -> FlextResult[FlextDbOracleApi]:

@@ -248,7 +248,7 @@ def test_etl_pipeline_success_path():
     test_data = TestDataFactory.create_batch_allocations(100)
 
     # When: Execute pipeline
-    result = await orchestrator.execute_full_sync("GNOS", "DC01")
+    result = orchestrator.execute_full_sync("GNOS", "DC01")
 
     # Then: Verify success:
     assert result.success
@@ -261,7 +261,7 @@ def test_etl_pipeline_failure_propagation():
     test_data = [{"invalid": "data"}]
 
     # When: Execute pipeline
-    result = await orchestrator.execute_full_sync("GNOS", "DC01")
+    result = orchestrator.execute_full_sync("GNOS", "DC01")
 
     # Then: Verify failure
     assert result.is_failure
@@ -280,7 +280,7 @@ def test_oracle_integration_with_mocks(mock_oracle_api):
 
     # Execute test
     manager = create_gruponos_meltano_oracle_connection_manager(test_config)
-    result = await manager.get_connection()
+    result = manager.get_connection()
 
     # Verify behavior
     assert result.success
@@ -291,14 +291,14 @@ def test_oracle_integration_with_mocks(mock_oracle_api):
 
 ```python
 @pytest.mark.performance
-async def test_large_dataset_processing():
+def test_large_dataset_processing():
     """Test processing of large datasets."""
     # Given: Large test dataset
     large_dataset = TestDataFactory.create_batch_allocations(10000)
 
     # When: Process with time measurement
     start_time = time.time()
-    result = await validator.validate_allocation_data(large_dataset)
+    result = validator.validate_allocation_data(large_dataset)
     processing_time = time.time() - start_time
 
     # Then: Verify performance requirements

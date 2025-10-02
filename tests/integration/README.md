@@ -54,7 +54,7 @@ This directory contains comprehensive integration tests that validate end-to-end
 ```python
 @pytest.mark.integration
 @pytest.mark.oracle
-async def test_complete_full_sync_workflow():
+def test_complete_full_sync_workflow():
     """Test complete full synchronization workflow with real systems."""
     # Arrange
     orchestrator = create_integration_orchestrator()
@@ -62,7 +62,7 @@ async def test_complete_full_sync_workflow():
     facility_code = "TEST_DC01"
 
     # Act
-    result = await orchestrator.execute_full_sync(company_code, facility_code)
+    result = orchestrator.execute_full_sync(company_code, facility_code)
 
     # Assert
     assert result.success
@@ -71,27 +71,27 @@ async def test_complete_full_sync_workflow():
     assert result.data.duration_seconds > 0
 
     # Verify data consistency
-    source_count = await get_wms_record_count(company_code, facility_code)
-    target_count = await get_target_db_record_count()
+    source_count = get_wms_record_count(company_code, facility_code)
+    target_count = get_target_db_record_count()
     assert source_count == target_count
 
 @pytest.mark.integration
 @pytest.mark.oracle
-async def test_incremental_sync_workflow():
+def test_incremental_sync_workflow():
     """Test incremental synchronization with real timestamp tracking."""
     # Arrange
     orchestrator = create_integration_orchestrator()
-    last_sync_timestamp = await get_last_sync_timestamp()
+    last_sync_timestamp = get_last_sync_timestamp()
 
     # Act
-    result = await orchestrator.execute_incremental_sync("TEST_GNOS", "TEST_DC01")
+    result = orchestrator.execute_incremental_sync("TEST_GNOS", "TEST_DC01")
 
     # Assert
     assert result.success
 
     # Verify only new/modified records were processed
     processed_records = result.data.records_processed
-    expected_new_records = await get_modified_records_count_since(last_sync_timestamp)
+    expected_new_records = get_modified_records_count_since(last_sync_timestamp)
     assert processed_records == expected_new_records
 ```
 
@@ -100,30 +100,30 @@ async def test_incremental_sync_workflow():
 ```python
 @pytest.mark.integration
 @pytest.mark.oracle
-async def test_data_consistency_across_systems():
+def test_data_consistency_across_systems():
     """Test data consistency between WMS and target database."""
     # Arrange
     test_allocation_id = "INTEGRATION_TEST_001"
 
     # Create test data in WMS
-    await create_test_allocation_in_wms(test_allocation_id)
+    create_test_allocation_in_wms(test_allocation_id)
 
     # Act - Execute sync
     orchestrator = create_integration_orchestrator()
-    result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
+    result = orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
 
     # Assert - Verify data consistency
     assert result.success
 
-    wms_allocation = await get_allocation_from_wms(test_allocation_id)
-    target_allocation = await get_allocation_from_target_db(test_allocation_id)
+    wms_allocation = get_allocation_from_wms(test_allocation_id)
+    target_allocation = get_allocation_from_target_db(test_allocation_id)
 
     assert wms_allocation.allocation_id == target_allocation.allocation_id
     assert wms_allocation.quantity == target_allocation.quantity
     assert wms_allocation.location == target_allocation.location
 
     # Cleanup
-    await cleanup_test_allocation(test_allocation_id)
+    cleanup_test_allocation(test_allocation_id)
 ```
 
 ### Performance and Load Testing
@@ -133,17 +133,17 @@ async def test_data_consistency_across_systems():
 ```python
 @pytest.mark.integration
 @pytest.mark.performance
-async def test_large_dataset_processing():
+def test_large_dataset_processing():
     """Test processing of large datasets under realistic conditions."""
     # Arrange
     large_dataset_size = 50000  # 50K records
-    await create_large_test_dataset(large_dataset_size)
+    create_large_test_dataset(large_dataset_size)
 
     orchestrator = create_integration_orchestrator()
     start_time = time.time()
 
     # Act
-    result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
+    result = orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
     processing_time = time.time() - start_time
 
     # Assert
@@ -158,26 +158,26 @@ async def test_large_dataset_processing():
     assert throughput > 100  # Min 100 records/second
 
     # Memory usage validation
-    memory_usage = await get_peak_memory_usage()
+    memory_usage = get_peak_memory_usage()
     assert memory_usage < 2048  # Max 2GB memory usage
 
     # Cleanup
-    await cleanup_large_test_dataset()
+    cleanup_large_test_dataset()
 
 @pytest.mark.integration
 @pytest.mark.performance
-async def test_concurrent_pipeline_execution():
+def test_concurrent_pipeline_execution():
     """Test concurrent pipeline execution performance."""
     # Arrange
     concurrent_pipelines = 5
 
-    async def run_pipeline(pipeline_id):
+    def run_pipeline(pipeline_id):
         orchestrator = create_integration_orchestrator()
-        return await orchestrator.execute_full_sync(f"TEST_{pipeline_id}", "TEST_DC01")
+        return orchestrator.execute_full_sync(f"TEST_{pipeline_id}", "TEST_DC01")
 
     # Act
     start_time = time.time()
-    results = await asyncio.gather(*[
+    results = gather(*[
         run_pipeline(i) for i in range(concurrent_pipelines)
     ])
     total_time = time.time() - start_time
@@ -196,7 +196,7 @@ async def test_concurrent_pipeline_execution():
 ```python
 @pytest.mark.integration
 @pytest.mark.performance
-async def test_resource_usage_monitoring():
+def test_resource_usage_monitoring():
     """Test system resource usage under load."""
     # Arrange
     resource_monitor = ResourceUsageMonitor()
@@ -204,7 +204,7 @@ async def test_resource_usage_monitoring():
 
     # Act
     with resource_monitor.track_usage():
-        result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
+        result = orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
 
     usage_report = resource_monitor.generate_report()
 
@@ -230,7 +230,7 @@ async def test_resource_usage_monitoring():
 ```python
 @pytest.mark.integration
 @pytest.mark.oracle
-async def test_wms_connection_failure_recovery():
+def test_wms_connection_failure_recovery():
     """Test recovery from WMS connection failures."""
     # Arrange
     orchestrator = create_integration_orchestrator()
@@ -238,34 +238,34 @@ async def test_wms_connection_failure_recovery():
     # Simulate WMS connection failure
     with patch_wms_connection_failure():
         # Act
-        result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
+        result = orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
 
         # Assert - Should handle failure gracefully
         assert result.is_failure
         assert "connection" in result.error.lower()
 
     # Recovery test - connection restored
-    result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
+    result = orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
     assert result.success
 
 @pytest.mark.integration
 @pytest.mark.oracle
-async def test_database_transaction_rollback():
+def test_database_transaction_rollback():
     """Test database transaction rollback on errors."""
     # Arrange
     orchestrator = create_integration_orchestrator()
-    initial_record_count = await get_target_db_record_count()
+    initial_record_count = get_target_db_record_count()
 
     # Simulate database error during load
     with patch_database_error_during_load():
         # Act
-        result = await orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
+        result = orchestrator.execute_full_sync("TEST_GNOS", "TEST_DC01")
 
         # Assert - Transaction should be rolled back
         assert result.is_failure
 
         # Verify no partial data was committed
-        final_record_count = await get_target_db_record_count()
+        final_record_count = get_target_db_record_count()
         assert final_record_count == initial_record_count
 ```
 
@@ -275,13 +275,13 @@ async def test_database_transaction_rollback():
 
 ```python
 @pytest.mark.integration
-async def test_alert_delivery_integration():
+def test_alert_delivery_integration():
     """Test alert delivery to real systems."""
     # Arrange
     alert_manager = create_integration_alert_manager()
 
     # Act
-    result = await alert_manager.send_alert(
+    result = alert_manager.send_alert(
         title="Integration Test Alert",
         message="This is an integration test alert",
         severity=GruponosMeltanoAlertSeverity.INFO,
@@ -293,8 +293,8 @@ async def test_alert_delivery_integration():
 
     # Verify alert was delivered to configured channels
     # (This would check actual email, Slack, webhook delivery)
-    assert await verify_email_delivery("Integration Test Alert")
-    assert await verify_slack_delivery("Integration Test Alert")
+    assert verify_email_delivery("Integration Test Alert")
+    assert verify_slack_delivery("Integration Test Alert")
 ```
 
 ## Test Environment Setup
@@ -303,29 +303,29 @@ async def test_alert_delivery_integration():
 
 ```python
 @pytest.fixture(scope="session")
-async def integration_test_database():
+def integration_test_database():
     """Setup integration test database schema."""
     # Create test schema
-    await create_integration_test_schema()
+    create_integration_test_schema()
 
     # Populate with test data
-    await populate_test_data()
+    populate_test_data()
 
     yield
 
     # Cleanup
-    await cleanup_integration_test_schema()
+    cleanup_integration_test_schema()
 
 @pytest.fixture(scope="session")
-async def wms_test_environment():
+def wms_test_environment():
     """Setup WMS test environment."""
     # Configure WMS test instance
-    wms_config = await setup_wms_test_instance()
+    wms_config = setup_wms_test_instance()
 
     yield wms_config
 
     # Cleanup WMS test data
-    await cleanup_wms_test_data()
+    cleanup_wms_test_data()
 ```
 
 ### Configuration Management

@@ -23,7 +23,7 @@ class TestOracleTableCreatorSimple:
         }
 
         # Test API creation from config
-        api = FlextDbOracleApi.with_config(config_dict)
+        api = FlextDbOracleApi.from_config(config_dict)
         assert api is not None
 
         # Test configuration object creation
@@ -76,7 +76,7 @@ class TestOracleTableCreatorSimple:
             "password": "test_pass",
         }
 
-        api = FlextDbOracleApi.with_config(valid_config)
+        api = FlextDbOracleApi.from_config(valid_config)
         assert api is not None
 
     def test_table_creator_methods_exist(self) -> None:
@@ -89,7 +89,7 @@ class TestOracleTableCreatorSimple:
             "password": "test_pass",
         }
 
-        FlextDbOracleApi.with_config(config_dict)
+        FlextDbOracleApi.from_config(config_dict)
 
         # Check for actual methods from flext-db-oracle API
         expected_methods = [
@@ -112,7 +112,7 @@ class TestOracleTableCreatorSimple:
             "password": "test_pass",
         }
 
-        api = FlextDbOracleApi.with_config(config_dict)
+        api = FlextDbOracleApi.from_config(config_dict)
 
         # Test API object creation
         assert api is not None

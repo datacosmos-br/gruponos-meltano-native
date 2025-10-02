@@ -53,16 +53,15 @@ Demonstrates how to execute a complete ETL pipeline with proper
 error handling and monitoring integration.
 """
 
-import asyncio
 from gruponos_meltano_native import create_gruponos_meltano_platform
 
-async def main():
+def main():
     # Create ETL platform instance
     platform = create_gruponos_meltano_platform()
 
     # Execute full synchronization
     print("Starting full synchronization...")
-    result = await platform.execute_full_sync("GNOS", "DC01")
+    result = platform.execute_full_sync("GNOS", "DC01")
 
     if result.success:
         print(f"ETL completed successfully!")
@@ -72,23 +71,23 @@ async def main():
     else:
         print(f"ETL failed: {result.error}")
         # Handle error appropriately
-        await handle_etl_failure(result)
+        handle_etl_failure(result)
 
-async def handle_etl_failure(result):
+def handle_etl_failure(result):
     """Handle ETL failure with appropriate actions."""
     # Log error details
     logger.error(f"ETL pipeline failed: {result.error}")
 
     # Send alert if configured
     alert_manager = create_gruponos_meltano_alert_manager()
-    await alert_manager.send_alert(
+    alert_manager.send_alert(
         title="ETL Pipeline Failure",
         message=f"Pipeline execution failed: {result.error}",
         severity=GruponosMeltanoAlertSeverity.ERROR
     )
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    run(main())
 ```
 
 ### Advanced Configuration Examples
@@ -178,7 +177,7 @@ from gruponos_meltano_native.validators import (
     GruponosMeltanoDataValidator
 )
 
-async def demonstrate_basic_validation():
+def demonstrate_basic_validation():
     """Demonstrate basic data validation workflow."""
 
     # Create validator for current environment
@@ -203,7 +202,7 @@ async def demonstrate_basic_validation():
     ]
 
     # Execute validation chain
-    result = await validator.validate_allocation_data(allocation_data)
+    result = validator.validate_allocation_data(allocation_data)
 
     if result.success:
         print(f"Validation passed: {len(result.data)} records validated")
@@ -217,7 +216,7 @@ async def demonstrate_basic_validation():
             for error in result.validation_errors:
                 print(f"  - Error: {error.field} - {error.message}")
 
-async def demonstrate_custom_validation_rules():
+def demonstrate_custom_validation_rules():
     """Demonstrate custom validation rule implementation."""
 
     # Custom validation configuration
@@ -252,7 +251,7 @@ async def demonstrate_custom_validation_rules():
         }
     ]
 
-    result = await validator.validate_business_rules(test_data)
+    result = validator.validate_business_rules(test_data)
 
     if result.is_failure:
         print("Expected validation failures:")
@@ -281,7 +280,7 @@ from gruponos_meltano_native.oracle import (
     GruponosMeltanoOracleConnectionConfig
 )
 
-async def demonstrate_oracle_connection():
+def demonstrate_oracle_connection():
     """Demonstrate Oracle database connection management."""
 
     # Create connection configuration
@@ -298,23 +297,23 @@ async def demonstrate_oracle_connection():
     manager = create_gruponos_meltano_oracle_connection_manager(config)
 
     # Get database connection
-    connection_result = await manager.get_connection()
+    connection_result = manager.get_connection()
 
     if connection_result.success:
         conn = connection_result.data
         print("Connected to Oracle database successfully")
 
         # Execute sample query
-        result = await conn.execute("SELECT COUNT(*) FROM allocations")
-        count = await result.fetchone()
+        result = conn.execute("SELECT COUNT(*) FROM allocations")
+        count = result.fetchone()
         print(f"Total allocations in database: {count[0]}")
 
         # Return connection to pool
-        await manager.return_connection(conn)
+        manager.return_connection(conn)
     else:
         print(f"Failed to connect to Oracle: {connection_result.error}")
 
-async def demonstrate_bulk_operations():
+def demonstrate_bulk_operations():
     """Demonstrate bulk database operations for ETL."""
 
     manager = create_gruponos_meltano_oracle_connection_manager()
@@ -327,8 +326,8 @@ async def demonstrate_bulk_operations():
     ]
 
     # Execute bulk insert with transaction management
-    async with manager.get_connection() as conn:
-        async with conn.begin():  # Transaction context
+    with manager.get_connection() as conn:
+        with conn.begin():  # Transaction context
             # Bulk insert statement
             insert_sql = """
                 INSERT INTO wms_allocations
@@ -337,7 +336,7 @@ async def demonstrate_bulk_operations():
             """
 
             # Execute bulk insert
-            await conn.executemany(insert_sql, allocation_batch)
+            conn.executemany(insert_sql, allocation_batch)
             print(f"Inserted {len(allocation_batch)} allocations successfully")
 ```
 
@@ -357,14 +356,14 @@ from gruponos_meltano_native.monitoring import (
     GruponosMeltanoAlertType
 )
 
-async def demonstrate_alert_management():
+def demonstrate_alert_management():
     """Demonstrate alert management and delivery."""
 
     # Create alert manager
     alert_manager = create_gruponos_meltano_alert_manager()
 
     # Send informational alert
-    info_result = await alert_manager.send_alert(
+    info_result = alert_manager.send_alert(
         title="ETL Pipeline Started",
         message="Full synchronization pipeline has started for GNOS/DC01",
         severity=GruponosMeltanoAlertSeverity.INFO,
@@ -380,7 +379,7 @@ async def demonstrate_alert_management():
         print("Informational alert sent successfully")
 
     # Send error alert with rich context
-    error_result = await alert_manager.send_alert(
+    error_result = alert_manager.send_alert(
         title="Data Validation Error Detected",
         message="Data validation failed during ETL processing",
         severity=GruponosMeltanoAlertSeverity.ERROR,
@@ -451,7 +450,7 @@ including key concepts and patterns shown.
 from gruponos_meltano_native import create_gruponos_meltano_platform
 from gruponos_meltano_native.config import GruponosMeltanoSettings
 
-async def main():
+def main():
     """Main example function with clear structure."""
     # Setup
     print("Setting up example...")
@@ -464,8 +463,7 @@ async def main():
 
 if __name__ == "__main__":
     # Execute example
-    import asyncio
-    asyncio.run(main())
+        run(main())
 ```
 
 ---

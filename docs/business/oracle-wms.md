@@ -346,7 +346,7 @@ class OracleWMSAPIClient:
         self.base_url = base_url
         self.session = self._create_authenticated_session(username, password)
 
-    async def get_allocations(
+    def get_allocations(
         self,
         company_code: str,
         facility_code: str,
@@ -377,10 +377,10 @@ class OracleWMSAPIClient:
             params["modified_since"] = since_timestamp.isoformat()
 
         endpoint = f"{self.base_url}/allocations"
-        response = await self.session.get(endpoint, params=params)
+        response = self.session.get(endpoint, params=params)
         return response.json()
 
-    async def get_order_headers(
+    def get_order_headers(
         self,
         company_code: str,
         facility_code: str,
@@ -390,7 +390,7 @@ class OracleWMSAPIClient:
     ) -> Dict[str, object]:
         """Get order header data from Oracle WMS"""
 
-    async def get_order_details(
+    def get_order_details(
         self,
         company_code: str,
         facility_code: str,
@@ -458,7 +458,7 @@ class OracleWMSAPIClient:
 class WMSDataValidator:
     """Business rule validation for Oracle WMS data"""
 
-    async def validate_allocation_business_rules(
+    def validate_allocation_business_rules(
         self,
         allocation: WMSAllocation
     ) -> ValidationResult:
@@ -499,7 +499,7 @@ class WMSDataValidator:
             ))
 
         # Rule 4: Facility-specific validations
-        facility_errors = await self._validate_facility_rules(allocation)
+        facility_errors = self._validate_facility_rules(allocation)
         errors.extend(facility_errors)
 
         return ValidationResult(
@@ -533,7 +533,7 @@ class WMSDataValidator:
 
         return True
 
-    async def _validate_facility_rules(
+    def _validate_facility_rules(
         self,
         allocation: WMSAllocation
     ) -> List[ValidationError]:
@@ -580,7 +580,7 @@ class DataFreshnessValidator:
         }
     }
 
-    async def validate_data_freshness(
+    def validate_data_freshness(
         self,
         entity_name: str,
         last_sync_timestamp: datetime
@@ -915,11 +915,11 @@ class WMSBusinessProcessMonitor:
         self.settings = settings
         self.metrics = get_metrics_client()
 
-    async def monitor_allocation_sla_compliance(self) -> None:
+    def monitor_allocation_sla_compliance(self) -> None:
         """Monitor allocation processing SLA compliance"""
 
         # Query recent allocations with processing times
-        allocations = await self._get_recent_allocations_with_timing()
+        allocations = self._get_recent_allocations_with_timing()
 
         sla_violations = 0
         total_allocations = len(allocations)
@@ -932,7 +932,7 @@ class WMSBusinessProcessMonitor:
                 sla_violations += 1
 
                 # Create alert for SLA violation
-                await self.alert_manager.create_pipeline_alert(
+                self.alert_manager.create_pipeline_alert(
                     title="Allocation Processing SLA Violation",
                     message=f"Allocation {allocation.allocation_id} took {processing_time} minutes to process",
                     severity=AlertSeverity.WARNING,
@@ -957,11 +957,11 @@ class WMSBusinessProcessMonitor:
             }
         )
 
-    async def monitor_order_fulfillment_kpis(self) -> None:
+    def monitor_order_fulfillment_kpis(self) -> None:
         """Monitor key order fulfillment performance indicators"""
 
         # Calculate daily fulfillment metrics
-        fulfillment_metrics = await self._calculate_fulfillment_metrics()
+        fulfillment_metrics = self._calculate_fulfillment_metrics()
 
         for metric in fulfillment_metrics:
             # Track fulfillment rate
@@ -981,7 +981,7 @@ class WMSBusinessProcessMonitor:
 
             # Alert on poor performance
             if metric.fulfillment_rate < 0.95:  # Below 95% fulfillment
-                await self.alert_manager.create_pipeline_alert(
+                self.alert_manager.create_pipeline_alert(
                     title="Low Order Fulfillment Rate",
                     message=f"Fulfillment rate for {metric.facility_code} is {metric.fulfillment_rate:.2%}",
                     severity=AlertSeverity.WARNING,

@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from typing import cast
 
 # FLEXT ARCHITECTURE COMPLIANCE: Using flext-cli foundation exclusively
-from flext_cli import FlextCliApi, FlextCliCommands, FlextCliModels
+from flext_cli import FlextCli, FlextCliCommands, FlextCliModels
 from flext_core import FlextLogger, FlextResult, FlextTypes
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.utilities import GruponosMeltanoNativeUtilities
@@ -236,7 +236,7 @@ def initialize_cli_environment(*, debug: bool = False) -> FlextTypes.Core.Dict:
 
     """
     # Lightweight initialization: defer config creation to individual commands
-    cli_api = FlextCliApi()
+    cli_api = FlextCli()
     return {
         "cli_api": cli_api,
         "debug": debug,

@@ -232,7 +232,7 @@ jobs:
 from gruponos_meltano_native import orchestrator
 from flext_core import FlextResult
 
-result = await orchestrator.run_pipeline("wms-full-sync")
+result = orchestrator.run_pipeline("wms-full-sync")
 if result.success:
     print(f"Pipeline completed: {result.data}")
 else:

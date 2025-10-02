@@ -95,7 +95,7 @@ class TestOracleTableRecreationReal:
             "password": "test",
         }
 
-        api = FlextDbOracleApi.with_config(config_dict)
+        api = FlextDbOracleApi.from_config(config_dict)
         assert api is not None
         mock_with_config.assert_called_once_with(config_dict)
 
@@ -234,7 +234,7 @@ class TestTableRecreationErrorHandling:
 
         # Test that exception is properly raised
         with pytest.raises(OSError, match="Connection failed"):
-            FlextDbOracleApi.with_config(config_dict)
+            FlextDbOracleApi.from_config(config_dict)
 
     @patch("flext_db_oracle.FlextDbOracleApi.execute_ddl")
     def test_execute_ddl_failure(self, mock_execute_ddl: Mock) -> None:

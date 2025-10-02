@@ -92,7 +92,7 @@ env-validate: ## Validate environment configuration
 	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from src.gruponos_meltano_native.config import Settings; settings = Settings(); print('Environment configuration valid')"
 
 oracle-test: ## Test Oracle WMS connection
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from src.gruponos_meltano_native.oracle.connection_manager import OracleConnectionManager; import asyncio; asyncio.run(OracleConnectionManager().test_connection())"
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from src.gruponos_meltano_native.oracle.connection_manager import OracleConnectionManager; import  run(OracleConnectionManager().test_connection())"
 
 ldap-test: ## Test LDAP connection
 	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from src.gruponos_meltano_native.ldap.client import LDAPClient; client = LDAPClient(); result = client.test_connection(); print(f'LDAP connection: {result}')"

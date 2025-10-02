@@ -148,11 +148,11 @@ Multi-layer data validation with business rule enforcement.
 ```python
 # ETL pipeline with error propagation
 result = (
-    await extract_wms_data(source_config)
-    .flat_map_async(lambda data: validate_data_quality(data))
-    .flat_map_async(lambda validated: transform_for_oracle(validated))
-    .flat_map_async(lambda transformed: load_to_target(transformed))
-    .map_async(lambda loaded: generate_completion_report(loaded))
+    extract_wms_data(source_config)
+    .flat_map(lambda data: validate_data_quality(data))
+    .flat_map(lambda validated: transform_for_oracle(validated))
+    .flat_map(lambda transformed: load_to_target(transformed))
+    .map(lambda loaded: generate_completion_report(loaded))
 )
 ```
 
@@ -167,7 +167,7 @@ from gruponos_meltano_native import create_gruponos_meltano_platform
 platform = create_gruponos_meltano_platform()
 
 # Execute full synchronization
-result = await platform.execute_full_sync(
+result = platform.execute_full_sync(
     company_code="GNOS",
     facility_code="DC01"
 )
@@ -210,7 +210,7 @@ alert_config = GruponosMeltanoAlertConfig(
 alert_manager = create_gruponos_meltano_alert_manager(alert_config)
 
 # Send custom alert
-await alert_manager.send_alert(
+alert_manager.send_alert(
     title="ETL Pipeline Completed",
     message="Full sync completed successfully",
     severity=GruponosMeltanoAlertSeverity.INFO

@@ -77,7 +77,7 @@ allocation_data = [
 ]
 
 # Execute validation chain
-validation_result = await validator.validate_allocation_data(allocation_data)
+validation_result = validator.validate_allocation_data(allocation_data)
 
 if validation_result.success:
     validated_data = validation_result.data
@@ -96,17 +96,17 @@ class ETLDataProcessor:
     def __init__(self, validator: GruponosMeltanoDataValidator):
         self.validator = validator
 
-    async def process_wms_data(self, raw_data):
+    def process_wms_data(self, raw_data):
         """Process WMS data with comprehensive validation."""
         return (
-            await self.validator.validate_schema(raw_data)
-            .flat_map_async(lambda schema_valid:
+            self.validator.validate_schema(raw_data)
+            .flat_map(lambda schema_valid:
                 self.validator.validate_business_rules(schema_valid))
-            .flat_map_async(lambda business_valid:
+            .flat_map(lambda business_valid:
                 self.validator.validate_data_quality(business_valid))
-            .flat_map_async(lambda quality_valid:
+            .flat_map(lambda quality_valid:
                 self.validator.validate_referential_integrity(quality_valid))
-            .map_async(lambda final_valid:
+            .map(lambda final_valid:
                 self.validator.enrich_with_metadata(final_valid))
         )
 ```
@@ -191,7 +191,7 @@ class BatchValidator:
         self.validator = validator
         self.performance_tracker = ValidationPerformanceTracker()
 
-    async def validate_large_dataset(self, data: List[dict], batch_size: int = 1000):
+    def validate_large_dataset(self, data: List[dict], batch_size: int = 1000):
         """Validate large dataset in batches with performance tracking."""
         total_records = len(data)
         validated_records = []
@@ -201,7 +201,7 @@ class BatchValidator:
             for i in range(0, total_records, batch_size):
                 batch = data[i:i + batch_size]
 
-                batch_result = await self.validator.validate_batch(batch)
+                batch_result = self.validator.validate_batch(batch)
 
                 if batch_result.success:
                     validated_records.extend(batch_result.data)
@@ -281,14 +281,14 @@ class DataQualityMonitor:
         self.validator = validator
         self.quality_history = []
 
-    async def assess_data_quality(self, data: List[dict]) -> dict:
+    def assess_data_quality(self, data: List[dict]) -> dict:
         """Comprehensive data quality assessment."""
 
         # Completeness analysis
         completeness_score = self._calculate_completeness(data)
 
         # Accuracy analysis
-        accuracy_score = await self._calculate_accuracy(data)
+        accuracy_score = self._calculate_accuracy(data)
 
         # Consistency analysis
         consistency_score = self._calculate_consistency(data)
@@ -339,7 +339,7 @@ class DataAnomalyDetector:
     def __init__(self):
         self.baseline_metrics = {}
 
-    async def detect_anomalies(self, current_data: List[dict]) -> List[dict]:
+    def detect_anomalies(self, current_data: List[dict]) -> List[dict]:
         """Detect data anomalies using statistical analysis."""
         anomalies = []
 
@@ -356,7 +356,7 @@ class DataAnomalyDetector:
             })
 
         # Pattern anomaly detection
-        pattern_anomalies = await self._detect_pattern_anomalies(current_data)
+        pattern_anomalies = self._detect_pattern_anomalies(current_data)
         anomalies.extend(pattern_anomalies)
 
         # Distribution anomaly detection
@@ -397,7 +397,7 @@ class MockDataValidator:
         self.should_pass = should_pass
         self.validation_calls = []
 
-    async def validate_allocation_data(self, data):
+    def validate_allocation_data(self, data):
         self.validation_calls.append(("allocation", len(data)))
 
         if self.should_pass:

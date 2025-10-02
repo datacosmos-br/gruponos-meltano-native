@@ -198,7 +198,7 @@ class TestOracleConnectionManagerComprehensive:
             "password": "test",
         }
 
-        api = FlextDbOracleApi.with_config(api_config_dict)
+        api = FlextDbOracleApi.from_config(api_config_dict)
         assert api is not None
 
         # Test that both use compatible configuration

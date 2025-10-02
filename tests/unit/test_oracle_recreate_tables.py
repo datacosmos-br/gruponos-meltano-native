@@ -38,14 +38,14 @@ class TestOracleRecreateTablesSimple:
             "username": "test",
             "password": "test",
         }
-        api = FlextDbOracleApi.with_config(config_dict)
+        api = FlextDbOracleApi.from_config(config_dict)
         assert api is not None
 
     def test_table_management_functions(self) -> None:
         """Test table management functions exist."""
         # Test API configuration and creation
         assert hasattr(FlextDbOracleApi, "with_config")
-        assert callable(FlextDbOracleApi.with_config)
+        assert callable(FlextDbOracleApi.from_config)
 
         # Test metadata manager availability
         assert FlextDbOracleMetadataManager is not None
@@ -60,7 +60,7 @@ class TestOracleRecreateTablesSimple:
             "username": "test",
             "password": "test",
         }
-        api = FlextDbOracleApi.with_config(config_dict)
+        api = FlextDbOracleApi.from_config(config_dict)
         assert api is not None
 
         # Test metadata manager for table operations

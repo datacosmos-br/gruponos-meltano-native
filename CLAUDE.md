@@ -1,16 +1,49 @@
-# CLAUDE.md
+# GRUPONOS-MELTANO-NATIVE CLAUDE.MD
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+**Enterprise Oracle WMS ETL Pipeline for Grupo Nos**
+**Version**: 1.0.0 | **Authority**: NATIVE MELTANO PROJECT | **Updated**: 2025-01-08
+**Status**: Production-ready Meltano 3.8.0 native implementation with FLEXT ecosystem integration
 
 **Hierarchy**: This document provides project-specific standards based on workspace-level patterns defined in [../CLAUDE.md](../CLAUDE.md). For architectural principles, quality gates, and MCP server usage, reference the main workspace standards.
 
-## 🔗 MCP SERVER INTEGRATION
+## 📋 DOCUMENT STRUCTURE & REFERENCES
 
-| MCP Server              | Purpose                                                     | Status     |
-| ----------------------- | ----------------------------------------------------------- | ---------- |
-| **serena**              | Meltano project codebase analysis and ETL pipeline patterns | **ACTIVE** |
-| **sequential-thinking** | Meltano architecture and data integration problem solving   | **ACTIVE** |
-| **github**              | Meltano ecosystem integration and pipeline PRs              | **ACTIVE** |
+**Quick Links**:
+- **[~/.claude/commands/flext.md](~/.claude/commands/flext.md)**: Optimization command for module refactoring (USE with `/flext` command)
+- **[../CLAUDE.md](../CLAUDE.md)**: FLEXT ecosystem standards and domain library rules
+- **[README.md](README.md)**: Project overview and Grupo Nos ETL pipeline documentation
+
+**Document Purpose**:
+- **This file (CLAUDE.md)**: Grupo Nos native Meltano patterns, Oracle WMS integration, and FLEXT ecosystem usage
+- **flext.md command**: Practical refactoring workflows and MCP tool usage patterns (HOW-TO)
+- **Workspace CLAUDE.md**: Domain library standards and ecosystem architectural principles (WHAT and WHY)
+
+**DO NOT DUPLICATE**: This file focuses on Grupo Nos native Meltano implementation specifics and demonstrates PURE Meltano orchestration (NOT using flext-meltano wrapper, but native Meltano 3.8.0 directly).
+
+**CRITICAL INTEGRATION DEPENDENCIES** (NATIVE MELTANO PROJECT):
+- **Meltano 3.8.0**: NATIVE orchestration platform (NOT flext-meltano wrapper - pure Meltano usage)
+- **flext-oracle-wms**: MANDATORY for ALL Oracle WMS operations (ZERO TOLERANCE for direct REST API calls)
+- **flext-db-oracle**: MANDATORY for ALL Oracle Database operations (when needed)
+- **flext-core**: Foundation patterns (FlextResult, FlextContainer) for orchestration logic
+- **flext-cli**: MANDATORY for ALL CLI operations (ZERO TOLERANCE for direct click/rich imports)
+- **flext-tap-oracle-wms**: Singer tap for Oracle WMS data extraction
+- **flext-target-oracle**: Singer target for Oracle Database loading (when needed)
+- **flext-dbt-oracle-wms**: DBT transformations for Oracle WMS analytics (when needed)
+
+**GRUPO NOS NATIVE MELTANO ARCHITECTURE**:
+- **Pure Meltano 3.8.0**: Native meltano.yml configuration without flext-meltano wrapper
+- **FLEXT Domain Libraries**: Uses flext-oracle-wms, flext-core, flext-cli for implementation
+- **Enterprise ETL**: Production Oracle WMS to analytics pipeline orchestration
+- **Clean Architecture**: Separation between Meltano orchestration and business logic
+
+## 🔗 MCP SERVER INTEGRATION (MANDATORY)
+
+| MCP Server              | Purpose                                                     | Status          |
+| ----------------------- | ----------------------------------------------------------- | --------------- |
+| **serena-flext**        | Semantic code analysis, symbol manipulation, refactoring    | **MANDATORY**   |
+| **sequential-thinking** | Meltano architecture and data integration problem solving   | **RECOMMENDED** |
+| **context7**            | Third-party library documentation (Meltano, Oracle WMS)     | **RECOMMENDED** |
+| **github**              | Repository operations and Meltano ecosystem PRs             | **ACTIVE**      |
 
 **Usage**: `claude mcp list` for available servers, leverage for Meltano-specific development patterns and ETL pipeline analysis.
 

@@ -41,6 +41,9 @@ from gruponos_meltano_native.config import (
     create_gruponos_meltano_settings,
 )
 
+# Alias for backward compatibility
+GruponosMeltanoSettings = GruponosMeltanoNativeConfig
+
 # Exceptions
 from gruponos_meltano_native.exceptions import (
     GruponosMeltanoAlertDeliveryError,
@@ -149,6 +152,7 @@ __all__: FlextTypes.Core.StringList = [
     "GruponosMeltanoPipelineTimeoutError",
     "GruponosMeltanoPipelineValidationError",
     "GruponosMeltanoProcessingError",
+    "GruponosMeltanoSettings",
     "GruponosMeltanoSingerError",
     "GruponosMeltanoTapError",
     "GruponosMeltanoTargetError",

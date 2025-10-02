@@ -49,7 +49,7 @@ class TestOracleTypeMappingSimple:
             "password": "pass",  # VARCHAR2 type
         }
 
-        api = FlextDbOracleApi.with_config(config_dict)
+        api = FlextDbOracleApi.from_config(config_dict)
         assert api is not None
 
         # Verify types are correctly handled

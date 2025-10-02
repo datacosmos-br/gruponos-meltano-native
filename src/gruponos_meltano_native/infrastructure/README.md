@@ -168,8 +168,8 @@ class ServiceWithCircuitBreaker:
         self.service = actual_service
         self.circuit_breaker = circuit_breaker
 
-    async def execute_operation(self, *args, **kwargs):
-        return await self.circuit_breaker.execute(
+    def execute_operation(self, *args, **kwargs):
+        return self.circuit_breaker.execute(
             lambda: self.service.execute_operation(*args, **kwargs)
         )
 ```

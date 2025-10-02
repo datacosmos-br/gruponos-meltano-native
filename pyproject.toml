@@ -11,7 +11,7 @@
     readme = "README.md"
     requires-python = ">=3.13,<3.14"
     keywords = [
-        "async",
+        "",
         "enterprise",
         "flext",
         "migration",
@@ -87,7 +87,6 @@
 
 [tool.pytest.ini_options]
     minversion = "8.0"
-    asyncio_mode = "auto"
     addopts = [
         "-ra",
         "--strict-markers",
@@ -184,7 +183,6 @@
 
 [tool.poetry.group.test.dependencies]
     pytest              = ">=8.4.0"
-    pytest-asyncio      = ">=1.0.0"
     pytest-cov          = ">=6.2.0"
     pytest-xdist        = ">=3.8.0"
     pytest-mock         = ">=3.14.0"
@@ -195,7 +193,6 @@
     pytest-clarity      = ">=1.0.1"
     pytest-deadfixtures = ">=2.2.1"
     pytest-env          = ">=1.1.5"
-    pytest-httpx        = ">=0.35.0"
     hypothesis          = ">=6.125.0"
     factory-boy         = ">=3.3.1"
     faker               = ">=37.4.0"

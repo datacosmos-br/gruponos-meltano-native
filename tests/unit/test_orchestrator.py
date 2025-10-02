@@ -58,21 +58,19 @@ class TestOrchestrator:
         assert hasattr(orchestrator, "list_jobs")
         assert hasattr(orchestrator, "get_job_status")
 
-    @pytest.mark.asyncio
-    async def test_orchestrator_validation_success(
+    def test_orchestrator_validation_success(
         self,
         valid_config: GruponosMeltanoSettings,
     ) -> None:
         """Test successful configuration validation."""
         orchestrator = GruponosMeltanoOrchestrator(valid_config)
 
-        result = await orchestrator.validate_configuration()
+        result = orchestrator.validate_configuration()
 
         assert result.success
         assert result.error is None
 
-    @pytest.mark.asyncio
-    async def test_orchestrator_run_pipeline(
+    def test_orchestrator_run_pipeline(
         self,
         valid_config: GruponosMeltanoSettings,
     ) -> None:
@@ -95,7 +93,7 @@ class TestOrchestrator:
             )
             mock_run.return_value = mock_result
 
-            result = await orchestrator.run_pipeline("test_pipeline")
+            result = orchestrator.run_pipeline("test_pipeline")
 
             assert result.success
             assert result.job_name == "test_pipeline"
@@ -119,16 +117,15 @@ class TestOrchestrator:
         assert "settings" in status
         assert status["job_name"] == "test_job"
 
-    @pytest.mark.asyncio
-    async def test_orchestrator_pipeline_execution(
+    def test_orchestrator_pipeline_execution(
         self,
         valid_config: GruponosMeltanoSettings,
     ) -> None:
         """Test orchestrator pipeline execution."""
         orchestrator = GruponosMeltanoOrchestrator(valid_config)
 
-        # Test async pipeline execution
-        result = await orchestrator.run_pipeline("test_pipeline")
+        # Test pipeline execution
+        result = orchestrator.run_pipeline("test_pipeline")
 
         # Check result structure (even if it fails without actual meltano setup)
         assert hasattr(result, "success")

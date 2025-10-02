@@ -82,7 +82,7 @@ from gruponos_meltano_native.monitoring import (
 alert_manager = create_gruponos_meltano_alert_manager()
 
 # Send pipeline completion alert
-await alert_manager.send_alert(
+alert_manager.send_alert(
     title="ETL Pipeline Completed Successfully",
     message="Full sync pipeline completed processing 10,000 records",
     severity=GruponosMeltanoAlertSeverity.INFO,
@@ -103,9 +103,9 @@ class GruponosMeltanoOrchestrator:
     def __init__(self, alert_manager: GruponosMeltanoAlertManager):
         self.alert_manager = alert_manager
 
-    async def execute_full_sync(self, company_code: str, facility_code: str):
+    def execute_full_sync(self, company_code: str, facility_code: str):
         # Send start notification
-        await self.alert_manager.send_alert(
+        self.alert_manager.send_alert(
             title="ETL Pipeline Started",
             message=f"Starting full sync for {company_code}/{facility_code}",
             severity=GruponosMeltanoAlertSeverity.INFO,
@@ -114,10 +114,10 @@ class GruponosMeltanoOrchestrator:
 
         try:
             # Execute ETL operations
-            result = await self._execute_pipeline(company_code, facility_code)
+            result = self._execute_pipeline(company_code, facility_code)
 
             # Send success notification
-            await self.alert_manager.send_alert(
+            self.alert_manager.send_alert(
                 title="ETL Pipeline Completed",
                 message=f"Pipeline completed successfully: {result.summary}",
                 severity=GruponosMeltanoAlertSeverity.INFO,
@@ -129,7 +129,7 @@ class GruponosMeltanoOrchestrator:
 
         except Exception as e:
             # Send failure notification
-            await self.alert_manager.send_alert(
+            self.alert_manager.send_alert(
                 title="ETL Pipeline Failed",
                 message=f"Pipeline execution failed: {str(e)}",
                 severity=GruponosMeltanoAlertSeverity.ERROR,
@@ -218,10 +218,10 @@ class PerformanceMonitor:
             "error_rate_percent": 5
         }
 
-    async def check_performance_metrics(self, pipeline_result):
+    def check_performance_metrics(self, pipeline_result):
         # Check duration threshold
         if pipeline_result.duration_minutes > self.thresholds["pipeline_duration_minutes"]:
-            await self.alert_manager.send_alert(
+            self.alert_manager.send_alert(
                 title="Performance Threshold Exceeded",
                 message=f"Pipeline duration {pipeline_result.duration_minutes}m exceeds threshold",
                 severity=GruponosMeltanoAlertSeverity.WARNING,
@@ -231,7 +231,7 @@ class PerformanceMonitor:
         # Check processing rate
         processing_rate = pipeline_result.records_processed / pipeline_result.duration_seconds
         if processing_rate < self.thresholds["records_per_second"]:
-            await self.alert_manager.send_alert(
+            self.alert_manager.send_alert(
                 title="Low Processing Rate Detected",
                 message=f"Processing rate {processing_rate:.2f} records/sec below threshold",
                 severity=GruponosMeltanoAlertSeverity.WARNING,
@@ -247,11 +247,11 @@ class HealthCheckMonitor:
     def __init__(self, alert_manager: GruponosMeltanoAlertManager):
         self.alert_manager = alert_manager
 
-    async def check_system_health(self):
+    def check_system_health(self):
         # Check Oracle WMS connectivity
-        wms_health = await self.check_wms_connectivity()
+        wms_health = self.check_wms_connectivity()
         if not wms_health.is_healthy:
-            await self.alert_manager.send_alert(
+            self.alert_manager.send_alert(
                 title="Oracle WMS Connectivity Issue",
                 message=f"WMS health check failed: {wms_health.error}",
                 severity=GruponosMeltanoAlertSeverity.ERROR,
@@ -259,9 +259,9 @@ class HealthCheckMonitor:
             )
 
         # Check target database connectivity
-        db_health = await self.check_database_connectivity()
+        db_health = self.check_database_connectivity()
         if not db_health.is_healthy:
-            await self.alert_manager.send_alert(
+            self.alert_manager.send_alert(
                 title="Target Database Connectivity Issue",
                 message=f"Database health check failed: {db_health.error}",
                 severity=GruponosMeltanoAlertSeverity.CRITICAL,
@@ -302,7 +302,7 @@ class MockAlertManager:
     def __init__(self):
         self.sent_alerts = []
 
-    async def send_alert(self, **kwargs):
+    def send_alert(self, **kwargs):
         self.sent_alerts.append(kwargs)
         return FlextResult[None].ok("Alert sent successfully")
 
@@ -315,10 +315,10 @@ class MockAlertManager:
 ```python
 # Test alert delivery
 @pytest.mark.integration
-async def test_alert_delivery():
+def test_alert_delivery():
     alert_manager = create_gruponos_meltano_alert_manager()
 
-    result = await alert_manager.send_alert(
+    result = alert_manager.send_alert(
         title="Test Alert",
         message="This is a test alert",
         severity=GruponosMeltanoAlertSeverity.INFO

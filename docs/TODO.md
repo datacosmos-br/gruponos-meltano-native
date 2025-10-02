@@ -114,14 +114,14 @@ flext-core @ file:///home/marlonsc/flext/flext-core
 **Impact**: Tests may not reflect actual database schema
 **Solution**: Integrate DDL files into test database setup
 
-### 8. **Inconsistent Async Usage**
+### 8. **Inconsistent Usage**
 
 **Priority**: HIGH | **Impact**: Performance | **Effort**: 3 days
 
-**Issue**: Only 4 files use async/await but project configured for async
-**Current async files**: Limited async adoption
+**Issue**: Only 4 files use /but project configured for 
+**Current files**: Limited adoption
 **Impact**: Blocking I/O operations, poor performance
-**Solution**: Audit and convert I/O operations to async patterns
+**Solution**: Audit and convert I/O operations to patterns
 
 ### 9. **Multiple Catalog JSON Files**
 
@@ -339,7 +339,7 @@ make ldap-test           # Test LDAP connection (if available)
 ### Week 3 (Architecture Improvements)
 
 1. Standardize import patterns
-2. Implement async patterns consistently
+2. Implement patterns consistently
 3. Resolve LDAP integration or remove
 4. Consolidate catalog files
 

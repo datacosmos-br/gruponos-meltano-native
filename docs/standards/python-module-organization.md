@@ -138,18 +138,18 @@ from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 class GruponosMeltanoOrchestrator:
     """Main ETL pipeline orchestrator with FLEXT patterns."""
 
-    async def execute_full_sync(
+    def execute_full_sync(
         self,
         company_code: str,
         facility_code: str
     ) -> FlextResult[PipelineResult]:
         """Execute full synchronization pipeline."""
         return (
-            await self._validate_environment()
-            .flat_map_async(lambda _: self._extract_wms_data(company_code, facility_code))
-            .flat_map_async(lambda data: self._transform_data(data))
-            .flat_map_async(lambda transformed: self._load_to_oracle(transformed))
-            .map_async(lambda result: self._generate_pipeline_report(result))
+            self._validate_environment()
+            .flat_map(lambda _: self._extract_wms_data(company_code, facility_code))
+            .flat_map(lambda data: self._transform_data(data))
+            .flat_map(lambda transformed: self._load_to_oracle(transformed))
+            .map(lambda result: self._generate_pipeline_report(result))
         )
 ```
 
@@ -492,19 +492,19 @@ Infrastructure  →  Validators  →  Configuration  (OK)
 from flext_core import FlextResult
 from typing import List, Dict
 
-async def execute_etl_pipeline(
+def execute_etl_pipeline(
     source_config: OracleWMSSourceConfig,
     target_config: OracleTargetConfig
 ) -> FlextResult[PipelineResult]:
     """ETL pipeline with railway-oriented programming."""
 
     return (
-        await extract_from_source(source_config)
-        .flat_map_async(lambda data: validate_extracted_data(data))
-        .flat_map_async(lambda validated: transform_data(validated))
-        .flat_map_async(lambda transformed: validate_transformed_data(transformed))
-        .flat_map_async(lambda final_data: load_to_target(final_data, target_config))
-        .map_async(lambda result: generate_pipeline_metrics(result))
+        extract_from_source(source_config)
+        .flat_map(lambda data: validate_extracted_data(data))
+        .flat_map(lambda validated: transform_data(validated))
+        .flat_map(lambda transformed: validate_transformed_data(transformed))
+        .flat_map(lambda final_data: load_to_target(final_data, target_config))
+        .map(lambda result: generate_pipeline_metrics(result))
     )
 ```
 
@@ -526,14 +526,14 @@ def validate_wms_data_pipeline(data: List[dict]) -> FlextResult[List[dict]]:
 ### **Connection Management Pattern**
 
 ```python
-from contextlib import asynccontextmanager
+from contextlib import contextmanager
 from flext_core import FlextResult
 
-@asynccontextmanager
-async def oracle_connection_context(config: OracleConnectionConfig):
+@contextmanager
+def oracle_connection_context(config: OracleConnectionConfig):
     """Managed Oracle connection with proper cleanup."""
 
-    connection_result = await create_oracle_connection(config)
+    connection_result = create_oracle_connection(config)
     if connection_result.is_failure:
         raise GruponosMeltanoOracleConnectionError(
             f"Failed to establish connection: {connection_result.error}"
@@ -543,12 +543,12 @@ async def oracle_connection_context(config: OracleConnectionConfig):
     try:
         yield connection
     finally:
-        await connection.close()
+        connection.close()
 
 # Usage in ETL operations
-async def load_allocation_data(data: List[dict]) -> FlextResult[LoadResult]:
-    async with oracle_connection_context(target_config) as conn:
-        return await conn.bulk_insert('WMS_ALLOCATIONS', data)
+def load_allocation_data(data: List[dict]) -> FlextResult[LoadResult]:
+    with oracle_connection_context(target_config) as conn:
+        return conn.bulk_insert('WMS_ALLOCATIONS', data)
 ```
 
 ---
@@ -590,11 +590,11 @@ from gruponos_meltano_native.models import WMSAllocation
 class TestETLPipeline:
     """Test ETL pipeline operations with FLEXT patterns."""
 
-    async def test_successful_allocation_extraction(self):
+    def test_successful_allocation_extraction(self):
         """Test successful data extraction from WMS."""
         orchestrator = GruponosMeltanoOrchestrator()
 
-        result = await orchestrator.extract_wms_allocations(
+        result = orchestrator.extract_wms_allocations(
             company_code="TEST",
             facility_code="DC01"
         )
@@ -603,12 +603,12 @@ class TestETLPipeline:
         assert isinstance(result.data, list)
         assert all(isinstance(item, WMSAllocation) for item in result.data)
 
-    async def test_pipeline_failure_handling(self):
+    def test_pipeline_failure_handling(self):
         """Test pipeline failure propagation."""
         orchestrator = GruponosMeltanoOrchestrator()
 
         # Simulate connection failure
-        result = await orchestrator.execute_full_sync(
+        result = orchestrator.execute_full_sync(
             company_code="INVALID",
             facility_code="NONE"
         )
@@ -657,7 +657,7 @@ from typing import List, Dict, Optional, Union
 
 from flext_core import FlextResult
 
-async def extract_wms_allocations(
+def extract_wms_allocations(
     company_code: str,
     facility_code: str,
     start_date: Optional[datetime] = None
@@ -693,11 +693,11 @@ def validate_and_transform(
 
 ```python
 # ✅ Always use FlextResult for ETL operations
-async def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
+def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
     """Extract data with comprehensive error handling."""
     try:
         # WMS API call
-        response = await wms_client.get_allocations(config)
+        response = wms_client.get_allocations(config)
         if response.status != 200:
             return FlextResult[None].fail(f"WMS API error: {response.status}")
 
@@ -711,23 +711,23 @@ async def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
         return FlextResult[None].fail(f"Unexpected WMS error: {str(e)}")
 
 # ✅ Chain ETL operations safely
-async def execute_etl_step(
+def execute_etl_step(
     source_config: WMSConfig,
     target_config: OracleConfig
 ) -> FlextResult[PipelineResult]:
     """Execute ETL step with error propagation."""
     return (
-        await extract_wms_data(source_config)
-        .flat_map_async(lambda data: validate_data_quality(data))
-        .flat_map_async(lambda validated: transform_for_oracle(validated))
-        .flat_map_async(lambda transformed: load_to_oracle(transformed, target_config))
+        extract_wms_data(source_config)
+        .flat_map(lambda data: validate_data_quality(data))
+        .flat_map(lambda validated: transform_for_oracle(validated))
+        .flat_map(lambda transformed: load_to_oracle(transformed, target_config))
     )
 ```
 
 ### **Documentation Standards**
 
 ```python
-async def execute_incremental_sync(
+def execute_incremental_sync(
     company_code: str,
     facility_code: str,
     last_sync_timestamp: datetime,
@@ -767,7 +767,7 @@ async def execute_incremental_sync(
     Example:
         >>> from datetime import datetime, timedelta
         >>> last_sync = datetime.utcnow() - timedelta(hours=2)
-        >>> result = await execute_incremental_sync("GNOS", "DC01", last_sync)
+        >>> result = execute_incremental_sync("GNOS", "DC01", last_sync)
         >>> if result.success:
         ...     print(f"Synced {result.data.records_processed} records")
         ... else:
@@ -790,7 +790,7 @@ from flext_observability import FlextMonitoringService, FlextMetricsCollector
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
 # ✅ Consistent error handling across FLEXT projects
-async def sync_with_flext_patterns(
+def sync_with_flext_patterns(
     source_config: WMSConfig,
     target_config: OracleConfig
 ) -> FlextResult[SyncResult]:
@@ -801,10 +801,10 @@ async def sync_with_flext_patterns(
     monitoring = FlextMonitoringService()
 
     return (
-        await extract_wms_data(source_config)
+        extract_wms_data(source_config)
         .map(lambda data: monitoring.track_extraction_metrics(data))
-        .flat_map_async(lambda data: validate_with_flext_patterns(data))
-        .flat_map_async(lambda validated: load_with_oracle_flext_api(validated, target_config))
+        .flat_map(lambda data: validate_with_flext_patterns(data))
+        .flat_map(lambda validated: load_with_oracle_flext_api(validated, target_config))
         .map(lambda result: monitoring.track_completion_metrics(result))
     )
 ```

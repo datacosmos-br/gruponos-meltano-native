@@ -8,7 +8,6 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-import asyncio
 import contextlib
 import os
 import time
@@ -153,24 +152,24 @@ class GruponosMeltanoPipelineRunner:
             # Definir variáveis de ambiente para GrupoNOS
             env = self._build_environment()
 
-            # Executar pipeline via asyncio subprocess para atender política de segurança
-            async def _run() -> tuple[int, str, str]:
-                proc = await asyncio.create_subprocess_exec(
+            # Executar pipeline via subprocess para atender política de segurança
+            def _run() -> tuple[int, str, str]:
+                proc = create_subprocess_exec(
                     *cmd,
                     cwd=str(self.project_root),
                     env=env,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                 )
                 try:
-                    stdout_b, stderr_b = await asyncio.wait_for(
+                    stdout_b, stderr_b = wait_for(
                         proc.communicate(),
                         timeout=3600,
                     )
                 except TimeoutError:
                     with contextlib.suppress(ProcessLookupError):
                         proc.kill()
-                    await proc.wait()
+                    proc.wait()
                     raise TimeoutError from None
                 return (
                     int(proc.returncode or 0),
@@ -178,7 +177,7 @@ class GruponosMeltanoPipelineRunner:
                     (stderr_b.decode("utf-8", errors="replace") if stderr_b else ""),
                 )
 
-            return_code, stdout_text, stderr_text = asyncio.run(_run())
+            return_code, stdout_text, stderr_text = run(_run())
 
             execution_time = time.time() - start_time
 
@@ -317,7 +316,7 @@ class GruponosMeltanoPipelineRunner:
 
         return sanitized_job_name
 
-    async def run_with_retry(
+    def run_with_retry(
         self,
         job_name: str,
         max_retries: int = 3,
@@ -339,7 +338,7 @@ class GruponosMeltanoPipelineRunner:
 
         Example:
             >>> runner = GruponosMeltanoPipelineRunner(settings)
-            >>> resultado: FlextResult[object] = await runner.run_with_retry(
+            >>> resultado: FlextResult[object] = runner.run_with_retry(
             ...     "sync-job", max_retries=5
             ... )
             >>> print(f"Sucesso: {resultado.success}")
@@ -349,8 +348,8 @@ class GruponosMeltanoPipelineRunner:
         for attempt in range(max_retries + 1):
             try:
                 # Execute in thread pool to avoid blocking
-                loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(
+                loop = get_event_loop()
+                result = loop.run_in_executor(
                     None,
                     self.run_pipeline,
                     job_name,
@@ -362,7 +361,7 @@ class GruponosMeltanoPipelineRunner:
 
                 last_result = result
                 if attempt < max_retries:
-                    await asyncio.sleep(2**attempt)  # Exponential backoff
+                    sleep(2**attempt)  # Exponential backoff
 
             except Exception as e:
                 last_result = GruponosMeltanoPipelineResult(
@@ -375,7 +374,7 @@ class GruponosMeltanoPipelineRunner:
                 )
 
                 if attempt < max_retries:
-                    await asyncio.sleep(2**attempt)
+                    sleep(2**attempt)
 
         return last_result or GruponosMeltanoPipelineResult(
             success=False,
@@ -460,7 +459,7 @@ class GruponosMeltanoOrchestrator:
         # ZERO TOLERANCE FIX: Use GruponosMeltanoNativeUtilities for ALL business logic
         self._utilities = GruponosMeltanoNativeUtilities()
 
-    async def validate_configuration(self) -> FlextResult[None]:
+    def validate_configuration(self) -> FlextResult[None]:
         """Valida configuração do orquestrador usando padrões FLEXT.
 
         Executa validação completa das configurações necessárias para
@@ -471,9 +470,7 @@ class GruponosMeltanoOrchestrator:
 
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
-            >>> resultado: FlextResult[
-            ...     object
-            ... ] = await orchestrator.validate_configuration()
+            >>> resultado: FlextResult[object] = orchestrator.validate_configuration()
             >>> if resultado.success:
             ...     print("Configuração válida")
 
@@ -710,7 +707,7 @@ class GruponosMeltanoOrchestrator:
         """
         return self.list_jobs()
 
-    async def run_pipeline(
+    def run_pipeline(
         self,
         pipeline_name: str,
         **kwargs: object,
@@ -725,9 +722,9 @@ class GruponosMeltanoOrchestrator:
             GruponosMeltanoPipelineResult: Resultado da execução do pipeline.
 
         """
-        # ZERO TOLERANCE FIX: Use utilities for async pipeline execution
+        # ZERO TOLERANCE FIX: Use utilities for pipeline execution
         # Execute in thread pool to avoid blocking
-        asyncio.get_event_loop()
+        get_event_loop()
 
         def _sync_pipeline_wrapper() -> GruponosMeltanoPipelineResult:
             pipeline_result = (
@@ -756,7 +753,7 @@ class GruponosMeltanoOrchestrator:
                 metadata=pipeline_data.get("metadata", {}),
             )
 
-        return await _async_pipeline_wrapper()
+        return _pipeline_wrapper()
 
     def get_job_status(self, job_name: str) -> FlextTypes.Core.Dict:
         """Obtém status de um job específico.

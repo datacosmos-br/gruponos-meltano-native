@@ -35,7 +35,7 @@ class GruponosMeltanoOrchestrator:
     def __init__(self, settings: GruponosMeltanoSettings) -> None:
         """Initialize orchestrator with configuration"""
 
-    async def execute_full_sync(
+    def execute_full_sync(
         self,
         company_code: str,
         facility_code: str,
@@ -58,7 +58,7 @@ class GruponosMeltanoOrchestrator:
             GruponosMeltanoProcessingError: Pipeline execution failed
         """
 
-    async def execute_incremental_sync(
+    def execute_incremental_sync(
         self,
         company_code: str,
         facility_code: str,
@@ -77,7 +77,7 @@ class GruponosMeltanoOrchestrator:
             FlextResult containing incremental sync results
         """
 
-    async def validate_pipeline_health(self) -> FlextResult[HealthCheckResult]:
+    def validate_pipeline_health(self) -> FlextResult[HealthCheckResult]:
         """Validate complete pipeline health
 
         Returns:
@@ -347,7 +347,7 @@ class GruponosMeltanoAlertManager:
     def __init__(self, settings: GruponosMeltanoSettings) -> None:
         """Initialize alert manager with configuration"""
 
-    async def create_pipeline_alert(
+    def create_pipeline_alert(
         self,
         title: str,
         message: str,
@@ -372,7 +372,7 @@ class GruponosMeltanoAlertManager:
             FlextResult containing created alert
         """
 
-    async def check_pipeline_sla_compliance(
+    def check_pipeline_sla_compliance(
         self,
         pipeline_name: str,
         execution_duration: float,
@@ -501,7 +501,7 @@ class GruponosMeltanoOracleConnectionManager:
     def __init__(self, settings: GruponosMeltanoSettings) -> None:
         """Initialize connection manager with configuration"""
 
-    async def test_wms_connection(self) -> FlextResult[bool]:
+    def test_wms_connection(self) -> FlextResult[bool]:
         """Test Oracle WMS API connectivity
 
         Returns:
@@ -511,7 +511,7 @@ class GruponosMeltanoOracleConnectionManager:
             GruponosMeltanoConnectionError: WMS connection failed
         """
 
-    async def test_database_connection(self) -> FlextResult[bool]:
+    def test_database_connection(self) -> FlextResult[bool]:
         """Test Oracle target database connectivity
 
         Returns:
@@ -521,7 +521,7 @@ class GruponosMeltanoOracleConnectionManager:
             GruponosMeltanoConnectionError: Database connection failed
         """
 
-    async def get_wms_entities_metadata(
+    def get_wms_entities_metadata(
         self,
         company_code: str,
         facility_code: str
@@ -536,7 +536,7 @@ class GruponosMeltanoOracleConnectionManager:
             FlextResult containing entity metadata dictionary
         """
 
-    async def validate_target_schema(self) -> FlextResult[bool]:
+    def validate_target_schema(self) -> FlextResult[bool]:
         """Validate Oracle target database schema exists and is accessible
 
         Returns:
@@ -579,7 +579,7 @@ class GruponosMeltanoDataValidator:
     def __init__(self, settings: GruponosMeltanoSettings) -> None:
         """Initialize validator with configuration"""
 
-    async def validate_allocation_data(
+    def validate_allocation_data(
         self,
         allocation_records: List[Dict[str, object]]
     ) -> FlextResult[ValidationResult]:
@@ -592,7 +592,7 @@ class GruponosMeltanoDataValidator:
             FlextResult containing validation results
         """
 
-    async def validate_order_data(
+    def validate_order_data(
         self,
         order_headers: List[Dict[str, object]],
         order_details: List[Dict[str, object]]
@@ -607,7 +607,7 @@ class GruponosMeltanoDataValidator:
             FlextResult containing validation results
         """
 
-    async def validate_data_freshness(
+    def validate_data_freshness(
         self,
         entity_name: str,
         last_sync_timestamp: datetime,
@@ -692,12 +692,12 @@ class GruponosMeltanoTimeoutError(GruponosMeltanoError):
 ```python
 from flext_core import FlextResult
 
-async def handle_pipeline_execution() -> FlextResult[PipelineResult]:
+def handle_pipeline_execution() -> FlextResult[PipelineResult]:
     """Example of proper error handling with FlextResult"""
 
     try:
         # Execute pipeline operations
-        result = await orchestrator.execute_full_sync()
+        result = orchestrator.execute_full_sync()
         return result
 
     except GruponosMeltanoConnectionError as e:

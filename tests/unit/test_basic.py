@@ -1,8 +1,6 @@
 """Basic integration tests for GrupoNOS Meltano Native."""
 
-from unittest.mock import AsyncMock, patch
-
-import pytest
+from unittest.mock import Mock, patch
 
 from flext_core import FlextResult
 from gruponos_meltano_native import (
@@ -55,8 +53,7 @@ class TestBasicIntegration:
             raise AssertionError(msg)
         assert wms_config.api_enabled is True  # default value
 
-    @pytest.mark.asyncio
-    async def test_orchestrator_creation(self) -> None:
+    def test_orchestrator_creation(self) -> None:
         """Test orchestrator can be created and configured."""
         # Create minimal config
         oracle_source = GruponosMeltanoOracleConnectionConfig(
@@ -95,15 +92,14 @@ class TestBasicIntegration:
         orchestrator = GruponosMeltanoOrchestrator(config)
 
         # Test validation
-        result = await orchestrator.validate_configuration()
+        result = orchestrator.validate_configuration()
         assert result.success
         assert result.error is None
 
-    @pytest.mark.asyncio
     @patch.object(GruponosMeltanoOrchestrator, "run_pipeline")
-    async def test_orchestrator_pipeline_run(
+    def test_orchestrator_pipeline_run(
         self,
-        mock_run_pipeline: AsyncMock,
+        mock_run_pipeline: Mock,
     ) -> None:
         """Test orchestrator can run a pipeline."""
         # Mock successful pipeline result
@@ -154,7 +150,7 @@ class TestBasicIntegration:
         orchestrator = GruponosMeltanoOrchestrator(config)
 
         # Run pipeline with mocking
-        result = await orchestrator.run_pipeline("test_pipeline")
+        result = orchestrator.run_pipeline("test_pipeline")
         assert result.success
         assert result.metadata is not None
         if result.metadata["pipeline"] != "test_pipeline":
