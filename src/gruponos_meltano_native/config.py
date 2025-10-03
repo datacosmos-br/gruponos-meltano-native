@@ -544,15 +544,16 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         """Create Meltano configuration using GruponosMeltanoNativeConfig as source.
 
         Args:
-            **overrides: Configuration overrides
+            **overrides: Configuration overrides (currently unused as domain library handles config)
 
         Returns:
-            FlextMeltanoConfig: Configured Meltano instance
+            Configured Meltano service instance
 
         """
         from flext_meltano import FlextMeltanoService
 
-        # Return configured service - domain libraries handle their own config
+        # Return configured service - domain libraries handle their own config via env vars
+        # overrides parameter reserved for future domain library API extensions
         return FlextMeltanoService()
 
     def create_oracle_connection_config(self, **overrides: Any) -> Any:
