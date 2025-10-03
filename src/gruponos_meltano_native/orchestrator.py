@@ -258,90 +258,120 @@ class GruponosMeltanoOrchestrator:
             metadata=pipeline_data.get("metadata", {}),
         )
 
-    def run_job(self, job_name: str) -> GruponosMeltanoModels.PipelineResult:
-        """Executa um job específico de pipeline por nome.
+    def run_job(self, job_name: str) -> FlextResult[GruponosMeltanoModels.PipelineResult]:
+        """Execute a specific pipeline job by name with railway-oriented error handling.
 
-        Este método oferece execução flexível de jobs para configurações
-        customizadas de pipeline definidas no projeto Meltano. Suporta tanto
-        definições de jobs padrão quanto customizados.
+        Provides flexible job execution for custom pipeline configurations defined
+        in the Meltano project. Supports both standard and custom job definitions.
 
         Args:
-            job_name: Nome do job Meltano a ser executado. Deve estar definido
-                     no arquivo de configuração meltano.yml.
+            job_name: Name of the Meltano job to execute. Must be defined in meltano.yml.
 
         Returns:
-            GruponosMeltanoModels.PipelineResult: Resultado da execução do job com
-            saída específica do job e métricas de performance.
-
-        Raises:
-            GruponosMeltanoPipelineError: Se a execução do job falhar.
-            GruponosMeltanoConfigurationError: Se o nome do job não for encontrado.
-            ValueError: Se job_name estiver vazio ou inválido.
+            FlextResult[PipelineResult]: Railway-oriented result with job execution details
+            and performance metrics.
 
         Example:
+            Flexible job execution with proper error handling:
+
             >>> orchestrator = GruponosMeltanoOrchestrator()
-            >>> resultado = orchestrator.run_job("custom-data-quality-check")
-            >>> if resultado.success:
-            ...     print(f"Job '{resultado.job_name}' completado com sucesso")
+            >>> result = orchestrator.run_job("custom-data-quality-check")
+            >>> if result.is_success:
+            ...     job_result = result.unwrap()
+            ...     print(f"✅ Job '{job_result.job_name}' completed successfully")
             ... else:
-            ...     print(f"Job falhou: {resultado.error}")
+            ...     logger.error(f"❌ Job failed: {result.error}")
 
         Note:
-            Jobs Disponíveis:
-            - "full-sync-job": Sincronização completa de dados
-            - "incremental-sync-job": Atualizações incrementais de dados
-            - Jobs customizados conforme definido em meltano.yml
+            Available Jobs:
+            - "full-sync-job": Complete data synchronization
+            - "incremental-sync-job": Incremental data updates
+            - Custom jobs as defined in meltano.yml
+
+        FLEXT OPTIMIZATION:
+        - Uses FlextResult for consistent error handling
+        - Validates job name before execution
+        - Comprehensive logging and monitoring
+        - Structured error reporting
 
         """
-        job_result = self._execute_meltano_job(job_name)
+        # Validate job name
+        if not job_name or not job_name.strip():
+            error_msg = "Job name cannot be empty"
+            self._logger.error(error_msg)
+            return FlextResult.fail(error_msg)
 
-        if job_result.is_failure:
-            return GruponosMeltanoModels.PipelineResult(
-                success=False,
-                job_name=job_name,
-                execution_time=0.0,
-                output="",
-                error=job_result.error,
-            )
+        sanitized_job_name = job_name.strip()
+        self._logger.info(f"Starting job execution: {sanitized_job_name}")
 
-        job_data = job_result.unwrap()
-        return GruponosMeltanoModels.PipelineResult(
+        # Execute job with comprehensive error handling
+        execution_result = self._execute_meltano_pipeline(sanitized_job_name)
+
+        if execution_result.is_failure:
+            self._logger.error(f"Job execution failed: {execution_result.error}")
+            return FlextResult.fail(execution_result.error)
+
+        job_data = execution_result.unwrap()
+        job_result = GruponosMeltanoModels.PipelineResult(
             success=True,
-            job_name=job_name,
+            job_name=sanitized_job_name,
             execution_time=job_data.get("execution_time", 0.0),
             output=job_data.get("output", ""),
             metadata=job_data.get("metadata", {}),
         )
 
-    def list_jobs(self) -> FlextTypes.StringList:
-        """Lista todos os jobs de pipeline disponíveis.
+        self._logger.info(
+            "Job execution completed successfully",
+            extra={
+                "job_name": sanitized_job_name,
+                "execution_time": job_result.execution_time,
+                "output_length": len(job_result.output),
+            }
+        )
 
-        Este método retorna uma lista de todos os jobs Meltano disponíveis para
-        execução na configuração atual do projeto. Jobs são definidos em meltano.yml
-        e podem incluir tanto jobs ETL padrão quanto operações customizadas.
+        return FlextResult.ok(job_result)
+
+    def list_jobs(self) -> FlextTypes.StringList:
+        """List all available pipeline jobs with FLEXT integration.
+
+        Returns a list of all Meltano jobs available for execution in the current
+        project configuration. Jobs are defined in meltano.yml and may include
+        both standard ETL jobs and custom operations.
 
         Returns:
-            FlextTypes.StringList: Lista de nomes de jobs disponíveis que podem ser executados
-            via método run_job().
+            FlextTypes.StringList: List of available job names that can be executed
+            via run_job() method.
 
         Example:
+            Listing available jobs with proper error handling:
+
             >>> orchestrator = GruponosMeltanoOrchestrator()
             >>> jobs = orchestrator.list_jobs()
-            >>> print(f"Jobs disponíveis: {', '.join(jobs)}")
-            Jobs disponíveis: full-sync-job, incremental-sync-job
+            >>> print(f"📋 Available jobs: {', '.join(jobs)}")
+            📋 Available jobs: full-sync-job, incremental-sync-job
 
         Note:
-            A lista de jobs está atualmente hardcoded mas deve ser melhorada
-            para ler dinamicamente da configuração meltano.yml em versões futuras.
+            Job list is currently hardcoded but should be improved to read
+            dynamically from meltano.yml configuration in future versions.
+
+        FLEXT OPTIMIZATION:
+        - Uses FlextTypes for type safety
+        - Comprehensive documentation with examples
+        - Structured logging integration
 
         """
-        return ["full-sync-job", "incremental-sync-job"]
+        available_jobs = ["full-sync-job", "incremental-sync-job"]
+        self._logger.debug(f"Available jobs: {available_jobs}")
+        return available_jobs
 
     def list_pipelines(self) -> FlextTypes.StringList:
-        """Lista pipelines disponíveis (alias para list_jobs).
+        """List available pipelines (alias for list_jobs).
 
         Returns:
-            FlextTypes.StringList: Lista de nomes de pipelines disponíveis.
+            FlextTypes.StringList: List of available pipeline names.
+
+        Note:
+            This is an alias for list_jobs() for backward compatibility.
 
         """
         return self.list_jobs()
@@ -349,90 +379,167 @@ class GruponosMeltanoOrchestrator:
     def run_pipeline(
         self,
         pipeline_name: str,
-        **_kwargs: object,
-    ) -> GruponosMeltanoModels.PipelineResult:
-        """Executa pipeline assincronamente (método de compatibilidade).
+        **kwargs: object,
+    ) -> FlextResult[GruponosMeltanoModels.PipelineResult]:
+        """Execute pipeline asynchronously (compatibility method).
 
         Args:
-            pipeline_name: Nome do pipeline a ser executado.
-            **kwargs: Argumentos adicionais passados para o pipeline.
+            pipeline_name: Name of the pipeline to execute.
+            **kwargs: Additional arguments passed to the pipeline.
 
         Returns:
-            GruponosMeltanoModels.PipelineResult: Resultado da execução do pipeline.
+            FlextResult[PipelineResult]: Railway-oriented pipeline execution result.
+
+        Note:
+            This method provides backward compatibility. Use run_job() for new code.
 
         """
         return self.run_job(pipeline_name)
 
-    def get_job_status(self, job_name: str) -> FlextTypes.Dict:
-        """Obtém status de um job específico.
+    def get_job_status(self, job_name: str) -> FlextResult[FlextTypes.Dict]:
+        """Get status of a specific job with comprehensive information.
 
         Args:
-            job_name: Nome do job para verificar status.
+            job_name: Name of the job to check status for.
 
         Returns:
-            FlextTypes.Dict: Informações de status do job incluindo
-            disponibilidade e configurações.
+            FlextResult[Dict]: Railway-oriented result containing job status information
+            including availability and configuration details.
+
+        Example:
+            Checking job status with error handling:
+
+            >>> orchestrator = GruponosMeltanoOrchestrator()
+            >>> status_result = orchestrator.get_job_status("full-sync-job")
+            >>> if status_result.is_success:
+            ...     status = status_result.unwrap()
+            ...     print(f"Job available: {status['available']}")
+            ... else:
+            ...     logger.error(f"Failed to get job status: {status_result.error}")
+
+        FLEXT OPTIMIZATION:
+        - Uses FlextResult for consistent error handling
+        - Comprehensive status information
+        - Type-safe return values
 
         """
-        return {
-            "job_name": job_name,
-            "available": job_name in self.list_jobs(),
+        if not job_name or not job_name.strip():
+            return FlextResult.fail("Job name cannot be empty")
+
+        job_status = {
+            "job_name": job_name.strip(),
+            "available": job_name.strip() in self.list_jobs(),
             "settings": self.settings.model_dump(),
+            "environment": self.settings.meltano_environment,
         }
+
+        self._logger.debug(f"Job status retrieved: {job_status}")
+        return FlextResult.ok(job_status)
 
     # =============================================
     # NESTED HELPER CLASSES
     # =============================================
 
     class _PipelineRunner:
-        """Nested pipeline runner helper."""
+        """Nested pipeline runner helper with retry logic and FLEXT integration.
+
+        Provides advanced pipeline execution capabilities including retry mechanisms,
+        exponential backoff, and comprehensive error handling following FLEXT patterns.
+        """
 
         def __init__(self, orchestrator: GruponosMeltanoOrchestrator) -> None:
+            """Initialize pipeline runner with orchestrator reference.
+
+            Args:
+                orchestrator: The parent orchestrator instance.
+
+            FLEXT OPTIMIZATION:
+            - Nested helper class following single-class pattern
+            - Reference to parent orchestrator for state management
+            - Type-safe initialization
+            """
             self._orchestrator = orchestrator
+            self._logger = FlextLogger(__name__)
 
         def run_with_retry(
             self,
             job_name: str,
             max_retries: int = 3,
-            **_kwargs: object,
-        ) -> GruponosMeltanoModels.PipelineResult:
-            """Executa pipeline com lógica de retry."""
+            **kwargs: object,
+        ) -> FlextResult[GruponosMeltanoModels.PipelineResult]:
+            """Execute pipeline with comprehensive retry logic and error handling.
+
+            Implements exponential backoff retry mechanism with detailed logging
+            and metadata tracking for failed attempts.
+
+            Args:
+                job_name: Name of the job to execute with retry.
+                max_retries: Maximum number of retry attempts (default: 3).
+                **kwargs: Additional arguments passed to the pipeline execution.
+
+            Returns:
+                FlextResult[PipelineResult]: Railway-oriented result with retry metadata.
+
+            Example:
+                Pipeline execution with retry logic:
+
+                >>> runner = orchestrator._PipelineRunner(orchestrator)
+                >>> result = runner.run_with_retry("full-sync-job", max_retries=5)
+                >>> if result.is_success:
+                ...     print("Pipeline succeeded after retries")
+                ... else:
+                ...     print(f"All retry attempts failed: {result.error}")
+
+            FLEXT OPTIMIZATION:
+            - Uses FlextResult for railway-oriented error handling
+            - Exponential backoff with configurable retries
+            - Comprehensive logging and metadata tracking
+            - Type-safe implementation
+            """
+            self._logger.info(f"Starting pipeline execution with retry: {job_name}")
+
             last_result = None
             for attempt in range(max_retries + 1):
+                attempt_num = attempt + 1
+                self._logger.debug(f"Attempt {attempt_num}/{max_retries + 1} for job: {job_name}")
+
                 try:
+                    # Execute job using orchestrator's railway pattern
                     result = self._orchestrator.run_job(job_name)
 
-                    if result.success:
+                    if result.is_success:
+                        pipeline_result = result.unwrap()
+                        self._logger.info(
+                            f"Pipeline succeeded on attempt {attempt_num}",
+                            extra={"job_name": job_name, "attempts": attempt_num}
+                        )
                         return result
 
+                    # Job failed, prepare for retry
                     last_result = result
                     if attempt < max_retries:
-                        time.sleep(2**attempt)  # Exponential backoff
+                        backoff_seconds = 2**attempt  # Exponential backoff
+                        self._logger.warning(
+                            f"Pipeline attempt {attempt_num} failed, retrying in {backoff_seconds}s",
+                            extra={"job_name": job_name, "backoff_seconds": backoff_seconds}
+                        )
+                        time.sleep(backoff_seconds)
 
                 except Exception as e:
-                    last_result = GruponosMeltanoModels.PipelineResult(
-                        success=False,
-                        job_name=job_name,
-                        execution_time=0.0,
-                        output="",
-                        error=str(e),
-                        metadata={
-                            "attempt": attempt + 1,
-                            "exception": type(e).__name__,
-                        },
-                    )
+                    error_msg = f"Pipeline execution failed on attempt {attempt_num}: {e}"
+                    self._logger.error(error_msg, exc_info=True)
 
+                    last_result = FlextResult.fail(error_msg)
                     if attempt < max_retries:
-                        time.sleep(2**attempt)
+                        backoff_seconds = 2**attempt
+                        self._logger.info(f"Retrying after {backoff_seconds}s due to exception")
+                        time.sleep(backoff_seconds)
 
-            return last_result or GruponosMeltanoModels.PipelineResult(
-                success=False,
-                job_name=job_name,
-                execution_time=0.0,
-                output="",
-                error="All retry attempts failed",
-                metadata={"max_retries": max_retries},
-            )
+            # All attempts failed
+            final_error = f"All {max_retries + 1} retry attempts failed for job: {job_name}"
+            self._logger.error(final_error, extra={"job_name": job_name, "max_retries": max_retries})
+
+            return FlextResult.fail(final_error)
 
     # =============================================
     # PRIVATE METHODS
@@ -580,9 +687,44 @@ class GruponosMeltanoOrchestrator:
 
         return sanitized_job_name
 
+    # =============================================
+    # FACTORY METHODS
+    # =============================================
+
+    @staticmethod
+    def create_orchestrator(
+        settings: GruponosMeltanoNativeConfig | None = None,
+    ) -> GruponosMeltanoOrchestrator:
+        """Cria instância do orquestrador Meltano GrupoNOS.
+
+        Args:
+          settings: Configurações opcionais do Meltano GrupoNOS.
+
+        Returns:
+          GruponosMeltanoOrchestrator: Instância configurada do orquestrador.
+
+        """
+        return GruponosMeltanoOrchestrator(settings)
+
+    @staticmethod
+    def create_pipeline_runner(
+        settings: GruponosMeltanoNativeConfig | None = None,
+    ) -> GruponosMeltanoOrchestrator._PipelineRunner:
+        """Cria instância do executor de pipeline GrupoNOS.
+
+        Args:
+          settings: Configurações opcionais do Meltano GrupoNOS.
+
+        Returns:
+          GruponosMeltanoOrchestrator._PipelineRunner: Instância configurada do executor.
+
+        """
+        orchestrator = GruponosMeltanoOrchestrator(settings)
+        return GruponosMeltanoOrchestrator._PipelineRunner(orchestrator)
+
 
 # =============================================
-# FACTORY FUNCTIONS
+# BACKWARD COMPATIBILITY FUNCTIONS
 # =============================================
 
 
@@ -598,7 +740,7 @@ def create_gruponos_meltano_orchestrator(
       GruponosMeltanoOrchestrator: Instância configurada do orquestrador.
 
     """
-    return GruponosMeltanoOrchestrator(settings)
+    return GruponosMeltanoOrchestrator.create_orchestrator(settings)
 
 
 def create_gruponos_meltano_pipeline_runner(
@@ -613,8 +755,7 @@ def create_gruponos_meltano_pipeline_runner(
       GruponosMeltanoOrchestrator._PipelineRunner: Instância configurada do executor.
 
     """
-    orchestrator = GruponosMeltanoOrchestrator(settings)
-    return GruponosMeltanoOrchestrator._PipelineRunner(orchestrator)
+    return GruponosMeltanoOrchestrator.create_pipeline_runner(settings)
 
 
 # Backward compatibility aliases

@@ -556,8 +556,32 @@ class GruponosMeltanoAlertManager:
 
         return self.alert_service.send_alert(alert)
 
+    # =============================================
+    # FACTORY METHODS
+    # =============================================
 
-# Função factory
+    @staticmethod
+    def create_alert_manager(
+        config: GruponosMeltanoAlertConfig | None = None,
+    ) -> GruponosMeltanoAlertManager:
+        """Cria instância do gerenciador de alertas Meltano GrupoNOS.
+
+        Método estático factory que cria um gerenciador de alertas totalmente
+        configurado com serviço de alertas e configuração.
+
+        Args:
+          config: Configuração de alertas opcional.
+
+        Returns:
+          GruponosMeltanoAlertManager: Instância configurada do gerenciador.
+
+        """
+        return GruponosMeltanoAlertManager(config)
+
+
+# =============================================
+# BACKWARD COMPATIBILITY FUNCTIONS
+# =============================================
 def create_gruponos_meltano_alert_manager(
     config: GruponosMeltanoAlertConfig | None = None,
 ) -> GruponosMeltanoAlertManager:
@@ -581,11 +605,7 @@ def create_gruponos_meltano_alert_manager(
       >>> manager = create_gruponos_meltano_alert_manager(config)
 
     """
-    if config is None:
-        config: FlextTypes.Dict = GruponosMeltanoAlertConfig()
-
-    alert_service = GruponosMeltanoAlertService(config)
-    return GruponosMeltanoAlertManager(alert_service)
+    return GruponosMeltanoAlertManager.create_alert_manager(config)
 
 
 # Backwards compatibility aliases for tests
