@@ -14,7 +14,7 @@ from pydantic import (
     field_validator,
 )
 
-from flext_core import FlextModels
+from flext_core import FlextModels, FlextTypes
 from gruponos_meltano_native.constants import GruponosMeltanoNativeConstants
 
 """GrupoNOS Meltano Native Models - Domain models with Pydantic v2.
@@ -64,7 +64,7 @@ class GruponosMeltanoNativeModels(FlextModels):
             default=GruponosMeltanoNativeConstants.Status.PENDING.value,
             description="Entity status",
         )
-        metadata: dict[str, object] = Field(
+        metadata: FlextTypes.Dict = Field(
             default_factory=dict, description="Additional metadata"
         )
 

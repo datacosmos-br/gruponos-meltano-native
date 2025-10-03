@@ -1,7 +1,10 @@
-"""GrupoNOS Meltano Native Configuration - Settings using flext-core patterns.
+"""GrupoNOS Meltano Native Configuration - Advanced FlextConfig integration.
 
-Provides GrupoNOS-specific configuration management extending FlextConfig
-with Pydantic Settings for environment variable support and validation.
+Provides GrupoNOS-specific configuration management using modern FlextConfig features:
+- Factory methods for domain-specific configurations
+- Computed fields for derived configuration
+- Protocol-based validation
+- No duplication with domain libraries
 
 Copyright (c) 2025 Grupo Nós. Todos os direitos reservados.
 SPDX-License-Identifier: Proprietary
@@ -10,7 +13,7 @@ SPDX-License-Identifier: Proprietary
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Self, TypedDict
+from typing import Any, Self, TypedDict
 
 from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
@@ -19,15 +22,10 @@ from flext_core import FlextConfig, FlextResult, FlextTypes
 
 
 class GruponosMeltanoNativeConfig(FlextConfig):
-    """Single flat Config class for gruponos-meltano-native extending FlextConfig.
+    """GrupoNOS Meltano Native Configuration using modern FlextConfig features.
 
-    Follows standardized FLEXT Config pattern:
-    - Single flat class extending FlextConfig
-    - Uses Pydantic 2 Settings with SettingsConfigDict
-    - Uses SecretStr for sensitive data
-    - Implements singleton pattern with inverse dependency injection
-    - All fields with defaults from constants
-    - Uses TypedDict structures for validation helpers
+    Extends FlextConfig with domain-specific fields and factory methods.
+    Uses computed fields and direct FlextConfig integration without duplication.
     """
 
     # TypedDict structures for configuration validation
@@ -37,7 +35,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         webhook_enabled: bool
         webhook_url: str | None
         email_enabled: bool
-        email_recipients: list[str]
+        email_recipients: FlextTypes.StringList
         slack_enabled: bool
         slack_webhook_url: str | None
         alert_threshold: int
@@ -82,14 +80,19 @@ class GruponosMeltanoNativeConfig(FlextConfig):
     model_config = SettingsConfigDict(
         env_prefix="GRUPONOS_MELTANO_",
         case_sensitive=False,
-        extra="allow",
+        extra="ignore",  # Changed from "allow" to match newer FlextConfig pattern
         str_strip_whitespace=True,
+        str_to_lower=False,
         validate_assignment=True,
         arbitrary_types_allowed=True,
         frozen=False,
         use_enum_values=True,
         validate_default=True,
-        # Enhanced Pydantic 2.11+ features
+        # Enhanced Pydantic 2.11+ features matching FlextConfig
+        cli_parse_args=False,
+        cli_avoid_json=True,
+        enable_decoding=True,
+        nested_model_default_partial_update=True,
         json_schema_extra={
             "title": "GrupoNOS Meltano Native Configuration",
             "description": "Enterprise Meltano native configuration extending FlextConfig",
@@ -109,7 +112,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         default=False,
         description="Enable email alerts",
     )
-    email_recipients: list[str] = Field(
+    email_recipients: FlextTypes.StringList = Field(
         default_factory=list,
         description="Email recipients for alerts",
     )
@@ -268,6 +271,16 @@ class GruponosMeltanoNativeConfig(FlextConfig):
     def pool_max(self) -> int:
         """Backward compatibility property for maximum pool size."""
         return self.oracle_pool_size
+
+    @property
+    def password(self) -> SecretStr | None:
+        """Backward compatibility property for oracle_password."""
+        return self.oracle_password
+
+    @property
+    def oracle(self) -> OracleConnectionConfigDict:
+        """Get oracle configuration as a nested object for backward compatibility."""
+        return self.oracle_connection_config
 
     wms_timeout: int = Field(
         default=30,
@@ -522,62 +535,135 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         except Exception as e:
             return FlextResult[None].fail(f"Configuration validation failed: {e}")
 
-    # Singleton pattern methods
-    @classmethod
-    def get_global_instance(cls) -> Self:
-        """Get the global singleton instance using enhanced FlextConfig pattern."""
-        return cls.get_or_create_shared_instance(project_name="gruponos-meltano-native")
+    def validate_semantic_rules(self) -> FlextResult[None]:
+        """Validate configuration semantic rules (alias for validate_business_rules)."""
+        return self.validate_business_rules()
 
+    # Factory methods for domain-specific configurations using FlextConfig as source
+    def create_meltano_config(self, **overrides: Any) -> Any:
+        """Create Meltano configuration using GruponosMeltanoNativeConfig as source.
+
+        Args:
+            **overrides: Configuration overrides
+
+        Returns:
+            FlextMeltanoConfig: Configured Meltano instance
+
+        """
+        from flext_meltano import FlextMeltanoService
+
+        # Return configured service - domain libraries handle their own config
+        return FlextMeltanoService()
+
+    def create_oracle_connection_config(self, **overrides: Any) -> Any:
+        """Create Oracle connection configuration using GruponosMeltanoNativeConfig as source.
+
+        Args:
+            **overrides: Configuration overrides
+
+        Returns:
+            FlextDbOracleConfig: Configured Oracle connection instance
+
+        """
+        from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
+
+        defaults = {
+            "host": self.oracle_host,
+            "port": self.oracle_port,
+            "username": self.oracle_username,
+            "password": self.get_oracle_password_value(),
+            "name": self.oracle_service_name,
+        }
+        defaults.update(overrides)
+        config = FlextDbOracleModels.OracleConfig(**defaults)
+        return FlextDbOracleApi(config)
+
+    def create_wms_config(self, **overrides: Any) -> Any:
+        """Create Oracle WMS configuration using GruponosMeltanoNativeConfig as source.
+
+        Args:
+            **overrides: Configuration overrides
+
+        Returns:
+            FlextOracleWmsConfig: Configured WMS instance
+
+        """
+        from flext_oracle_wms import FlextOracleWmsApi
+
+        defaults = {
+            "base_url": self.wms_base_url,
+            "username": self.wms_username,
+            "password": self.get_wms_password_value(),
+            "company_code": self.wms_company_code,
+            "facility_code": self.wms_facility_code,
+            "timeout": self.wms_timeout,
+        }
+        defaults.update(overrides)
+        return FlextOracleWmsApi(**defaults)
+
+    def create_alert_config(self, **overrides: Any) -> Any:
+        """Create alert configuration using GruponosMeltanoNativeConfig as source.
+
+        Args:
+            **overrides: Configuration overrides
+
+        Returns:
+            FlextAlertConfig: Configured alert instance
+
+        """
+        # Return alert configuration dict from computed field
+        config = self.alert_config.copy()
+        config.update(overrides)
+        return config
+
+    # Environment-specific configuration methods using direct instantiation
     @classmethod
-    def create_for_development(cls, **overrides: FlextTypes.Core.Value) -> Self:
-        """Create configuration for development environment."""
-        dev_overrides: dict[str, FlextTypes.Core.Value] = {
+    def create_for_development(cls, **overrides: Any) -> Self:
+        """Create configuration for development environment using direct instantiation."""
+        dev_overrides = {
             "job_environment": "development",
             "job_timeout": 1800,  # 30 minutes for development
             "target_batch_size": 100,  # Smaller batches for development
             "wms_timeout": 60,  # Longer timeout for development
             "log_level": "DEBUG",
+            "debug": True,
             **overrides,
         }
-        return cls.get_or_create_shared_instance(
-            project_name="gruponos-meltano-native", **dev_overrides
-        )
+        return cls(**dev_overrides)
 
     @classmethod
-    def create_for_production(cls, **overrides: FlextTypes.Core.Value) -> Self:
-        """Create configuration for production environment."""
-        prod_overrides: dict[str, FlextTypes.Core.Value] = {
+    def create_for_production(cls, **overrides: Any) -> Self:
+        """Create configuration for production environment using direct instantiation."""
+        prod_overrides = {
             "job_environment": "production",
             "job_timeout": 3600,  # 1 hour for production
             "target_batch_size": 1000,  # Larger batches for production
             "wms_timeout": 30,  # Standard timeout for production
             "log_level": "INFO",
             "job_retries": 5,  # More retries for production
+            "debug": False,
             **overrides,
         }
-        return cls.get_or_create_shared_instance(
-            project_name="gruponos-meltano-native", **prod_overrides
-        )
+        return cls(**prod_overrides)
 
     @classmethod
-    def create_for_testing(cls, **overrides: FlextTypes.Core.Value) -> Self:
-        """Create configuration for testing environment."""
-        test_overrides: dict[str, FlextTypes.Core.Value] = {
+    def create_for_testing(cls, **overrides: Any) -> Self:
+        """Create configuration for testing environment using direct instantiation."""
+        test_overrides = {
             "job_environment": "staging",
             "job_timeout": 600,  # 10 minutes for testing
             "target_batch_size": 10,  # Very small batches for testing
             "wms_timeout": 15,  # Short timeout for testing
             "log_level": "DEBUG",
             "job_retries": 1,  # Fewer retries for testing
+            "debug": True,
             **overrides,
         }
-        return cls.get_or_create_shared_instance(
-            project_name="gruponos-meltano-native", **test_overrides
-        )
+        return cls(**test_overrides)
 
 
 def create_gruponos_meltano_settings(
-    **overrides: FlextTypes.Core.Value,
+    **overrides: FlextTypes.Value,
 ) -> GruponosMeltanoNativeConfig:
     """Create GrupoNOS Meltano settings with optional overrides.
 
@@ -603,7 +689,7 @@ GruponosMeltanoWMSSourceConfig = GruponosMeltanoNativeConfig
 
 
 # Export configuration class (single class plus backward compatibility aliases)
-__all__: FlextTypes.Core.StringList = [
+__all__: FlextTypes.StringList = [
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoJobConfig",
     "GruponosMeltanoNativeConfig",

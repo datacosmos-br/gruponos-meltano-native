@@ -8,6 +8,7 @@ from __future__ import annotations
 import tempfile
 
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoOracleConnectionManager,

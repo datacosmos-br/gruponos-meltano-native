@@ -5,10 +5,10 @@ import os
 from unittest.mock import patch
 
 import pytest
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 from pydantic import ValidationError
 
 from flext_core import FlextResult
-from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoOrchestrator,

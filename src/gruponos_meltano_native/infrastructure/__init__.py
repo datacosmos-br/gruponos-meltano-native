@@ -23,7 +23,7 @@ from gruponos_meltano_native.infrastructure.di_container import (
     get_gruponos_meltano_container,
 )
 
-__all__: FlextTypes.Core.StringList = [
+__all__: FlextTypes.StringList = [
     "FlextConfig",
     "FlextContainer",
     "get_gruponos_meltano_container",

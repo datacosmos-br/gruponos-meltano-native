@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 
-from flext_core.metadata import build_metadata_exports
+from importlib.metadata import metadata
 
-_metadata = build_metadata_exports(__file__)
+_metadata = metadata("gruponos-meltano-native")
 
-__version__: Final[str] = cast("str", _metadata["__version__"])
-__version_info__: Final[tuple[int | str, ...]] = cast(
-    "tuple[int | str, ...]",
-    _metadata["__version_info__"],
+__version__ = _metadata["Version"]
+__version_info__ = tuple(
+    int(part) if part.isdigit() else part for part in __version__.split(".")
 )
 
 __all__ = ["__version__", "__version_info__"]
-from typing import Final

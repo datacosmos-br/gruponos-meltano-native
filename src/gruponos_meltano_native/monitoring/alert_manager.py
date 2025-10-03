@@ -13,7 +13,7 @@ from email.mime.text import MIMEText
 from enum import StrEnum
 from typing import override
 
-import requests
+from flext_api import FlextApiClient
 
 from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
 from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
@@ -23,6 +23,7 @@ logger = FlextLogger(__name__)
 # Constants
 MAX_ALERT_MESSAGE_LENGTH = 1000
 JSON_MIME = "application/json"
+HTTP_ERROR_STATUS_THRESHOLD = 400  # HTTP status codes >= 400 indicate errors
 
 
 class GruponosMeltanoAlertSeverity(StrEnum):
@@ -90,7 +91,7 @@ class GruponosMeltanoAlert(FlextModels.Value):
     message: str
     severity: GruponosMeltanoAlertSeverity
     alert_type: GruponosMeltanoAlertType
-    context: FlextTypes.Core.Dict
+    context: FlextTypes.Dict
     timestamp: str
     pipeline_name: str | None = None
 
@@ -150,7 +151,7 @@ class GruponosMeltanoAlertService:
             config: Instância da configuração de alertas.
 
         """
-        self.config: dict[str, object] = config
+        self.config: FlextTypes.Dict = config
         self._failure_count = 0
 
         logger.info(
@@ -256,18 +257,33 @@ class GruponosMeltanoAlertService:
                 "context": alert.context,
             }
 
-            response = requests.post(
+            client = FlextApiClient()
+            response_result = client.post(
                 self.config.webhook_url,
                 json=payload,
                 timeout=30,
                 headers={"Content-Type": JSON_MIME},
             )
-            response.raise_for_status()
+
+            if response_result.is_failure:
+                logger.warning("Webhook alert failed: %s", response_result.error)
+                return FlextResult[bool].fail(
+                    f"Webhook failed: {response_result.error}"
+                )
+
+            response = response_result.unwrap()
+            if response.status_code >= HTTP_ERROR_STATUS_THRESHOLD:
+                logger.warning(
+                    "Webhook alert failed with status: %d", response.status_code
+                )
+                return FlextResult[bool].fail(
+                    f"Webhook failed with status: {response.status_code}"
+                )
 
             logger.debug("Webhook alert sent successfully")
             return FlextResult[bool].ok(data=True)
 
-        except requests.RequestException as e:
+        except Exception as e:
             logger.warning("Webhook alert failed: %s", e)
             return FlextResult[bool].fail(f"Webhook failed: {e}")
 
@@ -360,18 +376,31 @@ class GruponosMeltanoAlertService:
                 ],
             }
 
-            response = requests.post(
+            client = FlextApiClient()
+            response_result = client.post(
                 self.config.slack_webhook_url,
                 json=payload,
                 timeout=30,
                 headers={"Content-Type": JSON_MIME},
             )
-            response.raise_for_status()
+
+            if response_result.is_failure:
+                logger.warning("Slack alert failed: %s", response_result.error)
+                return FlextResult[bool].fail(f"Slack failed: {response_result.error}")
+
+            response = response_result.unwrap()
+            if response.status_code >= HTTP_ERROR_STATUS_THRESHOLD:
+                logger.warning(
+                    "Slack alert failed with status: %d", response.status_code
+                )
+                return FlextResult[bool].fail(
+                    f"Slack failed with status: {response.status_code}"
+                )
 
             logger.debug("Slack alert sent successfully")
             return FlextResult[bool].ok(data=True)
 
-        except requests.RequestException as e:
+        except Exception as e:
             logger.warning("Slack alert failed: %s", e)
             return FlextResult[bool].fail(f"Slack failed: {e}")
 
@@ -420,7 +449,7 @@ class GruponosMeltanoAlertManager:
         self,
         pipeline_name: str,
         error_message: str,
-        context: FlextTypes.Core.Dict | None = None,
+        context: FlextTypes.Dict | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de falha de pipeline.
 
@@ -457,7 +486,7 @@ class GruponosMeltanoAlertManager:
         self,
         target: str,
         error_message: str,
-        context: FlextTypes.Core.Dict | None = None,
+        context: FlextTypes.Dict | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de falha de conectividade.
 
@@ -493,7 +522,7 @@ class GruponosMeltanoAlertManager:
         self,
         issue_description: str,
         pipeline_name: str | None = None,
-        context: FlextTypes.Core.Dict | None = None,
+        context: FlextTypes.Dict | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de problema de qualidade de dados.
 
@@ -548,12 +577,12 @@ def create_gruponos_meltano_alert_manager(
       >>> manager = create_gruponos_meltano_alert_manager()
       >>>
       >>> # Usar configuração customizada
-      >>> config: dict[str, object] = GruponosMeltanoAlertConfig(webhook_enabled=True)
+      >>> config: FlextTypes.Dict = GruponosMeltanoAlertConfig(webhook_enabled=True)
       >>> manager = create_gruponos_meltano_alert_manager(config)
 
     """
     if config is None:
-        config: dict[str, object] = GruponosMeltanoAlertConfig()
+        config: FlextTypes.Dict = GruponosMeltanoAlertConfig()
 
     alert_service = GruponosMeltanoAlertService(config)
     return GruponosMeltanoAlertManager(alert_service)
@@ -563,7 +592,7 @@ def create_gruponos_meltano_alert_manager(
 AlertSeverity = GruponosMeltanoAlertSeverity
 
 # Public API exports
-__all__: FlextTypes.Core.StringList = [
+__all__: FlextTypes.StringList = [
     # Compatibility aliases
     "AlertSeverity",
     # Classes Padrão Empresarial

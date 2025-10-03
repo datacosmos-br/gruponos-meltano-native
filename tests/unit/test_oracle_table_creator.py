@@ -4,9 +4,8 @@ REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle table creation logic with basic functionality.
 """
 
-from pydantic import SecretStr
-
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+from pydantic import SecretStr
 
 
 class TestOracleTableCreatorSimple:

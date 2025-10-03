@@ -355,7 +355,7 @@ class GruponosMeltanoAlertManager:
         pipeline_name: str,
         company_code: str,
         facility_code: str,
-        additional_context: Optional[Dict[str, object]] = None
+        additional_context: Optional[FlextTypes.Dict] = None
     ) -> FlextResult[Alert]:
         """Create pipeline-specific alert
 
@@ -408,7 +408,7 @@ class GruponosMeltanoAlert(BaseModel):
     resolved_at: Optional[datetime] = None
 
     # Additional context
-    context: Dict[str, object]
+    context: FlextTypes.Dict
     tags: List[str]
 ```
 
@@ -581,7 +581,7 @@ class GruponosMeltanoDataValidator:
 
     def validate_allocation_data(
         self,
-        allocation_records: List[Dict[str, object]]
+        allocation_records: List[FlextTypes.Dict]
     ) -> FlextResult[ValidationResult]:
         """Validate allocation data against business rules
 
@@ -594,8 +594,8 @@ class GruponosMeltanoDataValidator:
 
     def validate_order_data(
         self,
-        order_headers: List[Dict[str, object]],
-        order_details: List[Dict[str, object]]
+        order_headers: List[FlextTypes.Dict],
+        order_details: List[FlextTypes.Dict]
     ) -> FlextResult[ValidationResult]:
         """Validate order data integrity and business rules
 
@@ -666,7 +666,7 @@ from gruponos_meltano_native.exceptions import (
 class GruponosMeltanoError(Exception):
     """Base exception for all GrupoNOS Meltano operations"""
 
-    def __init__(self, message: str, context: Optional[Dict[str, object]] = None):
+    def __init__(self, message: str, context: Optional[FlextTypes.Dict] = None):
         super().__init__(message)
         self.context = context or {}
 

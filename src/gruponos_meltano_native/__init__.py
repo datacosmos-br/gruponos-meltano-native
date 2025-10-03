@@ -8,6 +8,7 @@ from __future__ import annotations
 import importlib.metadata
 from typing import Final
 
+# External library imports
 from flext_core import (
     FlextConfig,
     FlextContainer,
@@ -16,13 +17,7 @@ from flext_core import (
     FlextTypes,
 )
 
-from gruponos_meltano_native.version import VERSION, GruponosMeltanoNativeVersion
-
-try:
-    __version__ = importlib.metadata.version("gruponos-meltano-native")
-except importlib.metadata.PackageNotFoundError:
-    __version__ = "0.9.0"
-
+# Local module imports
 from gruponos_meltano_native.cli import cli as gruponos_meltano_cli
 from gruponos_meltano_native.config import (
     GruponosMeltanoAlertConfig,
@@ -33,9 +28,6 @@ from gruponos_meltano_native.config import (
     GruponosMeltanoWMSSourceConfig,
     create_gruponos_meltano_settings,
 )
-
-GruponosMeltanoSettings = GruponosMeltanoNativeConfig
-
 from gruponos_meltano_native.exceptions import (
     GruponosMeltanoAlertDeliveryError,
     GruponosMeltanoAlertError,
@@ -89,7 +81,16 @@ from gruponos_meltano_native.validators import (
     ValidationRule,
     create_validator_for_environment,
 )
+from gruponos_meltano_native.version import VERSION, GruponosMeltanoNativeVersion
 
+# Version handling
+try:
+    __version__ = importlib.metadata.version("gruponos-meltano-native")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.9.0"
+
+# Type aliases
+GruponosMeltanoSettings = GruponosMeltanoNativeConfig
 PROJECT_VERSION: Final[GruponosMeltanoNativeVersion] = VERSION
 
 __version__: str = VERSION.version

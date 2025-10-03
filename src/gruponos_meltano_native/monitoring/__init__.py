@@ -24,7 +24,7 @@ from gruponos_meltano_native.monitoring.alert_manager import (
     create_gruponos_meltano_alert_manager,
 )
 
-__all__: FlextTypes.Core.StringList = [
+__all__: FlextTypes.StringList = [
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertManager",
     "GruponosMeltanoAlertService",

@@ -12,7 +12,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import ClassVar, Final
 
-from flext_core import FlextConstants
+from flext_core import FlextConstants, FlextTypes
 
 
 class GruponosMeltanoNativeConstants(FlextConstants):
@@ -98,7 +98,7 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_COMPRESSION_LEVEL: Final[int] = 9
 
         # Supported encodings
-        SUPPORTED_ENCODINGS: Final[list[str]] = [
+        SUPPORTED_ENCODINGS: Final[FlextTypes.StringList] = [
             "utf-8",
             "utf-16",
             "ascii",
@@ -138,7 +138,7 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_BACKUP_COUNT: Final[int] = 50
 
         # Valid log levels
-        VALID_LEVELS: Final[list[str]] = [
+        VALID_LEVELS: Final[FlextTypes.StringList] = [
             "DEBUG",
             "INFO",
             "WARNING",
@@ -150,12 +150,16 @@ class GruponosMeltanoNativeConstants(FlextConstants):
     class Performance:
         """Performance configuration constants with comprehensive timeouts."""
 
+        DEFAULT_BATCH_SIZE: Final[int] = 1000
+        MAX_BATCH_ITEMS: Final[int] = 10000
         DEFAULT_QUERY_TIMEOUT: Final[int] = 300
         DEFAULT_CONNECTION_TIMEOUT: Final[int] = 30
         DEFAULT_READ_TIMEOUT: Final[int] = 60
         DEFAULT_WRITE_TIMEOUT: Final[int] = 60
 
         # Performance limits
+        MIN_BATCH_SIZE: Final[int] = 1
+        MAX_BATCH_SIZE: Final[int] = 100000
         MIN_QUERY_TIMEOUT: Final[int] = 1
         MAX_QUERY_TIMEOUT: Final[int] = 3600
         MIN_CONNECTION_TIMEOUT: Final[int] = 1
@@ -181,12 +185,12 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_SALT_LENGTH: Final[int] = 32
 
         # Supported algorithms
-        SUPPORTED_ENCRYPTION_ALGORITHMS: ClassVar[list[str]] = [
+        SUPPORTED_ENCRYPTION_ALGORITHMS: ClassVar[FlextTypes.StringList] = [
             "AES-256-GCM",
             "AES-128-GCM",
             "ChaCha20-Poly1305",
         ]
-        SUPPORTED_HASH_ALGORITHMS: ClassVar[list[str]] = [
+        SUPPORTED_HASH_ALGORITHMS: ClassVar[FlextTypes.StringList] = [
             "SHA-256",
             "SHA-512",
             "BLAKE2b",

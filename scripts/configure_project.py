@@ -12,13 +12,14 @@ from pathlib import Path
 
 import yaml
 
-from flext_core import FlextConstants, FlextLogger, FlextTypes
+from flext_core import FlextLogger, FlextTypes
+from gruponos_meltano_native.constants import GruponosMeltanoNativeConstants
 
 # Setup logger
 log = FlextLogger(__name__)
 
 
-def load_project_config() -> FlextTypes.Core.Dict:
+def load_project_config() -> FlextTypes.Dict:
     """Load project configuration from YAML file."""
     config_path = Path(__file__).parent.parent / "config" / "project.yml"
     if config_path.exists():
@@ -28,7 +29,7 @@ def load_project_config() -> FlextTypes.Core.Dict:
     return {}
 
 
-def load_wms_config() -> FlextTypes.Core.Dict:
+def load_wms_config() -> FlextTypes.Dict:
     """Load WMS integration configuration from YAML file."""
     config_path = Path(__file__).parent.parent / "config" / "wms_integration.yml"
     if config_path.exists():
@@ -43,13 +44,13 @@ def get_env_value(key: str, default: str | None = None) -> str | None:
     return os.environ.get(key, default)
 
 
-def generate_meltano_config() -> FlextTypes.Core.Dict:
+def generate_meltano_config() -> FlextTypes.Dict:
     """Generate complete Meltano configuration from environment variables."""
     _ = load_project_config()  # Keep for future use
     _ = load_wms_config()  # Keep for future use
 
     # Base configuration
-    config: FlextTypes.Core.Dict = {
+    config: FlextTypes.Dict = {
         "version": 1,
         "default_environment": get_env_value("MELTANO_ENVIRONMENT", "dev"),
         "project_id": get_env_value("MELTANO_PROJECT_ID", "dynamic-wms-integration"),
@@ -177,9 +178,9 @@ def generate_meltano_config() -> FlextTypes.Core.Dict:
             "batch_size": int(
                 get_env_value(
                     "TARGET_BATCH_SIZE",
-                    str(FlextConstants.Performance.DEFAULT_BATCH_SIZE),
+                    str(GruponosMeltanoNativeConstants.Performance.DEFAULT_BATCH_SIZE),
                 )
-                or str(FlextConstants.Performance.DEFAULT_BATCH_SIZE)
+                or str(GruponosMeltanoNativeConstants.Performance.DEFAULT_BATCH_SIZE)
             ),
             "load_method": "append_only",
         },
@@ -198,9 +199,11 @@ def generate_meltano_config() -> FlextTypes.Core.Dict:
             "batch_size": int(
                 get_env_value(
                     "TARGET_BATCH_SIZE",
-                    str(FlextConstants.Performance.MAX_BATCH_ITEMS // 2),
+                    str(
+                        GruponosMeltanoNativeConstants.Performance.MAX_BATCH_ITEMS // 2
+                    ),
                 )
-                or str(FlextConstants.Performance.MAX_BATCH_ITEMS // 2)
+                or str(GruponosMeltanoNativeConstants.Performance.MAX_BATCH_ITEMS // 2)
             ),
             "load_method": "upsert",
         },

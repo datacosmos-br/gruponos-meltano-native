@@ -28,7 +28,7 @@ class GruponosMeltanoError(FlextExceptions.Error):
         message: str = "GrupoNOS Meltano error",
         *,
         error_code: str | None = None,
-        context: FlextTypes.Core.Dict | None = None,
+        context: FlextTypes.Dict | None = None,
     ) -> None:
         """Inicializa erro Meltano GrupoNOS com contexto.
 
@@ -64,7 +64,7 @@ class GruponosMeltanoConfigurationError(
         message: str = "GrupoNOS configuration error",
         *,
         error_code: str | None = None,
-        context: FlextTypes.Core.Dict | None = None,
+        context: FlextTypes.Dict | None = None,
     ) -> None:
         """Inicializa erro de configuração GrupoNOS.
 
@@ -101,7 +101,7 @@ class GruponosMeltanoValidationError(
         message: str = "GrupoNOS validation error",
         *,
         error_code: str | None = None,
-        context: FlextTypes.Core.Dict | None = None,
+        context: FlextTypes.Dict | None = None,
         field: str | None = None,
         value: object = None,
         validation_details: object = None,
@@ -374,7 +374,7 @@ class GruponosMeltanoTargetError(GruponosMeltanoSingerError):
     """
 
 
-__all__: FlextTypes.Core.StringList = [
+__all__: FlextTypes.StringList = [
     "GruponosMeltanoAlertDeliveryError",
     "GruponosMeltanoAlertError",
     "GruponosMeltanoAuthenticationError",

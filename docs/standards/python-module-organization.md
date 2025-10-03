@@ -107,7 +107,7 @@ class WMSAllocation(FlextModels.Entity):
 
         return FlextResult[None].ok(None)
 
-    def transform_for_target(self) -> FlextTypes.Core.Dict:
+    def transform_for_target(self) -> FlextTypes.Dict:
         """Transform allocation for target database format."""
         return {
             "ALLOCATION_ID": self.allocation_id,
@@ -668,7 +668,7 @@ def extract_wms_allocations(
 
 def transform_allocation_data(
     allocations: List[WMSAllocation]
-) -> FlextResult[List[Dict[str, object]]]:
+) -> FlextResult[List[FlextTypes.Dict]]:
     """Transform allocations for target database format."""
     # Implementation with type validation
     pass

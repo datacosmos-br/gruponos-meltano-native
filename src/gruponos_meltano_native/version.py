@@ -2,33 +2,28 @@
 
 from __future__ import annotations
 
-from typing import Final, cast
+from importlib.metadata import metadata
+from typing import Final
 
-from flext_core.metadata import (
-    FlextProjectVersion,
-    build_metadata_exports,
+_metadata = metadata("gruponos-meltano-native")
+
+__version__ = _metadata["Version"]
+__version_info__ = tuple(
+    int(part) if part.isdigit() else part for part in __version__.split(".")
 )
 
-_metadata = build_metadata_exports(__file__)
-globals().update(_metadata)
-_metadata_obj = cast("FlextProjectMetadata", _metadata["__flext_metadata__"])
+
+class GruponosMeltanoNativeVersion:
+    """Simple version class for gruponos meltano native."""
+
+    def __init__(self, version: str, version_info: tuple[int | str, ...]) -> None:
+        """Initialize version."""
+        self.version = version
+        self.version_info = version_info
 
 
-class GruponosMeltanoNativeVersion(FlextProjectVersion):
-    """Structured metadata for the gruponos meltano native distribution."""
-
-    @classmethod
-    def current(cls) -> GruponosMeltanoNativeVersion:
-        """Return canonical metadata loaded from pyproject.toml."""
-        return cls.from_metadata(_metadata_obj)
-
-
-VERSION: Final[GruponosMeltanoNativeVersion] = GruponosMeltanoNativeVersion.current()
-__version__: Final[str] = VERSION.version
-__version_info__: Final[tuple[int | str, ...]] = VERSION.version_info
-
-for _name in tuple(_metadata):
-    if _name not in {"__version__", "__version_info__"}:
-        globals().pop(_name, None)
+VERSION: Final[GruponosMeltanoNativeVersion] = GruponosMeltanoNativeVersion(
+    __version__, __version_info__
+)
 
 __all__ = ["VERSION", "GruponosMeltanoNativeVersion", "__version__", "__version_info__"]
