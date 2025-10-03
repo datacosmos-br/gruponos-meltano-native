@@ -378,6 +378,7 @@ class GruponosMeltanoNativeCli:
 
 
 # Entry point for CLI execution
+cli = GruponosMeltanoNativeCli()
 
 
 if __name__ == "__main__":
