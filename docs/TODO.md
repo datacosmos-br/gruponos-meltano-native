@@ -118,7 +118,7 @@ flext-core @ file:///home/marlonsc/flext/flext-core
 
 **Priority**: HIGH | **Impact**: Performance | **Effort**: 3 days
 
-**Issue**: Only 4 files use /but project configured for 
+**Issue**: Only 4 files use /but project configured for
 **Current files**: Limited adoption
 **Impact**: Blocking I/O operations, poor performance
 **Solution**: Audit and convert I/O operations to patterns
