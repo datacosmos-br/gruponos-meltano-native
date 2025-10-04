@@ -9,9 +9,9 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
+from flext_core import FlextResult
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig, TDbOracleQueryResult
 
-from flext_core import FlextResult
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionConfig,
     create_gruponos_meltano_oracle_connection_manager,

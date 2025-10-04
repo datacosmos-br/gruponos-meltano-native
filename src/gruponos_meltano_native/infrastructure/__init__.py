@@ -19,6 +19,7 @@ from flext_core import (
     FlextContainer,
     FlextTypes,
 )
+
 from gruponos_meltano_native.infrastructure.di_container import (
     get_gruponos_meltano_container,
 )

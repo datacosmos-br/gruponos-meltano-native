@@ -3,6 +3,7 @@
 from unittest.mock import Mock, patch
 
 from flext_core import FlextResult
+
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoOrchestrator,

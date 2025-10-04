@@ -16,6 +16,7 @@ from flext_core import (
     FlextResult,
     FlextTypes,
 )
+
 from gruponos_meltano_native import monitoring
 
 # Local module imports
@@ -71,7 +72,6 @@ from gruponos_meltano_native.oracle.connection_manager_enhanced import (
 from gruponos_meltano_native.orchestrator import (
     GruponosMeltanoOrchestrator,
     GruponosMeltanoPipelineResult,
-    GruponosMeltanoPipelineRunner,
     create_gruponos_meltano_orchestrator,
     create_gruponos_meltano_pipeline_runner,
 )
@@ -160,5 +160,6 @@ __all__ = [
     "create_gruponos_meltano_pipeline_runner",
     "create_gruponos_meltano_settings",
     "create_validator_for_environment",
-    "gruponos_meltano_cli", "monitoring",
+    "gruponos_meltano_cli",
+    "monitoring",
 ]

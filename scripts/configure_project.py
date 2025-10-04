@@ -11,8 +11,8 @@ import os
 from pathlib import Path
 
 import yaml
-
 from flext_core import FlextLogger, FlextTypes
+
 from gruponos_meltano_native.constants import GruponosMeltanoNativeConstants
 
 # Setup logger

@@ -15,10 +15,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Self, TypedDict
 
+from flext_core import FlextConfig, FlextResult, FlextTypes
 from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
-
-from flext_core import FlextConfig, FlextResult, FlextTypes
 
 
 class GruponosMeltanoNativeConfig(FlextConfig):
@@ -540,7 +539,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return self.validate_business_rules()
 
     # Factory methods for domain-specific configurations using FlextConfig as source
-    def create_meltano_config(self, **overrides: Any) -> Any:  # noqa: ARG002
+    def create_meltano_config(self, **overrides: Any) -> Any:
         """Create Meltano configuration using GruponosMeltanoNativeConfig as source.
 
         Args:

@@ -10,8 +10,8 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from click.testing import CliRunner
-
 from flext_core import FlextTypes
+
 from gruponos_meltano_native import cli, cli as main
 
 

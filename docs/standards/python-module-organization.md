@@ -213,8 +213,8 @@ class WMSDataValidator(DataValidator):
 
     def validate_allocation_data(
         self,
-        data: List[dict]
-    ) -> FlextResult[List[dict]]:
+        data: List[FlextTypes.Dict]
+    ) -> FlextResult[List[FlextTypes.Dict]]:
         """Validate allocation data with business rules."""
         return (
             self._validate_schema(data, AllocationSchema)
@@ -222,7 +222,7 @@ class WMSDataValidator(DataValidator):
             .flat_map(lambda clean_data: self._validate_data_quality(clean_data))
         )
 
-    def _validate_business_rules(self, data: List[dict]) -> FlextResult[List[dict]]:
+    def _validate_business_rules(self, data: List[FlextTypes.Dict]) -> FlextResult[List[FlextTypes.Dict]]:
         """Apply WMS business validation rules."""
         validation_errors = []
         validated_data = []
@@ -264,7 +264,7 @@ from gruponos_meltano_native.exceptions import (
 )
 
 # Exception usage in ETL operations
-def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
+def extract_wms_data(config: WMSConfig) -> FlextResult[List[FlextTypes.Dict]]:
     """Extract data from Oracle WMS with proper exception handling."""
     try:
         # WMS extraction logic
@@ -330,7 +330,7 @@ class OracleTargetConfig:                   # Target database configuration
 def extract_wms_allocations() -> FlextResult[List[WMSAllocation]]:
     """Extract allocation data from Oracle WMS."""
 
-def transform_allocation_data() -> FlextResult[List[dict]]:
+def transform_allocation_data() -> FlextResult[List[FlextTypes.Dict]]:
     """Transform WMS data for target database format."""
 
 def load_to_oracle_target() -> FlextResult[LoadResult]:
@@ -511,7 +511,7 @@ def execute_etl_pipeline(
 ### **Data Validation Chain Pattern**
 
 ```python
-def validate_wms_data_pipeline(data: List[dict]) -> FlextResult[List[dict]]:
+def validate_wms_data_pipeline(data: List[FlextTypes.Dict]) -> FlextResult[List[FlextTypes.Dict]]:
     """Comprehensive data validation chain."""
 
     return (
@@ -546,7 +546,7 @@ def oracle_connection_context(config: OracleConnectionConfig):
         connection.close()
 
 # Usage in ETL operations
-def load_allocation_data(data: List[dict]) -> FlextResult[LoadResult]:
+def load_allocation_data(data: List[FlextTypes.Dict]) -> FlextResult[LoadResult]:
     with oracle_connection_context(target_config) as conn:
         return conn.bulk_insert('WMS_ALLOCATIONS', data)
 ```
@@ -693,7 +693,7 @@ def validate_and_transform(
 
 ```python
 # ✅ Always use FlextResult for ETL operations
-def extract_wms_data(config: WMSConfig) -> FlextResult[List[dict]]:
+def extract_wms_data(config: WMSConfig) -> FlextResult[List[FlextTypes.Dict]]:
     """Extract data with comprehensive error handling."""
     try:
         # WMS API call

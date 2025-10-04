@@ -169,7 +169,7 @@ validator = GruponosMeltanoDataValidator(validation_config)
 ### Railway-Oriented Validation
 
 ```python
-def validate_wms_data_pipeline(data: List[dict]) -> FlextResult[List[dict]]:
+def validate_wms_data_pipeline(data: List[FlextTypes.Dict]) -> FlextResult[List[FlextTypes.Dict]]:
     """Comprehensive validation pipeline with error propagation."""
 
     return (
@@ -191,7 +191,7 @@ class BatchValidator:
         self.validator = validator
         self.performance_tracker = ValidationPerformanceTracker()
 
-    def validate_large_dataset(self, data: List[dict], batch_size: int = 1000):
+    def validate_large_dataset(self, data: List[FlextTypes.Dict], batch_size: int = 1000):
         """Validate large dataset in batches with performance tracking."""
         total_records = len(data)
         validated_records = []
@@ -225,7 +225,7 @@ class WMSBusinessRules:
     """WMS-specific business rule implementations."""
 
     @staticmethod
-    def validate_allocation_consistency(record: dict) -> FlextResult[dict]:
+    def validate_allocation_consistency(record: dict) -> FlextResult[FlextTypes.Dict]:
         """Validate allocation record consistency."""
         # Check item-location compatibility
         item_code = record.get("item_code")
@@ -248,7 +248,7 @@ class WMSBusinessRules:
         return FlextResult[None].ok(record)
 
     @staticmethod
-    def validate_order_completion_rules(order_records: List[dict]) -> FlextResult[List[dict]]:
+    def validate_order_completion_rules(order_records: List[FlextTypes.Dict]) -> FlextResult[List[FlextTypes.Dict]]:
         """Validate order completion business rules."""
         # Group by order ID
         orders = {}
@@ -281,7 +281,7 @@ class DataQualityMonitor:
         self.validator = validator
         self.quality_history = []
 
-    def assess_data_quality(self, data: List[dict]) -> dict:
+    def assess_data_quality(self, data: List[FlextTypes.Dict]) -> dict:
         """Comprehensive data quality assessment."""
 
         # Completeness analysis
@@ -339,7 +339,7 @@ class DataAnomalyDetector:
     def __init__(self):
         self.baseline_metrics = {}
 
-    def detect_anomalies(self, current_data: List[dict]) -> List[dict]:
+    def detect_anomalies(self, current_data: List[FlextTypes.Dict]) -> List[FlextTypes.Dict]:
         """Detect data anomalies using statistical analysis."""
         anomalies = []
 

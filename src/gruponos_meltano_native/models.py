@@ -8,13 +8,13 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 
+from flext_core import FlextModels, FlextTypes
 from pydantic import (
     ConfigDict,
     Field,
     field_validator,
 )
 
-from flext_core import FlextModels, FlextTypes
 from gruponos_meltano_native.constants import GruponosMeltanoNativeConstants
 
 """GrupoNOS Meltano Native Models - Domain models with Pydantic v2.

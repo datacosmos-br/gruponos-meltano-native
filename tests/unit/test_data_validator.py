@@ -10,9 +10,9 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from flext_core import FlextTypes
 
 import gruponos_meltano_native.validators.data_validator
-from flext_core import FlextTypes
 from gruponos_meltano_native import (
     DataValidator,
     ValidationError,

@@ -10,6 +10,7 @@ Example files are exempt from architectural constraints for educational purposes
 """
 
 from flext_core import FlextLogger
+
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoSettings,
