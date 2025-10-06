@@ -32,7 +32,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
         """Initialize the CLI with required services."""
         super().__init__()
         self._config = config or GruponosMeltanoNativeConfig()
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._orchestrator = GruponosMeltanoOrchestrator(self._config)
 
     # Nested command handler classes - NO SEPARATE FUNCTIONS
@@ -300,7 +300,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             # Register commands directly with unified class handlers
             # TODO: Fix CLI registration API once flext-cli API is clarified
             # For now, create a basic CLI that can be extended
-            self._logger.info(
+            self.logger.info(
                 "CLI framework initialized - commands registration pending flext-cli API clarification"
             )
 
@@ -319,30 +319,30 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             cls._initialize_cli_environment(debug=debug)
 
             if config_file:
-                cli_instance._logger.info("Config file specified: %s", config_file)
+                cli_instance.logger.info("Config file specified: %s", config_file)
 
-            cli_instance._logger.info(
+            cli_instance.logger.info(
                 "GrupoNOS Meltano Native CLI started with FLEXT framework"
             )
 
             # Create and execute the flext-cli implementation
             cli_result: FlextResult[FlextCliMain] = cli_instance.create_gruponos_cli()
             if cli_result.is_failure:
-                cli_instance._logger.error(f"Failed to create CLI: {cli_result.error}")
+                cli_instance.logger.error(f"Failed to create CLI: {cli_result.error}")
                 sys.exit(1)
 
             # CLI created successfully - execution framework ready
             # TODO: Implement proper CLI execution once flext-cli API is clarified
-            cli_instance._logger.info(
+            cli_instance.logger.info(
                 "CLI initialized successfully - execution framework ready"
             )
 
         except ValueError:
             # Suppress stdout for ValueError per tests; log only and exit 1
-            cli_instance._logger.exception("Failed to initialize CLI")
+            cli_instance.logger.exception("Failed to initialize CLI")
             sys.exit(1)
         except Exception:
-            cli_instance._logger.exception("Failed to initialize CLI")
+            cli_instance.logger.exception("Failed to initialize CLI")
             sys.exit(1)
 
 

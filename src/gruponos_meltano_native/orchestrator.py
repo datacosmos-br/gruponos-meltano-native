@@ -129,7 +129,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         """
         super().__init__()
         self.settings = settings or GruponosMeltanoNativeConfig()
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._meltano_service = FlextMeltanoService()
 
         # Validate initial configuration during initialization
@@ -138,13 +138,13 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             error_msg = (
                 f"Initial configuration validation failed: {validation_result.error}"
             )
-            self._logger.error(error_msg)
+            self.logger.error(error_msg)
             init_error_msg = (
                 f"Orchestrator initialization failed: {validation_result.error}"
             )
             raise ValueError(init_error_msg)
 
-        self._logger.debug("GruponosMeltanoOrchestrator initialized successfully")
+        self.logger.debug("GruponosMeltanoOrchestrator initialized successfully")
 
     # =============================================
     # PUBLIC API METHODS
@@ -321,17 +321,17 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         # Validate job name
         if not job_name or not job_name.strip():
             error_msg = "Job name cannot be empty"
-            self._logger.error(error_msg)
+            self.logger.error(error_msg)
             return FlextResult.fail(error_msg)
 
         sanitized_job_name = job_name.strip()
-        self._logger.info(f"Starting job execution: {sanitized_job_name}")
+        self.logger.info(f"Starting job execution: {sanitized_job_name}")
 
         # Execute job with comprehensive error handling
         execution_result = self._execute_meltano_pipeline(sanitized_job_name)
 
         if execution_result.is_failure:
-            self._logger.error(f"Job execution failed: {execution_result.error}")
+            self.logger.error(f"Job execution failed: {execution_result.error}")
             return FlextResult.fail(execution_result.error)
 
         job_data = execution_result.unwrap()
@@ -343,7 +343,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             metadata=job_data.get("metadata", {}),
         )
 
-        self._logger.info(
+        self.logger.info(
             "Job execution completed successfully",
             extra={
                 "job_name": sanitized_job_name,
@@ -384,7 +384,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         """
         available_jobs = ["full-sync-job", "incremental-sync-job"]
-        self._logger.debug(f"Available jobs: {available_jobs}")
+        self.logger.debug(f"Available jobs: {available_jobs}")
         return available_jobs
 
     def list_pipelines(self) -> FlextTypes.StringList:
@@ -454,7 +454,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             "environment": self.settings.meltano_environment,
         }
 
-        self._logger.debug(f"Job status retrieved: {job_status}")
+        self.logger.debug(f"Job status retrieved: {job_status}")
         return FlextResult.ok(job_status)
 
     # =============================================
@@ -481,7 +481,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
             """
             self._orchestrator = orchestrator
-            self._logger = FlextLogger(__name__)
+            self.logger = FlextLogger(__name__)
 
         def run_with_retry(
             self,
@@ -518,11 +518,11 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             - Type-safe implementation
 
             """
-            self._logger.info(f"Starting pipeline execution with retry: {job_name}")
+            self.logger.info(f"Starting pipeline execution with retry: {job_name}")
 
             for attempt in range(max_retries + 1):
                 attempt_num = attempt + 1
-                self._logger.debug(
+                self.logger.debug(
                     f"Attempt {attempt_num}/{max_retries + 1} for job: {job_name}"
                 )
 
@@ -531,7 +531,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                     result = self._orchestrator.run_job(job_name)
 
                     if result.is_success:
-                        self._logger.info(
+                        self.logger.info(
                             f"Pipeline succeeded on attempt {attempt_num}",
                             extra={"job_name": job_name, "attempts": attempt_num},
                         )
@@ -540,7 +540,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                     # Job failed, prepare for retry
                     if attempt < max_retries:
                         backoff_seconds = 2**attempt  # Exponential backoff
-                        self._logger.warning(
+                        self.logger.warning(
                             f"Pipeline attempt {attempt_num} failed, retrying in {backoff_seconds}s",
                             extra={
                                 "job_name": job_name,
@@ -553,11 +553,11 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                     error_msg = (
                         f"Pipeline execution failed on attempt {attempt_num}: {e}"
                     )
-                    self._logger.exception(error_msg)
+                    self.logger.exception(error_msg)
 
                     if attempt < max_retries:
                         backoff_seconds = 2**attempt
-                        self._logger.info(
+                        self.logger.info(
                             f"Retrying after {backoff_seconds}s due to exception"
                         )
                         time.sleep(backoff_seconds)
@@ -566,7 +566,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             final_error = (
                 f"All {max_retries + 1} retry attempts failed for job: {job_name}"
             )
-            self._logger.error(
+            self.logger.error(
                 final_error, extra={"job_name": job_name, "max_retries": max_retries}
             )
 
@@ -602,7 +602,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         try:
             # Validate and sanitize job name
             sanitized_job_name = self._validate_job_name(job_name)
-            self._logger.info(f"Executing Meltano job: {sanitized_job_name}")
+            self.logger.info(f"Executing Meltano job: {sanitized_job_name}")
 
             # Build execution environment
             env = self._build_meltano_environment()
@@ -613,7 +613,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             # Set working directory
             working_dir = Path(self.settings.meltano_project_root or ".")
 
-            self._logger.debug(
+            self.logger.debug(
                 f"Meltano command: {' '.join(cmd)}",
                 extra={
                     "job_name": sanitized_job_name,
@@ -637,7 +637,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
             # Process execution results
             if result.returncode == 0:
-                self._logger.info(
+                self.logger.info(
                     "Meltano job completed successfully",
                     extra={
                         "job_name": sanitized_job_name,
@@ -656,7 +656,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                     },
                 })
             error_msg = f"Meltano job failed with return code {result.returncode}"
-            self._logger.error(
+            self.logger.error(
                 error_msg,
                 extra={
                     "job_name": sanitized_job_name,
@@ -672,7 +672,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         except subprocess.TimeoutExpired:
             execution_time = time.time() - start_time
             timeout_error = f"Meltano job timed out after {execution_time:.2f}s"
-            self._logger.exception(timeout_error, extra={"job_name": job_name})
+            self.logger.exception(timeout_error, extra={"job_name": job_name})
             return FlextResult.fail(timeout_error)
 
         except FileNotFoundError:
@@ -680,13 +680,13 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             meltano_error = (
                 "Meltano executable not found. Ensure Meltano is installed and in PATH."
             )
-            self._logger.exception(meltano_error, extra={"job_name": job_name})
+            self.logger.exception(meltano_error, extra={"job_name": job_name})
             return FlextResult.fail(meltano_error)
 
         except Exception as e:
             execution_time = time.time() - start_time
             unexpected_error = f"Unexpected error during Meltano job execution: {e}"
-            self._logger.exception(unexpected_error, extra={"job_name": job_name})
+            self.logger.exception(unexpected_error, extra={"job_name": job_name})
             return FlextResult.fail(unexpected_error)
 
     def _build_meltano_environment(self) -> FlextTypes.StringDict:
@@ -741,7 +741,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         elif oracle_config.get("sid"):
             env["FLEXT_TARGET_ORACLE_SID"] = oracle_config["sid"]
 
-        self._logger.debug(
+        self.logger.debug(
             "Meltano environment configured",
             extra={
                 "environment": self.settings.meltano_environment,
@@ -790,7 +790,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             if self.settings.pipeline_timeout_seconds <= 0:
                 return FlextResult.fail("pipeline_timeout_seconds must be positive")
 
-            self._logger.debug("Initial configuration validation passed")
+            self.logger.debug("Initial configuration validation passed")
             return FlextResult.ok(None)
 
         except Exception as e:
@@ -825,7 +825,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             if not self.settings.meltano_environment:
                 return FlextResult.fail("Meltano environment not configured")
 
-            self._logger.debug("Meltano project validation passed")
+            self.logger.debug("Meltano project validation passed")
             return FlextResult.ok(None)
 
         except Exception as e:
@@ -871,7 +871,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             except (ValueError, TypeError):
                 return FlextResult.fail("Oracle port must be a valid number")
 
-            self._logger.debug("Environment configuration validation passed")
+            self.logger.debug("Environment configuration validation passed")
             return FlextResult.ok(None)
 
         except Exception as e:
@@ -905,7 +905,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         """
         if not job_name or not job_name.strip():
             error_msg = "Job name cannot be empty or whitespace-only"
-            self._logger.error(error_msg, extra={"job_name": repr(job_name)})
+            self.logger.error(error_msg, extra={"job_name": repr(job_name)})
             raise ValueError(error_msg)
 
         sanitized_job_name = job_name.strip()
@@ -932,16 +932,16 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         if any(char in sanitized_job_name for char in invalid_chars):
             error_msg = f"Job name contains invalid characters: {sanitized_job_name}"
-            self._logger.error(error_msg, extra={"job_name": sanitized_job_name})
+            self.logger.error(error_msg, extra={"job_name": sanitized_job_name})
             raise ValueError(error_msg)
 
         # Additional validation: reasonable length
         if len(sanitized_job_name) > MAX_JOB_NAME_LENGTH:
             error_msg = f"Job name too long (max {MAX_JOB_NAME_LENGTH} chars): {len(sanitized_job_name)}"
-            self._logger.error(error_msg, extra={"job_name": sanitized_job_name})
+            self.logger.error(error_msg, extra={"job_name": sanitized_job_name})
             raise ValueError(error_msg)
 
-        self._logger.debug(f"Job name validated: {sanitized_job_name}")
+        self.logger.debug(f"Job name validated: {sanitized_job_name}")
         return sanitized_job_name
 
     # =============================================
