@@ -623,7 +623,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             )
 
             # Execute Meltano job with timeout protection
-            result = subprocess.run(
+            result = FlextUtilities.run_external_command(
                 cmd,
                 check=False,
                 cwd=working_dir,

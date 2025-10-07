@@ -298,7 +298,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             )
 
             # Register commands directly with unified class handlers
-            # TODO: Fix CLI registration API once flext-cli API is clarified
+            # TODO(marlonsc): [https://github.com/flext-sh/flext/issues/TBD] Fix CLI registration API once flext-cli API is clarified # noqa: FIX002
             # For now, create a basic CLI that can be extended
             self.logger.info(
                 "CLI framework initialized - commands registration pending flext-cli API clarification"
@@ -332,7 +332,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
                 sys.exit(1)
 
             # CLI created successfully - execution framework ready
-            # TODO: Implement proper CLI execution once flext-cli API is clarified
+            # TODO(marlonsc): [https://github.com/flext-sh/flext/issues/TBD] Implement proper CLI execution once flext-cli API is clarified # noqa: FIX002
             cli_instance.logger.info(
                 "CLI initialized successfully - execution framework ready"
             )
