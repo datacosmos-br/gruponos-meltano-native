@@ -13,7 +13,7 @@ SPDX-License-Identifier: Proprietary
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Self, TypedDict
+from typing import Self, TypedDict
 
 from flext_core import FlextConfig, FlextResult, FlextTypes
 from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
@@ -539,7 +539,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return self.validate_business_rules()
 
     # Factory methods for domain-specific configurations using FlextConfig as source
-    def create_meltano_config(self, **overrides: Any) -> Any:
+    def create_meltano_config(self, **overrides: object) -> object:
         """Create Meltano configuration using GruponosMeltanoNativeConfig as source.
 
         Args:
@@ -555,7 +555,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         # overrides parameter reserved for future domain library API extensions
         return FlextMeltanoService()
 
-    def create_oracle_connection_config(self, **overrides: Any) -> Any:
+    def create_oracle_connection_config(self, **overrides: object) -> object:
         """Create Oracle connection configuration using GruponosMeltanoNativeConfig as source.
 
         Args:
@@ -578,7 +578,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         config = FlextDbOracleModels.OracleConfig(**defaults)
         return FlextDbOracleApi(config)
 
-    def create_wms_config(self, **overrides: Any) -> Any:
+    def create_wms_config(self, **overrides: object) -> object:
         """Create Oracle WMS configuration using GruponosMeltanoNativeConfig as source.
 
         Args:
@@ -601,7 +601,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         defaults.update(overrides)
         return FlextOracleWmsApi(**defaults)
 
-    def create_alert_config(self, **overrides: Any) -> Any:
+    def create_alert_config(self, **overrides: object) -> object:
         """Create alert configuration using GruponosMeltanoNativeConfig as source.
 
         Args:
@@ -618,7 +618,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
 
     # Environment-specific configuration methods using direct instantiation
     @classmethod
-    def create_for_development(cls, **overrides: Any) -> Self:
+    def create_for_development(cls, **overrides: object) -> Self:
         """Create configuration for development environment using direct instantiation."""
         dev_overrides = {
             "job_environment": "development",
@@ -632,7 +632,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return cls(**dev_overrides)
 
     @classmethod
-    def create_for_production(cls, **overrides: Any) -> Self:
+    def create_for_production(cls, **overrides: object) -> Self:
         """Create configuration for production environment using direct instantiation."""
         prod_overrides = {
             "job_environment": "production",
@@ -647,7 +647,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return cls(**prod_overrides)
 
     @classmethod
-    def create_for_testing(cls, **overrides: Any) -> Self:
+    def create_for_testing(cls, **overrides: object) -> Self:
         """Create configuration for testing environment using direct instantiation."""
         test_overrides = {
             "job_environment": "staging",
