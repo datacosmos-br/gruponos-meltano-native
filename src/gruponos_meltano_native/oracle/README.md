@@ -57,7 +57,7 @@ from gruponos_meltano_native.oracle import (
 
 # Create connection configuration
 config = GruponosMeltanoOracleConnectionConfig(
-    host="oracle-prod.company.com",
+    host="oracle.company.com",
     port=1521,
     service_name="PRODDB",
     username="etl_user",
@@ -328,7 +328,7 @@ class TransactionManager:
 
 ```bash
 # Basic Oracle connection
-GRUPONOS_ORACLE_HOST=oracle-prod.company.com
+GRUPONOS_ORACLE_HOST=oracle.company.com
 GRUPONOS_ORACLE_PORT=1521
 GRUPONOS_ORACLE_SERVICE_NAME=PRODDB
 GRUPONOS_ORACLE_USERNAME=etl_user

@@ -76,7 +76,7 @@
 **Issue**: All FLEXT dependencies use hardcoded local paths
 
 ```toml
-flext-core @ file:///home/marlonsc/flext/flext-core
+flext-core @ file://../../flext-core
 ```
 
 **Impact**: Cannot deploy to different environments, breaks CI/CD

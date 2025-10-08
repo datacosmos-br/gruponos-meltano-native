@@ -4,7 +4,7 @@
 # Tap Configuration (using flext-tap-oracle-wms)
 tap_oracle_wms:
   # Base Configuration
-  executable: ${TAP_EXECUTABLE:-/home/marlonsc/flext/.venv/bin/tap-oracle-wms}
+  executable: ${TAP_EXECUTABLE:-...venv/bin/tap-oracle-wms}
   
   # Connection Settings
   base_url: ${WMS_BASE_URL}
@@ -53,7 +53,7 @@ tap_oracle_wms:
 # Target Configuration (using flext-target-oracle)
 target_oracle:
   # Base Configuration
-  executable: ${TARGET_EXECUTABLE:-/home/marlonsc/flext/.venv/bin/flext-target-oracle}
+  executable: ${TARGET_EXECUTABLE:-...venv/bin/flext-target-oracle}
   
   # Connection Settings
   host: ${TARGET_ORACLE_HOST}

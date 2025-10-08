@@ -19,10 +19,10 @@
     dependencies = [
         "click (>=8.2.1)",
         "dotenv (>=0.9.9)",
-        "flext-core @ file:///home/marlonsc/flext/flext-core",
-        "flext-db-oracle @ file:///home/marlonsc/flext/flext-db-oracle",
-        "flext-observability @ file:///home/marlonsc/flext/flext-observability",
-        "flext-tap-oracle-wms @ file:///home/marlonsc/flext/flext-tap-oracle-wms",
+        "flext-core @ file:../flext-core",
+        "flext-db-oracle @ file:../flext-db-oracle",
+        "flext-observability @ file:../flext-observability",
+        "flext-tap-oracle-wms @ file:../flext-tap-oracle-wms",
         "meltano (>=3.8.0)",
         "pydantic (>=2.11.7)",
         "pyyaml (>=6.0.2)",
@@ -31,7 +31,6 @@
     ]
     description = "Grupo Nos Meltano Native - Enterprise ETL Pipeline for Grupo Nos"
     keywords = [
-        "",
         "enterprise",
         "flext",
         "migration",

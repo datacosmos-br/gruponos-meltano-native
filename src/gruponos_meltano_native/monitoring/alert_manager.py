@@ -311,7 +311,7 @@ class GruponosMeltanoAlertService:
 
             msg = MIMEText(body)
             msg["Subject"] = subject
-            msg["From"] = "noreply@gruponos.com"
+            msg["From"] = "noreply@invalid-company.com"
             msg["To"] = ", ".join(self.config.email_recipients)
 
             # Send via configured SMTP (would need SMTP config in alert config)

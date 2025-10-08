@@ -285,7 +285,7 @@ def demonstrate_oracle_connection():
 
     # Create connection configuration
     config = GruponosMeltanoOracleConnectionConfig(
-        host="oracle-dev.company.com",
+        host="oracle.company.com",
         port=1521,
         service_name="DEVDB",
         username="etl_user",
@@ -408,7 +408,7 @@ def demonstrate_alert_management():
 export GRUPONOS_ORACLE_WMS_BASE_URL="https://wms-dev.company.com/api/v1"
 export GRUPONOS_ORACLE_WMS_USERNAME="your_username"
 export GRUPONOS_ORACLE_WMS_PASSWORD="your_password"
-export GRUPONOS_ORACLE_TARGET_HOST="oracle-dev.company.com"
+export GRUPONOS_ORACLE_TARGET_HOST="oracle.company.com"
 export GRUPONOS_ORACLE_TARGET_USERNAME="etl_user"
 export GRUPONOS_ORACLE_TARGET_PASSWORD="your_db_password"
 ```

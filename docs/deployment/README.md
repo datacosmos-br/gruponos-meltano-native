@@ -109,7 +109,7 @@ FLEXT_ENABLE_METRICS=true
 FLEXT_ENABLE_TRACING=true
 
 # Oracle WMS Configuration (Development)
-TAP_ORACLE_WMS_BASE_URL=https://wms-dev.gruponos.com/api/v1
+TAP_ORACLE_WMS_BASE_URL=https://invalid.wms.ocs.oraclecloud.com/api/v1
 TAP_ORACLE_WMS_USERNAME=gruponos_etl_dev
 TAP_ORACLE_WMS_PASSWORD=dev_password
 TAP_ORACLE_WMS_COMPANY_CODE=GNOS_DEV
@@ -118,7 +118,7 @@ TAP_ORACLE_WMS_TIMEOUT=300
 TAP_ORACLE_WMS_BATCH_SIZE=1000
 
 # Oracle Target Database (Development)
-FLEXT_TARGET_ORACLE_HOST=oracle-dev.gruponos.com
+FLEXT_TARGET_ORACLE_HOST=oracle.invalid-company.com
 FLEXT_TARGET_ORACLE_PORT=1521
 FLEXT_TARGET_ORACLE_SERVICE_NAME=GNOSDEV
 FLEXT_TARGET_ORACLE_USERNAME=gruponos_etl_dev
@@ -174,14 +174,14 @@ data:
   FLEXT_ENABLE_TRACING: "true"
 
   # Oracle WMS Configuration
-  TAP_ORACLE_WMS_BASE_URL: "https://wms-prod.gruponos.com/api/v1"
+  TAP_ORACLE_WMS_BASE_URL: "https://wms-prod.invalid-company.com/api/v1"
   TAP_ORACLE_WMS_COMPANY_CODE: "GNOS"
   TAP_ORACLE_WMS_FACILITY_CODE: "DC01"
   TAP_ORACLE_WMS_TIMEOUT: "600"
   TAP_ORACLE_WMS_BATCH_SIZE: "10000"
 
   # Oracle Target Database Configuration
-  FLEXT_TARGET_ORACLE_HOST: "oracle-prod.gruponos.com"
+  FLEXT_TARGET_ORACLE_HOST: "oracle.invalid-company.com"
   FLEXT_TARGET_ORACLE_PORT: "1522"
   FLEXT_TARGET_ORACLE_SERVICE_NAME: "GNOSPROD"
   FLEXT_TARGET_ORACLE_PROTOCOL: "tcps"
@@ -452,10 +452,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - etl.gruponos.com
+        - etl.invalid-company.com
       secretName: gruponos-meltano-tls
   rules:
-    - host: etl.gruponos.com
+    - host: etl.invalid-company.com
       http:
         paths:
           - path: /
