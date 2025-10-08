@@ -33,7 +33,7 @@ def demonstrate_config_usage() -> None:
         "Application Configuration",
         app_name=config.app_name,
         version=config.version,
-        environment=config.environment,
+        environment=config.job_environment,
         project_name=config.project_name,
     )
 
@@ -91,7 +91,7 @@ def demonstrate_config_usage() -> None:
     logger.info(
         "Modified configuration created",
         debug=modified_config.debug,
-        env=modified_config.environment,
+        env=modified_config.job_environment,
     )
 
 
@@ -103,33 +103,29 @@ def demonstrate_connection_manager_integration() -> None:
     logger.info(
         "Connection Manager Integration",
         project_root=config.meltano_project_root,
-        environment=config.environment,
+        environment=config.job_environment,
     )
 
     # Demonstrate how Oracle connection manager would be created
     # Using the real Oracle connection manager from the project
-    try:
-        # Create a sample Oracle config
-        oracle_config = GruponosMeltanoOracleConnectionConfig(
-            host="localhost",
-            port=1521,
-            name="TESTDB",
-            user="test",
-            password="test",
-        )
+    # Create a sample Oracle config
+    oracle_config = GruponosMeltanoOracleConnectionConfig(
+        host="localhost",
+        port=1521,
+        name="TESTDB",
+        user="test",
+        password="test",
+    )
 
-        # Create connection manager using real factory function
-        connection_manager = create_gruponos_meltano_oracle_connection_manager(
-            oracle_config,
-        )
+    # Create connection manager using real factory function
+    connection_manager = create_gruponos_meltano_oracle_connection_manager(
+        oracle_config,
+    )
 
-        logger.info(
-            "Oracle Connection Manager created successfully",
-            manager_type=type(connection_manager).__name__,
-        )
-
-    except ImportError as e:
-        logger.warning("Oracle connection manager not available", error=str(e))
+    logger.info(
+        "Oracle Connection Manager created successfully",
+        manager_type=type(connection_manager).__name__,
+    )
 
     # Show production readiness
     if not config.debug:
