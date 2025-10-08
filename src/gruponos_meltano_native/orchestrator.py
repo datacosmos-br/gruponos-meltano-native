@@ -9,7 +9,7 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import os
-import subprocess  # noqa: S404 - Used for running Meltano CLI commands
+import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
