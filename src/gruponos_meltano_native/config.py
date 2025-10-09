@@ -540,7 +540,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return self.validate_business_rules()
 
     # Factory methods for domain-specific configurations using FlextConfig as source
-    def create_meltano_config(self, **overrides: object) -> object:  # noqa: ARG002
+    def create_meltano_config(self, **overrides: object) -> object:
         """Create Meltano configuration using GruponosMeltanoNativeConfig as source.
 
         Args:
