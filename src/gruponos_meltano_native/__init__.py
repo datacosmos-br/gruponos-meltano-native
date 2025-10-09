@@ -5,6 +5,8 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
+from gruponos_meltano_native.__version__ import __version__, __version_info__
+
 import importlib.metadata
 from typing import Final
 
@@ -82,24 +84,12 @@ from gruponos_meltano_native.validators import (
     ValidationRule,
     create_validator_for_environment,
 )
-from gruponos_meltano_native.version import VERSION, GruponosMeltanoNativeVersion
 
 # Version handling
-try:
-    __version__ = importlib.metadata.version("gruponos-meltano-native")
-except importlib.metadata.PackageNotFoundError:
-    __version__ = "0.9.0"
-
 # Type aliases
 GruponosMeltanoSettings = GruponosMeltanoNativeConfig
-PROJECT_VERSION: Final[GruponosMeltanoNativeVersion] = VERSION
-
-__version__: str = VERSION.version
-__version_info__: tuple[int | str, ...] = VERSION.version_info
 
 __all__ = [
-    "PROJECT_VERSION",
-    "VERSION",
     "DataValidator",
     "FlextConfig",
     "FlextContainer",
@@ -126,7 +116,6 @@ __all__ = [
     "GruponosMeltanoMonitoringError",
     "GruponosMeltanoNativeConfig",
     "GruponosMeltanoNativeProtocols",
-    "GruponosMeltanoNativeVersion",
     "GruponosMeltanoOracleConnectionConfig",
     "GruponosMeltanoOracleConnectionError",
     "GruponosMeltanoOracleConnectionManager",
