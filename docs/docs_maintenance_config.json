@@ -1,0 +1,162 @@
+{
+  "version": "1.0.0",
+  "project": "gruponos-meltano-native",
+  "description": "Documentation maintenance configuration for gruponos-meltano-native",
+
+  "quality_thresholds": {
+    "min_quality_score": 80.0,
+    "max_critical_issues": 5,
+    "max_warning_issues": 20,
+    "max_stale_documents": 10
+  },
+
+  "content_rules": {
+    "min_words_per_doc": 50,
+    "max_days_since_update": 90,
+    "max_line_length": 88,
+    "max_heading_length": 80,
+    "required_sections": ["Overview", "Installation", "Usage"],
+    "forbidden_patterns": [
+      "TODO:",
+      "FIXME:",
+      "XXX:",
+      "HACK:",
+      "@deprecated"
+    ]
+  },
+
+  "link_validation": {
+    "timeout_seconds": 10,
+    "max_retries": 3,
+    "retry_delay_seconds": 2,
+    "user_agent": "DocsMaintenance/1.0.0 (gruponos-meltano-native)",
+    "ignore_domains": [
+      "localhost",
+      "127.0.0.1",
+      "example.com"
+    ]
+  },
+
+  "style_rules": {
+    "heading_hierarchy": true,
+    "consistent_list_markers": true,
+    "proper_code_blocks": true,
+    "alt_text_for_images": true,
+    "descriptive_link_text": true
+  },
+
+  "file_patterns": {
+    "documentation_extensions": [".md", ".mdx"],
+    "ignore_directories": [
+      ".git",
+      "__pycache__",
+      ".pytest_cache",
+      "dist",
+      "build",
+      "node_modules",
+      ".next",
+      ".nuxt"
+    ],
+    "ignore_files": [
+      "*.min.*",
+      "*.backup",
+      "*.tmp"
+    ]
+  },
+
+  "optimization_rules": {
+    "auto_generate_toc": {
+      "enabled": true,
+      "min_lines": 50,
+      "max_depth": 3
+    },
+    "fix_formatting": {
+      "enabled": true,
+      "remove_trailing_whitespace": true,
+      "normalize_lists": true,
+      "consistent_headers": true
+    },
+    "metadata_updates": {
+      "enabled": true,
+      "update_timestamps": true,
+      "add_missing_frontmatter": false
+    }
+  },
+
+  "reporting": {
+    "output_formats": ["json", "html", "markdown"],
+    "include_recommendations": true,
+    "severity_levels": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"],
+    "max_issues_per_report": 100,
+    "include_file_contents": false
+  },
+
+  "automation": {
+    "schedule": {
+      "daily_audit": "08:00",
+      "weekly_full_scan": "sunday 09:00",
+      "monthly_report": "1st 10:00"
+    },
+    "notifications": {
+      "email_on_critical": true,
+      "slack_webhook_url": null,
+      "github_issues": false
+    },
+    "auto_fix": {
+      "enabled": false,
+      "safe_fixes_only": true,
+      "create_backups": true,
+      "max_auto_fixes": 10
+    }
+  },
+
+  "integrations": {
+    "git": {
+      "enabled": true,
+      "auto_commit_fixes": false,
+      "commit_message_template": "docs: maintenance - {action} [{files_affected}]",
+      "branch_naming": "docs-maintenance-{timestamp}"
+    },
+    "github": {
+      "enabled": false,
+      "repo": "flext-sh/gruponos-meltano-native",
+      "create_issues_for_critical": false,
+      "labels": ["documentation", "maintenance", "automated"]
+    },
+    "ci_cd": {
+      "enabled": false,
+      "pipeline_name": "docs-maintenance",
+      "fail_on_quality_threshold": true,
+      "block_merge_on_critical": false
+    }
+  },
+
+  "custom_rules": {
+    "project_specific": {
+      "flext_patterns_required": true,
+      "meltano_references_current": true,
+      "oracle_wms_integration_documented": true,
+      "railway_pattern_examples": true
+    },
+    "code_references": {
+      "validate_imports": true,
+      "check_api_changes": true,
+      "update_version_numbers": true
+    }
+  },
+
+  "performance": {
+    "max_concurrent_requests": 5,
+    "batch_size": 10,
+    "cache_results": true,
+    "cache_ttl_hours": 24
+  },
+
+  "logging": {
+    "level": "INFO",
+    "file": "logs/docs_maintenance.log",
+    "max_file_size": "10MB",
+    "retention_days": 30,
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  }
+}

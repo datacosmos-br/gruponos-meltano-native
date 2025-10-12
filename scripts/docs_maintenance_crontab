@@ -1,0 +1,31 @@
+# Documentation Maintenance Crontab Configuration
+# Install with: crontab scripts/docs_maintenance_crontab
+#
+# This file contains scheduled tasks for automated documentation maintenance
+# for the gruponos-meltano-native project.
+#
+# Schedule Overview:
+# - Daily: 8:00 AM - Quick audit and validation
+# - Weekly: Sunday 9:00 AM - Full maintenance cycle
+# - Monthly: 1st of month 10:00 AM - Comprehensive report
+
+# Set environment variables for cron jobs
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+PROJECT_ROOT=/home/marlonsc/flext/gruponos-meltano-native
+
+# Daily maintenance (Monday-Friday, 8:00 AM)
+0 8 * * 1-5 cd $PROJECT_ROOT && ./scripts/automated_docs_maintenance.sh daily
+
+# Weekly maintenance (Sunday, 9:00 AM)
+0 9 * * 0 cd $PROJECT_ROOT && ./scripts/automated_docs_maintenance.sh weekly
+
+# Monthly maintenance (1st of month, 10:00 AM)
+0 10 1 * * cd $PROJECT_ROOT && ./scripts/automated_docs_maintenance.sh monthly
+
+# Optional: Health check every 4 hours
+# 0 */4 * * * cd $PROJECT_ROOT && ./scripts/automated_docs_maintenance.sh health
+
+# Optional: Emergency full maintenance (manual trigger only)
+# This should be run manually when needed, not scheduled
+# 0 2 * * * cd $PROJECT_ROOT && ./scripts/automated_docs_maintenance.sh full

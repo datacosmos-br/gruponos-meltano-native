@@ -1,0 +1,40 @@
+@startuml System Architecture - gruponos-meltano-native
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+!include <C4/C4_Dynamic>
+!include <C4/C4_Deployment>
+
+LAYOUT_WITH_LEGEND()
+
+' ============================================================================
+' SYSTEM CONTEXT DIAGRAM (C4 Level 1)
+' ============================================================================
+
+System_Boundary(gruponos_meltano_native, "GrupoNOS Meltano Native") {
+    System(etl_orchestrator, "ETL Orchestrator", "Python/Meltano", "Coordinates data extraction, transformation, and loading")
+    System(api_gateway, "API Gateway", "Python/FastAPI", "REST API for external integrations and monitoring")
+    System(monitoring_system, "Monitoring & Alerting", "Python/FLEXT", "System observability and operational alerting")
+}
+
+System_Ext(oracle_wms, "Oracle WMS", "Oracle Database, REST API", "Source system providing operational warehouse data")
+System_Ext(oracle_analytics, "Oracle Analytics DB", "Oracle Database", "Target system for analytics and reporting data")
+System_Ext(flext_ecosystem, "FLEXT Ecosystem", "Python Libraries", "Shared enterprise patterns and utilities")
+
+Person(data_analyst, "Data Analyst", "Business analyst requiring warehouse data for reporting")
+Person(operations_team, "Operations Team", "IT operations managing data pipelines")
+
+' System interactions
+Rel(data_analyst, api_gateway, "Monitors pipeline status", "HTTPS")
+Rel(operations_team, api_gateway, "Manages pipelines", "HTTPS")
+Rel(etl_orchestrator, oracle_wms, "Extracts operational data", "REST API")
+Rel(etl_orchestrator, oracle_analytics, "Loads transformed data", "SQL")
+Rel(monitoring_system, etl_orchestrator, "Monitors health & performance", "Internal API")
+
+' External dependencies
+Rel(etl_orchestrator, flext_ecosystem, "Uses shared patterns", "Library imports")
+Rel(api_gateway, flext_ecosystem, "Uses authentication", "Library imports")
+Rel(monitoring_system, flext_ecosystem, "Uses observability", "Library imports")
+
+@enduml

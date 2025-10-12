@@ -10,6 +10,7 @@ import tempfile
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
 
 from gruponos_meltano_native import (
+from flext_core import FlextResult
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoOracleConnectionManager,
 )

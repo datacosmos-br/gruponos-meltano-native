@@ -661,21 +661,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return cls(**test_overrides)
 
 
-def create_gruponos_meltano_settings(
-    **overrides: FlextTypes.Value,
-) -> GruponosMeltanoNativeConfig:
-    """Create GrupoNOS Meltano settings with optional overrides.
-
-    Args:
-        **overrides: Configuration field overrides
-
-    Returns:
-        GruponosMeltanoNativeConfig instance with applied overrides
-
-    """
-    return GruponosMeltanoNativeConfig.get_or_create_shared_instance(
-        project_name="gruponos-meltano-native", **overrides
-    )
+# Removed create_gruponos_meltano_settings as dead code - not used anywhere
 
 
 # Backward compatibility aliases - all Config classes now use the single GruponosMeltanoNativeConfig

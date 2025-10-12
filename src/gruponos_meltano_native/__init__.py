@@ -5,13 +5,8 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-from gruponos_meltano_native.__version__ import __version__, __version_info__
-
-import importlib.metadata
-from typing import Final
-
 # External library imports
-from flext_core import (
+from flext_core import (, FlextResult
     FlextConfig,
     FlextContainer,
     FlextModels,
@@ -20,6 +15,7 @@ from flext_core import (
 )
 
 from gruponos_meltano_native import monitoring
+from gruponos_meltano_native.__version__ import __version__, __version_info__
 
 # Local module imports
 from gruponos_meltano_native.cli import cli as gruponos_meltano_cli
@@ -30,7 +26,6 @@ from gruponos_meltano_native.config import (
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoTargetOracleConfig,
     GruponosMeltanoWMSSourceConfig,
-    create_gruponos_meltano_settings,
 )
 from gruponos_meltano_native.exceptions import (
     GruponosMeltanoAlertDeliveryError,
@@ -86,8 +81,7 @@ from gruponos_meltano_native.validators import (
 )
 
 # Version handling
-# Type aliases
-GruponosMeltanoSettings = GruponosMeltanoNativeConfig
+# Type aliases - Removed GruponosMeltanoSettings as it's test-only
 
 __all__ = [
     "DataValidator",
@@ -130,7 +124,6 @@ __all__ = [
     "GruponosMeltanoPipelineTimeoutError",
     "GruponosMeltanoPipelineValidationError",
     "GruponosMeltanoProcessingError",
-    "GruponosMeltanoSettings",
     "GruponosMeltanoSingerError",
     "GruponosMeltanoTapError",
     "GruponosMeltanoTargetError",
@@ -147,7 +140,6 @@ __all__ = [
     "create_gruponos_meltano_oracle_connection_manager",
     "create_gruponos_meltano_orchestrator",
     "create_gruponos_meltano_pipeline_runner",
-    "create_gruponos_meltano_settings",
     "create_validator_for_environment",
     "gruponos_meltano_cli",
     "monitoring",

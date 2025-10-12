@@ -3,71 +3,57 @@
 Este módulo fornece toda a orquestração específica do GrupoNOS para pipelines Meltano
 com sistemas Oracle WMS, construído sobre padrões de arquitetura empresarial.
 
+Refactored to use modular architecture with separated concerns:
+- Pipeline models in models/pipeline.py
+- Pipeline execution in core/pipeline_executor.py
+- Orchestration logic focused on high-level coordination
+
 Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
 """
 
 from __future__ import annotations
 
-import os
-import subprocess
-import time
-from dataclasses import dataclass
-from pathlib import Path
+from datetime import datetime
+from typing import Any, Dict, Optional
 
-from flext_core import (
-    FlextLogger,
-    FlextResult,
-    FlextService,
-    FlextTypes,
-    FlextUtilities,
-)
-from flext_meltano import FlextMeltanoService
+from flext_core import FlextLogger, FlextResult, FlextService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
+from gruponos_meltano_native.core.pipeline_executor import MeltanoPipelineExecutor
+from gruponos_meltano_native.models.pipeline import (
+    PipelineConfiguration,
+    PipelineResult,
+    PipelineStatus,
+)
+
+# Import for backward compatibility
+GruponosMeltanoModels = type('GruponosMeltanoModels', (), {
+    'PipelineResult': PipelineResult,
+})
 
 # =============================================
-# GRUPONOS MELTANO CONSTANTS
+# GRUPONOS MELTANO PIPELINE RESULT
 # =============================================
 
-# Validation constants
-MAX_PORT_NUMBER = 65535
-MAX_JOB_NAME_LENGTH = 100
+class GruponosMeltanoPipelineResult:
+    """Classe que representa o resultado de uma execução de pipeline ETL,
+    contendo informações de sucesso, tempos de execução, saídas e metadados.
 
-# =============================================
-# GRUPONOS MELTANO MODELS
-# =============================================
-
-
-class GruponosMeltanoModels:
-    """GrupoNOS Meltano Native Models namespace class.
-
-    Contains all domain models for the GrupoNOS Meltano Native project.
-    Follows FLEXT namespace pattern for clean organization.
+    Attributes:
+        success: Indica se a execução foi bem-sucedida.
+        job_name: Nome do job/pipeline executado.
+        execution_time: Tempo de execução em segundos.
+        output: Saída padrão do pipeline.
+        error: Mensagem de erro, se houver.
+        metadata: Metadados adicionais da execução.
     """
 
-    @dataclass
-    class PipelineResult:
-        """Resultado de uma execução de pipeline Meltano GrupoNOS.
-
-        Classe que representa o resultado de uma execução de pipeline ETL,
-        contendo informações de sucesso, tempos de execução, saídas e metadados.
-
-        Attributes:
-          success: Indica se a execução foi bem-sucedida.
-          job_name: Nome do job/pipeline executado.
-          execution_time: Tempo de execução em segundos.
-          output: Saída padrão do pipeline.
-          error: Mensagem de erro, se houver.
-          metadata: Metadados adicionais da execução.
-
-        """
-
-        success: bool
-        job_name: str
-        execution_time: float
-        output: str
-        error: str | None = None
-        metadata: FlextTypes.Dict | None = None
+    success: bool
+    job_name: str
+    execution_time: float
+    output: str
+    error: str | None = None
+    metadata: FlextTypes.Dict | None = None
 
 
 # =============================================

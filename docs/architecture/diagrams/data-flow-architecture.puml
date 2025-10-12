@@ -1,0 +1,81 @@
+@startuml Data Flow Architecture
+!include <C4/C4_Dynamic>
+
+title ETL Pipeline Data Flow Architecture
+
+' Define participants
+participant "Oracle WMS API" as wms
+participant "Singer Tap" as tap
+participant "Data Validator" as validator
+participant "Singer Target" as target
+participant "Oracle Analytics DB" as db
+participant "Monitoring System" as monitor
+participant "Error Handler" as error_handler
+
+' Full Sync Pipeline Flow
+group Full Sync Pipeline [Weekly]
+    == Data Extraction Phase ==
+    wms -> tap: GET /allocations\n(pagination, full dataset)
+    tap -> tap: Parse JSON response\nValidate schema
+    tap -> validator: Stream records\n(allocation, order_hdr, order_dtl)
+
+    == Data Validation Phase ==
+    validator -> validator: Schema validation\nBusiness rule checks
+    validator -> error_handler: Validation errors\n(record-level failures)
+    error_handler -> monitor: Log validation issues
+
+    == Data Loading Phase ==
+    validator -> target: Valid records stream
+    target -> db: BEGIN TRANSACTION\nBulk INSERT (append_only)
+    db -> target: Records inserted
+    target -> db: COMMIT TRANSACTION
+
+    == Completion Phase ==
+    target -> monitor: Pipeline metrics\n(records processed, duration)
+    monitor -> monitor: Health check passed
+end
+
+' Incremental Sync Pipeline Flow
+group Incremental Sync Pipeline [Every 2 hours]
+    == Change Detection ==
+    wms -> tap: GET /allocations\n(mod_ts > last_sync_timestamp)
+    tap -> tap: Parse incremental response
+    tap -> validator: Stream changed records
+
+    == Incremental Processing ==
+    validator -> validator: Validate changed records
+    validator -> target: Incremental record stream
+    target -> db: UPSERT operations\n(mod_ts as key)
+
+    == State Management ==
+    target -> tap: Update bookmark\n(new mod_ts timestamp)
+    tap -> monitor: Incremental sync completed
+end
+
+' Error Recovery Scenarios
+group Error Recovery
+    == Network Failure ==
+    wms -> tap: Connection timeout
+    tap -> tap: Retry with backoff\n(max 3 attempts)
+    tap -> error_handler: Max retries exceeded
+    error_handler -> monitor: Alert - Network failure
+
+    == Data Quality Failure ==
+    validator -> validator: Schema violation detected
+    validator -> error_handler: Record rejected
+    error_handler -> monitor: Data quality alert
+    validator -> target: Continue with valid records
+
+    == Database Failure ==
+    target -> db: Connection lost
+    target -> target: Retry connection\n(max 3 attempts)
+    target -> error_handler: Database unavailable
+    error_handler -> monitor: Database alert\n(pipeline paused)
+end
+
+' Monitoring and Alerting
+monitor -> monitor: Check pipeline health\n(duration, error rates, throughput)
+monitor -> "Alert System": Send alerts\n(critical failures, SLA breaches)
+monitor -> "Metrics DB": Store metrics\n(historical trends, performance data)
+
+@enduml

@@ -1,0 +1,279 @@
+name: Documentation Maintenance
+
+on:
+  schedule:
+    # Daily at 8:00 AM UTC (4:00 AM EST)
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      maintenance_type:
+        description: 'Type of maintenance to run'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+          - monthly
+          - full
+      generate_report:
+        description: 'Generate HTML report'
+        required: false
+        default: true
+        type: boolean
+  push:
+    paths:
+      - 'docs/**'
+      - 'scripts/docs_maintenance.py'
+      - 'scripts/automated_docs_maintenance.sh'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'scripts/docs_maintenance.py'
+      - 'scripts/automated_docs_maintenance.sh'
+
+jobs:
+  docs-maintenance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full git history for analysis
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          poetry install --no-dev --no-interaction
+
+      - name: Determine maintenance type
+        id: maintenance-type
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            # Check day of week for schedule type
+            if [[ "$(date +%u)" == "7" ]]; then
+              echo "type=weekly" >> $GITHUB_OUTPUT
+            elif [[ "$(date +%d)" == "01" ]]; then
+              echo "type=monthly" >> $GITHUB_OUTPUT
+            else
+              echo "type=daily" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "type=${{ inputs.maintenance_type }}" >> $GITHUB_OUTPUT
+          else
+            echo "type=daily" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run documentation maintenance
+        id: maintenance
+        run: |
+          MAINTENANCE_TYPE="${{ steps.maintenance-type.outputs.type }}"
+          echo "Running $MAINTENANCE_TYPE documentation maintenance"
+
+          if [[ "$MAINTENANCE_TYPE" == "daily" ]]; then
+            ./scripts/automated_docs_maintenance.sh daily
+          elif [[ "$MAINTENANCE_TYPE" == "weekly" ]]; then
+            ./scripts/automated_docs_maintenance.sh weekly
+          elif [[ "$MAINTENANCE_TYPE" == "monthly" ]]; then
+            ./scripts/automated_docs_maintenance.sh monthly
+          else
+            ./scripts/automated_docs_maintenance.sh full
+          fi
+
+      - name: Generate HTML report
+        if: steps.maintenance.outputs.generate_report != 'false'
+        run: |
+          ./scripts/automated_docs_maintenance.sh report
+
+      - name: Upload maintenance reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs-maintenance-reports
+          path: docs/reports/
+          retention-days: 30
+
+      - name: Check for critical issues
+        id: critical-check
+        run: |
+          # Check latest report for critical issues
+          LATEST_REPORT=$(find docs/reports/ -name "*.json" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+
+          if [[ -f "$LATEST_REPORT" ]]; then
+            CRITICAL_ISSUES=$(jq '.summary.critical_issues // 0' "$LATEST_REPORT" 2>/dev/null || echo "0")
+            QUALITY_SCORE=$(jq '.summary.quality_score // 0' "$LATEST_REPORT" 2>/dev/null || echo "0")
+
+            echo "critical_issues=$CRITICAL_ISSUES" >> $GITHUB_OUTPUT
+            echo "quality_score=$QUALITY_SCORE" >> $GITHUB_OUTPUT
+            echo "report_file=$LATEST_REPORT" >> $GITHUB_OUTPUT
+
+            echo "Found $CRITICAL_ISSUES critical issues"
+            echo "Quality score: $QUALITY_SCORE%"
+          else
+            echo "critical_issues=0" >> $GITHUB_OUTPUT
+            echo "quality_score=0" >> $GITHUB_OUTPUT
+            echo "report_file=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub issue for critical issues
+        if: steps.critical-check.outputs.critical_issues > 0
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const criticalIssues = ${{ steps.critical-check.outputs.critical_issues }};
+            const qualityScore = ${{ steps.critical-check.outputs.quality_score }};
+
+            // Check if issue already exists
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['documentation', 'critical', 'automated'],
+              state: 'open'
+            });
+
+            if (existingIssues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🚨 Critical Documentation Issues Found (${criticalIssues} issues)`,
+                body: `## Documentation Quality Alert
+
+**Quality Score:** ${qualityScore}%
+**Critical Issues:** ${criticalIssues}
+
+### Automated Analysis Results
+- Found ${criticalIssues} critical documentation issues
+- Quality score dropped below acceptable threshold
+- Immediate attention required
+
+### Actions Needed
+1. Review the latest maintenance report in artifacts
+2. Address critical issues identified
+3. Update documentation to improve quality score
+4. Re-run maintenance cycle to verify fixes
+
+### Report Details
+- Generated: ${new Date().toISOString()}
+- Workflow: \`${{ github.workflow }}\`
+- Run: \`${{ github.run_id }}\`
+
+---
+*This issue was automatically created by the documentation maintenance system.*`,
+                labels: ['documentation', 'critical', 'automated']
+              });
+            }
+
+      - name: Update maintenance status badge
+        run: |
+          # Create or update maintenance status
+          QUALITY_SCORE=${{ steps.critical-check.outputs.quality_score }}
+          CRITICAL_ISSUES=${{ steps.critical-check.outputs.critical_issues }}
+
+          # Determine status color
+          if [[ $CRITICAL_ISSUES -gt 0 ]]; then
+            COLOR="red"
+            STATUS="critical"
+          elif [[ $QUALITY_SCORE -lt 80 ]]; then
+            COLOR="yellow"
+            STATUS="warning"
+          else
+            COLOR="green"
+            STATUS="passing"
+          fi
+
+          # Create status badge (could be used in README)
+          echo "MAINTENANCE_STATUS=$STATUS" >> $GITHUB_ENV
+          echo "MAINTENANCE_COLOR=$COLOR" >> $GITHUB_ENV
+          echo "QUALITY_SCORE=$QUALITY_SCORE" >> $GITHUB_ENV
+          echo "CRITICAL_ISSUES=$CRITICAL_ISSUES" >> $GITHUB_ENV
+
+      - name: Comment on PR with maintenance results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const qualityScore = ${{ steps.critical-check.outputs.quality_score }};
+            const criticalIssues = ${{ steps.critical-check.outputs.critical_issues }};
+            const maintenanceType = "${{ steps.maintenance-type.outputs.type }}";
+
+            let comment = `## 📊 Documentation Maintenance Results
+
+**Maintenance Type:** ${maintenanceType}
+**Quality Score:** ${qualityScore}%
+**Critical Issues:** ${criticalIssues}
+
+`;
+
+            if (criticalIssues > 0) {
+              comment += `⚠️ **Found ${criticalIssues} critical documentation issues that need attention.**
+
+### Next Steps:
+1. Review the maintenance report in the workflow artifacts
+2. Address critical issues before merging
+3. Consider running a full maintenance cycle if needed
+`;
+            } else if (qualityScore >= 90) {
+              comment += `✅ **Documentation quality is excellent!**
+
+Your changes maintain high documentation standards.`;
+            } else {
+              comment += `⚠️ **Documentation quality needs attention.**
+
+Consider reviewing the maintenance suggestions in the workflow artifacts.`;
+            }
+
+            comment += `
+
+### Report Details
+- Generated: ${new Date().toISOString()}
+- Workflow: \`${{ github.workflow }}\`
+- Run: \`${{ github.run_id }}\`
+
+---
+*Automated documentation maintenance check*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Fail on critical issues (optional)
+        if: steps.critical-check.outputs.critical_issues > 0 && env.FAIL_ON_CRITICAL == 'true'
+        run: |
+          echo "❌ Found ${{ steps.critical-check.outputs.critical_issues }} critical documentation issues"
+          echo "📄 Check the maintenance reports for details"
+          exit 1
+
+  docs-health-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run health check
+        run: |
+          ./scripts/automated_docs_maintenance.sh health

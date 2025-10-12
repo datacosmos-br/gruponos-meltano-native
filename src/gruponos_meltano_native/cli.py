@@ -16,6 +16,14 @@ import yaml
 from flext_cli import FlextCli, FlextCliMain
 from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
+from gruponos_meltano_native.cli.handlers import (
+    HealthHandler,
+    ListPipelinesHandler,
+    RunHandler,
+    RunWithRetryHandler,
+    ShowConfigHandler,
+    ValidateHandler,
+)
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
@@ -211,55 +219,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
                 "Unexpected error in retry logic"
             )
 
-    # Command execution methods - direct access, no helpers
-    def handle_health_command(self) -> FlextResult[FlextTypes.StringDict]:
-        """Handle health check command."""
-        return self._HealthHandler.execute()
-
-    def handle_run_command(
-        self,
-        pipeline_name: str,
-        *,
-        dry_run: bool = False,
-        force: bool = False,
-    ) -> FlextResult[dict[str, str | bool]]:
-        """Handle pipeline run command."""
-        handler = self._RunHandler(self._orchestrator)
-        return handler.execute(pipeline_name, dry_run=dry_run, force=force)
-
-    def handle_list_command(self) -> FlextResult[FlextTypes.StringList]:
-        """Handle list pipelines command."""
-        handler = self._ListHandler(self._orchestrator)
-        return handler.execute()
-
-    def handle_validate_command(
-        self,
-        output_format: str = "table",
-    ) -> FlextResult[FlextTypes.StringDict]:
-        """Handle validate command."""
-        handler = self._ValidateHandler(self._orchestrator)
-        return handler.execute(output_format)
-
-    def handle_show_config_command(
-        self,
-        output_format: str = "yaml",
-    ) -> FlextResult[FlextTypes.StringDict]:
-        """Handle show config command."""
-        handler = self._ShowConfigHandler(self._config)
-        return handler.execute(output_format)
-
-    def handle_run_with_retry_command(
-        self,
-        pipeline_name: str,
-        max_retries: int = 3,
-        *,
-        retry_delay: int = 5,
-    ) -> FlextResult[dict[str, str | int]]:
-        """Handle run with retry command."""
-        handler = self._RunWithRetryHandler(self._orchestrator)
-        return handler.execute(
-            pipeline_name, max_retries=max_retries, retry_delay=retry_delay
-        )
+    # CLI handler methods removed as dead code - not connected to actual command execution
 
     @staticmethod
     def _initialize_cli_environment(*, debug: bool = False) -> FlextTypes.Dict:

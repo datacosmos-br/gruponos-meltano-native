@@ -1,7 +1,7 @@
 # GrupoNOS Meltano Native - Technical Debt and Issues
 
-**Status**: Documentation Complete · 1.0.0 Release Preparation | **Version**: 0.9.9 RC | **Last Updated**: 2025-08-04  
-**Critical Issues**: 2 | **High Priority**: 6 | **Medium Priority**: 10 | **Low Priority**: 4
+**Status**: ⚠️ BLOCKED - Critical dependency issues preventing test execution | **Version**: 0.9.0 | **Last Updated**: 2025-10-10
+**Critical Issues**: 3 | **High Priority**: 5 | **Medium Priority**: 8 | **Low Priority**: 4
 
 ---
 
@@ -44,42 +44,45 @@
 
 ## 🚨 REMAINING CRITICAL ISSUES (Immediate Action Required)
 
-### 1. **Inconsistent Test Configuration**
+### 1. **flext-meltano Import Failures - BLOCKING ALL TESTING**
 
-**Priority**: CRITICAL | **Impact**: CI/CD Failure | **Effort**: 2 hours
+**Priority**: CRITICAL | **Impact**: Complete Test Infrastructure Failure | **Effort**: 2-4 hours
 
-**Issue**: pyproject.toml sets coverage to 90% but CLAUDE.md still references 85% in some places
-
-```toml
-# pyproject.toml line 199 (CORRECT)
-"--cov-fail-under=90",
-
-# CLAUDE.md line 223 (NEEDS UPDATE)
-"Coverage": Minimum 85% test coverage enforced
+**Issue**: `flext_meltano.models.py` uses non-existent `FlextModels.BaseModel`:
+```python
+class TapRunParams(FlextModels.BaseModel):  # ❌ Doesn't exist
 ```
 
-**Impact**: Documentation inconsistency may confuse developers
-**Solution**: Update all documentation to consistently reference 90% coverage requirement
+**Root Cause**: flext-meltano depends on incorrect FlextModels base class. Available classes:
+- ✅ `FlextModels.ArbitraryTypesModel`
+- ✅ `FlextModels.StrictArbitraryTypesModel`
+- ✅ `FlextModels.FrozenStrictModel`
 
-### 2. **Missing conftest.py**
+**Impact**: 100% of tests fail with import errors, cannot execute any validation
+**Solution**: Update flext-meltano to use correct FlextModels base classes
 
-**Priority**: CRITICAL | **Impact**: Test Infrastructure | **Effort**: 1 day
+### 2. **Missing conftest.py - No Centralized Test Infrastructure**
 
-**Issue**: 344 tests without central test configuration
-**Impact**: No shared fixtures, no test database setup, no mock configurations
-**Solution**: Create comprehensive `tests/conftest.py` with fixtures and test database setup
+**Priority**: CRITICAL | **Impact**: Test Infrastructure | **Effort**: 4-6 hours
 
-### 5. **Hardcoded Local Path Dependencies**
+**Issue**: 344 tests lack shared fixtures, database setup, and mock configurations
+**Impact**: Test duplication, inconsistent setup, maintenance burden
+**Solution**: Create comprehensive `tests/conftest.py` with centralized fixtures:
+- Oracle database connections
+- Meltano configuration fixtures
+- WMS API mocks
+- Test database setup/teardown
 
-**Priority**: CRITICAL | **Impact**: Deployment Failure | **Effort**: 3 days
+### 3. **Hardcoded Local Path Dependencies - Blocks Deployment**
 
-**Issue**: All FLEXT dependencies use hardcoded local paths
+**Priority**: CRITICAL | **Impact**: Production Deployment Impossible | **Effort**: 2-3 days
 
+**Issue**: All FLEXT dependencies use hardcoded local paths:
 ```toml
-flext-core @ file://../../flext-core
+flext-core @ file:../flext-core  # ❌ Cannot deploy
 ```
 
-**Impact**: Cannot deploy to different environments, breaks CI/CD
+**Impact**: Project cannot be deployed to any environment without local paths
 **Solution**: Implement conditional dependency resolution or private package registry
 
 ---
@@ -373,6 +376,7 @@ make ldap-test           # Test LDAP connection (if available)
 
 ---
 
-**Last Analysis**: 2025-08-04  
-**Analyst**: Claude Code Analysis  
+**Last Analysis**: 2025-10-10
+**Analyst**: Claude Code Analysis with serena MCP
 **Next Review**: Weekly until critical issues resolved
+**Current Status**: BLOCKED - Cannot proceed with testing until flext-meltano dependency resolved
