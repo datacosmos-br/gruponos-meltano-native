@@ -8,9 +8,9 @@ from __future__ import annotations
 import tempfile
 
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleConfig
+from flext_core import FlextCore
 
 from gruponos_meltano_native import (
-from flext_core import FlextResult
     GruponosMeltanoOracleConnectionConfig,
     GruponosMeltanoOracleConnectionManager,
 )
@@ -69,7 +69,7 @@ class TestOracleConnectionManagerComprehensive:
 
         manager = GruponosMeltanoOracleConnectionManager(config)
 
-        # Test get_connection returns FlextResult
+        # Test get_connection returns FlextCore.Result
         result = manager.get_connection()
         assert hasattr(result, "success")
         assert hasattr(result, "data")
@@ -90,7 +90,7 @@ class TestOracleConnectionManagerComprehensive:
 
         manager = GruponosMeltanoOracleConnectionManager(config)
 
-        # Test test_connection returns FlextResult
+        # Test test_connection returns FlextCore.Result
         result = manager.test_connection()
         assert hasattr(result, "success")
         assert hasattr(result, "data")
@@ -111,7 +111,7 @@ class TestOracleConnectionManagerComprehensive:
 
         manager = GruponosMeltanoOracleConnectionManager(config)
 
-        # Test close_connection returns FlextResult
+        # Test close_connection returns FlextCore.Result
         result = manager.close_connection()
         assert hasattr(result, "success")
         assert hasattr(result, "data")

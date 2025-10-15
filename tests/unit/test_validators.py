@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from flext_core import FlextTypes
+from flext_core import FlextCore
 
 from gruponos_meltano_native import (
     DataValidator,
@@ -68,7 +68,7 @@ class TestDataValidators:
         validator = DataValidator(rules)
 
         # Test with missing field
-        data: FlextTypes.Dict = {}
+        data: FlextCore.Types.Dict = {}
         errors = validator.validate(data)
         assert len(errors) > 0
         if not any("required_field" in str(error) for error in errors):

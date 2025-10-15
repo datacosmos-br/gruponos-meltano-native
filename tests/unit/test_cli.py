@@ -10,7 +10,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from click.testing import CliRunner
-from flext_core import FlextTypes
+from flext_core import FlextCore
 
 from gruponos_meltano_native import cli, cli as main
 
@@ -334,7 +334,7 @@ class TestCLIComprehensive:
             # Extract JSON from output (skip log messages)
             output_lines = result.output.strip().split("\n")
             # Find the first line that starts with '{'
-            json_lines: FlextTypes.StringList = []
+            json_lines: FlextCore.Types.StringList = []
             found_json = False
             for line in output_lines:
                 if line.strip().startswith("{"):
@@ -492,7 +492,7 @@ class TestCLIComprehensive:
             # Extract JSON from output (skip log messages)
             output_lines = result.output.strip().split("\n")
             # Find the first line that starts with '{'
-            json_lines: FlextTypes.StringList = []
+            json_lines: FlextCore.Types.StringList = []
             found_json = False
             for line in output_lines:
                 if line.strip().startswith("{"):

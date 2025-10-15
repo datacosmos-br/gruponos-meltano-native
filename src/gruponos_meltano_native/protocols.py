@@ -11,29 +11,29 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextProtocols, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 
-class GruponosMeltanoNativeProtocols(FlextProtocols):
+class GruponosMeltanoNativeProtocols(FlextCore.Protocols):
     """GrupoNOS Meltano Native Protocols namespace class.
 
     Contains protocol definitions for the GrupoNOS Meltano Native project.
-    Extends FlextProtocols for consistency with FLEXT ecosystem and enterprise patterns.
+    Extends FlextCore.Protocols for consistency with FLEXT ecosystem and enterprise patterns.
 
-    All protocols follow Railway Pattern with FlextResult for error handling.
+    All protocols follow Railway Pattern with FlextCore.Result for error handling.
     """
 
     class ConfigValidator(Protocol):
         """Protocol for configuration validation with enterprise error handling."""
 
-        def validate_config(self, config: FlextTypes.Dict) -> FlextResult[bool]:
+        def validate_config(self, config: FlextCore.Types.Dict) -> FlextCore.Result[bool]:
             """Validate configuration using Railway Pattern.
 
             Args:
                 config: Configuration dictionary to validate
 
             Returns:
-                FlextResult[bool]: Success with validation result or failure with errors
+                FlextCore.Result[bool]: Success with validation result or failure with errors
 
             """
             ...
@@ -43,7 +43,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
 
         def execute_pipeline(
             self, pipeline_name: str, **kwargs: object
-        ) -> FlextResult[FlextTypes.Dict]:
+        ) -> FlextCore.Result[FlextCore.Types.Dict]:
             """Execute a pipeline by name with Railway Pattern error handling.
 
             Args:
@@ -51,7 +51,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
                 **kwargs: Additional execution parameters
 
             Returns:
-                FlextResult[Dict]: Success with execution results or failure with errors
+                FlextCore.Result[Dict]: Success with execution results or failure with errors
 
             """
             ...
@@ -59,29 +59,29 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
     class Orchestrator(Protocol):
         """Protocol for Meltano orchestration operations."""
 
-        def run_full_sync(self) -> FlextResult[FlextTypes.Dict]:
+        def run_full_sync(self) -> FlextCore.Result[FlextCore.Types.Dict]:
             """Execute full synchronization pipeline.
 
             Returns:
-                FlextResult[Dict]: Success with sync results or failure with errors
+                FlextCore.Result[Dict]: Success with sync results or failure with errors
 
             """
             ...
 
-        def run_incremental_sync(self) -> FlextResult[FlextTypes.Dict]:
+        def run_incremental_sync(self) -> FlextCore.Result[FlextCore.Types.Dict]:
             """Execute incremental synchronization pipeline.
 
             Returns:
-                FlextResult[Dict]: Success with sync results or failure with errors
+                FlextCore.Result[Dict]: Success with sync results or failure with errors
 
             """
             ...
 
-        def validate_configuration(self) -> FlextResult[None]:
+        def validate_configuration(self) -> FlextCore.Result[None]:
             """Validate orchestrator configuration.
 
             Returns:
-                FlextResult[None]: Success or failure with validation errors
+                FlextCore.Result[None]: Success or failure with validation errors
 
             """
             ...
@@ -90,8 +90,8 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
         """Protocol for enterprise alert handling with severity levels."""
 
         def send_alert(
-            self, message: str, severity: str, metadata: FlextTypes.Dict | None = None
-        ) -> FlextResult[None]:
+            self, message: str, severity: str, metadata: FlextCore.Types.Dict | None = None
+        ) -> FlextCore.Result[None]:
             """Send an alert with Railway Pattern error handling.
 
             Args:
@@ -100,7 +100,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
                 metadata: Additional alert metadata
 
             Returns:
-                FlextResult[None]: Success or failure with alert sending errors
+                FlextCore.Result[None]: Success or failure with alert sending errors
 
             """
             ...
@@ -109,8 +109,8 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
         """Protocol for comprehensive data validation."""
 
         def validate_batch(
-            self, data: list[FlextTypes.Dict], schema: FlextTypes.Dict
-        ) -> FlextResult[list[str]]:
+            self, data: list[FlextCore.Types.Dict], schema: FlextCore.Types.Dict
+        ) -> FlextCore.Result[list[str]]:
             """Validate batch of data against schema with detailed error reporting.
 
             Args:
@@ -118,7 +118,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
                 schema: Validation schema definition
 
             Returns:
-                FlextResult[List[str]]: Success with empty list or failure with validation errors
+                FlextCore.Result[List[str]]: Success with empty list or failure with validation errors
 
             """
             ...
@@ -127,8 +127,8 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
         """Protocol for enterprise monitoring and observability."""
 
         def record_metric(
-            self, name: str, value: float, tags: FlextTypes.Dict | None = None
-        ) -> FlextResult[None]:
+            self, name: str, value: float, tags: FlextCore.Types.Dict | None = None
+        ) -> FlextCore.Result[None]:
             """Record a metric with optional tags.
 
             Args:
@@ -137,31 +137,31 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
                 tags: Optional metric tags
 
             Returns:
-                FlextResult[None]: Success or failure with metric recording errors
+                FlextCore.Result[None]: Success or failure with metric recording errors
 
             """
             ...
 
-        def start_timer(self, name: str) -> FlextResult[str]:
+        def start_timer(self, name: str) -> FlextCore.Result[str]:
             """Start a timer for performance monitoring.
 
             Args:
                 name: Timer name
 
             Returns:
-                FlextResult[str]: Success with timer ID or failure with errors
+                FlextCore.Result[str]: Success with timer ID or failure with errors
 
             """
             ...
 
-        def stop_timer(self, timer_id: str) -> FlextResult[float]:
+        def stop_timer(self, timer_id: str) -> FlextCore.Result[float]:
             """Stop a timer and return elapsed time.
 
             Args:
                 timer_id: Timer ID returned from start_timer
 
             Returns:
-                FlextResult[float]: Success with elapsed time or failure with errors
+                FlextCore.Result[float]: Success with elapsed time or failure with errors
 
             """
             ...

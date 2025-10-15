@@ -16,18 +16,15 @@ from __future__ import annotations
 import os
 import subprocess
 import time
-from datetime import datetime
 from pathlib import Path
-from typing import Any
+from datetime import datetime
 
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
+from flext_core import FlextCore
+from flext_meltano import FlextMeltanoService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
-from gruponos_meltano_native.core.pipeline_executor import MeltanoPipelineExecutor
 from gruponos_meltano_native.models.pipeline import (
-    PipelineConfiguration,
     PipelineResult,
-    PipelineStatus,
 )
 
 GruponosMeltanoModels = type('GruponosMeltanoModels', (), {
@@ -56,7 +53,7 @@ class GruponosMeltanoPipelineResult:
     execution_time: float
     output: str
     error: str | None = None
-    metadata: FlextTypes.Dict | None = None
+    metadata: FlextCore.Types.Dict | None = None
 
 
 # =============================================
@@ -64,7 +61,7 @@ class GruponosMeltanoPipelineResult:
 # =============================================
 
 
-class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
+class GruponosMeltanoOrchestrator(FlextCore.Service[GruponosMeltanoNativeConfig]):
     """GrupoNOS Meltano Orchestrator - Unified class following FLEXT patterns.
 
     This orchestrator provides enterprise-grade ETL pipeline management for Oracle WMS
@@ -124,7 +121,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         """
         super().__init__()
         self.settings = settings or GruponosMeltanoNativeConfig()
-        self.logger = FlextLogger(__name__)
+        # Logger is provided by FlextMixins via property - no assignment needed
         self._meltano_service = FlextMeltanoService()
 
         # Validate initial configuration during initialization
@@ -145,14 +142,14 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
     # PUBLIC API METHODS
     # =============================================
 
-    def validate_configuration(self) -> FlextResult[None]:
+    def validate_configuration(self) -> FlextCore.Result[None]:
         """Valida configuração do orquestrador usando padrões FLEXT.
 
         Executa validação completa das configurações necessárias para
         operação do orquestrador, incluindo conexões Oracle e fonte WMS.
 
         Returns:
-            FlextResult[None]: Indica sucesso ou falha com erros de validação.
+            FlextCore.Result[None]: Indica sucesso ou falha com erros de validação.
 
         Example:
             >>> orchestrator = GruponosMeltanoOrchestrator()
@@ -163,7 +160,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         """
         return self._meltano_service.validate_configuration(self.settings.model_dump())
 
-    def run_full_sync(self) -> FlextResult[GruponosMeltanoModels.PipelineResult]:
+    def run_full_sync(self) -> FlextCore.Result[PipelineResult]:
         """Executa pipeline de sincronização completa para atualização total dos dados.
 
         Este método executa o pipeline ETL completo que extrai todos os dados
@@ -178,7 +175,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             - Monitoramento e alertas abrangentes
 
         Returns:
-            FlextResult[GruponosMeltanoModels.PipelineResult]: Railway-oriented result with
+            FlextCore.Result[PipelineResult]: Railway-oriented result with
             pipeline execution details and comprehensive error handling.
 
         Example:
@@ -197,7 +194,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             - Agendamento recomendado: Semanal ou sob demanda
 
         FLEXT OPTIMIZATION:
-        - Uses FlextResult for railway-oriented error handling
+        - Uses FlextCore.Result for railway-oriented error handling
         - Comprehensive error reporting without exceptions
         - Type-safe result processing
 
@@ -205,20 +202,23 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         sync_result = self._execute_meltano_pipeline("full-sync-job")
 
         if sync_result.is_failure:
-            return FlextResult.fail(sync_result.error)
+            return FlextCore.Result.fail(sync_result.error)
 
         pipeline_data = sync_result.unwrap()
-        pipeline_result = GruponosMeltanoModels.PipelineResult(
-            success=True,
+        from datetime import datetime
+        pipeline_result = PipelineResult(
+            pipeline_id=f"full-sync-{datetime.now().isoformat()}",
+            pipeline_name="full-sync-job",
+            status="SUCCESS" if sync_result.is_success else "FAILED",
+            start_time=datetime.now(),
             job_name="full-sync-job",
-            execution_time=pipeline_data.get("execution_time", 0.0),
-            output=pipeline_data.get("output", ""),
-            metadata=pipeline_data.get("metadata", {}),
+            records_extracted=pipeline_data.get("records_extracted", 0),
+            records_loaded=pipeline_data.get("records_loaded", 0),
         )
 
-        return FlextResult.ok(pipeline_result)
+        return FlextCore.Result.ok(pipeline_result)
 
-    def run_incremental_sync(self) -> FlextResult[GruponosMeltanoModels.PipelineResult]:
+    def run_incremental_sync(self) -> FlextCore.Result[PipelineResult]:
         """Executa pipeline de sincronização incremental para atualizações em tempo real.
 
         Este método executa o pipeline ETL incremental que extrai apenas
@@ -232,7 +232,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             - Monitoramento e alertas incrementais
 
         Returns:
-            FlextResult[GruponosMeltanoModels.PipelineResult]: Railway-oriented result with
+            FlextCore.Result[PipelineResult]: Railway-oriented result with
             incremental sync execution details and comprehensive error handling.
 
         Example:
@@ -253,7 +253,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             - Agendamento recomendado: A cada 2 horas
 
         FLEXT OPTIMIZATION:
-        - Uses FlextResult for railway-oriented error handling
+        - Uses FlextCore.Result for railway-oriented error handling
         - Comprehensive error reporting without exceptions
         - Type-safe result processing
 
@@ -261,22 +261,25 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         sync_result = self._execute_meltano_pipeline("incremental-sync-job")
 
         if sync_result.is_failure:
-            return FlextResult.fail(sync_result.error)
+            return FlextCore.Result.fail(sync_result.error)
 
         pipeline_data = sync_result.unwrap()
-        pipeline_result = GruponosMeltanoModels.PipelineResult(
-            success=True,
+        from datetime import datetime
+        pipeline_result = PipelineResult(
+            pipeline_id=f"incremental-sync-{datetime.now().isoformat()}",
+            pipeline_name="incremental-sync-job",
+            status="SUCCESS" if sync_result.is_success else "FAILED",
+            start_time=datetime.now(),
             job_name="incremental-sync-job",
-            execution_time=pipeline_data.get("execution_time", 0.0),
-            output=pipeline_data.get("output", ""),
-            metadata=pipeline_data.get("metadata", {}),
+            records_extracted=pipeline_data.get("records_extracted", 0),
+            records_loaded=pipeline_data.get("records_loaded", 0),
         )
 
-        return FlextResult.ok(pipeline_result)
+        return FlextCore.Result.ok(pipeline_result)
 
     def run_job(
         self, job_name: str
-    ) -> FlextResult[GruponosMeltanoModels.PipelineResult]:
+    ) -> FlextCore.Result[PipelineResult]:
         """Execute a specific pipeline job by name with railway-oriented error handling.
 
         Provides flexible job execution for custom pipeline configurations defined
@@ -286,7 +289,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             job_name: Name of the Meltano job to execute. Must be defined in meltano.yml.
 
         Returns:
-            FlextResult[PipelineResult]: Railway-oriented result with job execution details
+            FlextCore.Result[PipelineResult]: Railway-oriented result with job execution details
             and performance metrics.
 
         Example:
@@ -307,7 +310,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             - Custom jobs as defined in meltano.yml
 
         FLEXT OPTIMIZATION:
-        - Uses FlextResult for consistent error handling
+        - Uses FlextCore.Result for consistent error handling
         - Validates job name before execution
         - Comprehensive logging and monitoring
         - Structured error reporting
@@ -317,7 +320,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         if not job_name or not job_name.strip():
             error_msg = "Job name cannot be empty"
             self.logger.error(error_msg)
-            return FlextResult.fail(error_msg)
+            return FlextCore.Result.fail(error_msg)
 
         sanitized_job_name = job_name.strip()
         self.logger.info(f"Starting job execution: {sanitized_job_name}")
@@ -327,29 +330,31 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         if execution_result.is_failure:
             self.logger.error(f"Job execution failed: {execution_result.error}")
-            return FlextResult.fail(execution_result.error)
+            return FlextCore.Result.fail(execution_result.error)
 
         job_data = execution_result.unwrap()
-        job_result = GruponosMeltanoModels.PipelineResult(
-            success=True,
+        job_result = PipelineResult(
+            pipeline_id=f"job-{sanitized_job_name}-{datetime.now().isoformat()}",
+            pipeline_name=sanitized_job_name,
+            status="SUCCESS",
+            start_time=datetime.now(),
             job_name=sanitized_job_name,
-            execution_time=job_data.get("execution_time", 0.0),
-            output=job_data.get("output", ""),
-            metadata=job_data.get("metadata", {}),
+            records_extracted=job_data.get("records_extracted", 0),
+            records_loaded=job_data.get("records_loaded", 0),
         )
 
         self.logger.info(
             "Job execution completed successfully",
             extra={
                 "job_name": sanitized_job_name,
-                "execution_time": job_result.execution_time,
-                "output_length": len(job_result.output),
+                "duration_seconds": job_result.duration_seconds or 0.0,
+                "records_loaded": job_result.records_loaded,
             },
         )
 
-        return FlextResult.ok(job_result)
+        return FlextCore.Result.ok(job_result)
 
-    def list_jobs(self) -> FlextTypes.StringList:
+    def list_jobs(self) -> FlextCore.Types.StringList:
         """List all available pipeline jobs with FLEXT integration.
 
         Returns a list of all Meltano jobs available for execution in the current
@@ -357,7 +362,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         both standard ETL jobs and custom operations.
 
         Returns:
-            FlextTypes.StringList: List of available job names that can be executed
+            FlextCore.Types.StringList: List of available job names that can be executed
             via run_job() method.
 
         Example:
@@ -373,7 +378,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             dynamically from meltano.yml configuration in future versions.
 
         FLEXT OPTIMIZATION:
-        - Uses FlextTypes for type safety
+        - Uses FlextCore.Types for type safety
         - Comprehensive documentation with examples
         - Structured logging integration
 
@@ -382,11 +387,11 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         self.logger.debug(f"Available jobs: {available_jobs}")
         return available_jobs
 
-    def list_pipelines(self) -> FlextTypes.StringList:
+    def list_pipelines(self) -> FlextCore.Types.StringList:
         """List available pipelines (alias for list_jobs).
 
         Returns:
-            FlextTypes.StringList: List of available pipeline names.
+            FlextCore.Types.StringList: List of available pipeline names.
 
         Note:
             This is an alias for list_jobs() for backward compatibility.
@@ -397,14 +402,14 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
     def run_pipeline(
         self,
         pipeline_name: str,
-    ) -> FlextResult[GruponosMeltanoModels.PipelineResult]:
+    ) -> FlextCore.Result[PipelineResult]:
         """Execute pipeline asynchronously (compatibility method).
 
         Args:
             pipeline_name: Name of the pipeline to execute.
 
         Returns:
-            FlextResult[PipelineResult]: Railway-oriented pipeline execution result.
+            FlextCore.Result[PipelineResult]: Railway-oriented pipeline execution result.
 
         Note:
             This method provides backward compatibility. Use run_job() for new code.
@@ -412,14 +417,14 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         """
         return self.run_job(pipeline_name)
 
-    def get_job_status(self, job_name: str) -> FlextResult[FlextTypes.Dict]:
+    def get_job_status(self, job_name: str) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Get status of a specific job with comprehensive information.
 
         Args:
             job_name: Name of the job to check status for.
 
         Returns:
-            FlextResult[Dict]: Railway-oriented result containing job status information
+            FlextCore.Result[Dict]: Railway-oriented result containing job status information
             including availability and configuration details.
 
         Example:
@@ -434,13 +439,13 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             ...     logger.error(f"Failed to get job status: {status_result.error}")
 
         FLEXT OPTIMIZATION:
-        - Uses FlextResult for consistent error handling
+        - Uses FlextCore.Result for consistent error handling
         - Comprehensive status information
         - Type-safe return values
 
         """
         if not job_name or not job_name.strip():
-            return FlextResult.fail("Job name cannot be empty")
+            return FlextCore.Result.fail("Job name cannot be empty")
 
         job_status = {
             "job_name": job_name.strip(),
@@ -450,7 +455,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         }
 
         self.logger.debug(f"Job status retrieved: {job_status}")
-        return FlextResult.ok(job_status)
+        return FlextCore.Result.ok(job_status)
 
     # =============================================
     # NESTED HELPER CLASSES
@@ -475,14 +480,15 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             - Type-safe initialization
 
             """
+            super().__init__()
             self._orchestrator = orchestrator
-            self.logger = FlextLogger(__name__)
+            # Logger provided by parent class via property
 
         def run_with_retry(
             self,
             job_name: str,
             max_retries: int = 3,
-        ) -> FlextResult[GruponosMeltanoModels.PipelineResult]:
+        ) -> FlextCore.Result[PipelineResult]:
             """Execute pipeline with comprehensive retry logic and error handling.
 
             Implements exponential backoff retry mechanism with detailed logging
@@ -494,7 +500,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                 **kwargs: Additional arguments passed to the pipeline execution.
 
             Returns:
-                FlextResult[PipelineResult]: Railway-oriented result with retry metadata.
+                FlextCore.Result[PipelineResult]: Railway-oriented result with retry metadata.
 
             Example:
                 Pipeline execution with retry logic:
@@ -507,7 +513,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                 ...     print(f"All retry attempts failed: {result.error}")
 
             FLEXT OPTIMIZATION:
-            - Uses FlextResult for railway-oriented error handling
+            - Uses FlextCore.Result for railway-oriented error handling
             - Exponential backoff with configurable retries
             - Comprehensive logging and metadata tracking
             - Type-safe implementation
@@ -565,13 +571,13 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                 final_error, extra={"job_name": job_name, "max_retries": max_retries}
             )
 
-            return FlextResult.fail(final_error)
+            return FlextCore.Result.fail(final_error)
 
     # =============================================
     # PRIVATE METHODS
     # =============================================
 
-    def _execute_meltano_pipeline(self, job_name: str) -> FlextResult[FlextTypes.Dict]:
+    def _execute_meltano_pipeline(self, job_name: str) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Execute a Meltano pipeline using subprocess with comprehensive error handling.
 
         This method executes Meltano jobs via subprocess calls with proper environment
@@ -581,11 +587,11 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             job_name: Name of the Meltano job to execute
 
         Returns:
-            FlextResult[Dict]: Railway-oriented result containing execution details
+            FlextCore.Result[Dict]: Railway-oriented result containing execution details
             or comprehensive error information.
 
         FLEXT OPTIMIZATION:
-        - Uses FlextResult for railway-oriented error handling
+        - Uses FlextCore.Result for railway-oriented error handling
         - Comprehensive environment setup
         - Timeout protection and proper cleanup
         - Structured logging and error reporting
@@ -618,7 +624,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             )
 
             # Execute Meltano job with timeout protection
-            result = FlextUtilities.run_external_command(
+            result = FlextCore.Utilities.run_external_command(
                 cmd,
                 check=False,
                 cwd=working_dir,
@@ -641,7 +647,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                     },
                 )
 
-                return FlextResult.ok({
+                return FlextCore.Result.ok({
                     "execution_time": execution_time,
                     "output": result.stdout.strip(),
                     "metadata": {
@@ -662,13 +668,13 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                 },
             )
 
-            return FlextResult.fail(error_msg)
+            return FlextCore.Result.fail(error_msg)
 
         except subprocess.TimeoutExpired:
             execution_time = time.time() - start_time
             timeout_error = f"Meltano job timed out after {execution_time:.2f}s"
             self.logger.exception(timeout_error, extra={"job_name": job_name})
-            return FlextResult.fail(timeout_error)
+            return FlextCore.Result.fail(timeout_error)
 
         except FileNotFoundError:
             execution_time = time.time() - start_time
@@ -676,22 +682,22 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                 "Meltano executable not found. Ensure Meltano is installed and in PATH."
             )
             self.logger.exception(meltano_error, extra={"job_name": job_name})
-            return FlextResult.fail(meltano_error)
+            return FlextCore.Result.fail(meltano_error)
 
         except Exception as e:
             execution_time = time.time() - start_time
             unexpected_error = f"Unexpected error during Meltano job execution: {e}"
             self.logger.exception(unexpected_error, extra={"job_name": job_name})
-            return FlextResult.fail(unexpected_error)
+            return FlextCore.Result.fail(unexpected_error)
 
-    def _build_meltano_environment(self) -> FlextTypes.StringDict:
+    def _build_meltano_environment(self) -> FlextCore.Types.StringDict:
         """Build comprehensive environment variables for Meltano execution.
 
         Constructs a complete environment dictionary with all necessary configuration
         for Meltano pipeline execution, including Oracle WMS and database credentials.
 
         Returns:
-            FlextTypes.StringDict: Environment variables dictionary for subprocess execution.
+            FlextCore.Types.StringDict: Environment variables dictionary for subprocess execution.
 
         FLEXT OPTIMIZATION:
         - Comprehensive environment setup
@@ -712,29 +718,32 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         # Oracle WMS source configuration
         wms_config = self.settings.wms_source_config
-        env.update({
-            "TAP_ORACLE_WMS_BASE_URL": wms_config.get("base_url", ""),
-            "TAP_ORACLE_WMS_USERNAME": wms_config.get("username", ""),
-            "TAP_ORACLE_WMS_PASSWORD": wms_config.get("password", ""),
-            "TAP_ORACLE_WMS_COMPANY_CODE": wms_config.get("company_code", ""),
-            "TAP_ORACLE_WMS_FACILITY_CODE": wms_config.get("facility_code", ""),
-        })
+        env.update([
+            ("TAP_ORACLE_WMS_BASE_URL", wms_config.get("base_url", "")),
+            ("TAP_ORACLE_WMS_USERNAME", wms_config.get("username", "")),
+            ("TAP_ORACLE_WMS_PASSWORD", wms_config.get("password", "")),
+            ("TAP_ORACLE_WMS_COMPANY_CODE", wms_config.get("company_code", "")),
+            ("TAP_ORACLE_WMS_FACILITY_CODE", wms_config.get("facility_code", "")),
+        ])
 
         # Oracle target database configuration
         oracle_config = self.settings.oracle_connection_config
-        env.update({
-            "FLEXT_TARGET_ORACLE_HOST": oracle_config.get("host", ""),
-            "FLEXT_TARGET_ORACLE_PORT": str(oracle_config.get("port", "")),
-            "FLEXT_TARGET_ORACLE_USERNAME": oracle_config.get("username", ""),
-            "FLEXT_TARGET_ORACLE_PASSWORD": oracle_config.get("password", ""),
-            "FLEXT_TARGET_ORACLE_SCHEMA": oracle_config.get("schema", ""),
-        })
+        env.update([
+            ("FLEXT_TARGET_ORACLE_HOST", oracle_config.get("host", "")),
+            ("FLEXT_TARGET_ORACLE_PORT", str(oracle_config.get("port", ""))),
+            ("FLEXT_TARGET_ORACLE_USERNAME", oracle_config.get("username", "")),
+            ("FLEXT_TARGET_ORACLE_PASSWORD", oracle_config.get("password", "")),
+            ("FLEXT_TARGET_ORACLE_SCHEMA", oracle_config.get("schema", "")),
+        ])
 
         # Handle service name vs SID (backward compatibility)
-        if oracle_config.get("service_name"):
-            env["FLEXT_TARGET_ORACLE_SERVICE_NAME"] = oracle_config["service_name"]
-        elif oracle_config.get("sid"):
-            env["FLEXT_TARGET_ORACLE_SID"] = oracle_config["sid"]
+        service_name = oracle_config.get("service_name")
+        if service_name:
+            env["FLEXT_TARGET_ORACLE_SERVICE_NAME"] = service_name
+
+        sid = oracle_config.get("sid")
+        if sid:
+            env["FLEXT_TARGET_ORACLE_SID"] = sid
 
         self.logger.debug(
             "Meltano environment configured",
@@ -747,14 +756,14 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         return env
 
-    def _validate_initial_configuration(self) -> FlextResult[None]:
+    def _validate_initial_configuration(self) -> FlextCore.Result[None]:
         """Validate orchestrator configuration during initialization.
 
         Performs essential configuration validation required for orchestrator
         to function properly, ensuring all required settings are present.
 
         Returns:
-            FlextResult[None]: Success if configuration is valid, failure with error details.
+            FlextCore.Result[None]: Success if configuration is valid, failure with error details.
 
         FLEXT OPTIMIZATION:
         - Railway-oriented validation
@@ -765,40 +774,40 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         try:
             # Validate Meltano environment
             if not self.settings.meltano_environment:
-                return FlextResult.fail("meltano_environment is required")
+                return FlextCore.Result.fail("meltano_environment is required")
 
             # Validate project root exists
             project_root = Path(self.settings.meltano_project_root or ".")
             if not project_root.exists():
-                return FlextResult.fail(
+                return FlextCore.Result.fail(
                     f"Meltano project root does not exist: {project_root}"
                 )
 
             # Validate meltano.yml exists
             meltano_config = project_root / "meltano.yml"
             if not meltano_config.exists():
-                return FlextResult.fail(
+                return FlextCore.Result.fail(
                     f"meltano.yml not found in project root: {project_root}"
                 )
 
             # Validate pipeline timeout
             if self.settings.pipeline_timeout_seconds <= 0:
-                return FlextResult.fail("pipeline_timeout_seconds must be positive")
+                return FlextCore.Result.fail("pipeline_timeout_seconds must be positive")
 
             self.logger.debug("Initial configuration validation passed")
-            return FlextResult.ok(None)
+            return FlextCore.Result.ok(None)
 
         except Exception as e:
-            return FlextResult.fail(f"Configuration validation failed: {e}")
+            return FlextCore.Result.fail(f"Configuration validation failed: {e}")
 
-    def _validate_meltano_project(self) -> FlextResult[None]:
+    def _validate_meltano_project(self) -> FlextCore.Result[None]:
         """Validate Meltano project structure and configuration.
 
         Checks that the Meltano project is properly configured and all
         required files and settings are present.
 
         Returns:
-            FlextResult[None]: Success if project is valid, failure with details.
+            FlextCore.Result[None]: Success if project is valid, failure with details.
 
         FLEXT OPTIMIZATION:
         - Comprehensive project validation
@@ -814,26 +823,26 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             for file_name in required_files:
                 file_path = project_root / file_name
                 if not file_path.exists():
-                    return FlextResult.fail(f"Required file not found: {file_path}")
+                    return FlextCore.Result.fail(f"Required file not found: {file_path}")
 
             # Check for meltano environment
             if not self.settings.meltano_environment:
-                return FlextResult.fail("Meltano environment not configured")
+                return FlextCore.Result.fail("Meltano environment not configured")
 
             self.logger.debug("Meltano project validation passed")
-            return FlextResult.ok(None)
+            return FlextCore.Result.ok(None)
 
         except Exception as e:
-            return FlextResult.fail(f"Meltano project validation failed: {e}")
+            return FlextCore.Result.fail(f"Meltano project validation failed: {e}")
 
-    def _validate_environment_configuration(self) -> FlextResult[None]:
+    def _validate_environment_configuration(self) -> FlextCore.Result[None]:
         """Validate environment-specific configuration.
 
         Validates that all required environment variables and configuration
         settings are properly set for the current environment.
 
         Returns:
-            FlextResult[None]: Success if environment config is valid, failure with details.
+            FlextCore.Result[None]: Success if environment config is valid, failure with details.
 
         FLEXT OPTIMIZATION:
         - Environment-aware validation
@@ -847,30 +856,30 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             required_wms_fields = ["base_url", "username", "password", "company_code"]
             for field in required_wms_fields:
                 if not wms_config.get(field):
-                    return FlextResult.fail(f"WMS {field} is required")
+                    return FlextCore.Result.fail(f"WMS {field} is required")
 
             # Validate Oracle configuration
             oracle_config = self.settings.oracle_connection_config
             required_oracle_fields = ["host", "port", "username", "password", "schema"]
             for field in required_oracle_fields:
                 if not oracle_config.get(field):
-                    return FlextResult.fail(f"Oracle {field} is required")
+                    return FlextCore.Result.fail(f"Oracle {field} is required")
 
             # Validate port is valid
             try:
                 port = int(oracle_config.get("port", 0))
                 if port <= 0 or port > MAX_PORT_NUMBER:
-                    return FlextResult.fail(
+                    return FlextCore.Result.fail(
                         f"Oracle port must be between 1 and {MAX_PORT_NUMBER}"
                     )
             except (ValueError, TypeError):
-                return FlextResult.fail("Oracle port must be a valid number")
+                return FlextCore.Result.fail("Oracle port must be a valid number")
 
             self.logger.debug("Environment configuration validation passed")
-            return FlextResult.ok(None)
+            return FlextCore.Result.ok(None)
 
         except Exception as e:
-            return FlextResult.fail(f"Environment configuration validation failed: {e}")
+            return FlextCore.Result.fail(f"Environment configuration validation failed: {e}")
 
     def _validate_job_name(self, job_name: str) -> str:
         """Validate and sanitize job name to prevent command injection.
@@ -1053,10 +1062,10 @@ def create_gruponos_meltano_pipeline_runner(
 # =============================================
 
 # Type aliases for backward compatibility
-GruponosMeltanoPipelineResult = GruponosMeltanoModels.PipelineResult
+GruponosMeltanoPipelineResult = PipelineResult
 
 # Module-level exports with comprehensive API surface
-__all__: FlextTypes.StringList = [
+__all__: FlextCore.Types.StringList = [
     "GruponosMeltanoModels",
     "GruponosMeltanoOrchestrator",
     "GruponosMeltanoPipelineResult",

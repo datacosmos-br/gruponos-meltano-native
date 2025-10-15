@@ -22,17 +22,17 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import override
 
-from flext_core import FlextExceptions, FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 # Get dependencies via DI
-logger = FlextLogger(__name__)
+logger = FlextCore.Logger(__name__)
 
 
 # Use padrão de arquitetura empresarial with proper error code for tests compatibility
-class ValidationError(FlextExceptions.ValidationError):
+class ValidationError(FlextCore.Exceptions.ValidationError):
     """Erro de validação com código de erro compatível com testes.
 
-    Estende FlextExceptions.ValidationError para fornecer erro de validação
+    Estende FlextCore.Exceptions.ValidationError para fornecer erro de validação
     consistente com código de erro específico para compatibilidade
     com suíte de testes existente.
     """
@@ -41,7 +41,7 @@ class ValidationError(FlextExceptions.ValidationError):
     def __init__(
         self,
         message: str,
-        validation_details: FlextTypes.Dict | None = None,
+        validation_details: FlextCore.Types.Dict | None = None,
         **kwargs: object,
     ) -> None:
         """Inicializa erro de validação com código de erro consistente.
@@ -82,7 +82,7 @@ class ValidationRule:
         self,
         field_name: str,
         rule_type: str,
-        parameters: FlextTypes.Dict | None = None,
+        parameters: FlextCore.Types.Dict | None = None,
         **kwargs: object,
     ) -> None:
         """Inicializa regra de validação.
@@ -141,8 +141,8 @@ class DataValidator:
     def _validate_required_field(
         self,
         rule: ValidationRule,
-        data: FlextTypes.Dict,
-        errors: FlextTypes.StringList,
+        data: FlextCore.Types.Dict,
+        errors: FlextCore.Types.StringList,
     ) -> bool:
         """Validate required field presence."""
         if rule.field_name not in data and rule.rule_type == "required":
@@ -166,12 +166,12 @@ class DataValidator:
         rule: ValidationRule,
         *,
         value: object,
-        errors: FlextTypes.StringList,
+        errors: FlextCore.Types.StringList,
     ) -> None:
         """Validate field value based on rule type."""
         validation_methods: dict[
             str,
-            Callable[[ValidationRule, object, FlextTypes.StringList], None],
+            Callable[[ValidationRule, object, FlextCore.Types.StringList], None],
         ] = {
             "decimal": self._validate_decimal,
             "string": self._validate_string,
@@ -186,7 +186,7 @@ class DataValidator:
             validation_method(rule, value, errors)
 
     @override
-    def validate(self, data: FlextTypes.Dict) -> FlextTypes.StringList:
+    def validate(self, data: FlextCore.Types.Dict) -> FlextCore.Types.StringList:
         """Valida dados contra regras configuradas.
 
         Aplica todas as regras de validação configuradas aos dados fornecidos,
@@ -196,7 +196,7 @@ class DataValidator:
             data: Dados a serem validados.
 
         Returns:
-            FlextTypes.StringList: Lista de mensagens de erro de validação
+            FlextCore.Types.StringList: Lista de mensagens de erro de validação
             (vazia se todas as validações passarem).
 
         Raises:
@@ -208,7 +208,7 @@ class DataValidator:
             >>> print(erros)  # ['Required field "id" is missing']
 
         """
-        errors: FlextTypes.StringList = []
+        errors: FlextCore.Types.StringList = []
         for rule in self.rules:
             # Check required fields first
             if not self._validate_required_field(rule, data, errors):
@@ -224,7 +224,7 @@ class DataValidator:
         self,
         rule: ValidationRule,
         value: object,
-        errors: FlextTypes.StringList,
+        errors: FlextCore.Types.StringList,
     ) -> None:
         """Validate decimal field."""
         try:
@@ -248,7 +248,7 @@ class DataValidator:
         self,
         rule: ValidationRule,
         value: object,
-        errors: FlextTypes.StringList,
+        errors: FlextCore.Types.StringList,
     ) -> None:
         """Validate string field."""
         if not isinstance(value, str):
@@ -289,7 +289,7 @@ class DataValidator:
         self,
         rule: ValidationRule,
         value: object,
-        errors: FlextTypes.StringList,
+        errors: FlextCore.Types.StringList,
     ) -> None:
         """Validate number field."""
         if not isinstance(value, (int, float)):
@@ -348,7 +348,7 @@ class DataValidator:
         self,
         rule: ValidationRule,
         value: object,
-        errors: FlextTypes.StringList,
+        errors: FlextCore.Types.StringList,
     ) -> None:
         """Validate date field."""
         if isinstance(value, str):
@@ -388,7 +388,7 @@ class DataValidator:
         self,
         rule: ValidationRule,
         value: object,
-        errors: FlextTypes.StringList,
+        errors: FlextCore.Types.StringList,
     ) -> None:
         """Validate boolean field."""
         if not isinstance(value, bool):
@@ -409,7 +409,7 @@ class DataValidator:
         self,
         rule: ValidationRule,
         value: object,
-        errors: FlextTypes.StringList,
+        errors: FlextCore.Types.StringList,
     ) -> None:
         """Validate email field."""
         email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
@@ -431,10 +431,10 @@ class DataValidator:
         self,
         rule: ValidationRule,
         value: object,
-        errors: FlextTypes.StringList,
+        errors: FlextCore.Types.StringList,
     ) -> None:
         """Validate enum field."""
-        allowed_values_raw: FlextTypes.List = rule.parameters.get("allowed_values", [])
+        allowed_values_raw: FlextCore.Types.List = rule.parameters.get("allowed_values", [])
         allowed_values = (
             allowed_values_raw
             if isinstance(allowed_values_raw, (list, tuple, set))
@@ -458,9 +458,9 @@ class DataValidator:
 
     def validate_and_convert_record(
         self,
-        record: FlextTypes.Dict,
-        schema: FlextTypes.Dict,
-    ) -> FlextTypes.Dict:
+        record: FlextCore.Types.Dict,
+        schema: FlextCore.Types.Dict,
+    ) -> FlextCore.Types.Dict:
         """Valida e converte um registro de acordo com schema.
 
         Processa um registro de dados aplicando conversões de tipo
@@ -472,7 +472,7 @@ class DataValidator:
             schema: Schema definindo tipos esperados dos campos.
 
         Returns:
-            FlextTypes.Dict: Registro convertido com tipos apropriados.
+            FlextCore.Types.Dict: Registro convertido com tipos apropriados.
 
         Raises:
             ValueError: Se conversão de tipo falhar.
@@ -480,7 +480,7 @@ class DataValidator:
         Example:
             >>> validator = DataValidator()
             >>> schema = {"properties": {"id": {"type": integer}}}
-            >>> resultado: FlextResult[object] = validator.validate_and_convert_record(
+            >>> resultado: FlextCore.Result[object] = validator.validate_and_convert_record(
             ...     {"id": 123}, schema
             ... )
             >>> print(resultado)  # {"id": 123}
@@ -489,7 +489,7 @@ class DataValidator:
         properties = schema.get("properties")
         if not properties or not isinstance(properties, dict):
             return record
-        converted_record: FlextTypes.Dict = {}
+        converted_record: FlextCore.Types.Dict = {}
         for field_name, field_value in record.items():
             if field_name in properties:
                 field_schema = properties[field_name]
@@ -719,14 +719,14 @@ def create_validator_for_environment(environment: str = "dev") -> DataValidator:
 if __name__ == "__main__":
     # Test the validator
     validator = DataValidator(strict_mode=False)
-    test_record: FlextTypes.Dict = {
+    test_record: FlextCore.Types.Dict = {
         "id": 123,
         "amount": 540.50,
         "count": 42,
         "active": True,
         "created_date": "2025-07-02T10:00:00",
     }
-    test_schema: FlextTypes.Dict = {
+    test_schema: FlextCore.Types.Dict = {
         "properties": {
             "id": {"type": "integer"},
             "amount": {"type": "number"},
@@ -735,7 +735,7 @@ if __name__ == "__main__":
             "created_date": {"type": "string", "format": "date-time"},
         },
     }
-    result: FlextResult[object] = validator.validate_and_convert_record(
+    result: FlextCore.Result[object] = validator.validate_and_convert_record(
         test_record, test_schema
     )
     logger.info("Converted record: %s", result)

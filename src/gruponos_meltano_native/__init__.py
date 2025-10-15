@@ -5,14 +5,6 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-from flext_core import (
-    FlextConfig,
-    FlextContainer,
-    FlextModels,
-    FlextResult,
-    FlextTypes,
-)
-
 from gruponos_meltano_native import monitoring
 from gruponos_meltano_native.__version__ import __version__, __version_info__
 
@@ -60,6 +52,8 @@ from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlertType,
     create_gruponos_meltano_alert_manager,
 )
+
+from gruponos_meltano_native.monitoring import alert_manager
 from gruponos_meltano_native.oracle.connection_manager_enhanced import (
     GruponosMeltanoOracleConnectionManager,
     create_gruponos_meltano_oracle_connection_manager,
@@ -81,11 +75,6 @@ from gruponos_meltano_native.validators import (
 
 __all__ = [
     "DataValidator",
-    "FlextConfig",
-    "FlextContainer",
-    "FlextModels",
-    "FlextResult",
-    "FlextTypes",
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoAlertDeliveryError",
@@ -116,7 +105,6 @@ __all__ = [
     "GruponosMeltanoOrchestrator",
     "GruponosMeltanoPipelineError",
     "GruponosMeltanoPipelineResult",
-    "GruponosMeltanoPipelineRunner",
     "GruponosMeltanoPipelineTimeoutError",
     "GruponosMeltanoPipelineValidationError",
     "GruponosMeltanoProcessingError",

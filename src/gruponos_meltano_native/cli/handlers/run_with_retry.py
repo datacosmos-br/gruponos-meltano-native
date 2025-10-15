@@ -8,7 +8,7 @@ from __future__ import annotations
 import time
 
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextCore
 
 
 class RunWithRetryHandler:
@@ -24,7 +24,7 @@ class RunWithRetryHandler:
         max_retries: int = 3,
         *,
         retry_delay: int = 5,
-    ) -> FlextResult[dict[str, str | int]]:
+    ) -> FlextCore.Result[dict[str, str | int]]:
         """Execute run with retry command."""
         attempts_used = 0
 
@@ -34,7 +34,7 @@ class RunWithRetryHandler:
 
             if execution_result.is_success:
                 pipeline_result = execution_result.unwrap()
-                return FlextResult[dict[str, str | int]].ok({
+                return FlextCore.Result[dict[str, str | int]].ok({
                     "pipeline": pipeline_name,
                     "retries": max_retries,
                     "retry_delay": retry_delay,
@@ -46,11 +46,11 @@ class RunWithRetryHandler:
             if attempt < max_retries:
                 time.sleep(retry_delay)
             else:
-                return FlextResult[dict[str, str | int]].fail(
+                return FlextCore.Result[dict[str, str | int]].fail(
                     f"Pipeline execution failed after {attempts_used} attempts: {execution_result.error}"
                 )
 
         # This should not be reached, but just in case
-        return FlextResult[dict[str, str | int]].fail(
+        return FlextCore.Result[dict[str, str | int]].fail(
             "Unexpected error in retry logic"
         )

@@ -23,7 +23,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 import pytest_asyncio
 
-# Import the main package for testing
 from gruponos_meltano_native import (
     GruponosMeltanoNativeCli,
     GruponosMeltanoNativeConfig,
@@ -270,7 +269,7 @@ def valid_gruponos_config(sample_pipeline_config) -> GruponosMeltanoNativeConfig
 @pytest.fixture
 def mock_orchestrator(valid_gruponos_config, mock_flext_container):
     """Provide a mock orchestrator instance."""
-    with patch('gruponos_meltano_native.orchestrator.FlextContainer.get_global', return_value=mock_flext_container):
+    with patch('gruponos_meltano_native.orchestrator.FlextCore.Container.get_global', return_value=mock_flext_container):
         orchestrator = GruponosMeltanoOrchestrator()
         return orchestrator
 
@@ -286,19 +285,19 @@ def mock_cli(valid_gruponos_config):
 def clean_flext_container():
     """Provide a clean FLEXT container state for tests."""
     # This fixture ensures each test starts with a clean container state
-    from flext_core import FlextContainer
+    from flext_core import FlextCore.Container
 
     # Clear any existing global container
-    if hasattr(FlextContainer, '_global_instance'):
-        FlextContainer._global_instance = None
+    if hasattr(FlextCore.Container, '_global_instance'):
+        FlextCore.Container._global_instance = None
 
-    container = FlextContainer.get_global()
+    container = FlextCore.Container.get_global()
 
     yield container
 
     # Cleanup after test
-    if hasattr(FlextContainer, '_global_instance'):
-        FlextContainer._global_instance = None
+    if hasattr(FlextCore.Container, '_global_instance'):
+        FlextCore.Container._global_instance = None
 
 
 @pytest.fixture

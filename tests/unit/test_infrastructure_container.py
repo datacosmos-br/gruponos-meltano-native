@@ -5,7 +5,7 @@ These tests avoid fallbacks and exercise DI container wiring.
 
 from __future__ import annotations
 
-from flext_core import FlextContainer, FlextResult
+from flext_core import FlextCore
 
 from gruponos_meltano_native import (
     get_gruponos_meltano_container,
@@ -14,18 +14,18 @@ from gruponos_meltano_native import (
 
 def test_get_flext_container_returns_container() -> None:
     """Test get flext container returns container function."""
-    container = FlextContainer.get_global()
-    assert isinstance(container, FlextContainer)
+    container = FlextCore.Container.get_global()
+    assert isinstance(container, FlextCore.Container)
 
 
 def test_get_gruponos_meltano_container_registers_core() -> None:
     """Test get gruponos meltano container registers core function."""
     container = get_gruponos_meltano_container()
     # Ensure it is the same singleton instance type
-    assert isinstance(container, FlextContainer)
+    assert isinstance(container, FlextCore.Container)
 
     # Components registered in configuration should be resolvable
     result = container.get("flext_result")
     assert hasattr(result, "success")
     assert result.success
-    assert result.data is FlextResult
+    assert result.data is FlextCore.Result

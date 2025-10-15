@@ -1,6 +1,6 @@
 """GrupoNOS Meltano Native Constants - Domain-specific constants.
 
-Provides GrupoNOS-specific constants extending FlextConstants for
+Provides GrupoNOS-specific constants extending FlextCore.Constants for
 Oracle WMS integration and Meltano pipeline operations.
 
 Copyright (c) 2025 Grupo Nós. Todos os direitos reservados.
@@ -12,11 +12,11 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import ClassVar, Final
 
-from flext_core import FlextConstants, FlextTypes
+from flext_core import FlextCore
 
 
-class GruponosMeltanoNativeConstants(FlextConstants):
-    """GrupoNOS Meltano Native constants extending FlextConstants.
+class GruponosMeltanoNativeConstants(FlextCore.Constants):
+    """GrupoNOS Meltano Native constants extending FlextCore.Constants.
 
     Contains all constants for GrupoNOS Oracle WMS integration and
     Meltano pipeline operations following FLEXT standards with
@@ -98,7 +98,7 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_COMPRESSION_LEVEL: Final[int] = 9
 
         # Supported encodings
-        SUPPORTED_ENCODINGS: Final[FlextTypes.StringList] = [
+        SUPPORTED_ENCODINGS: Final[FlextCore.Types.StringList] = [
             "utf-8",
             "utf-16",
             "ascii",
@@ -138,7 +138,7 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_BACKUP_COUNT: Final[int] = 50
 
         # Valid log levels
-        VALID_LEVELS: Final[FlextTypes.StringList] = [
+        VALID_LEVELS: Final[FlextCore.Types.StringList] = [
             "DEBUG",
             "INFO",
             "WARNING",
@@ -185,12 +185,12 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_SALT_LENGTH: Final[int] = 32
 
         # Supported algorithms
-        SUPPORTED_ENCRYPTION_ALGORITHMS: ClassVar[FlextTypes.StringList] = [
+        SUPPORTED_ENCRYPTION_ALGORITHMS: ClassVar[FlextCore.Types.StringList] = [
             "AES-256-GCM",
             "AES-128-GCM",
             "ChaCha20-Poly1305",
         ]
-        SUPPORTED_HASH_ALGORITHMS: ClassVar[FlextTypes.StringList] = [
+        SUPPORTED_HASH_ALGORITHMS: ClassVar[FlextCore.Types.StringList] = [
             "SHA-256",
             "SHA-512",
             "BLAKE2b",

@@ -6,7 +6,7 @@ Handler for listing pipelines command operations.
 from __future__ import annotations
 
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextCore
 
 
 class ListPipelinesHandler:
@@ -16,7 +16,7 @@ class ListPipelinesHandler:
         """Initialize the list pipelines handler."""
         self._orchestrator = orchestrator
 
-    def execute(self) -> FlextResult[FlextTypes.StringList]:
+    def execute(self) -> FlextCore.Result[FlextCore.Types.StringList]:
         """Execute list pipelines command."""
         jobs = self._orchestrator.list_jobs()
-        return FlextResult[FlextTypes.StringList].ok(jobs)
+        return FlextCore.Result[FlextCore.Types.StringList].ok(jobs)

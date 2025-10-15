@@ -13,7 +13,7 @@ flext_observability_logging = Mock()
 
 # Configure mocks
 flext_db_oracle.OracleConnectionManager = Mock()
-flext_observability_logging.FlextLogger = Mock(return_value=Mock())
+flext_observability_logging.FlextCore.Logger = Mock(return_value=Mock())
 
 # Patch the module
 pytest_plugins = [
