@@ -5,8 +5,7 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-# External library imports
-from flext_core import (, FlextResult
+from flext_core import (
     FlextConfig,
     FlextContainer,
     FlextModels,
@@ -17,7 +16,6 @@ from flext_core import (, FlextResult
 from gruponos_meltano_native import monitoring
 from gruponos_meltano_native.__version__ import __version__, __version_info__
 
-# Local module imports
 from gruponos_meltano_native.cli import cli as gruponos_meltano_cli
 from gruponos_meltano_native.config import (
     GruponosMeltanoAlertConfig,
@@ -80,8 +78,6 @@ from gruponos_meltano_native.validators import (
     create_validator_for_environment,
 )
 
-# Version handling
-# Type aliases - Removed GruponosMeltanoSettings as it's test-only
 
 __all__ = [
     "DataValidator",

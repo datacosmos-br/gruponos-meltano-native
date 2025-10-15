@@ -13,10 +13,14 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
+import os
+import subprocess
+import time
 from datetime import datetime
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any
 
-from flext_core import FlextLogger, FlextResult, FlextService
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.core.pipeline_executor import MeltanoPipelineExecutor
@@ -26,7 +30,6 @@ from gruponos_meltano_native.models.pipeline import (
     PipelineStatus,
 )
 
-# Import for backward compatibility
 GruponosMeltanoModels = type('GruponosMeltanoModels', (), {
     'PipelineResult': PipelineResult,
 })
