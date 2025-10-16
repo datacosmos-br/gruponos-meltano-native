@@ -8,7 +8,6 @@ import re
 from typing import Protocol
 from unittest.mock import patch
 
-from flext_core import FlextCore
 from sqlalchemy import MetaData, Table, select
 from sqlalchemy.sql import Select
 
@@ -25,7 +24,7 @@ class OracleCursor(Protocol):
     def execute(
         self,
         query: str,
-        params: FlextTypes.List | FlextCore.Types.Dict | None = None,
+        params: FlextTypes.List | FlextTypes.Dict | None = None,
     ) -> None:
         """Execute a query."""
 

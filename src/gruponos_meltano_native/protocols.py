@@ -11,8 +11,6 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextCore
-
 
 class GruponosMeltanoNativeProtocols(FlextProtocols):
     """GrupoNOS Meltano Native Protocols namespace class.
@@ -45,7 +43,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
 
         def execute_pipeline(
             self, pipeline_name: str, **kwargs: object
-        ) -> FlextResult[FlextCore.Types.Dict]:
+        ) -> FlextResult[FlextTypes.Dict]:
             """Execute a pipeline by name with Railway Pattern error handling.
 
             Args:
@@ -61,7 +59,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
     class Orchestrator(Protocol):
         """Protocol for Meltano orchestration operations."""
 
-        def run_full_sync(self) -> FlextResult[FlextCore.Types.Dict]:
+        def run_full_sync(self) -> FlextResult[FlextTypes.Dict]:
             """Execute full synchronization pipeline.
 
             Returns:
@@ -70,7 +68,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
             """
             ...
 
-        def run_incremental_sync(self) -> FlextResult[FlextCore.Types.Dict]:
+        def run_incremental_sync(self) -> FlextResult[FlextTypes.Dict]:
             """Execute incremental synchronization pipeline.
 
             Returns:
@@ -114,7 +112,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
         """Protocol for comprehensive data validation."""
 
         def validate_batch(
-            self, data: list[FlextTypes.Dict], schema: FlextCore.Types.Dict
+            self, data: list[FlextTypes.Dict], schema: FlextTypes.Dict
         ) -> FlextResult[list[str]]:
             """Validate batch of data against schema with detailed error reporting.
 

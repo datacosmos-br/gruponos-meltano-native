@@ -13,8 +13,6 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from flext_core import FlextCore
-
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.models.pipeline import (
     PipelineConfiguration,
@@ -122,7 +120,7 @@ class MeltanoPipelineExecutor:
         except Exception as e:
             return FlextResult[dict[str, Any]].fail(f"Unexpected error: {e!s}")
 
-    def list_jobs(self) -> FlextResult[FlextCore.Types.StringList]:
+    def list_jobs(self) -> FlextResult[FlextTypes.StringList]:
         """List all available Meltano jobs.
 
         Returns:
@@ -138,7 +136,7 @@ class MeltanoPipelineExecutor:
             )
 
             if result.returncode != 0:
-                return FlextResult[FlextCore.Types.StringList].fail(
+                return FlextResult[FlextTypes.StringList].fail(
                     f"Failed to list jobs: {result.stderr}"
                 )
 
@@ -147,14 +145,14 @@ class MeltanoPipelineExecutor:
             jobs_data = json.loads(result.stdout)
             job_names = [job["name"] for job in jobs_data.get("jobs", [])]
 
-            return FlextResult[FlextCore.Types.StringList].ok(job_names)
+            return FlextResult[FlextTypes.StringList].ok(job_names)
 
         except Exception as e:
-            return FlextResult[FlextCore.Types.StringList].fail(
+            return FlextResult[FlextTypes.StringList].fail(
                 f"Failed to list jobs: {e!s}"
             )
 
-    def list_pipelines(self) -> FlextResult[FlextCore.Types.StringList]:
+    def list_pipelines(self) -> FlextResult[FlextTypes.StringList]:
         """List all available Meltano pipelines.
 
         Returns:
@@ -170,7 +168,7 @@ class MeltanoPipelineExecutor:
             )
 
             if result.returncode != 0:
-                return FlextResult[FlextCore.Types.StringList].fail(
+                return FlextResult[FlextTypes.StringList].fail(
                     f"Failed to list pipelines: {result.stderr}"
                 )
 
@@ -179,10 +177,10 @@ class MeltanoPipelineExecutor:
             pipelines_data = json.loads(result.stdout)
             pipeline_names = [p["name"] for p in pipelines_data.get("pipelines", [])]
 
-            return FlextResult[FlextCore.Types.StringList].ok(pipeline_names)
+            return FlextResult[FlextTypes.StringList].ok(pipeline_names)
 
         except Exception as e:
-            return FlextResult[FlextCore.Types.StringList].fail(
+            return FlextResult[FlextTypes.StringList].fail(
                 f"Failed to list pipelines: {e!s}"
             )
 

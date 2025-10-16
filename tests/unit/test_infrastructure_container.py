@@ -5,8 +5,6 @@ These tests avoid fallbacks and exercise DI container wiring.
 
 from __future__ import annotations
 
-from flext_core import FlextCore
-
 from gruponos_meltano_native import (
     get_gruponos_meltano_container,
 )

@@ -5,8 +5,6 @@ Handler for validation command operations.
 
 from __future__ import annotations
 
-from flext_core import FlextCore
-
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
 
@@ -19,12 +17,12 @@ class ValidateHandler:
 
     def execute(
         self, output_format: str = "table"
-    ) -> FlextResult[FlextCore.Types.StringDict]:
+    ) -> FlextResult[FlextTypes.StringDict]:
         """Execute validate command."""
         validation_result = self._orchestrator.validate_configuration()
 
         if validation_result.is_failure:
-            return FlextResult[FlextCore.Types.StringDict].fail(
+            return FlextResult[FlextTypes.StringDict].fail(
                 f"Validation failed: {validation_result.error}"
             )
 
@@ -32,11 +30,11 @@ class ValidateHandler:
         wms_validation_result = FlextResult.ok("WMS validation placeholder")
 
         if wms_validation_result.is_failure:
-            return FlextResult[FlextCore.Types.StringDict].fail(
+            return FlextResult[FlextTypes.StringDict].fail(
                 f"WMS connection validation failed: {wms_validation_result.error}"
             )
 
-        return FlextResult[FlextCore.Types.StringDict].ok({
+        return FlextResult[FlextTypes.StringDict].ok({
             "validation": "passed",
             "format": output_format,
             "config_status": "valid",

@@ -7,8 +7,6 @@ from __future__ import annotations
 
 import time
 
-from flext_core import FlextCore
-
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
 

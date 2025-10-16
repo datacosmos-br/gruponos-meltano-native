@@ -19,7 +19,6 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from flext_core import FlextCore
 from flext_meltano import FlextMeltanoService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
@@ -445,7 +444,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         """
         return self.run_job(pipeline_name)
 
-    def get_job_status(self, job_name: str) -> FlextResult[FlextCore.Types.Dict]:
+    def get_job_status(self, job_name: str) -> FlextResult[FlextTypes.Dict]:
         """Get status of a specific job with comprehensive information.
 
         Args:
@@ -609,7 +608,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
     def _execute_meltano_pipeline(
         self, job_name: str
-    ) -> FlextResult[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute a Meltano pipeline using subprocess with comprehensive error handling.
 
         This method executes Meltano jobs via subprocess calls with proper environment

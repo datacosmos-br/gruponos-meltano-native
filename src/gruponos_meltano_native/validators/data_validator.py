@@ -22,8 +22,6 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import override
 
-from flext_core import FlextCore
-
 # Get dependencies via DI
 logger = FlextLogger(__name__)
 
@@ -186,7 +184,7 @@ class DataValidator:
             validation_method(rule, value, errors)
 
     @override
-    def validate(self, data: FlextTypes.Dict) -> FlextCore.Types.StringList:
+    def validate(self, data: FlextTypes.Dict) -> FlextTypes.StringList:
         """Valida dados contra regras configuradas.
 
         Aplica todas as regras de validação configuradas aos dados fornecidos,

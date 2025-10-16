@@ -10,7 +10,6 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
-from flext_core import FlextCore
 
 import gruponos_meltano_native.validators.data_validator
 from gruponos_meltano_native import (

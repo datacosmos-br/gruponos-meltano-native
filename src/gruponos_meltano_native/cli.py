@@ -14,7 +14,6 @@ from datetime import UTC, datetime
 
 import yaml
 from flext_cli import FlextCli, FlextCliMain
-from flext_core import FlextCore
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
@@ -40,9 +39,9 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
         """Nested handler for health check command."""
 
         @staticmethod
-        def execute() -> FlextResult[FlextCore.Types.StringDict]:
+        def execute() -> FlextResult[FlextTypes.StringDict]:
             """Execute health check."""
-            return FlextResult[FlextCore.Types.StringDict].ok(
+            return FlextResult[FlextTypes.StringDict].ok(
                 {"status": "healthy", "timestamp": datetime.now(UTC).isoformat()},
             )
 
@@ -102,10 +101,10 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
         ) -> None:
             self._orchestrator = orchestrator
 
-        def execute(self) -> FlextResult[FlextCore.Types.StringList]:
+        def execute(self) -> FlextResult[FlextTypes.StringList]:
             """Execute list pipelines command."""
             jobs = self._orchestrator.list_jobs()
-            return FlextResult[FlextCore.Types.StringList].ok(jobs)
+            return FlextResult[FlextTypes.StringList].ok(jobs)
 
     class _ValidateHandler:
         """Nested handler for validate command."""
@@ -118,12 +117,12 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
 
         def execute(
             self, output_format: str = "table"
-        ) -> FlextResult[FlextCore.Types.StringDict]:
+        ) -> FlextResult[FlextTypes.StringDict]:
             """Execute validate command."""
             validation_result = self._orchestrator.validate_configuration()
 
             if validation_result.is_failure:
-                return FlextResult[FlextCore.Types.StringDict].fail(
+                return FlextResult[FlextTypes.StringDict].fail(
                     f"Validation failed: {validation_result.error}"
                 )
 
@@ -131,11 +130,11 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             wms_validation_result = FlextResult.ok("WMS validation placeholder")
 
             if wms_validation_result.is_failure:
-                return FlextResult[FlextCore.Types.StringDict].fail(
+                return FlextResult[FlextTypes.StringDict].fail(
                     f"WMS connection validation failed: {wms_validation_result.error}"
                 )
 
-            return FlextResult[FlextCore.Types.StringDict].ok({
+            return FlextResult[FlextTypes.StringDict].ok({
                 "validation": "passed",
                 "format": output_format,
                 "config_status": "valid",
@@ -150,7 +149,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
 
         def execute(
             self, output_format: str = "yaml"
-        ) -> FlextResult[FlextCore.Types.StringDict]:
+        ) -> FlextResult[FlextTypes.StringDict]:
             """Execute show config command."""
             if output_format == "yaml":
                 config_content = yaml.dump(
@@ -159,7 +158,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             else:
                 config_content = str(self._config.model_dump())
 
-            return FlextResult[FlextCore.Types.StringDict].ok({
+            return FlextResult[FlextTypes.StringDict].ok({
                 "config": "loaded",
                 "format": output_format,
                 "content": config_content,
