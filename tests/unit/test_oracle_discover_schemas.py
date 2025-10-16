@@ -40,7 +40,7 @@ class TestOracleSchemaDiscoverySimple:
 
     def test_module_has_logger(self) -> None:
         """Test module has logger configured."""  # Test flext-core logger integration
-        logger = FlextCore.Logger(__name__)
+        logger = FlextLogger(__name__)
         assert logger is not None
 
     def test_module_structure(self) -> None:

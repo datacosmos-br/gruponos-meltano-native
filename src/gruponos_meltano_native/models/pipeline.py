@@ -1,354 +1,476 @@
-"""Pipeline models for GrupoNOS Meltano Native.
+"""Pipeline models for GrupoNOS Meltano Native - Unified FLEXT Architecture.
 
-This module contains all pipeline-related domain models and data structures
-used by the GrupoNOS Meltano Native orchestrator.
+All pipeline-related domain models consolidated into GruponosMeltanoNativeModels
+following FLEXT unified patterns with Pydantic v2 validation, FlextModels integration,
+and railway-oriented programming patterns.
 
 Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Proprietária
+
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any
+from datetime import UTC, datetime
+from enum import StrEnum
 
-from gruponos_meltano_native.constants import GruponosMeltanoConstants
+from flext_core import FlextModels, FlextResult, FlextTypes
+from pydantic import ConfigDict, Field, computed_field
+
+from gruponos_meltano_native.constants import GruponosMeltanoNativeConstants
 
 
-@dataclass
-class PipelineResult:
-    """Resultado de uma execução de pipeline Meltano GrupoNOS.
+class GruponosMeltanoNativeModels(FlextModels):
+    """Unified pipeline models for GrupoNOS Meltano Native following FLEXT architecture.
 
-    Contém todas as métricas e informações sobre a execução
-    de um pipeline ETL, seguindo padrões FLEXT.
+    Single source of truth for all pipeline-related domain entities including:
+    - Pipeline execution results and metrics
+    - Pipeline configurations and settings
+    - Pipeline status enumeration and validation
+    - Railway-oriented factory methods for safe object creation
+
+    All nested classes inherit FlextModels validation and patterns.
     """
 
-    # Identificação
-    pipeline_id: str
-    pipeline_name: str
-    job_name: str
+    # =========================================================================
+    # ENUMERATIONS - Pipeline status and configuration definitions
+    # =========================================================================
 
-    # Status e timing
-    status: str  # SUCCESS, FAILED, RUNNING, etc.
-    start_time: datetime
-    end_time: datetime | None = None
-    duration_seconds: float | None = None
+    class PipelineStatus(StrEnum):
+        """Enumeration of pipeline execution statuses using constants."""
 
-    # Métricas de processamento
-    records_extracted: int = 0
-    records_transformed: int = 0
-    records_loaded: int = 0
-    records_failed: int = 0
+        PENDING = GruponosMeltanoNativeConstants.Status.PENDING
+        RUNNING = GruponosMeltanoNativeConstants.Status.RUNNING
+        COMPLETED = GruponosMeltanoNativeConstants.Status.COMPLETED
+        FAILED = GruponosMeltanoNativeConstants.Status.FAILED
+        CANCELLED = GruponosMeltanoNativeConstants.Status.CANCELLED
+        PAUSED = GruponosMeltanoNativeConstants.Status.PAUSED
+        RETRYING = GruponosMeltanoNativeConstants.Status.RETRYING
+        TIMEOUT = GruponosMeltanoNativeConstants.Status.TIMEOUT
+        VALIDATING = GruponosMeltanoNativeConstants.Status.VALIDATING
+        TRANSFORMING = GruponosMeltanoNativeConstants.Status.TRANSFORMING
 
-    # Métricas de qualidade
-    data_quality_score: float = 0.0
-    completeness_score: float = 0.0
-    accuracy_score: float = 0.0
-    consistency_score: float = 0.0
+    # =========================================================================
+    # DOMAIN MODELS - Core business entities for pipeline execution
+    # =========================================================================
 
-    # Performance metrics
-    throughput_records_per_second: float = 0.0
-    memory_peak_mb: float = 0.0
-    cpu_average_percent: float = 0.0
+    class PipelineResult(FlextModels.Entity):
+        """Pipeline execution result with comprehensive metrics and validation.
 
-    # Erros e warnings
-    errors: list[dict[str, Any]] = None
-    warnings: list[str] = None
+        Contains all metrics and information about a GrupoNOS Meltano pipeline
+        ETL execution, following FLEXT patterns with Pydantic v2 validation
+        and domain-driven design principles.
+        """
 
-    # Metadata adicional
-    metadata: dict[str, Any] = None
-
-    def __post_init__(self) -> None:
-        """Initialize defaults for mutable fields."""
-        if self.errors is None:
-            self.errors = []
-        if self.warnings is None:
-            self.warnings = []
-        if self.metadata is None:
-            self.metadata = {}
-
-    @property
-    def is_success(self) -> bool:
-        """Check if pipeline execution was successful."""
-        return self.status == GruponosMeltanoConstants.Status.SUCCESS
-
-    @property
-    def is_failed(self) -> bool:
-        """Check if pipeline execution failed."""
-        return self.status == GruponosMeltanoConstants.Status.FAILED
-
-    @property
-    def is_running(self) -> bool:
-        """Check if pipeline is currently running."""
-        return self.status == GruponosMeltanoConstants.Status.RUNNING
-
-    @property
-    def success_rate(self) -> float:
-        """Calculate success rate as percentage."""
-        total_processed = self.records_extracted
-        if total_processed == 0:
-            return 100.0
-        successful_records = self.records_loaded
-        return (successful_records / total_processed) * 100.0
-
-    @property
-    def error_rate(self) -> float:
-        """Calculate error rate as percentage."""
-        total_processed = self.records_extracted
-        if total_processed == 0:
-            return 0.0
-        return (self.records_failed / total_processed) * 100.0
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "pipeline_id": self.pipeline_id,
-            "pipeline_name": self.pipeline_name,
-            "job_name": self.job_name,
-            "status": self.status,
-            "start_time": self.start_time.isoformat() if self.start_time else None,
-            "end_time": self.end_time.isoformat() if self.end_time else None,
-            "duration_seconds": self.duration_seconds,
-            "records_extracted": self.records_extracted,
-            "records_transformed": self.records_transformed,
-            "records_loaded": self.records_loaded,
-            "records_failed": self.records_failed,
-            "data_quality_score": self.data_quality_score,
-            "completeness_score": self.completeness_score,
-            "accuracy_score": self.accuracy_score,
-            "consistency_score": self.consistency_score,
-            "throughput_records_per_second": self.throughput_records_per_second,
-            "memory_peak_mb": self.memory_peak_mb,
-            "cpu_average_percent": self.cpu_average_percent,
-            "errors": self.errors,
-            "warnings": self.warnings,
-            "metadata": self.metadata
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> PipelineResult:
-        """Create instance from dictionary."""
-        # Convert ISO strings back to datetime
-        start_time = None
-        if data.get("start_time"):
-            start_time = datetime.fromisoformat(data["start_time"])
-
-        end_time = None
-        if data.get("end_time"):
-            end_time = datetime.fromisoformat(data["end_time"])
-
-        return cls(
-            pipeline_id=data["pipeline_id"],
-            pipeline_name=data["pipeline_name"],
-            job_name=data["job_name"],
-            status=data["status"],
-            start_time=start_time,
-            end_time=end_time,
-            duration_seconds=data.get("duration_seconds"),
-            records_extracted=data.get("records_extracted", 0),
-            records_transformed=data.get("records_transformed", 0),
-            records_loaded=data.get("records_loaded", 0),
-            records_failed=data.get("records_failed", 0),
-            data_quality_score=data.get("data_quality_score", 0.0),
-            completeness_score=data.get("completeness_score", 0.0),
-            accuracy_score=data.get("accuracy_score", 0.0),
-            consistency_score=data.get("consistency_score", 0.0),
-            throughput_records_per_second=data.get("throughput_records_per_second", 0.0),
-            memory_peak_mb=data.get("memory_peak_mb", 0.0),
-            cpu_average_percent=data.get("cpu_average_percent", 0.0),
-            errors=data.get("errors", []),
-            warnings=data.get("warnings", []),
-            metadata=data.get("metadata", {})
+        model_config = ConfigDict(
+            validate_assignment=True,
+            validate_return=True,
+            validate_default=True,
+            use_enum_values=True,
+            arbitrary_types_allowed=True,
+            extra="forbid",
+            frozen=False,
+            strict=True,
+            str_strip_whitespace=True,
+            ser_json_timedelta="iso8601",
+            ser_json_bytes="base64",
+            hide_input_in_errors=True,
         )
 
+        # Core identification
+        pipeline_id: str = Field(..., description="Unique pipeline identifier")
+        pipeline_name: str = Field(..., description="Human-readable pipeline name")
+        job_name: str = Field(..., description="Associated job name for execution")
 
-@dataclass
-class PipelineMetrics:
-    """Metrics collected during pipeline execution."""
+        # Status and timing with validation
+        status: GruponosMeltanoNativeModels.PipelineStatus = Field(
+            default="PENDING",
+            description="Current pipeline execution status"
+        )
+        start_time: datetime = Field(..., description="Pipeline execution start timestamp")
+        end_time: datetime | None = Field(None, description="Pipeline execution end timestamp")
+        duration_seconds: float | None = Field(None, ge=0, description="Total execution duration in seconds")
 
-    # Performance metrics
-    extraction_start_time: datetime | None = None
-    extraction_end_time: datetime | None = None
-    transformation_start_time: datetime | None = None
-    transformation_end_time: datetime | None = None
-    loading_start_time: datetime | None = None
-    loading_end_time: datetime | None = None
+        # Processing metrics with validation
+        records_extracted: int = Field(
+            default=0, ge=0, description="Number of records extracted from source"
+        )
+        records_transformed: int = Field(
+            default=0, ge=0, description="Number of records successfully transformed"
+        )
+        records_loaded: int = Field(
+            default=0, ge=0, description="Number of records successfully loaded to target"
+        )
+        records_failed: int = Field(
+            default=0, ge=0, description="Number of records that failed processing"
+        )
 
-    # Resource usage
-    memory_start_mb: float = 0.0
-    memory_peak_mb: float = 0.0
-    memory_end_mb: float = 0.0
-    cpu_average_percent: float = 0.0
+        # Quality metrics with percentage validation
+        data_quality_score: float = Field(
+            default=0.0, ge=0.0, le=100.0, description="Overall data quality score (0-100%)"
+        )
+        completeness_score: float = Field(
+            default=0.0, ge=0.0, le=100.0, description="Data completeness score (0-100%)"
+        )
+        accuracy_score: float = Field(
+            default=0.0, ge=0.0, le=100.0, description="Data accuracy score (0-100%)"
+        )
+        consistency_score: float = Field(
+            default=0.0, ge=0.0, le=100.0, description="Data consistency score (0-100%)"
+        )
 
-    # Throughput metrics
-    records_extracted: int = 0
-    records_transformed: int = 0
-    records_loaded: int = 0
-    records_failed: int = 0
+        # Performance metrics
+        throughput_records_per_second: float = Field(
+            default=0.0, ge=0.0, description="Average processing throughput (records/second)"
+        )
+        memory_peak_mb: float = Field(
+            default=0.0, ge=0.0, description="Peak memory usage in megabytes"
+        )
+        cpu_average_percent: float = Field(
+            default=0.0, ge=0.0, le=100.0, description="Average CPU utilization percentage"
+        )
 
-    # Quality metrics
-    data_quality_score: float = 0.0
-    validation_errors: int = 0
-    transformation_errors: int = 0
-    loading_errors: int = 0
+        # Error handling and metadata
+        errors: FlextTypes.List = Field(
+            default_factory=list, description="List of errors encountered during execution"
+        )
+        warnings: FlextTypes.StringList = Field(
+            default_factory=list, description="List of warnings generated during execution"
+        )
+        metadata: FlextTypes.Dict = Field(
+            default_factory=dict, description="Additional execution metadata and context"
+        )
 
-    def record_extraction_start(self) -> None:
-        """Record extraction phase start."""
-        self.extraction_start_time = datetime.now()
+        @computed_field
+        @property
+        def is_success(self) -> bool:
+            """Check if pipeline execution was successful."""
+            return self.status == GruponosMeltanoNativeModels.PipelineStatus.COMPLETED
 
-    def record_extraction_end(self, record_count: int) -> None:
-        """Record extraction phase end."""
-        self.extraction_end_time = datetime.now()
-        self.records_extracted = record_count
+        @computed_field
+        @property
+        def is_failed(self) -> bool:
+            """Check if pipeline execution failed."""
+            return self.status == GruponosMeltanoNativeModels.PipelineStatus.FAILED
 
-    def record_transformation_start(self) -> None:
-        """Record transformation phase start."""
-        self.transformation_start_time = datetime.now()
+        @computed_field
+        @property
+        def is_running(self) -> bool:
+            """Check if pipeline is currently running."""
+            return self.status == GruponosMeltanoNativeModels.PipelineStatus.RUNNING
 
-    def record_transformation_end(self, record_count: int, errors: int = 0) -> None:
-        """Record transformation phase end."""
-        self.transformation_end_time = datetime.now()
-        self.records_transformed = record_count
-        self.transformation_errors = errors
+        @computed_field
+        @property
+        def success_rate(self) -> float:
+            """Calculate success rate as percentage (0-100)."""
+            total_processed = self.records_extracted
+            if total_processed == 0:
+                return 100.0
+            successful_records = self.records_loaded
+            return (successful_records / total_processed) * 100.0
 
-    def record_loading_start(self) -> None:
-        """Record loading phase start."""
-        self.loading_start_time = datetime.now()
+        @computed_field
+        @property
+        def error_rate(self) -> float:
+            """Calculate error rate as percentage (0-100)."""
+            total_processed = self.records_extracted
+            if total_processed == 0:
+                return 0.0
+            return (self.records_failed / total_processed) * 100.0
 
-    def record_loading_end(self, record_count: int, errors: int = 0) -> None:
-        """Record loading phase end."""
-        self.loading_end_time = datetime.now()
-        self.records_loaded = record_count
-        self.loading_errors = errors
+    class PipelineMetrics(FlextModels.Value):
+        """Pipeline execution metrics with comprehensive performance tracking.
 
-    def calculate_throughput(self) -> float:
-        """Calculate overall throughput in records per second."""
-        total_duration = self.get_total_duration_seconds()
-        if total_duration > 0:
-            return self.records_loaded / total_duration
-        return 0.0
+        Immutable value object containing detailed metrics collected during
+        pipeline execution phases including timing, resource usage, and
+        throughput measurements with automatic calculations.
+        """
 
-    def get_total_duration_seconds(self) -> float:
-        """Get total pipeline duration in seconds."""
-        if self.loading_end_time and self.extraction_start_time:
-            return (self.loading_end_time - self.extraction_start_time).total_seconds()
-        return 0.0
+        model_config = ConfigDict(
+            validate_assignment=True,
+            validate_return=True,
+            validate_default=True,
+            use_enum_values=True,
+            arbitrary_types_allowed=True,
+            extra="forbid",
+            frozen=False,  # Allow method calls for recording
+            strict=True,
+            str_strip_whitespace=True,
+            ser_json_timedelta="iso8601",
+            ser_json_bytes="base64",
+            hide_input_in_errors=True,
+        )
 
-    def get_extraction_duration(self) -> float | None:
-        """Get extraction phase duration in seconds."""
-        if self.extraction_end_time and self.extraction_start_time:
-            return (self.extraction_end_time - self.extraction_start_time).total_seconds()
-        return None
+        # Phase timing with automatic timestamp management
+        extraction_start_time: datetime | None = Field(None, description="Extraction phase start timestamp")
+        extraction_end_time: datetime | None = Field(None, description="Extraction phase end timestamp")
+        transformation_start_time: datetime | None = Field(None, description="Transformation phase start timestamp")
+        transformation_end_time: datetime | None = Field(None, description="Transformation phase end timestamp")
+        loading_start_time: datetime | None = Field(None, description="Loading phase start timestamp")
+        loading_end_time: datetime | None = Field(None, description="Loading phase end timestamp")
 
-    def get_transformation_duration(self) -> float | None:
-        """Get transformation phase duration in seconds."""
-        if self.transformation_end_time and self.transformation_start_time:
-            return (self.transformation_end_time - self.transformation_start_time).total_seconds()
-        return None
+        # Resource usage metrics
+        memory_start_mb: float = Field(default=0.0, ge=0.0, description="Memory usage at start (MB)")
+        memory_peak_mb: float = Field(default=0.0, ge=0.0, description="Peak memory usage during execution (MB)")
+        memory_end_mb: float = Field(default=0.0, ge=0.0, description="Memory usage at end (MB)")
+        cpu_average_percent: float = Field(default=0.0, ge=0.0, le=100.0, description="Average CPU utilization (%)")
 
-    def get_loading_duration(self) -> float | None:
-        """Get loading phase duration in seconds."""
-        if self.loading_end_time and self.loading_start_time:
-            return (self.loading_end_time - self.loading_start_time).total_seconds()
-        return None
+        # Throughput and processing metrics
+        records_extracted: int = Field(default=0, ge=0, description="Total records extracted")
+        records_transformed: int = Field(default=0, ge=0, description="Total records transformed")
+        records_loaded: int = Field(default=0, ge=0, description="Total records loaded")
+        records_failed: int = Field(default=0, ge=0, description="Total records failed")
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "extraction_start_time": self.extraction_start_time.isoformat() if self.extraction_start_time else None,
-            "extraction_end_time": self.extraction_end_time.isoformat() if self.extraction_end_time else None,
-            "transformation_start_time": self.transformation_start_time.isoformat() if self.transformation_start_time else None,
-            "transformation_end_time": self.transformation_end_time.isoformat() if self.transformation_end_time else None,
-            "loading_start_time": self.loading_start_time.isoformat() if self.loading_start_time else None,
-            "loading_end_time": self.loading_end_time.isoformat() if self.loading_end_time else None,
-            "memory_start_mb": self.memory_start_mb,
-            "memory_peak_mb": self.memory_peak_mb,
-            "memory_end_mb": self.memory_end_mb,
-            "cpu_average_percent": self.cpu_average_percent,
-            "records_extracted": self.records_extracted,
-            "records_transformed": self.records_transformed,
-            "records_loaded": self.records_loaded,
-            "records_failed": self.records_failed,
-            "data_quality_score": self.data_quality_score,
-            "validation_errors": self.validation_errors,
-            "transformation_errors": self.transformation_errors,
-            "loading_errors": self.loading_errors
-        }
+        # Quality and error tracking
+        data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0, description="Overall data quality score")
+        validation_errors: int = Field(default=0, ge=0, description="Number of validation errors")
+        transformation_errors: int = Field(default=0, ge=0, description="Number of transformation errors")
+        loading_errors: int = Field(default=0, ge=0, description="Number of loading errors")
+
+        def record_extraction_start(self) -> None:
+            """Record extraction phase start timestamp."""
+            self.extraction_start_time = datetime.now(UTC)
+
+        def record_extraction_end(self, record_count: int) -> None:
+            """Record extraction phase completion with record count."""
+            self.extraction_end_time = datetime.now(UTC)
+            self.records_extracted = record_count
+
+        def record_transformation_start(self) -> None:
+            """Record transformation phase start timestamp."""
+            self.transformation_start_time = datetime.now(UTC)
+
+        def record_transformation_end(self, record_count: int, errors: int = 0) -> None:
+            """Record transformation phase completion with metrics."""
+            self.transformation_end_time = datetime.now(UTC)
+            self.records_transformed = record_count
+            self.transformation_errors = errors
+
+        def record_loading_start(self) -> None:
+            """Record loading phase start timestamp."""
+            self.loading_start_time = datetime.now(UTC)
+
+        def record_loading_end(self, record_count: int, errors: int = 0) -> None:
+            """Record loading phase completion with metrics."""
+            self.loading_end_time = datetime.now(UTC)
+            self.records_loaded = record_count
+            self.loading_errors = errors
+
+        @computed_field
+        @property
+        def total_duration_seconds(self) -> float:
+            """Get total pipeline duration in seconds."""
+            if self.loading_end_time and self.extraction_start_time:
+                return (self.loading_end_time - self.extraction_start_time).total_seconds()
+            return 0.0
+
+        @computed_field
+        @property
+        def extraction_duration_seconds(self) -> float | None:
+            """Get extraction phase duration in seconds."""
+            if self.extraction_end_time and self.extraction_start_time:
+                return (self.extraction_end_time - self.extraction_start_time).total_seconds()
+            return None
+
+        @computed_field
+        @property
+        def transformation_duration_seconds(self) -> float | None:
+            """Get transformation phase duration in seconds."""
+            if self.transformation_end_time and self.transformation_start_time:
+                return (self.transformation_end_time - self.transformation_start_time).total_seconds()
+            return None
+
+        @computed_field
+        @property
+        def loading_duration_seconds(self) -> float | None:
+            """Get loading phase duration in seconds."""
+            if self.loading_end_time and self.loading_start_time:
+                return (self.loading_end_time - self.loading_start_time).total_seconds()
+            return None
+
+        @computed_field
+        @property
+        def throughput_records_per_second(self) -> float:
+            """Calculate overall throughput in records per second."""
+            total_duration = self.total_duration_seconds
+            if total_duration > 0:
+                return self.records_loaded / total_duration
+            return 0.0
+
+    class PipelineConfiguration(FlextModels.Value):
+        """Pipeline execution configuration with comprehensive validation.
+
+        Immutable value object containing all configuration settings for
+        pipeline execution including extractor/loader settings, performance
+        parameters, and quality monitoring configuration.
+        """
+
+        model_config = ConfigDict(
+            validate_assignment=True,
+            validate_return=True,
+            validate_default=True,
+            use_enum_values=True,
+            arbitrary_types_allowed=True,
+            extra="forbid",
+            frozen=True,  # Immutable configuration
+            strict=True,
+            str_strip_whitespace=True,
+            ser_json_timedelta="iso8601",
+            ser_json_bytes="base64",
+            hide_input_in_errors=True,
+        )
+
+        # Core identification
+        name: str = Field(..., description="Pipeline configuration name")
+        job_name: str = Field(..., description="Associated job name")
+        environment: str = Field(default="dev", description="Execution environment (dev/staging/prod)")
+
+        # Extractor configuration with validation
+        extractor_name: str = Field(default="", description="Name of the extractor to use")
+        extractor_config: FlextTypes.Dict = Field(
+            default_factory=dict, description="Extractor-specific configuration parameters"
+        )
+
+        # Loader configuration with validation
+        loader_name: str = Field(default="", description="Name of the loader to use")
+        loader_config: FlextTypes.Dict = Field(
+            default_factory=dict, description="Loader-specific configuration parameters"
+        )
+
+        # Pipeline execution settings
+        batch_size: int = Field(
+            default=5000, ge=1, le=100000, description="Number of records to process in each batch"
+        )
+        timeout_seconds: int = Field(
+            default=1800, ge=60, le=86400, description="Maximum execution time in seconds"
+        )
+        max_retries: int = Field(
+            default=3, ge=0, le=10, description="Maximum number of retry attempts"
+        )
+        enable_incremental: bool = Field(
+            default=False, description="Whether to use incremental sync mode"
+        )
+
+        # Quality assurance settings
+        enable_quality_checks: bool = Field(
+            default=True, description="Whether to perform data quality checks"
+        )
+        quality_threshold: float = Field(
+            default=95.0, ge=0.0, le=100.0, description="Minimum quality score required (%)"
+        )
+
+        # Monitoring and metrics settings
+        enable_monitoring: bool = Field(
+            default=True, description="Whether to enable pipeline monitoring"
+        )
+        collect_metrics: bool = Field(
+            default=True, description="Whether to collect detailed execution metrics"
+        )
+
+        @computed_field
+        @property
+        def is_full_sync(self) -> bool:
+            """Check if this configuration uses full sync mode."""
+            return not self.enable_incremental
+
+        @computed_field
+        @property
+        def is_incremental_sync(self) -> bool:
+            """Check if this configuration uses incremental sync mode."""
+            return self.enable_incremental
+
+    # =========================================================================
+    # FACTORY METHODS - Railway-oriented creation patterns
+    # =========================================================================
+
+    @classmethod
+    def create_pipeline_result(
+        cls,
+        pipeline_id: str,
+        pipeline_name: str,
+        job_name: str,
+        status: GruponosMeltanoNativeModels.PipelineStatus | None = None,
+    ) -> FlextResult[GruponosMeltanoNativeModels.PipelineResult]:
+        """Create a new pipeline result with validation using railway pattern.
+
+        Args:
+            pipeline_id: Unique pipeline identifier
+            pipeline_name: Human-readable pipeline name
+            job_name: Associated job name
+            status: Optional initial status (defaults to PENDING)
+
+        Returns:
+            FlextResult[PipelineResult]: Success with validated result or failure
+
+        Example:
+            >>> result = GruponosMeltanoNativeModels.create_pipeline_result(
+            ...     pipeline_id="pipe-123",
+            ...     pipeline_name="Customer Data Pipeline",
+            ...     job_name="daily-sync",
+            ...     status=GruponosMeltanoNativeModels.PipelineStatus.RUNNING
+            ... )
+            >>> if result.is_success:
+            ...     pipeline_result = result.unwrap()
+            ...     print(f"Created result for: {pipeline_result.pipeline_name}")
+
+        """
+        try:
+            pipeline_result = cls.PipelineResult(
+                pipeline_id=pipeline_id,
+                pipeline_name=pipeline_name,
+                job_name=job_name,
+                status=status or cls.PipelineStatus.PENDING,
+                start_time=datetime.now(UTC),
+            )
+            return FlextResult[cls.PipelineResult].ok(pipeline_result)
+        except Exception as e:
+            return FlextResult[cls.PipelineResult].fail(f"Failed to create pipeline result: {e!s}")
+
+    @classmethod
+    def create_pipeline_config(
+        cls,
+        name: str,
+        job_name: str,
+        extractor_name: str,
+        loader_name: str,
+        environment: str = "dev",
+    ) -> FlextResult[GruponosMeltanoNativeModels.PipelineConfiguration]:
+        """Create a new pipeline configuration with validation.
+
+        Args:
+            name: Configuration name
+            job_name: Associated job name
+            extractor_name: Name of the extractor
+            loader_name: Name of the loader
+            environment: Execution environment
+
+        Returns:
+            FlextResult[PipelineConfiguration]: Success with validated config or failure
+
+        Example:
+            >>> result = GruponosMeltanoNativeModels.create_pipeline_config(
+            ...     name="customer-etl",
+            ...     job_name="daily-extract",
+            ...     extractor_name="tap-mysql",
+            ...     loader_name="target-postgres",
+            ...     environment="production"
+            ... )
+
+        """
+        try:
+            config = cls.PipelineConfiguration(
+                name=name,
+                job_name=job_name,
+                extractor_name=extractor_name,
+                loader_name=loader_name,
+                environment=environment,
+            )
+            return FlextResult[cls.PipelineConfiguration].ok(config)
+        except Exception as e:
+            return FlextResult[cls.PipelineConfiguration].fail(f"Failed to create pipeline config: {e!s}")
 
 
-@dataclass
-class PipelineConfiguration:
-    """Configuration for a pipeline execution."""
+# =========================================================================
+# MODULE EXPORTS - Unified access pattern
+# =========================================================================
 
-    name: str
-    job_name: str
-    environment: str = "dev"
-
-    # Extractor configuration
-    extractor_name: str = ""
-    extractor_config: dict[str, Any] = None
-
-    # Loader configuration
-    loader_name: str = ""
-    loader_config: dict[str, Any] = None
-
-    # Pipeline settings
-    batch_size: int = 5000
-    timeout_seconds: int = 1800
-    max_retries: int = 3
-    enable_incremental: bool = False
-
-    # Quality settings
-    enable_quality_checks: bool = True
-    quality_threshold: float = 95.0
-
-    # Monitoring settings
-    enable_monitoring: bool = True
-    collect_metrics: bool = True
-
-    def __post_init__(self) -> None:
-        """Initialize defaults for mutable fields."""
-        if self.extractor_config is None:
-            self.extractor_config = {}
-        if self.loader_config is None:
-            self.loader_config = {}
-
-    def is_full_sync(self) -> bool:
-        """Check if this is a full sync pipeline."""
-        return not self.enable_incremental
-
-    def is_incremental_sync(self) -> bool:
-        """Check if this is an incremental sync pipeline."""
-        return self.enable_incremental
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "name": self.name,
-            "job_name": self.job_name,
-            "environment": self.environment,
-            "extractor_name": self.extractor_name,
-            "extractor_config": self.extractor_config,
-            "loader_name": self.loader_name,
-            "loader_config": self.loader_config,
-            "batch_size": self.batch_size,
-            "timeout_seconds": self.timeout_seconds,
-            "max_retries": self.max_retries,
-            "enable_incremental": self.enable_incremental,
-            "enable_quality_checks": self.enable_quality_checks,
-            "quality_threshold": self.quality_threshold,
-            "enable_monitoring": self.enable_monitoring,
-            "collect_metrics": self.collect_metrics
-        }
-
-
-class PipelineStatus:
-    """Enumeration of pipeline execution statuses."""
-
-    PENDING = "PENDING"
-    RUNNING = "RUNNING"
-    SUCCESS = "SUCCESS"
-    FAILED = "FAILED"
-    CANCELLED = "CANCELLED"
-    TIMEOUT = "TIMEOUT"
-    PARTIAL_SUCCESS = "PARTIAL_SUCCESS"
+__all__ = ["GruponosMeltanoNativeModels"]

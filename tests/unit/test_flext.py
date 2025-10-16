@@ -198,12 +198,12 @@ class TestConnectionManagerIntegration:
             # Test flext-oracle-wms imports - use the actual config class
             # Test flext-core imports
             # 🚨 ARCHITECTURAL VIOLATION FIXED: Level 6 cannot import flext-core
-            # ✅ Use FlextCore.Result pattern from core
+            # ✅ Use FlextResult pattern from core
 
             # already imported at top
 
-            # Test FlextCore.Result integration works
-            service_result = FlextCore.Result[None].ok("test_service_working")
+            # Test FlextResult integration works
+            service_result = FlextResult[None].ok("test_service_working")
 
             # Test Oracle database integration via flext-db-oracle (works without circular imports)
             # already imported at top
@@ -225,11 +225,11 @@ class TestConnectionManagerIntegration:
             assert oracle_config.host == "localhost"
             assert oracle_config.port == 1521
 
-            # Verify FlextCore.Result is working
+            # Verify FlextResult is working
             assert service_result.success
             assert service_result.data == "test_service_working"
 
-            # Test chaining FlextCore.Result operations
+            # Test chaining FlextResult operations
             chained_result = service_result.map(lambda x: f"processed_{x}")
             assert chained_result.success
             assert chained_result.data == "processed_test_service_working"

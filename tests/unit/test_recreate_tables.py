@@ -103,7 +103,7 @@ class TestOracleTableRecreationReal:
     def test_execute_ddl_mock(self, mock_execute_ddl: Mock) -> None:
         """Test DDL execution for table recreation using mock."""
         # Mock successful DDL execution
-        mock_execute_ddl.return_value = FlextCore.Result[None].ok(
+        mock_execute_ddl.return_value = FlextResult[None].ok(
             "DDL executed successfully",
         )
 
@@ -132,7 +132,7 @@ class TestOracleTableRecreationReal:
             columns=["TABLE_NAME", "STATUS"],
             row_count=1,
         )
-        mock_query.return_value = FlextCore.Result[None].ok(mock_result_data)
+        mock_query.return_value = FlextResult[None].ok(mock_result_data)
 
         # Create a mock API instance
         config = FlextDbOracleConfig(
@@ -240,7 +240,9 @@ class TestTableRecreationErrorHandling:
     def test_execute_ddl_failure(self, mock_execute_ddl: Mock) -> None:
         """Test handling of DDL execution failures."""
         # Mock DDL execution failure
-        mock_execute_ddl.return_value = FlextCore.Result[None].fail("Invalid SQL syntax")
+        mock_execute_ddl.return_value = FlextResult[None].fail(
+            "Invalid SQL syntax"
+        )
 
         config = FlextDbOracleConfig(
             host="localhost",
@@ -293,7 +295,7 @@ class TestTableRecreationIntegration:
         # Step 4: Validate that manager can provide Oracle API
         connection_result = manager.get_connection()
         # We expect this to fail in test environment (no real DB)
-        # but it should return a proper FlextCore.Result
+        # but it should return a proper FlextResult
         assert hasattr(connection_result, "success")
         assert hasattr(connection_result, "is_failure")
 

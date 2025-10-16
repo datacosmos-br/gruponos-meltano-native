@@ -30,11 +30,13 @@ class MeltanoPipelineExecutor:
     Separated from orchestrator for better testability and maintainability.
     """
 
-    def __init__(self, config: GruponosMeltanoNativeConfig):
+    def __init__(self, config: GruponosMeltanoNativeConfig) -> None:
         self.config = config
-        self.logger = FlextCore.Logger.get_logger(__name__)
+        self.logger = FlextLogger.get_logger(__name__)
 
-    def execute_pipeline(self, job_name: str, config: PipelineConfiguration) -> FlextCore.Result[PipelineResult]:
+    def execute_pipeline(
+        self, job_name: str, config: PipelineConfiguration
+    ) -> FlextResult[PipelineResult]:
         """Execute a Meltano pipeline job.
 
         Args:
@@ -51,7 +53,9 @@ class MeltanoPipelineExecutor:
             # Validate job name
             validated_job_name = self._validate_job_name(job_name)
             if not validated_job_name:
-                return FlextCore.Result[PipelineResult].fail(f"Invalid job name: {job_name}")
+                return FlextResult[PipelineResult].fail(
+                    f"Invalid job name: {job_name}"
+                )
 
             # Build environment
             env = self._build_meltano_environment()
@@ -62,17 +66,17 @@ class MeltanoPipelineExecutor:
             if result.is_success:
                 pipeline_result = result.unwrap()
                 self.logger.info(f"Pipeline execution completed: {job_name}")
-                return FlextCore.Result[PipelineResult].ok(pipeline_result)
+                return FlextResult[PipelineResult].ok(pipeline_result)
             error_msg = f"Pipeline execution failed: {result.error}"
             self.logger.error(error_msg)
-            return FlextCore.Result[PipelineResult].fail(error_msg)
+            return FlextResult[PipelineResult].fail(error_msg)
 
         except Exception as e:
             error_msg = f"Unexpected error during pipeline execution: {e!s}"
-            self.logger.error(error_msg)
-            return FlextCore.Result[PipelineResult].fail(error_msg)
+            self.logger.exception(error_msg)
+            return FlextResult[PipelineResult].fail(error_msg)
 
-    def get_job_status(self, job_name: str) -> FlextCore.Result[dict[str, Any]]:
+    def get_job_status(self, job_name: str) -> FlextResult[dict[str, Any]]:
         """Get status of a Meltano job.
 
         Args:
@@ -89,37 +93,36 @@ class MeltanoPipelineExecutor:
             # Run meltano job list to get status
             cmd = ["meltano", "job", "list", "--format", "json"]
             result = subprocess.run(
-                cmd,
-                check=False, capture_output=True,
-                text=True,
-                env=env,
-                timeout=30
+                cmd, check=False, capture_output=True, text=True, env=env, timeout=30
             )
 
             if result.returncode != 0:
-                return FlextCore.Result[dict[str, Any]].fail(
+                return FlextResult[dict[str, Any]].fail(
                     f"Failed to get job status: {result.stderr}"
                 )
 
             # Parse JSON output
             import json
+
             jobs_data = json.loads(result.stdout)
 
             # Find the specific job
             for job in jobs_data.get("jobs", []):
                 if job.get("name") == job_name:
-                    return FlextCore.Result[dict[str, Any]].ok(job)
+                    return FlextResult[dict[str, Any]].ok(job)
 
-            return FlextCore.Result[dict[str, Any]].fail(f"Job not found: {job_name}")
+            return FlextResult[dict[str, Any]].fail(f"Job not found: {job_name}")
 
         except subprocess.TimeoutExpired:
-            return FlextCore.Result[dict[str, Any]].fail("Job status check timed out")
+            return FlextResult[dict[str, Any]].fail("Job status check timed out")
         except json.JSONDecodeError as e:
-            return FlextCore.Result[dict[str, Any]].fail(f"Invalid JSON response: {e!s}")
+            return FlextResult[dict[str, Any]].fail(
+                f"Invalid JSON response: {e!s}"
+            )
         except Exception as e:
-            return FlextCore.Result[dict[str, Any]].fail(f"Unexpected error: {e!s}")
+            return FlextResult[dict[str, Any]].fail(f"Unexpected error: {e!s}")
 
-    def list_jobs(self) -> FlextCore.Result[FlextCore.Types.StringList]:
+    def list_jobs(self) -> FlextResult[FlextCore.Types.StringList]:
         """List all available Meltano jobs.
 
         Returns:
@@ -131,28 +134,27 @@ class MeltanoPipelineExecutor:
 
             cmd = ["meltano", "job", "list", "--format", "json"]
             result = subprocess.run(
-                cmd,
-                check=False, capture_output=True,
-                text=True,
-                env=env,
-                timeout=30
+                cmd, check=False, capture_output=True, text=True, env=env, timeout=30
             )
 
             if result.returncode != 0:
-                return FlextCore.Result[FlextCore.Types.StringList].fail(
+                return FlextResult[FlextCore.Types.StringList].fail(
                     f"Failed to list jobs: {result.stderr}"
                 )
 
             import json
+
             jobs_data = json.loads(result.stdout)
             job_names = [job["name"] for job in jobs_data.get("jobs", [])]
 
-            return FlextCore.Result[FlextCore.Types.StringList].ok(job_names)
+            return FlextResult[FlextCore.Types.StringList].ok(job_names)
 
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.StringList].fail(f"Failed to list jobs: {e!s}")
+            return FlextResult[FlextCore.Types.StringList].fail(
+                f"Failed to list jobs: {e!s}"
+            )
 
-    def list_pipelines(self) -> FlextCore.Result[FlextCore.Types.StringList]:
+    def list_pipelines(self) -> FlextResult[FlextCore.Types.StringList]:
         """List all available Meltano pipelines.
 
         Returns:
@@ -164,26 +166,25 @@ class MeltanoPipelineExecutor:
 
             cmd = ["meltano", "pipeline", "list", "--format", "json"]
             result = subprocess.run(
-                cmd,
-                check=False, capture_output=True,
-                text=True,
-                env=env,
-                timeout=30
+                cmd, check=False, capture_output=True, text=True, env=env, timeout=30
             )
 
             if result.returncode != 0:
-                return FlextCore.Result[FlextCore.Types.StringList].fail(
+                return FlextResult[FlextCore.Types.StringList].fail(
                     f"Failed to list pipelines: {result.stderr}"
                 )
 
             import json
+
             pipelines_data = json.loads(result.stdout)
             pipeline_names = [p["name"] for p in pipelines_data.get("pipelines", [])]
 
-            return FlextCore.Result[FlextCore.Types.StringList].ok(pipeline_names)
+            return FlextResult[FlextCore.Types.StringList].ok(pipeline_names)
 
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.StringList].fail(f"Failed to list pipelines: {e!s}")
+            return FlextResult[FlextCore.Types.StringList].fail(
+                f"Failed to list pipelines: {e!s}"
+            )
 
     def _validate_job_name(self, job_name: str) -> str | None:
         """Validate job name format and constraints.
@@ -204,12 +205,15 @@ class MeltanoPipelineExecutor:
 
         # Check for valid characters (alphanumeric, hyphens, underscores)
         import re
-        if not re.match(r'^[a-zA-Z0-9_-]+$', job_name):
+
+        if not re.match(r"^[a-zA-Z0-9_-]+$", job_name):
             return None
 
         return job_name
 
-    def _execute_meltano_pipeline(self, job_name: str, env: dict[str, str]) -> FlextCore.Result[PipelineResult]:
+    def _execute_meltano_pipeline(
+        self, job_name: str, env: dict[str, str]
+    ) -> FlextResult[PipelineResult]:
         """Execute Meltano pipeline and collect results.
 
         Args:
@@ -242,7 +246,7 @@ class MeltanoPipelineExecutor:
                 stderr=subprocess.PIPE,
                 text=True,
                 env=env,
-                cwd=Path.cwd()
+                cwd=Path.cwd(),
             )
 
             # Monitor process execution
@@ -263,7 +267,9 @@ class MeltanoPipelineExecutor:
                 start_time=start_time,
                 end_time=end_time,
                 duration_seconds=duration,
-                errors=[{"message": stderr.strip()}] if stderr.strip() and not success else []
+                errors=[{"message": stderr.strip()}]
+                if stderr.strip() and not success
+                else [],
             )
 
             # Add stdout parsing for metrics (simplified)
@@ -272,12 +278,14 @@ class MeltanoPipelineExecutor:
                 # This would be enhanced based on actual Meltano output format
                 pass
 
-            return FlextCore.Result[PipelineResult].ok(result)
+            return FlextResult[PipelineResult].ok(result)
 
         except subprocess.TimeoutExpired:
-            return FlextCore.Result[PipelineResult].fail("Pipeline execution timed out")
+            return FlextResult[PipelineResult].fail("Pipeline execution timed out")
         except Exception as e:
-            return FlextCore.Result[PipelineResult].fail(f"Pipeline execution error: {e!s}")
+            return FlextResult[PipelineResult].fail(
+                f"Pipeline execution error: {e!s}"
+            )
 
     def _build_meltano_environment(self) -> dict[str, str]:
         """Build environment variables for Meltano execution.
@@ -290,20 +298,26 @@ class MeltanoPipelineExecutor:
 
         # Add Meltano-specific environment variables
         env.update({
-            "MELTANO_ENVIRONMENT": getattr(self.config, 'environment', 'dev'),
+            "MELTANO_ENVIRONMENT": getattr(self.config, "environment", "dev"),
             "MELTANO_PROJECT_ROOT": str(Path.cwd()),
-            "PYTHONPATH": os.environ.get("PYTHONPATH", "") + ":" + str(Path.cwd() / "src"),
+            "PYTHONPATH": os.environ.get("PYTHONPATH", "")
+            + ":"
+            + str(Path.cwd() / "src"),
         })
 
         # Add database environment variables if configured
-        if hasattr(self.config, 'oracle') and self.config.oracle:
+        if hasattr(self.config, "oracle") and self.config.oracle:
             oracle_config = self.config.oracle
             env.update({
-                "TAP_ORACLE_WMS_BASE_URL": getattr(oracle_config, 'base_url', ''),
-                "TAP_ORACLE_WMS_USERNAME": getattr(oracle_config, 'username', ''),
-                "TAP_ORACLE_WMS_PASSWORD": getattr(oracle_config, 'password', ''),
-                "TAP_ORACLE_WMS_COMPANY_CODE": getattr(oracle_config, 'company_code', ''),
-                "TAP_ORACLE_WMS_FACILITY_CODE": getattr(oracle_config, 'facility_code', ''),
+                "TAP_ORACLE_WMS_BASE_URL": getattr(oracle_config, "base_url", ""),
+                "TAP_ORACLE_WMS_USERNAME": getattr(oracle_config, "username", ""),
+                "TAP_ORACLE_WMS_PASSWORD": getattr(oracle_config, "password", ""),
+                "TAP_ORACLE_WMS_COMPANY_CODE": getattr(
+                    oracle_config, "company_code", ""
+                ),
+                "TAP_ORACLE_WMS_FACILITY_CODE": getattr(
+                    oracle_config, "facility_code", ""
+                ),
             })
 
         return env

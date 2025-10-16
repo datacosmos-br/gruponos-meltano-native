@@ -21,7 +21,7 @@ from gruponos_meltano_native.oracle.connection_manager_enhanced import (
     create_gruponos_meltano_oracle_connection_manager,
 )
 
-__all__: FlextCore.Types.StringList = [
+__all__: FlextTypes.StringList = [
     "GruponosMeltanoOracleConnectionManager",
     "create_gruponos_meltano_oracle_connection_manager",
 ]

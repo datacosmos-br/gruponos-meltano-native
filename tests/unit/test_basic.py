@@ -163,9 +163,9 @@ class TestBasicIntegration:
         mock_run_pipeline.assert_called_once_with("test_pipeline")
 
     def test_service_result_pattern(self) -> None:
-        """Test that FlextCore.Result pattern is used."""
+        """Test that FlextResult pattern is used."""
         # Test success
-        success_result = FlextCore.Result[str].ok("test_value")
+        success_result = FlextResult[str].ok("test_value")
         assert success_result.success
         if success_result.data != "test_value":
             msg: str = f"Expected {'test_value'}, got {success_result.data}"
@@ -173,7 +173,7 @@ class TestBasicIntegration:
         assert success_result.error is None
 
         # Test failure
-        failure_result: FlextCore.Result[str] = FlextCore.Result[str].fail("test_error")
+        failure_result: FlextResult[str] = FlextCore.Result[str].fail("test_error")
         assert not failure_result.success
         assert failure_result.data is None
         if failure_result.error != "test_error":

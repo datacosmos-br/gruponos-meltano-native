@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Documentation Maintenance Dashboard
+"""Documentation Maintenance Dashboard.
 
 Generates visual dashboards and metrics for documentation maintenance
 and quality assurance for the gruponos-meltano-native project.
@@ -19,19 +19,20 @@ Version: 1.0.0
 
 import argparse
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 # Configuration
-DASHBOARD_DIR = Path('docs/dashboard')
-REPORTS_DIR = Path('docs/reports')
+DASHBOARD_DIR = Path("docs/dashboard")
+REPORTS_DIR = Path("docs/reports")
 
 
 class DocsDashboard:
     """Documentation maintenance dashboard generator."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.dashboard_dir = DASHBOARD_DIR
         self.reports_dir = REPORTS_DIR
         self.dashboard_dir.mkdir(exist_ok=True)
@@ -47,7 +48,14 @@ class DocsDashboard:
             return reports
 
         # Find latest report of each type
-        report_types = ['audit', 'validation', 'optimization', 'sync', 'maintenance', 'report']
+        report_types = [
+            "audit",
+            "validation",
+            "optimization",
+            "sync",
+            "maintenance",
+            "report",
+        ]
 
         for report_type in report_types:
             pattern = f"docs_{report_type}_*.json"
@@ -60,23 +68,23 @@ class DocsDashboard:
 
         return reports
 
-    def generate_dashboard(self, output_format: str = 'html') -> Path:
+    def generate_dashboard(self, output_format: str = "html") -> Path:
         """Generate comprehensive dashboard."""
         print("📊 Generating documentation dashboard...")
 
         # Collect data from all reports
         dashboard_data = {
-            'timestamp': datetime.now().isoformat(),
-            'metrics': self._collect_metrics(),
-            'trends': self._analyze_trends(),
-            'issues': self._collect_issues(),
-            'recommendations': self._collect_recommendations()
+            "timestamp": datetime.now().isoformat(),
+            "metrics": self._collect_metrics(),
+            "trends": self._analyze_trends(),
+            "issues": self._collect_issues(),
+            "recommendations": self._collect_recommendations(),
         }
 
         # Generate dashboard file
-        if output_format == 'html':
+        if output_format == "html":
             dashboard_file = self._generate_html_dashboard(dashboard_data)
-        elif output_format == 'json':
+        elif output_format == "json":
             dashboard_file = self._generate_json_dashboard(dashboard_data)
         else:
             dashboard_file = self._generate_markdown_dashboard(dashboard_data)
@@ -87,45 +95,53 @@ class DocsDashboard:
     def _collect_metrics(self) -> dict[str, Any]:
         """Collect current documentation metrics."""
         metrics = {
-            'total_files': 0,
-            'quality_score': 0.0,
-            'critical_issues': 0,
-            'warning_issues': 0,
-            'info_issues': 0,
-            'links_checked': 0,
-            'broken_links': 0,
-            'files_updated': 0,
-            'stale_documents': 0
+            "total_files": 0,
+            "quality_score": 0.0,
+            "critical_issues": 0,
+            "warning_issues": 0,
+            "info_issues": 0,
+            "links_checked": 0,
+            "broken_links": 0,
+            "files_updated": 0,
+            "stale_documents": 0,
         }
 
         # Aggregate metrics from latest reports
-        for report_type, report_file in self.latest_reports.items():
+        for report_file in self.latest_reports.values():
             try:
-                with Path(report_file).open(encoding='utf-8') as f:
+                with Path(report_file).open(encoding="utf-8") as f:
                     data = json.load(f)
 
-                if 'summary' in data:
-                    summary = data['summary']
-                    metrics['quality_score'] = max(metrics['quality_score'], summary.get('quality_score', 0))
-                    metrics['critical_issues'] += summary.get('critical_issues', 0)
-                    metrics['warning_issues'] += summary.get('warning_issues', 0)
-                    metrics['info_issues'] += summary.get('info_issues', 0)
-                    metrics['total_files'] = max(metrics['total_files'], summary.get('total_files', 0))
+                if "summary" in data:
+                    summary = data["summary"]
+                    metrics["quality_score"] = max(
+                        metrics["quality_score"], summary.get("quality_score", 0)
+                    )
+                    metrics["critical_issues"] += summary.get("critical_issues", 0)
+                    metrics["warning_issues"] += summary.get("warning_issues", 0)
+                    metrics["info_issues"] += summary.get("info_issues", 0)
+                    metrics["total_files"] = max(
+                        metrics["total_files"], summary.get("total_files", 0)
+                    )
 
-                if 'detailed_results' in data:
-                    results = data['detailed_results']
+                if "detailed_results" in data:
+                    results = data["detailed_results"]
 
                     # Count links checked
-                    if 'validation' in results:
-                        validation = results['validation']
-                        metrics['links_checked'] += len(validation.get('external_links', {}))
-                        metrics['broken_links'] += len(validation.get('broken_links', []))
+                    if "validation" in results:
+                        validation = results["validation"]
+                        metrics["links_checked"] += len(
+                            validation.get("external_links", {})
+                        )
+                        metrics["broken_links"] += len(
+                            validation.get("broken_links", [])
+                        )
 
                     # Count stale documents
-                    if 'audit' in results:
-                        audit = results['audit']
-                        aging = audit.get('aging_analysis', {})
-                        metrics['stale_documents'] += len(aging)
+                    if "audit" in results:
+                        audit = results["audit"]
+                        aging = audit.get("aging_analysis", {})
+                        metrics["stale_documents"] += len(aging)
 
             except Exception as e:
                 print(f"Warning: Could not process report {report_file}: {e}")
@@ -135,44 +151,52 @@ class DocsDashboard:
     def _analyze_trends(self) -> dict[str, Any]:
         """Analyze trends over time."""
         trends = {
-            'quality_score_trend': [],
-            'issues_trend': [],
-            'files_trend': [],
-            'time_periods': []
+            "quality_score_trend": [],
+            "issues_trend": [],
+            "files_trend": [],
+            "time_periods": [],
         }
 
         # Find all reports for trend analysis
         all_reports = []
-        for pattern in ['docs_*.json']:
+        for pattern in ["docs_*.json"]:
             all_reports.extend(list(self.reports_dir.glob(pattern)))
 
         # Sort by date and analyze last 10 reports
-        sorted_reports = sorted(all_reports, key=lambda f: f.stat().st_mtime, reverse=True)[:10]
+        sorted_reports = sorted(
+            all_reports, key=lambda f: f.stat().st_mtime, reverse=True
+        )[:10]
 
         for report_file in reversed(sorted_reports):
             try:
-                with Path(report_file).open(encoding='utf-8') as f:
+                with Path(report_file).open(encoding="utf-8") as f:
                     data = json.load(f)
 
-                if 'summary' in data:
-                    summary = data['summary']
-                    timestamp = data.get('timestamp', report_file.stat().st_mtime)
+                if "summary" in data:
+                    summary = data["summary"]
+                    timestamp = data.get("timestamp", report_file.stat().st_mtime)
 
                     if isinstance(timestamp, (int, float)):
-                        date_str = datetime.fromtimestamp(timestamp).strftime('%m/%d')
+                        date_str = datetime.fromtimestamp(timestamp).strftime("%m/%d")
                     else:
                         try:
-                            date_str = datetime.fromisoformat(timestamp).strftime('%m/%d')
+                            date_str = datetime.fromisoformat(timestamp).strftime(
+                                "%m/%d"
+                            )
                         except:
                             date_str = "Unknown"
 
-                    trends['time_periods'].append(date_str)
-                    trends['quality_score_trend'].append(summary.get('quality_score', 0))
-                    total_issues = (summary.get('critical_issues', 0) +
-                                  summary.get('warning_issues', 0) +
-                                  summary.get('info_issues', 0))
-                    trends['issues_trend'].append(total_issues)
-                    trends['files_trend'].append(summary.get('total_files', 0))
+                    trends["time_periods"].append(date_str)
+                    trends["quality_score_trend"].append(
+                        summary.get("quality_score", 0)
+                    )
+                    total_issues = (
+                        summary.get("critical_issues", 0)
+                        + summary.get("warning_issues", 0)
+                        + summary.get("info_issues", 0)
+                    )
+                    trends["issues_trend"].append(total_issues)
+                    trends["files_trend"].append(summary.get("total_files", 0))
 
             except Exception as e:
                 print(f"Warning: Could not analyze trend for {report_file}: {e}")
@@ -183,35 +207,44 @@ class DocsDashboard:
         """Collect all current issues."""
         issues = []
 
-        for report_type, report_file in self.latest_reports.items():
+        for report_file in self.latest_reports.values():
             try:
-                with Path(report_file).open(encoding='utf-8') as f:
+                with Path(report_file).open(encoding="utf-8") as f:
                     data = json.load(f)
 
                 # Extract quality issues
-                if 'detailed_results' in data and 'audit' in data['detailed_results']:
-                    audit = data['detailed_results']['audit']
-                    for file_path, file_issues in audit.get('quality_issues', {}).items():
-                        for issue in file_issues:
-                            issues.append({
-                                'file': file_path,
-                                'type': issue.get('type', 'Unknown'),
-                                'message': issue.get('message', ''),
-                                'severity': issue.get('severity', 'INFO'),
-                                'source': 'audit'
-                            })
+                if "detailed_results" in data and "audit" in data["detailed_results"]:
+                    audit = data["detailed_results"]["audit"]
+                    for file_path, file_issues in audit.get(
+                        "quality_issues", {}
+                    ).items():
+                        issues.extend(
+                            {
+                                "file": file_path,
+                                "type": issue.get("type", "Unknown"),
+                                "message": issue.get("message", ""),
+                                "severity": issue.get("severity", "INFO"),
+                                "source": "audit",
+                            }
+                            for issue in file_issues
+                        )
 
                 # Extract broken links
-                if 'detailed_results' in data and 'validation' in data['detailed_results']:
-                    validation = data['detailed_results']['validation']
-                    for broken_link in validation.get('broken_links', []):
-                        issues.append({
-                            'file': 'Multiple files',
-                            'type': 'Broken Link',
-                            'message': f"Broken link: {broken_link.get('url', '')}",
-                            'severity': 'HIGH',
-                            'source': 'validation'
-                        })
+                if (
+                    "detailed_results" in data
+                    and "validation" in data["detailed_results"]
+                ):
+                    validation = data["detailed_results"]["validation"]
+                    issues.extend(
+                        {
+                            "file": "Multiple files",
+                            "type": "Broken Link",
+                            "message": f"Broken link: {broken_link.get('url', '')}",
+                            "severity": "HIGH",
+                            "source": "validation",
+                        }
+                        for broken_link in validation.get("broken_links", [])
+                    )
 
             except Exception as e:
                 print(f"Warning: Could not collect issues from {report_file}: {e}")
@@ -222,16 +255,18 @@ class DocsDashboard:
         """Collect all recommendations."""
         recommendations = []
 
-        for report_type, report_file in self.latest_reports.items():
+        for report_file in self.latest_reports.values():
             try:
-                with Path(report_file).open(encoding='utf-8') as f:
+                with Path(report_file).open(encoding="utf-8") as f:
                     data = json.load(f)
 
-                if 'recommendations' in data:
-                    recommendations.extend(data['recommendations'])
+                if "recommendations" in data:
+                    recommendations.extend(data["recommendations"])
 
             except Exception as e:
-                print(f"Warning: Could not collect recommendations from {report_file}: {e}")
+                print(
+                    f"Warning: Could not collect recommendations from {report_file}: {e}"
+                )
 
         return recommendations
 
@@ -322,24 +357,24 @@ class DocsDashboard:
     <div class="header">
         <h1>📊 Documentation Quality Dashboard</h1>
         <p>gruponos-meltano-native Project</p>
-        <p>Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        <p>Last Updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
     </div>
 
     <div class="metrics-grid">
         <div class="metric-card">
-            <div class="metric-value">{data['metrics']['quality_score']}%</div>
+            <div class="metric-value">{data["metrics"]["quality_score"]}%</div>
             <div class="metric-label">Quality Score</div>
         </div>
         <div class="metric-card">
-            <div class="metric-value">{data['metrics']['total_files']}</div>
+            <div class="metric-value">{data["metrics"]["total_files"]}</div>
             <div class="metric-label">Total Files</div>
         </div>
         <div class="metric-card">
-            <div class="metric-value">{data['metrics']['critical_issues']}</div>
+            <div class="metric-value">{data["metrics"]["critical_issues"]}</div>
             <div class="metric-label">Critical Issues</div>
         </div>
         <div class="metric-card">
-            <div class="metric-value">{data['metrics']['broken_links']}</div>
+            <div class="metric-value">{data["metrics"]["broken_links"]}</div>
             <div class="metric-label">Broken Links</div>
         </div>
     </div>
@@ -354,7 +389,7 @@ class DocsDashboard:
         <canvas id="activityChart" width="400" height="200"></canvas>
     </div>
 
-    {self._generate_recommendations_html(data['recommendations'])}
+    {self._generate_recommendations_html(data["recommendations"])}
 
     <div class="chart-container">
         <h2>⚠️ Current Issues</h2>
@@ -371,17 +406,18 @@ class DocsDashboard:
 """
 
         # Add issues rows
-        for issue in data['issues'][:20]:  # Limit to 20 issues
+        for issue in data["issues"][:20]:  # Limit to 20 issues
             html_content += f"""
                 <tr>
-                    <td>{issue['file']}</td>
-                    <td>{issue['type']}</td>
-                    <td>{issue['message']}</td>
-                    <td class="severity-{issue['severity']}">{issue['severity']}</td>
+                    <td>{issue["file"]}</td>
+                    <td>{issue["type"]}</td>
+                    <td>{issue["message"]}</td>
+                    <td class="severity-{issue["severity"]}">{issue["severity"]}</td>
                 </tr>
 """
 
-        html_content += """
+        html_content += (
+            """
             </tbody>
         </table>
     </div>
@@ -392,10 +428,14 @@ class DocsDashboard:
         new Chart(qualityCtx, {
             type: 'line',
             data: {
-                labels: """ + str(data['trends']['time_periods']) + """,
+                labels: """
+            + str(data["trends"]["time_periods"])
+            + """,
                 datasets: [{
                     label: 'Quality Score',
-                    data: """ + str(data['trends']['quality_score_trend']) + """,
+                    data: """
+            + str(data["trends"]["quality_score_trend"])
+            + """,
                     borderColor: '#667eea',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
                     tension: 0.4
@@ -417,10 +457,14 @@ class DocsDashboard:
         new Chart(activityCtx, {
             type: 'bar',
             data: {
-                labels: """ + str(data['trends']['time_periods']) + """,
+                labels: """
+            + str(data["trends"]["time_periods"])
+            + """,
                 datasets: [{
                     label: 'Issues Found',
-                    data: """ + str(data['trends']['issues_trend']) + """,
+                    data: """
+            + str(data["trends"]["issues_trend"])
+            + """,
                     backgroundColor: '#ff9800'
                 }]
             },
@@ -437,12 +481,18 @@ class DocsDashboard:
 </body>
 </html>
 """
+        )
 
-        dashboard_file = self.dashboard_dir / f'documentation_dashboard_{datetime.now().strftime("%Y%m%d")}.html'
-        dashboard_file.write_text(html_content, encoding='utf-8')
+        dashboard_file = (
+            self.dashboard_dir
+            / f"documentation_dashboard_{datetime.now().strftime('%Y%m%d')}.html"
+        )
+        dashboard_file.write_text(html_content, encoding="utf-8")
         return dashboard_file
 
-    def _generate_recommendations_html(self, recommendations: list[dict[str, Any]]) -> str:
+    def _generate_recommendations_html(
+        self, recommendations: list[dict[str, Any]]
+    ) -> str:
         """Generate HTML for recommendations."""
         if not recommendations:
             return ""
@@ -453,10 +503,10 @@ class DocsDashboard:
             priority_class = f"recommendations priority-{rec['priority'].lower()}"
             html += f"""
     <div class="{priority_class}">
-        <h4>{rec['priority']}: {rec['message']}</h4>
+        <h4>{rec["priority"]}: {rec["message"]}</h4>
         <ul>
 """
-            for action in rec.get('action_items', []):
+            for action in rec.get("action_items", []):
                 html += f"<li>{action}</li>"
             html += "</ul></div>"
 
@@ -465,8 +515,11 @@ class DocsDashboard:
 
     def _generate_json_dashboard(self, data: dict[str, Any]) -> Path:
         """Generate JSON dashboard."""
-        dashboard_file = self.dashboard_dir / f'documentation_dashboard_{datetime.now().strftime("%Y%m%d")}.json'
-        with Path(dashboard_file).open('w', encoding='utf-8') as f:
+        dashboard_file = (
+            self.dashboard_dir
+            / f"documentation_dashboard_{datetime.now().strftime('%Y%m%d')}.json"
+        )
+        with Path(dashboard_file).open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
         return dashboard_file
 
@@ -474,30 +527,30 @@ class DocsDashboard:
         """Generate Markdown dashboard."""
         md_content = f"""# 📊 Documentation Quality Dashboard
 
-**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **Project:** gruponos-meltano-native
 
 ## 📈 Current Metrics
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Quality Score | {data['metrics']['quality_score']}% | {'✅ Good' if data['metrics']['quality_score'] >= 80 else '⚠️ Needs Attention'} |
-| Total Files | {data['metrics']['total_files']} | - |
-| Critical Issues | {data['metrics']['critical_issues']} | {'❌ Action Required' if data['metrics']['critical_issues'] > 0 else '✅ OK'} |
-| Warning Issues | {data['metrics']['warning_issues']} | {'⚠️ Monitor' if data['metrics']['warning_issues'] > 0 else '✅ OK'} |
-| Broken Links | {data['metrics']['broken_links']} | {'❌ Fix Required' if data['metrics']['broken_links'] > 0 else '✅ OK'} |
-| Stale Documents | {data['metrics']['stale_documents']} | {'⚠️ Update Needed' if data['metrics']['stale_documents'] > 0 else '✅ OK'} |
+| Quality Score | {data["metrics"]["quality_score"]}% | {"✅ Good" if data["metrics"]["quality_score"] >= 80 else "⚠️ Needs Attention"} |
+| Total Files | {data["metrics"]["total_files"]} | - |
+| Critical Issues | {data["metrics"]["critical_issues"]} | {"❌ Action Required" if data["metrics"]["critical_issues"] > 0 else "✅ OK"} |
+| Warning Issues | {data["metrics"]["warning_issues"]} | {"⚠️ Monitor" if data["metrics"]["warning_issues"] > 0 else "✅ OK"} |
+| Broken Links | {data["metrics"]["broken_links"]} | {"❌ Fix Required" if data["metrics"]["broken_links"] > 0 else "✅ OK"} |
+| Stale Documents | {data["metrics"]["stale_documents"]} | {"⚠️ Update Needed" if data["metrics"]["stale_documents"] > 0 else "✅ OK"} |
 
 ## 🎯 Top Recommendations
 
 """
 
-        for i, rec in enumerate(data['recommendations'][:5], 1):
-            md_content += f"""### {i}. {rec['priority']}: {rec['message']}
+        for i, rec in enumerate(data["recommendations"][:5], 1):
+            md_content += f"""### {i}. {rec["priority"]}: {rec["message"]}
 
 """
 
-            for action in rec.get('action_items', []):
+            for action in rec.get("action_items", []):
                 md_content += f"""- {action}
 """
 
@@ -509,23 +562,46 @@ class DocsDashboard:
 |------|------|-------|----------|
 """
 
-        for issue in data['issues'][:10]:  # Show first 10 issues
-            md_content += f"""| {issue['file']} | {issue['type']} | {issue['message'][:50]}... | {issue['severity']} |
+        for issue in data["issues"][:10]:  # Show first 10 issues
+            md_content += f"""| {issue["file"]} | {issue["type"]} | {issue["message"][:50]}... | {issue["severity"]} |
 """
 
-        md_content += """
+        md_content += (
+            """
 
 ## 📈 Trends (Last 10 Reports)
 
-- **Quality Score Trend:** """ + ', '.join([f"{date}: {score}%" for date, score in zip(data['trends']['time_periods'], data['trends']['quality_score_trend'], strict=False)]) + """
-- **Issues Trend:** """ + ', '.join([f"{date}: {issues}" for date, issues in zip(data['trends']['time_periods'], data['trends']['issues_trend'], strict=False)]) + """
+- **Quality Score Trend:** """
+            + ", ".join([
+                f"{date}: {score}%"
+                for date, score in zip(
+                    data["trends"]["time_periods"],
+                    data["trends"]["quality_score_trend"],
+                    strict=False,
+                )
+            ])
+            + """
+- **Issues Trend:** """
+            + ", ".join([
+                f"{date}: {issues}"
+                for date, issues in zip(
+                    data["trends"]["time_periods"],
+                    data["trends"]["issues_trend"],
+                    strict=False,
+                )
+            ])
+            + """
 
 ---
 *Generated by Documentation Maintenance System*
 """
+        )
 
-        dashboard_file = self.dashboard_dir / f'documentation_dashboard_{datetime.now().strftime("%Y%m%d")}.md'
-        dashboard_file.write_text(md_content, encoding='utf-8')
+        dashboard_file = (
+            self.dashboard_dir
+            / f"documentation_dashboard_{datetime.now().strftime('%Y%m%d')}.md"
+        )
+        dashboard_file.write_text(md_content, encoding="utf-8")
         return dashboard_file
 
     def show_metrics(self) -> None:
@@ -545,9 +621,9 @@ class DocsDashboard:
         print(f"Stale Documents:   {metrics['stale_documents']}")
 
         # Status indicators
-        if metrics['critical_issues'] > 0:
+        if metrics["critical_issues"] > 0:
             print("❌ Status: CRITICAL - Immediate action required")
-        elif metrics['quality_score'] < 80:
+        elif metrics["quality_score"] < 80:
             print("⚠️  Status: WARNING - Quality improvements needed")
         else:
             print("✅ Status: GOOD - Documentation quality is acceptable")
@@ -559,13 +635,17 @@ class DocsDashboard:
         print("📈 Documentation Quality Trends")
         print("=" * 40)
 
-        if trends['time_periods']:
+        if trends["time_periods"]:
             print("Quality Score Trend:")
-            for date, score in zip(trends['time_periods'], trends['quality_score_trend'], strict=False):
+            for date, score in zip(
+                trends["time_periods"], trends["quality_score_trend"], strict=False
+            ):
                 print(f"  {date}: {score}%")
 
             print("\nIssues Trend:")
-            for date, issues in zip(trends['time_periods'], trends['issues_trend'], strict=False):
+            for date, issues in zip(
+                trends["time_periods"], trends["issues_trend"], strict=False
+            ):
                 print(f"  {date}: {issues} issues")
         else:
             print("No trend data available - run maintenance cycles first")
@@ -573,41 +653,41 @@ class DocsDashboard:
     def check_alerts(self) -> None:
         """Check for issues requiring immediate attention."""
         metrics = self._collect_metrics()
-        issues = self._collect_issues()
+        self._collect_issues()
 
         alerts = []
 
         # Quality score alert
-        if metrics['quality_score'] < 70:
+        if metrics["quality_score"] < 70:
             alerts.append({
-                'level': 'CRITICAL',
-                'message': f'Quality score critically low: {metrics["quality_score"]}%'
+                "level": "CRITICAL",
+                "message": f"Quality score critically low: {metrics['quality_score']}%",
             })
-        elif metrics['quality_score'] < 80:
+        elif metrics["quality_score"] < 80:
             alerts.append({
-                'level': 'WARNING',
-                'message': f'Quality score below threshold: {metrics["quality_score"]}%'
+                "level": "WARNING",
+                "message": f"Quality score below threshold: {metrics['quality_score']}%",
             })
 
         # Critical issues alert
-        if metrics['critical_issues'] > 0:
+        if metrics["critical_issues"] > 0:
             alerts.append({
-                'level': 'CRITICAL',
-                'message': f'{metrics["critical_issues"]} critical issues found'
+                "level": "CRITICAL",
+                "message": f"{metrics['critical_issues']} critical issues found",
             })
 
         # Broken links alert
-        if metrics['broken_links'] > 0:
+        if metrics["broken_links"] > 0:
             alerts.append({
-                'level': 'WARNING',
-                'message': f'{metrics["broken_links"]} broken links detected'
+                "level": "WARNING",
+                "message": f"{metrics['broken_links']} broken links detected",
             })
 
         # Stale documents alert
-        if metrics['stale_documents'] > 5:
+        if metrics["stale_documents"] > 5:
             alerts.append({
-                'level': 'WARNING',
-                'message': f'{metrics["stale_documents"]} documents are stale (>90 days)'
+                "level": "WARNING",
+                "message": f"{metrics['stale_documents']} documents are stale (>90 days)",
             })
 
         print("🚨 Documentation Alerts")
@@ -615,16 +695,18 @@ class DocsDashboard:
 
         if alerts:
             for alert in alerts:
-                level_emoji = {'CRITICAL': '🔴', 'WARNING': '🟡', 'INFO': '🔵'}.get(alert['level'], '⚪')
+                level_emoji = {"CRITICAL": "🔴", "WARNING": "🟡", "INFO": "🔵"}.get(
+                    alert["level"], "⚪"
+                )
                 print(f"{level_emoji} {alert['level']}: {alert['message']}")
         else:
             print("✅ No alerts - documentation quality is good")
 
 
-def main():
+def main() -> int:
     """Main entry point for dashboard."""
     parser = argparse.ArgumentParser(
-        description='Documentation Maintenance Dashboard',
+        description="Documentation Maintenance Dashboard",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -632,44 +714,40 @@ Examples:
   python scripts/docs_dashboard.py metrics
   python scripts/docs_dashboard.py trends
   python scripts/docs_dashboard.py alerts
-        """
+        """,
     )
 
     parser.add_argument(
-        'command',
-        choices=['generate', 'metrics', 'trends', 'alerts'],
-        help='Dashboard command to execute'
+        "command",
+        choices=["generate", "metrics", "trends", "alerts"],
+        help="Dashboard command to execute",
     )
 
     parser.add_argument(
-        '--format',
-        choices=['html', 'json', 'markdown'],
-        default='html',
-        help='Output format for generate command'
+        "--format",
+        choices=["html", "json", "markdown"],
+        default="html",
+        help="Output format for generate command",
     )
 
-    parser.add_argument(
-        '--output',
-        type=str,
-        help='Output file path'
-    )
+    parser.add_argument("--output", type=str, help="Output file path")
 
     args = parser.parse_args()
 
     dashboard = DocsDashboard()
 
     try:
-        if args.command == 'generate':
+        if args.command == "generate":
             dashboard_file = dashboard.generate_dashboard(args.format)
             print(f"✅ Dashboard generated: {dashboard_file}")
 
-        elif args.command == 'metrics':
+        elif args.command == "metrics":
             dashboard.show_metrics()
 
-        elif args.command == 'trends':
+        elif args.command == "trends":
             dashboard.analyze_trends()
 
-        elif args.command == 'alerts':
+        elif args.command == "alerts":
             dashboard.check_alerts()
 
     except Exception as e:
@@ -679,5 +757,5 @@ Examples:
     return 0
 
 
-if __name__ == '__main__':
-    exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

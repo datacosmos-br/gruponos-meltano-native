@@ -23,7 +23,7 @@ from gruponos_meltano_native.validators.data_validator import (
     create_validator_for_environment,
 )
 
-__all__: FlextCore.Types.StringList = [
+__all__: FlextTypes.StringList = [
     "DataValidator",
     "ValidationError",
     "ValidationRule",

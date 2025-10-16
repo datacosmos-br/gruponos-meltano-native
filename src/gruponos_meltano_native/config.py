@@ -1,6 +1,6 @@
-"""GrupoNOS Meltano Native Configuration - Advanced FlextCore.Config integration.
+"""GrupoNOS Meltano Native Configuration - Advanced FlextConfig integration.
 
-Provides GrupoNOS-specific configuration management using modern FlextCore.Config features:
+Provides GrupoNOS-specific configuration management using modern FlextConfig features:
 - Factory methods for domain-specific configurations
 - Computed fields for derived configuration
 - Protocol-based validation
@@ -21,11 +21,11 @@ from pydantic import Field, SecretStr, computed_field, field_validator, model_va
 from pydantic_settings import SettingsConfigDict
 
 
-class GruponosMeltanoNativeConfig(FlextCore.Config):
-    """GrupoNOS Meltano Native Configuration using modern FlextCore.Config features.
+class GruponosMeltanoNativeConfig(FlextConfig):
+    """GrupoNOS Meltano Native Configuration using modern FlextConfig features.
 
-    Extends FlextCore.Config with domain-specific fields and factory methods.
-    Uses computed fields and direct FlextCore.Config integration without duplication.
+    Extends FlextConfig with domain-specific fields and factory methods.
+    Uses computed fields and direct FlextConfig integration without duplication.
     """
 
     # TypedDict structures for configuration validation
@@ -35,7 +35,7 @@ class GruponosMeltanoNativeConfig(FlextCore.Config):
         webhook_enabled: bool
         webhook_url: str | None
         email_enabled: bool
-        email_recipients: FlextCore.Types.StringList
+        email_recipients: FlextTypes.StringList
         slack_enabled: bool
         slack_webhook_url: str | None
         alert_threshold: int
@@ -80,7 +80,7 @@ class GruponosMeltanoNativeConfig(FlextCore.Config):
     model_config = SettingsConfigDict(
         env_prefix="GRUPONOS_MELTANO_",
         case_sensitive=False,
-        extra="ignore",  # Changed from "allow" to match newer FlextCore.Config pattern
+        extra="ignore",  # Changed from "allow" to match newer FlextConfig pattern
         str_strip_whitespace=True,
         str_to_lower=False,
         validate_assignment=True,
@@ -88,14 +88,14 @@ class GruponosMeltanoNativeConfig(FlextCore.Config):
         frozen=False,
         use_enum_values=True,
         validate_default=True,
-        # Enhanced Pydantic 2.11+ features matching FlextCore.Config
+        # Enhanced Pydantic 2.11+ features matching FlextConfig
         cli_parse_args=False,
         cli_avoid_json=True,
         enable_decoding=True,
         nested_model_default_partial_update=True,
         json_schema_extra={
             "title": "GrupoNOS Meltano Native Configuration",
-            "description": "Enterprise Meltano native configuration extending FlextCore.Config",
+            "description": "Enterprise Meltano native configuration extending FlextConfig",
         },
     )
 
@@ -112,7 +112,7 @@ class GruponosMeltanoNativeConfig(FlextCore.Config):
         default=False,
         description="Enable email alerts",
     )
-    email_recipients: FlextCore.Types.StringList = Field(
+    email_recipients: FlextTypes.StringList = Field(
         default_factory=list,
         description="Email recipients for alerts",
     )
@@ -491,61 +491,63 @@ class GruponosMeltanoNativeConfig(FlextCore.Config):
             return self.wms_password.get_secret_value()
         return None
 
-    def validate_business_rules(self) -> FlextCore.Result[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate configuration business rules."""
         try:
             # Alert configuration validation
             if self.webhook_enabled and not self.webhook_url:
-                return FlextCore.Result[None].fail(
+                return FlextResult[None].fail(
                     "Webhook URL required when webhook alerts enabled"
                 )
 
             if self.email_enabled and not self.email_recipients:
-                return FlextCore.Result[None].fail(
+                return FlextResult[None].fail(
                     "Email recipients required when email alerts enabled"
                 )
 
             if self.slack_enabled and not self.slack_webhook_url:
-                return FlextCore.Result[None].fail(
+                return FlextResult[None].fail(
                     "Slack webhook URL required when Slack alerts enabled"
                 )
 
             # Oracle connection validation
             if self.oracle_host:
                 if not self.oracle_service_name:
-                    return FlextCore.Result[None].fail("Oracle service name is required")
+                    return FlextResult[None].fail(
+                        "Oracle service name is required"
+                    )
                 if not self.oracle_username:
-                    return FlextCore.Result[None].fail("Oracle username is required")
+                    return FlextResult[None].fail("Oracle username is required")
                 if not self.oracle_password:
-                    return FlextCore.Result[None].fail("Oracle password is required")
+                    return FlextResult[None].fail("Oracle password is required")
 
             # WMS source validation
             if self.wms_base_url:
                 if not self.wms_username:
-                    return FlextCore.Result[None].fail("WMS username is required")
+                    return FlextResult[None].fail("WMS username is required")
                 if not self.wms_password:
-                    return FlextCore.Result[None].fail("WMS password is required")
+                    return FlextResult[None].fail("WMS password is required")
                 if not self.wms_company_code:
-                    return FlextCore.Result[None].fail("WMS company code is required")
+                    return FlextResult[None].fail("WMS company code is required")
                 if not self.wms_facility_code:
-                    return FlextCore.Result[None].fail("WMS facility code is required")
+                    return FlextResult[None].fail("WMS facility code is required")
 
             # Target configuration validation
             valid_methods = {"insert", "upsert", "append"}
             if self.target_load_method not in valid_methods:
-                return FlextCore.Result[None].fail(
+                return FlextResult[None].fail(
                     f"Load method must be one of {valid_methods}"
                 )
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
-            return FlextCore.Result[None].fail(f"Configuration validation failed: {e}")
+            return FlextResult[None].fail(f"Configuration validation failed: {e}")
 
-    def validate_semantic_rules(self) -> FlextCore.Result[None]:
+    def validate_semantic_rules(self) -> FlextResult[None]:
         """Validate configuration semantic rules (alias for validate_business_rules)."""
         return self.validate_business_rules()
 
-    # Factory methods for domain-specific configurations using FlextCore.Config as source
+    # Factory methods for domain-specific configurations using FlextConfig as source
     def create_meltano_config(self, **overrides: object) -> object:
         """Create Meltano configuration using GruponosMeltanoNativeConfig as source.
 
@@ -680,12 +682,11 @@ GruponosMeltanoWMSSourceConfig = GruponosMeltanoNativeConfig
 
 
 # Export configuration class (single class plus backward compatibility aliases)
-__all__: FlextCore.Types.StringList = [
+__all__: FlextTypes.StringList = [
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoJobConfig",
     "GruponosMeltanoNativeConfig",
     "GruponosMeltanoOracleConnectionConfig",
     "GruponosMeltanoTargetOracleConfig",
     "GruponosMeltanoWMSSourceConfig",
-    "create_gruponos_meltano_settings",
 ]

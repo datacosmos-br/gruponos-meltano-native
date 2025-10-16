@@ -276,7 +276,7 @@ def test_oracle_integration_with_mocks(mock_oracle_api):
     """Test Oracle integration with controlled mocks."""
     # Setup mock behavior
     mock_connection = Mock()
-    mock_oracle_api.return_value.get_connection.return_value = FlextCore.Result[None].ok(mock_connection)
+    mock_oracle_api.return_value.get_connection.return_value = FlextResult[None].ok(mock_connection)
 
     # Execute test
     manager = create_gruponos_meltano_oracle_connection_manager(test_config)

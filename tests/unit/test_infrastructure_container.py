@@ -14,18 +14,18 @@ from gruponos_meltano_native import (
 
 def test_get_flext_container_returns_container() -> None:
     """Test get flext container returns container function."""
-    container = FlextCore.Container.get_global()
-    assert isinstance(container, FlextCore.Container)
+    container = FlextContainer.get_global()
+    assert isinstance(container, FlextContainer)
 
 
 def test_get_gruponos_meltano_container_registers_core() -> None:
     """Test get gruponos meltano container registers core function."""
     container = get_gruponos_meltano_container()
     # Ensure it is the same singleton instance type
-    assert isinstance(container, FlextCore.Container)
+    assert isinstance(container, FlextContainer)
 
     # Components registered in configuration should be resolvable
     result = container.get("flext_result")
     assert hasattr(result, "success")
     assert result.success
-    assert result.data is FlextCore.Result
+    assert result.data is FlextResult

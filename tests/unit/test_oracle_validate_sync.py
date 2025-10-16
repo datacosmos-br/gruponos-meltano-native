@@ -25,11 +25,11 @@ class OracleCursor(Protocol):
     def execute(
         self,
         query: str,
-        params: FlextCore.Types.List | FlextCore.Types.Dict | None = None,
+        params: FlextTypes.List | FlextCore.Types.Dict | None = None,
     ) -> None:
         """Execute a query."""
 
-    def fetchone(self) -> FlextCore.Types.List | None:
+    def fetchone(self) -> FlextTypes.List | None:
         """Fetch one row."""
 
 
@@ -137,7 +137,7 @@ def _count_table_records(cursor: OracleCursor, table_name: str) -> int:
         return 0
 
 
-def _get_table_details(cursor: OracleCursor, table_name: str) -> FlextCore.Types.Dict:
+def _get_table_details(cursor: OracleCursor, table_name: str) -> FlextTypes.Dict:
     """Get Oracle table details using cursor.
 
     Args:
@@ -402,7 +402,7 @@ class TestOracleValidateSync:
         # Mock cursor that returns valid details
         call_count = [0]  # Use list to allow modification in lambda
 
-        def mock_fetchone() -> FlextCore.Types.List:
+        def mock_fetchone() -> FlextTypes.List:
             call_count[0] += 1
             if call_count[0] == 1:  # First call (MIN/MAX/COUNT query)
                 return ["2024-01-01", "2024-12-31", 1000]
@@ -457,7 +457,7 @@ class TestOracleValidateSync:
         # Mock cursor for table that exists and has records
         call_count = [0]
 
-        def mock_fetchone() -> FlextCore.Types.List:
+        def mock_fetchone() -> FlextTypes.List:
             call_count[0] += 1
             if call_count[0] == 1:  # table exists check
                 return [1]
@@ -504,7 +504,7 @@ class TestOracleValidateSync:
         # Mock cursor for table that exists but has no records
         call_count = [0]
 
-        def mock_fetchone() -> FlextCore.Types.List:
+        def mock_fetchone() -> FlextTypes.List:
             call_count[0] += 1
             if call_count[0] == 1:  # First call - table exists check
                 return [1]  # Table exists
@@ -533,10 +533,12 @@ class TestOracleValidateSync:
         mock_test_connection: object,
     ) -> None:
         """Test validate_oracle_connection with connection failure."""
-        # FlextCore.Result imported at top
+        # FlextResult imported at top
 
         # Mock failed connection test
-        mock_test_connection.return_value = FlextCore.Result[None].fail("Connection failed")
+        mock_test_connection.return_value = FlextResult[None].fail(
+            "Connection failed"
+        )
 
         result = validate_oracle_connection()
         assert result is False
@@ -563,10 +565,10 @@ class TestOracleValidateSync:
         mock_test_connection: object,
     ) -> None:
         """Test validate_oracle_connection with successful connection."""
-        # FlextCore.Result imported at top
+        # FlextResult imported at top
 
         # Mock successful connection test
-        mock_test_connection.return_value = FlextCore.Result[None].ok(
+        mock_test_connection.return_value = FlextResult[None].ok(
             "Connection successful",
         )
 

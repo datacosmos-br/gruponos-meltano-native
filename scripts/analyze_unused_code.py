@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze Unused/Test-Only Code in gruponos-meltano-native
+"""Analyze Unused/Test-Only Code in gruponos-meltano-native.
 
 This script analyzes the codebase to identify classes, functions, and modules
 that are only used in tests but not in actual application code. Such code
@@ -16,11 +16,13 @@ import argparse
 import ast
 import os
 import re
+import sys
 from pathlib import Path
 
 # Import serena tools if available
 try:
     from gruponos_meltano_native.core.serena_client import SerenaClient
+
     SERENA_AVAILABLE = True
 except ImportError:
     SERENA_AVAILABLE = False
@@ -29,7 +31,7 @@ except ImportError:
 class UnusedCodeAnalyzer:
     """Analyzer for identifying unused/test-only code."""
 
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path) -> None:
         self.project_root = project_root
         self.src_dir = project_root / "src" / "gruponos_meltano_native"
         self.tests_dir = project_root / "tests"
@@ -38,7 +40,7 @@ class UnusedCodeAnalyzer:
             "test_only_functions": [],
             "unused_modules": [],
             "exported_but_unused": [],
-            "dead_code_candidates": []
+            "dead_code_candidates": [],
         }
 
     def analyze(self) -> dict:
@@ -55,7 +57,7 @@ class UnusedCodeAnalyzer:
                 self.results["exported_but_unused"].append({
                     "symbol": symbol,
                     "test_files": usage["test_files"],
-                    "definition_file": usage["definition_file"]
+                    "definition_file": usage["definition_file"],
                 })
 
         # Analyze modules for complete unused status
@@ -72,19 +74,18 @@ class UnusedCodeAnalyzer:
         if not init_file.exists():
             return []
 
-        with Path(init_file).open(encoding='utf-8') as f:
+        with Path(init_file).open(encoding="utf-8") as f:
             content = f.read()
 
         # Find __all__ list
-        all_match = re.search(r'__all__\s*=\s*\[([^\]]+)\]', content, re.DOTALL)
+        all_match = re.search(r"__all__\s*=\s*\[([^\]]+)\]", content, re.DOTALL)
         if not all_match:
             return []
 
         all_content = all_match.group(1)
 
         # Extract quoted strings
-        symbols = re.findall(r'["\']([^"\']+)["\']', all_content)
-        return symbols
+        return re.findall(r'["\']([^"\']+)["\']', all_content)
 
     def _analyze_symbol_usage(self, symbol: str) -> dict:
         """Analyze where a symbol is used."""
@@ -94,21 +95,27 @@ class UnusedCodeAnalyzer:
             "src_usage": [],
             "test_usage": [],
             "test_files": [],
-            "only_in_tests": False
+            "only_in_tests": False,
         }
 
         # Find definition file
         result["definition_file"] = self._find_symbol_definition(symbol)
 
         # Find all usages
-        result["src_usage"] = self._grep_symbol_usage(symbol, self.src_dir, exclude_tests=True)
-        result["test_usage"] = self._grep_symbol_usage(symbol, self.tests_dir, exclude_tests=False)
+        result["src_usage"] = self._grep_symbol_usage(
+            symbol, self.src_dir, exclude_tests=True
+        )
+        result["test_usage"] = self._grep_symbol_usage(
+            symbol, self.tests_dir, exclude_tests=False
+        )
 
         # Extract test file names
         result["test_files"] = [usage["file"] for usage in result["test_usage"]]
 
         # Determine if only used in tests
-        src_usage_count = len([u for u in result["src_usage"] if "__init__.py" not in u["file"]])
+        src_usage_count = len([
+            u for u in result["src_usage"] if "__init__.py" not in u["file"]
+        ])
         test_usage_count = len(result["test_usage"])
 
         result["only_in_tests"] = src_usage_count == 0 and test_usage_count > 0
@@ -119,15 +126,15 @@ class UnusedCodeAnalyzer:
         """Find where a symbol is defined."""
         for py_file in self.src_dir.rglob("*.py"):
             try:
-                with Path(py_file).open(encoding='utf-8') as f:
+                with Path(py_file).open(encoding="utf-8") as f:
                     content = f.read()
 
                 # Check for class definition
-                if re.search(rf'^class\s+{re.escape(symbol)}\b', content, re.MULTILINE):
+                if re.search(rf"^class\s+{re.escape(symbol)}\b", content, re.MULTILINE):
                     return str(py_file.relative_to(self.project_root))
 
                 # Check for function definition
-                if re.search(rf'^def\s+{re.escape(symbol)}\b', content, re.MULTILINE):
+                if re.search(rf"^def\s+{re.escape(symbol)}\b", content, re.MULTILINE):
                     return str(py_file.relative_to(self.project_root))
 
             except Exception:
@@ -135,7 +142,9 @@ class UnusedCodeAnalyzer:
 
         return "unknown"
 
-    def _grep_symbol_usage(self, symbol: str, search_dir: Path, exclude_tests: bool = True) -> list[dict]:
+    def _grep_symbol_usage(
+        self, symbol: str, search_dir: Path, exclude_tests: bool = True
+    ) -> list[dict]:
         """Find all usages of a symbol in a directory."""
         usages = []
 
@@ -144,26 +153,30 @@ class UnusedCodeAnalyzer:
                 continue
 
             try:
-                with Path(py_file).open(encoding='utf-8') as f:
+                with Path(py_file).open(encoding="utf-8") as f:
                     content = f.read()
 
                 # Find symbol usages (not definitions)
-                lines = content.split('\n')
+                lines = content.split("\n")
                 for i, line in enumerate(lines, 1):
                     # Skip comments and docstrings
-                    if line.strip().startswith('#') or '"""' in line or "'''" in line:
+                    if line.strip().startswith("#") or '"""' in line or "'''" in line:
                         continue
 
                     # Skip class/function definitions
-                    if re.search(rf'^(class|def)\s+{re.escape(symbol)}\b', line):
+                    if re.search(rf"^(class|def)\s+{re.escape(symbol)}\b", line):
                         continue
 
                     # Check for symbol usage
-                    if symbol in line and not line.strip().startswith('from ') and not line.strip().startswith('import '):
+                    if (
+                        symbol in line
+                        and not line.strip().startswith("from ")
+                        and not line.strip().startswith("import ")
+                    ):
                         usages.append({
                             "file": str(py_file.relative_to(self.project_root)),
                             "line": i,
-                            "content": line.strip()
+                            "content": line.strip(),
                         })
 
             except Exception:
@@ -171,7 +184,7 @@ class UnusedCodeAnalyzer:
 
         return usages
 
-    def _analyze_module_usage(self):
+    def _analyze_module_usage(self) -> None:
         """Analyze which modules are completely unused."""
         modules = []
 
@@ -180,7 +193,11 @@ class UnusedCodeAnalyzer:
             if "__init__.py" in str(py_file):
                 continue
 
-            module_name = str(py_file.relative_to(self.src_dir)).replace('.py', '').replace('/', '.')
+            module_name = (
+                str(py_file.relative_to(self.src_dir))
+                .replace(".py", "")
+                .replace("/", ".")
+            )
 
             # Check if module is imported anywhere
             imported = False
@@ -189,10 +206,13 @@ class UnusedCodeAnalyzer:
                     continue
 
                 try:
-                    with Path(other_file).open(encoding='utf-8') as f:
+                    with Path(other_file).open(encoding="utf-8") as f:
                         content = f.read()
 
-                    if f"from gruponos_meltano_native.{module_name}" in content or f"import {module_name}" in content:
+                    if (
+                        f"from gruponos_meltano_native.{module_name}" in content
+                        or f"import {module_name}" in content
+                    ):
                         imported = True
                         break
                 except Exception:
@@ -201,19 +221,19 @@ class UnusedCodeAnalyzer:
             if not imported:
                 modules.append({
                     "module": module_name,
-                    "file": str(py_file.relative_to(self.project_root))
+                    "file": str(py_file.relative_to(self.project_root)),
                 })
 
         self.results["unused_modules"] = modules
 
-    def _identify_dead_code(self):
+    def _identify_dead_code(self) -> None:
         """Identify potential dead code candidates."""
         dead_candidates = []
 
         # Look for functions/methods that are never called
         for py_file in self.src_dir.rglob("*.py"):
             try:
-                with Path(py_file).open(encoding='utf-8') as f:
+                with Path(py_file).open(encoding="utf-8") as f:
                     content = f.read()
 
                 # Parse AST to find function definitions
@@ -224,7 +244,10 @@ class UnusedCodeAnalyzer:
                         func_name = node.name
 
                         # Skip special methods
-                        if func_name.startswith('_') or func_name in ['__init__', '__post_init__']:
+                        if func_name.startswith("_") or func_name in {
+                            "__init__",
+                            "__post_init__",
+                        }:
                             continue
 
                         # Check if function is called anywhere
@@ -234,7 +257,7 @@ class UnusedCodeAnalyzer:
                                 continue
 
                             try:
-                                with Path(other_file).open(encoding='utf-8') as f2:
+                                with Path(other_file).open(encoding="utf-8") as f2:
                                     other_content = f2.read()
 
                                 if f"{func_name}(" in other_content:
@@ -247,7 +270,7 @@ class UnusedCodeAnalyzer:
                             dead_candidates.append({
                                 "function": func_name,
                                 "file": str(py_file.relative_to(self.project_root)),
-                                "line": node.lineno
+                                "line": node.lineno,
                             })
 
             except Exception:
@@ -255,20 +278,20 @@ class UnusedCodeAnalyzer:
 
         self.results["dead_code_candidates"] = dead_candidates
 
-    def generate_report(self, output_file: Path = None) -> str:
+    def generate_report(self, output_file: Path | None = None) -> str:
         """Generate a comprehensive analysis report."""
         report = f"""# Unused/Test-Only Code Analysis Report
 
-**Generated:** {os.environ.get('USER', 'system')} on {__import__('datetime').datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Generated:** {os.environ.get("USER", "system")} on {__import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **Project:** gruponos-meltano-native
 **Analysis Tool:** Custom AST-based analyzer
 
 ## Executive Summary
 
 - **Exported Symbols Analyzed:** {len(self._get_exported_symbols())}
-- **Test-Only Symbols Found:** {len(self.results['exported_but_unused'])}
-- **Unused Modules:** {len(self.results['unused_modules'])}
-- **Dead Code Candidates:** {len(self.results['dead_code_candidates'])}
+- **Test-Only Symbols Found:** {len(self.results["exported_but_unused"])}
+- **Unused Modules:** {len(self.results["unused_modules"])}
+- **Dead Code Candidates:** {len(self.results["dead_code_candidates"])}
 
 ## Test-Only Exported Symbols
 
@@ -276,10 +299,10 @@ These symbols are exported from the main package but only used in tests. They ca
 
 """
 
-        for item in self.results['exported_but_unused']:
-            report += f"""### `{item['symbol']}`
-- **Definition:** `{item['definition_file']}`
-- **Test Files:** {len(item['test_files'])} files
+        for item in self.results["exported_but_unused"]:
+            report += f"""### `{item["symbol"]}`
+- **Definition:** `{item["definition_file"]}`
+- **Test Files:** {len(item["test_files"])} files
 - **Recommendation:** Remove from `__all__` and consider deleting if truly unused
 
 """
@@ -291,9 +314,9 @@ These modules are not imported by any other module in the codebase.
 
 """
 
-        for module in self.results['unused_modules']:
-            report += f"""### `{module['module']}`
-- **File:** `{module['file']}`
+        for module in self.results["unused_modules"]:
+            report += f"""### `{module["module"]}`
+- **File:** `{module["file"]}`
 - **Status:** Not imported anywhere
 - **Recommendation:** Review for necessity; may be safe to remove
 
@@ -306,9 +329,9 @@ These functions/methods are defined but never called in the codebase.
 
 """
 
-        for func in self.results['dead_code_candidates'][:20]:  # Limit to 20
-            report += f"""### `{func['function']}`
-- **File:** `{func['file']}:{func['line']}`
+        for func in self.results["dead_code_candidates"][:20]:  # Limit to 20
+            report += f"""### `{func["function"]}`
+- **File:** `{func["file"]}:{func["line"]}`
 - **Status:** No calls found
 - **Recommendation:** Review for necessity; may be unused code
 
@@ -339,15 +362,17 @@ These functions/methods are defined but never called in the codebase.
 ### `src/gruponos_meltano_native/__init__.py`
 Remove the following from `__all__`:
 """
-        test_only_symbols = [item['symbol'] for item in self.results['exported_but_unused']]
+        test_only_symbols = [
+            item["symbol"] for item in self.results["exported_but_unused"]
+        ]
         for symbol in test_only_symbols:
             report += f"""- `"{symbol}"`\n"""
 
         report += """
 ### Files to Review for Deletion
 """
-        for module in self.results['unused_modules']:
-            report += f"""- `{module['file']}` - `{module['module']}` module\n"""
+        for module in self.results["unused_modules"]:
+            report += f"""- `{module["file"]}` - `{module["module"]}` module\n"""
 
         report += """
 ## Risk Assessment
@@ -413,35 +438,31 @@ Remove the following from `__all__`:
 
         if output_file:
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            with Path(output_file).open('w', encoding='utf-8') as f:
+            with Path(output_file).open("w", encoding="utf-8") as f:
                 f.write(report)
             print(f"📄 Report saved to: {output_file}")
 
         return report
 
 
-def main():
+def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description='Analyze Unused/Test-Only Code in gruponos-meltano-native',
+        description="Analyze Unused/Test-Only Code in gruponos-meltano-native",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python scripts/analyze_unused_code.py --output reports/unused_code_analysis.md
   python scripts/analyze_unused_code.py --verbose
-        """
+        """,
     )
 
     parser.add_argument(
-        '--output', '-o',
-        type=str,
-        help='Output file for the analysis report'
+        "--output", "-o", type=str, help="Output file for the analysis report"
     )
 
     parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='Enable verbose output'
+        "--verbose", "-v", action="store_true", help="Enable verbose output"
     )
 
     args = parser.parse_args()
@@ -456,7 +477,7 @@ Examples:
 
         # Generate report
         output_file = Path(args.output) if args.output else None
-        report = analyzer.generate_report(output_file)
+        analyzer.generate_report(output_file)
 
         if args.verbose:
             print("\n" + "=" * 50)
@@ -466,10 +487,12 @@ Examples:
             print(f"Unused modules: {len(results['unused_modules'])}")
             print(f"Dead code candidates: {len(results['dead_code_candidates'])}")
 
-            if results['exported_but_unused']:
+            if results["exported_but_unused"]:
                 print("\nTest-only symbols found:")
-                for item in results['exported_but_unused'][:5]:  # Show first 5
-                    print(f"  - {item['symbol']} (used in {len(item['test_files'])} test files)")
+                for item in results["exported_but_unused"][:5]:  # Show first 5
+                    print(
+                        f"  - {item['symbol']} (used in {len(item['test_files'])} test files)"
+                    )
 
         print("✅ Unused code analysis completed successfully!")
 
@@ -477,11 +500,12 @@ Examples:
         print(f"❌ Error during analysis: {e!s}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         return 1
 
     return 0
 
 
-if __name__ == '__main__':
-    exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

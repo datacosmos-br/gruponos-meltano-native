@@ -6,9 +6,9 @@ Handler for show config command operations.
 from __future__ import annotations
 
 import yaml
+from flext_core import FlextCore
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
-from flext_core import FlextCore
 
 
 class ShowConfigHandler:
@@ -18,7 +18,9 @@ class ShowConfigHandler:
         """Initialize the show config handler."""
         self._config = config
 
-    def execute(self, output_format: str = "yaml") -> FlextCore.Result[FlextCore.Types.StringDict]:
+    def execute(
+        self, output_format: str = "yaml"
+    ) -> FlextResult[FlextCore.Types.StringDict]:
         """Execute show config command."""
         if output_format == "yaml":
             config_content = yaml.dump(
@@ -27,7 +29,7 @@ class ShowConfigHandler:
         else:
             config_content = str(self._config.model_dump())
 
-        return FlextCore.Result[FlextCore.Types.StringDict].ok({
+        return FlextResult[FlextCore.Types.StringDict].ok({
             "config": "loaded",
             "format": output_format,
             "content": config_content,

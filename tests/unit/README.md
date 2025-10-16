@@ -26,7 +26,7 @@ This directory contains comprehensive unit tests for all application components,
 
 - **Coverage**: Pipeline orchestration, workflow coordination, error propagation
 - **Scenarios**: Full sync, incremental sync, error recovery, monitoring integration
-- **Patterns**: Railway-oriented programming validation, FlextCore.Result chains
+- **Patterns**: Railway-oriented programming validation, FlextResult chains
 - **Business Logic**: ETL workflow rules, data processing coordination
 
 #### `test_exceptions.py` - Exception Hierarchy Testing
@@ -64,7 +64,7 @@ This directory contains comprehensive unit tests for all application components,
 #### `test_flext_integration.py` - FLEXT Framework Integration
 
 - **Coverage**: FLEXT core pattern usage, container integration
-- **Patterns**: FlextCore.Result usage, dependency injection, error handling
+- **Patterns**: FlextResult usage, dependency injection, error handling
 - **Standards**: FLEXT naming conventions, configuration patterns
 - **Integration**: Cross-component FLEXT pattern consistency
 
@@ -109,7 +109,7 @@ def test_oracle_connection_with_mock(mock_oracle_api):
     """Test Oracle connection management with controlled mocks."""
     # Arrange
     mock_connection = Mock()
-    mock_oracle_api.return_value.get_connection.return_value = FlextCore.Result[None].ok(mock_connection)
+    mock_oracle_api.return_value.get_connection.return_value = FlextResult[None].ok(mock_connection)
 
     config = create_test_oracle_config()
     manager = create_gruponos_meltano_oracle_connection_manager(config)
@@ -294,14 +294,14 @@ class MockFactory:
     def create_mock_alert_manager():
         """Create mock alert manager for testing."""
         mock_manager = Mock()
-        mock_manager.send_alert.return_value = FlextCore.Result[None].ok("Alert sent")
+        mock_manager.send_alert.return_value = FlextResult[None].ok("Alert sent")
         return mock_manager
 
     @staticmethod
     def create_mock_validator():
         """Create mock data validator for testing."""
         mock_validator = Mock()
-        mock_validator.validate_allocation_data.return_value = FlextCore.Result[None].ok([])
+        mock_validator.validate_allocation_data.return_value = FlextResult[None].ok([])
         return mock_validator
 ```
 
