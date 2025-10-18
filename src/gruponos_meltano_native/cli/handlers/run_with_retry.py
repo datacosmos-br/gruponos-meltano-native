@@ -50,6 +50,4 @@ class RunWithRetryHandler:
                 )
 
         # This should not be reached, but just in case
-        return FlextResult[dict[str, str | int]].fail(
-            "Unexpected error in retry logic"
-        )
+        return FlextResult[dict[str, str | int]].fail("Unexpected error in retry logic")

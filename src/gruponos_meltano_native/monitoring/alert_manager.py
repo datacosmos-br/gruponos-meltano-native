@@ -90,7 +90,7 @@ class GruponosMeltanoAlert(FlextModels.Value):
     message: str
     severity: GruponosMeltanoAlertSeverity
     alert_type: GruponosMeltanoAlertType
-    context: FlextTypes.Dict
+    context: dict[str, object]
     timestamp: str
     pipeline_name: str | None = None
 
@@ -150,7 +150,7 @@ class GruponosMeltanoAlertService:
             config: Instância da configuração de alertas.
 
         """
-        self.config: FlextTypes.Dict = config
+        self.config: dict[str, object] = config
         self._failure_count = 0
 
         logger.info(
@@ -227,9 +227,7 @@ class GruponosMeltanoAlertService:
                 if not result.success
             ]
             combined_error = "; ".join(error_messages)
-            return FlextResult[bool].fail(
-                f"Failed to send alert: {combined_error}"
-            )
+            return FlextResult[bool].fail(f"Failed to send alert: {combined_error}")
 
         except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Alert sending failed with unexpected error")
@@ -387,9 +385,7 @@ class GruponosMeltanoAlertService:
 
             if response_result.is_failure:
                 logger.warning("Slack alert failed: %s", response_result.error)
-                return FlextResult[bool].fail(
-                    f"Slack failed: {response_result.error}"
-                )
+                return FlextResult[bool].fail(f"Slack failed: {response_result.error}")
 
             response = response_result.unwrap()
             if response.status_code >= HTTP_ERROR_STATUS_THRESHOLD:
@@ -452,7 +448,7 @@ class GruponosMeltanoAlertManager:
         self,
         pipeline_name: str,
         error_message: str,
-        context: FlextTypes.Dict | None = None,
+        context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de falha de pipeline.
 
@@ -489,7 +485,7 @@ class GruponosMeltanoAlertManager:
         self,
         target: str,
         error_message: str,
-        context: FlextTypes.Dict | None = None,
+        context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de falha de conectividade.
 
@@ -525,7 +521,7 @@ class GruponosMeltanoAlertManager:
         self,
         issue_description: str,
         pipeline_name: str | None = None,
-        context: FlextTypes.Dict | None = None,
+        context: dict[str, object] | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de problema de qualidade de dados.
 
@@ -604,9 +600,7 @@ def create_gruponos_meltano_alert_manager(
       >>> manager = create_gruponos_meltano_alert_manager()
       >>>
       >>> # Usar configuração customizada
-      >>> config: FlextTypes.Dict = GruponosMeltanoAlertConfig(
-      ...     webhook_enabled=True
-      ... )
+      >>> config: dict[str, object] = GruponosMeltanoAlertConfig(webhook_enabled=True)
       >>> manager = create_gruponos_meltano_alert_manager(config)
 
     """
@@ -617,7 +611,7 @@ def create_gruponos_meltano_alert_manager(
 AlertSeverity = GruponosMeltanoAlertSeverity
 
 # Public API exports
-__all__: FlextTypes.StringList = [
+__all__: list[str] = [
     # Compatibility aliases
     "AlertSeverity",
     # Classes Padrão Empresarial

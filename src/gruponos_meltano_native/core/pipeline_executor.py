@@ -51,9 +51,7 @@ class MeltanoPipelineExecutor:
             # Validate job name
             validated_job_name = self._validate_job_name(job_name)
             if not validated_job_name:
-                return FlextResult[PipelineResult].fail(
-                    f"Invalid job name: {job_name}"
-                )
+                return FlextResult[PipelineResult].fail(f"Invalid job name: {job_name}")
 
             # Build environment
             env = self._build_meltano_environment()
@@ -114,13 +112,11 @@ class MeltanoPipelineExecutor:
         except subprocess.TimeoutExpired:
             return FlextResult[dict[str, Any]].fail("Job status check timed out")
         except json.JSONDecodeError as e:
-            return FlextResult[dict[str, Any]].fail(
-                f"Invalid JSON response: {e!s}"
-            )
+            return FlextResult[dict[str, Any]].fail(f"Invalid JSON response: {e!s}")
         except Exception as e:
             return FlextResult[dict[str, Any]].fail(f"Unexpected error: {e!s}")
 
-    def list_jobs(self) -> FlextResult[FlextTypes.StringList]:
+    def list_jobs(self) -> FlextResult[list[str]]:
         """List all available Meltano jobs.
 
         Returns:
@@ -136,7 +132,7 @@ class MeltanoPipelineExecutor:
             )
 
             if result.returncode != 0:
-                return FlextResult[FlextTypes.StringList].fail(
+                return FlextResult[list[str]].fail(
                     f"Failed to list jobs: {result.stderr}"
                 )
 
@@ -145,14 +141,14 @@ class MeltanoPipelineExecutor:
             jobs_data = json.loads(result.stdout)
             job_names = [job["name"] for job in jobs_data.get("jobs", [])]
 
-            return FlextResult[FlextTypes.StringList].ok(job_names)
+            return FlextResult[list[str]].ok(job_names)
 
         except Exception as e:
-            return FlextResult[FlextTypes.StringList].fail(
+            return FlextResult[list[str]].fail(
                 f"Failed to list jobs: {e!s}"
             )
 
-    def list_pipelines(self) -> FlextResult[FlextTypes.StringList]:
+    def list_pipelines(self) -> FlextResult[list[str]]:
         """List all available Meltano pipelines.
 
         Returns:
@@ -168,7 +164,7 @@ class MeltanoPipelineExecutor:
             )
 
             if result.returncode != 0:
-                return FlextResult[FlextTypes.StringList].fail(
+                return FlextResult[list[str]].fail(
                     f"Failed to list pipelines: {result.stderr}"
                 )
 
@@ -177,10 +173,10 @@ class MeltanoPipelineExecutor:
             pipelines_data = json.loads(result.stdout)
             pipeline_names = [p["name"] for p in pipelines_data.get("pipelines", [])]
 
-            return FlextResult[FlextTypes.StringList].ok(pipeline_names)
+            return FlextResult[list[str]].ok(pipeline_names)
 
         except Exception as e:
-            return FlextResult[FlextTypes.StringList].fail(
+            return FlextResult[list[str]].fail(
                 f"Failed to list pipelines: {e!s}"
             )
 
@@ -281,9 +277,7 @@ class MeltanoPipelineExecutor:
         except subprocess.TimeoutExpired:
             return FlextResult[PipelineResult].fail("Pipeline execution timed out")
         except Exception as e:
-            return FlextResult[PipelineResult].fail(
-                f"Pipeline execution error: {e!s}"
-            )
+            return FlextResult[PipelineResult].fail(f"Pipeline execution error: {e!s}")
 
     def _build_meltano_environment(self) -> dict[str, str]:
         """Build environment variables for Meltano execution.

@@ -1,4 +1,125 @@
 # Arc42 Architecture Documentation
+## Table of Contents
+
+- [Arc42 Architecture Documentation](#arc42-architecture-documentation)
+  - [📋 Arc42 Overview](#-arc42-overview)
+    - [Documentation Structure](#documentation-structure)
+  - [1. Introduction & Goals](#1-introduction--goals)
+    - [1.1 Business Context](#11-business-context)
+    - [1.2 Business Goals](#12-business-goals)
+      - [Primary Business Goals](#primary-business-goals)
+      - [Secondary Business Goals](#secondary-business-goals)
+    - [1.3 Technical Goals](#13-technical-goals)
+      - [Functional Requirements](#functional-requirements)
+      - [Quality Requirements](#quality-requirements)
+    - [1.4 Stakeholders](#14-stakeholders)
+  - [2. Constraints](#2-constraints)
+    - [2.1 Technical Constraints](#21-technical-constraints)
+      - [Platform Constraints](#platform-constraints)
+      - [Integration Constraints](#integration-constraints)
+    - [2.2 Organizational Constraints](#22-organizational-constraints)
+      - [Team Constraints](#team-constraints)
+      - [Compliance Constraints](#compliance-constraints)
+    - [2.3 Conventions](#23-conventions)
+      - [Coding Standards](#coding-standards)
+      - [Development Practices](#development-practices)
+  - [3. Context & Scope](#3-context--scope)
+    - [3.1 Business Context](#31-business-context)
+    - [3.2 System Scope](#32-system-scope)
+      - [In Scope](#in-scope)
+      - [Out of Scope](#out-of-scope)
+    - [3.3 System Boundaries](#33-system-boundaries)
+    - [3.4 External Interfaces](#34-external-interfaces)
+      - [Data Interfaces](#data-interfaces)
+      - [Management Interfaces](#management-interfaces)
+  - [4. Solution Strategy](#4-solution-strategy)
+    - [4.1 Technology Strategy](#41-technology-strategy)
+      - [Core Technology Choices](#core-technology-choices)
+      - [Architecture Principles](#architecture-principles)
+    - [4.2 Design Decisions](#42-design-decisions)
+      - [Pipeline Architecture Decision](#pipeline-architecture-decision)
+      - [Native Meltano Decision](#native-meltano-decision)
+    - [4.3 Quality Measures](#43-quality-measures)
+      - [Code Quality](#code-quality)
+      - [Architecture Quality](#architecture-quality)
+  - [5. Building Block View](#5-building-block-view)
+    - [5.1 Level 1: System Overview](#51-level-1-system-overview)
+    - [5.2 Level 2: Pipeline Engine Breakdown](#52-level-2-pipeline-engine-breakdown)
+    - [5.3 Level 3: Component Internal Structure](#53-level-3-component-internal-structure)
+      - [Pipeline Orchestrator Internal Structure](#pipeline-orchestrator-internal-structure)
+  - [6. Runtime View](#6-runtime-view)
+    - [6.1 Full Sync Pipeline Runtime](#61-full-sync-pipeline-runtime)
+    - [6.2 Incremental Sync Pipeline Runtime](#62-incremental-sync-pipeline-runtime)
+    - [6.3 Error Recovery Scenarios](#63-error-recovery-scenarios)
+  - [7. Deployment View](#7-deployment-view)
+    - [7.1 Infrastructure Overview](#71-infrastructure-overview)
+    - [7.2 Container Configuration](#72-container-configuration)
+      - [Orchestrator Container](#orchestrator-container)
+- [Dockerfile for Pipeline Orchestrator](#dockerfile-for-pipeline-orchestrator)
+- [Install system dependencies](#install-system-dependencies)
+- [Install Poetry](#install-poetry)
+- [Set work directory](#set-work-directory)
+- [Copy dependency files](#copy-dependency-files)
+- [Install Python dependencies](#install-python-dependencies)
+- [Copy application code](#copy-application-code)
+- [Create non-root user](#create-non-root-user)
+- [Health check](#health-check)
+- [Expose port](#expose-port)
+- [Start application](#start-application)
+      - [Infrastructure Requirements](#infrastructure-requirements)
+    - [7.3 Configuration Management](#73-configuration-management)
+      - [Environment Configuration](#environment-configuration)
+- [config/environments/dev.yml](#configenvironmentsdevyml)
+- [config/environments/prod.yml](#configenvironmentsprodyml)
+  - [8. Concepts (Cross-cutting Concerns)](#8-concepts-cross-cutting-concerns)
+    - [8.1 Domain Concepts](#81-domain-concepts)
+      - [Core Business Entities](#core-business-entities)
+      - [Business Rules](#business-rules)
+    - [8.2 Error Handling Concept](#82-error-handling-concept)
+      - [Railway Pattern Implementation](#railway-pattern-implementation)
+    - [8.3 Security Concepts](#83-security-concepts)
+      - [Authentication & Authorization](#authentication--authorization)
+    - [8.4 Performance Concepts](#84-performance-concepts)
+      - [Caching Strategy](#caching-strategy)
+  - [9. Architecture Decisions](#9-architecture-decisions)
+    - [9.1 Architectural Decision Records (ADRs)](#91-architectural-decision-records-adrs)
+      - [ADR 001: Technology Stack Selection](#adr-001-technology-stack-selection)
+      - [ADR 002: Pipeline Architecture Pattern](#adr-002-pipeline-architecture-pattern)
+      - [ADR 003: Error Handling Strategy](#adr-003-error-handling-strategy)
+    - [9.2 Decision Log](#92-decision-log)
+  - [10. Quality Requirements](#10-quality-requirements)
+    - [10.1 Quality Tree](#101-quality-tree)
+    - [10.2 Quality Scenarios](#102-quality-scenarios)
+      - [Performance Scenario: High Volume Data Load](#performance-scenario-high-volume-data-load)
+      - [Reliability Scenario: Network Failure](#reliability-scenario-network-failure)
+      - [Security Scenario: Unauthorized Access Attempt](#security-scenario-unauthorized-access-attempt)
+  - [11. Risks & Technical Debt](#11-risks--technical-debt)
+    - [11.1 Identified Risks](#111-identified-risks)
+      - [High Risk Items](#high-risk-items)
+      - [Medium Risk Items](#medium-risk-items)
+    - [11.2 Technical Debt](#112-technical-debt)
+      - [Code Quality Debt](#code-quality-debt)
+      - [Architecture Debt](#architecture-debt)
+      - [Infrastructure Debt](#infrastructure-debt)
+    - [11.3 Risk Mitigation Strategies](#113-risk-mitigation-strategies)
+      - [Proactive Measures](#proactive-measures)
+      - [Contingency Plans](#contingency-plans)
+  - [12. Glossary](#12-glossary)
+    - [A](#a)
+    - [C](#c)
+    - [D](#d)
+    - [E](#e)
+    - [F](#f)
+    - [J](#j)
+    - [K](#k)
+    - [M](#m)
+    - [O](#o)
+    - [P](#p)
+    - [R](#r)
+    - [S](#s)
+    - [T](#t)
+    - [W](#w)
+
 
 **Project**: gruponos-meltano-native | **Version**: 0.9.0 | **Framework**: Arc42 Template
 **Last Updated**: 2025-10-10 | **Status**: Production-Ready ETL Pipeline
@@ -32,7 +153,11 @@ This document follows the [Arc42](https://arc42.org/) template for comprehensive
 
 ### 1.1 Business Context
 
-**GrupoNOS Meltano Native** is an enterprise-grade ETL (Extract, Transform, Load) pipeline implementation specifically designed for integrating Oracle Warehouse Management System (WMS) data with downstream analytics databases. The system serves Grupo Nos, a Portuguese energy company, by providing reliable, scalable data integration capabilities for their warehouse operations.
+**GrupoNOS Meltano Native** is an enterprise-grade ETL (Extract, Transform,
+     Load) pipeline implementation specifically designed for integrating Oracle Warehouse Management System (WMS) data with downstream analytics databases. The system serves Grupo Nos,
+    
+     a Portuguese energy company, by providing reliable,
+     scalable data integration capabilities for their warehouse operations.
 
 ### 1.2 Business Goals
 
@@ -862,7 +987,8 @@ StaticCache --> CDN : serves
 
 **Context**: Need to select technology stack for enterprise ETL pipeline with Oracle WMS integration.
 
-**Decision**: Use Python 3.13+ with Meltano 3.8.0 orchestration, FLEXT ecosystem libraries, and Pydantic for configuration.
+**Decision**: Use Python 3.13+ with Meltano 3.8.0 orchestration, FLEXT ecosystem libraries,
+     and Pydantic for configuration.
 
 **Rationale**:
 - Python provides excellent data processing capabilities
@@ -1114,7 +1240,8 @@ mindmap
 
 ### E
 
-**ETL (Extract, Transform, Load)**: Data integration process extracting data from sources, transforming it, and loading into targets
+**ETL (Extract, Transform, Load)**: Data integration process extracting data from sources,
+     transforming it, and loading into targets
 
 **ELT (Extract, Load, Transform)**: Variation of ETL where transformation occurs after loading
 

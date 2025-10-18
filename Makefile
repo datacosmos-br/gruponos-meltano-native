@@ -5,6 +5,11 @@ POETRY := poetry
 SRC_DIR := src
 TESTS_DIR := tests
 
+# Documentation maintenance tooling
+FLEXT_ROOT := $(abspath ..)
+DOCS_CLI := PYTHONPATH=$(FLEXT_ROOT)/flext-quality/src python -m flext_quality.docs_maintenance.cli
+DOCS_PROFILE := advanced
+
 # Quality standards
 MIN_COVERAGE := 85
 
@@ -78,6 +83,14 @@ meltano-validate: ## Validate Meltano configuration
 meltano-discover: ## Discover schemas from taps
 	$(POETRY) run meltano discover tap-oracle-wms
 	$(POETRY) run meltano discover tap-ldap
+
+# Documentation maintenance
+.PHONY: docs-maintenance docs-maintenance-dry-run
+docs-maintenance: ## Run shared documentation maintenance (Markdown only)
+	FLEXT_DOC_PROFILE=$(DOCS_PROFILE) FLEXT_DOC_PROJECT_ROOT=$(PWD) $(DOCS_CLI) --project-root $(PWD)
+
+docs-maintenance-dry-run: ## Preview documentation maintenance without applying changes
+	FLEXT_DOC_PROFILE=$(DOCS_PROFILE) FLEXT_DOC_PROJECT_ROOT=$(PWD) $(DOCS_CLI) --project-root $(PWD) --dry-run --verbose
 
 meltano-elt: ## Run ELT process
 	$(POETRY) run meltano elt tap-oracle-wms target-oracle
@@ -233,4 +246,3 @@ reset: clean-all setup ## Reset project
 # =============================================================================
 # DIAGNOSTICS
 # =============================================================================
-

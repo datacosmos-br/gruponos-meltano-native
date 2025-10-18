@@ -66,7 +66,7 @@ class TestDataValidators:
         validator = DataValidator(rules)
 
         # Test with missing field
-        data: FlextTypes.Dict = {}
+        data: dict[str, object] = {}
         errors = validator.validate(data)
         assert len(errors) > 0
         if not any("required_field" in str(error) for error in errors):

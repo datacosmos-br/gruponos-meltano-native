@@ -1,6 +1,38 @@
 # FLEXT Framework Integration
+## Table of Contents
 
-The GrupoNOS Meltano Native project is built as a specialized implementation within the FLEXT ecosystem, leveraging core FLEXT patterns and extending them for Oracle WMS data integration.
+- [FLEXT Framework Integration](#flext-framework-integration)
+  - [FLEXT Ecosystem Position](#flext-ecosystem-position)
+  - [Core FLEXT Pattern Integration](#core-flext-pattern-integration)
+    - [1. FlextResult Pattern](#1-flextresult-pattern)
+    - [2. FLEXT Logging Integration](#2-flext-logging-integration)
+    - [3. Dependency Injection Container](#3-dependency-injection-container)
+- [Infrastructure configuration](#infrastructure-configuration)
+  - [FLEXT Component Integration](#flext-component-integration)
+    - [flext-core Integration](#flext-core-integration)
+- [Base settings extending FLEXT patterns](#base-settings-extending-flext-patterns)
+    - [flext-observability Integration](#flext-observability-integration)
+    - [flext-db-oracle Integration](#flext-db-oracle-integration)
+  - [Singer/Meltano FLEXT Integration](#singermeltano-flext-integration)
+    - [flext-tap-oracle-wms Integration](#flext-tap-oracle-wms-integration)
+- [Meltano configuration with FLEXT taps](#meltano-configuration-with-flext-taps)
+- [meltano.yml](#meltanoyml)
+    - [flext-target-oracle Integration](#flext-target-oracle-integration)
+- [Target configuration with FLEXT patterns](#target-configuration-with-flext-patterns)
+  - [Exception Handling Integration](#exception-handling-integration)
+- [Runtime exception generation using FLEXT patterns](#runtime-exception-generation-using-flext-patterns)
+- [Standard FLEXT exception hierarchy](#standard-flext-exception-hierarchy)
+- [Usage in business logic](#usage-in-business-logic)
+  - [Configuration Management Integration](#configuration-management-integration)
+  - [Benefits of FLEXT Integration](#benefits-of-flext-integration)
+    - [1. Consistency Across Ecosystem](#1-consistency-across-ecosystem)
+    - [2. Enterprise Features](#2-enterprise-features)
+    - [3. Maintainability](#3-maintainability)
+    - [4. Scalability](#4-scalability)
+
+
+The GrupoNOS Meltano Native project is built as a specialized implementation within the FLEXT ecosystem,
+     leveraging core FLEXT patterns and extending them for Oracle WMS data integration.
 
 ## FLEXT Ecosystem Position
 

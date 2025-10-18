@@ -14,14 +14,12 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-from flext_core import FlextCore
-
 from gruponos_meltano_native.oracle.connection_manager_enhanced import (
     GruponosMeltanoOracleConnectionManager,
     create_gruponos_meltano_oracle_connection_manager,
 )
 
-__all__: FlextTypes.StringList = [
+__all__: list[str] = [
     "GruponosMeltanoOracleConnectionManager",
     "create_gruponos_meltano_oracle_connection_manager",
 ]

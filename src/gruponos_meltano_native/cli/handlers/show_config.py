@@ -19,7 +19,7 @@ class ShowConfigHandler:
 
     def execute(
         self, output_format: str = "yaml"
-    ) -> FlextResult[FlextTypes.StringDict]:
+    ) -> FlextResult[dict[str, str]]:
         """Execute show config command."""
         if output_format == "yaml":
             config_content = yaml.dump(
@@ -28,7 +28,7 @@ class ShowConfigHandler:
         else:
             config_content = str(self._config.model_dump())
 
-        return FlextResult[FlextTypes.StringDict].ok({
+        return FlextResult[dict[str, str]].ok({
             "config": "loaded",
             "format": output_format,
             "content": config_content,

@@ -14,8 +14,6 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-from flext_core import FlextCore
-
 from gruponos_meltano_native.monitoring.alert_manager import (
     GruponosMeltanoAlert,
     GruponosMeltanoAlertManager,
@@ -25,7 +23,7 @@ from gruponos_meltano_native.monitoring.alert_manager import (
     create_gruponos_meltano_alert_manager,
 )
 
-__all__: FlextTypes.StringList = [
+__all__: list[str] = [
     "GruponosMeltanoAlert",
     "GruponosMeltanoAlertManager",
     "GruponosMeltanoAlertService",

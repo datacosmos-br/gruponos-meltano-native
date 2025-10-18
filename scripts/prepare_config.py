@@ -15,11 +15,11 @@ from flext_core import FlextTypes
 
 
 def substitute_env_vars(
-    config_dict: FlextTypes.Dict,
-    env_vars: FlextTypes.StringDict,
-) -> FlextTypes.Dict:
+    config_dict: dict[str, object],
+    env_vars: dict[str, str],
+) -> dict[str, object]:
     """Substitui variáveis de ambiente na configuração."""
-    result: FlextTypes.Dict = {}
+    result: dict[str, object] = {}
     for key, value in config_dict.items():
         if isinstance(value, dict):
             result[key] = substitute_env_vars(value, env_vars)
@@ -36,7 +36,7 @@ def substitute_env_vars(
     return result
 
 
-def _load_config_template() -> FlextTypes.Dict:
+def _load_config_template() -> dict[str, object]:
     """Load configuration template from file or use default."""
     template_file = Path("target_config.json")
     if template_file.exists():
@@ -58,8 +58,8 @@ def _load_config_template() -> FlextTypes.Dict:
 
 
 def _generate_autonomous_dsn(
-    resolved_config: FlextTypes.Dict,
-) -> FlextTypes.Dict:
+    resolved_config: dict[str, object],
+) -> dict[str, object]:
     """Generate DSN for Autonomous Database if configuration allows."""
     if not all(key in resolved_config for key in ["host", "port", "service_name"]):
         return resolved_config

@@ -1,6 +1,42 @@
 # API Reference
+## Table of Contents
 
-**GrupoNOS Meltano Native API Documentation** - Complete reference for all public APIs, configuration options, and integration patterns.
+- [API Reference](#api-reference)
+  - [Core API Components](#core-api-components)
+    - [🎯 Primary APIs](#-primary-apis)
+    - [🔧 Integration APIs](#-integration-apis)
+  - [Orchestrator API](#orchestrator-api)
+    - [GruponosMeltanoOrchestrator](#gruponosmeltanoorchestrator)
+    - [PipelineResult](#pipelineresult)
+  - [Configuration API](#configuration-api)
+    - [GruponosMeltanoSettings](#gruponosmeltanosettings)
+    - [Configuration Factory Functions](#configuration-factory-functions)
+  - [CLI API](#cli-api)
+    - [Command-Line Interface](#command-line-interface)
+    - [CLI Usage Examples](#cli-usage-examples)
+- [Basic pipeline execution](#basic-pipeline-execution)
+- [Development mode with debug logging](#development-mode-with-debug-logging)
+- [Production environment with specific configuration](#production-environment-with-specific-configuration)
+- [Complete system validation](#complete-system-validation)
+- [Comprehensive diagnostics](#comprehensive-diagnostics)
+  - [Monitoring API](#monitoring-api)
+    - [Alert Manager](#alert-manager)
+    - [Metrics Collection](#metrics-collection)
+  - [Oracle WMS API](#oracle-wms-api)
+    - [Connection Manager](#connection-manager)
+  - [Data Validation API](#data-validation-api)
+    - [Validator Classes](#validator-classes)
+  - [Exception Handling](#exception-handling)
+    - [Exception Hierarchy](#exception-hierarchy)
+- [Base exception](#base-exception)
+- [Specific exceptions](#specific-exceptions)
+    - [Error Handling Patterns](#error-handling-patterns)
+  - [Factory Functions](#factory-functions)
+    - [Main Factory Functions](#main-factory-functions)
+
+
+**GrupoNOS Meltano Native API Documentation** - Complete reference for all public APIs,
+     configuration options, and integration patterns.
 
 ## Core API Components
 

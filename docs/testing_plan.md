@@ -1,4 +1,74 @@
 # Testing Plan - GrupoNOS Meltano Native
+## Table of Contents
+
+- [Testing Plan - GrupoNOS Meltano Native](#testing-plan---gruponos-meltano-native)
+  - [📋 Testing Overview](#-testing-overview)
+    - [**Current Testing Status**](#current-testing-status)
+    - [**Testing Architecture**](#testing-architecture)
+  - [🚨 CRITICAL TESTING BLOCKERS](#-critical-testing-blockers)
+    - [**Blocker 1: Import Failures**](#blocker-1-import-failures)
+- [❌ BROKEN - This import fails](#-broken---this-import-fails)
+- [Leads to: AttributeError: type object 'FlextModels' has no attribute 'BaseModel'](#leads-to-attributeerror-type-object-flextmodels-has-no-attribute-basemodel)
+- [✅ CORRECT - Use available base classes](#-correct---use-available-base-classes)
+    - [**Blocker 2: Missing conftest.py**](#blocker-2-missing-conftestpy)
+  - [📊 Testing Strategy](#-testing-strategy)
+    - [**Test Categories & Coverage Targets**](#test-categories--coverage-targets)
+    - [**Test Markers**](#test-markers)
+- [Unit tests (fast, isolated)](#unit-tests-fast-isolated)
+- [Integration tests (with dependencies)](#integration-tests-with-dependencies)
+- [Special categories](#special-categories)
+  - [🔧 Required Testing Infrastructure](#-required-testing-infrastructure)
+    - [**conftest.py Implementation**](#conftestpy-implementation)
+- [tests/conftest.py - CENTRALIZED TEST INFRASTRUCTURE](#testsconftestpy---centralized-test-infrastructure)
+    - [**Test Database Setup**](#test-database-setup)
+    - [**Mock Infrastructure**](#mock-infrastructure)
+  - [📋 Test Execution Procedures](#-test-execution-procedures)
+    - [**Local Development Testing**](#local-development-testing)
+- [After fixing import issues:](#after-fixing-import-issues)
+- [Run all tests](#run-all-tests)
+- [Run specific categories](#run-specific-categories)
+- [Run with coverage](#run-with-coverage)
+- [Run specific test files](#run-specific-test-files)
+- [Run with markers](#run-with-markers)
+    - [**CI/CD Testing Pipeline**](#cicd-testing-pipeline)
+- [.github/workflows/test.yml](#githubworkflowstestyml)
+  - [🔍 Test Coverage Analysis](#-test-coverage-analysis)
+    - [**Coverage Requirements by Module**](#coverage-requirements-by-module)
+    - [**Critical Path Coverage**](#critical-path-coverage)
+  - [🚨 Test Failure Analysis](#-test-failure-analysis)
+    - [**Current Failure Patterns**](#current-failure-patterns)
+    - [**Expected Test Results After Fixes**](#expected-test-results-after-fixes)
+  - [📈 Performance Testing](#-performance-testing)
+    - [**Performance Test Categories**](#performance-test-categories)
+    - [**Performance Baselines**](#performance-baselines)
+  - [🔧 Testing Tools & Dependencies](#-testing-tools--dependencies)
+    - [**Core Testing Stack**](#core-testing-stack)
+- [pyproject.toml test dependencies](#pyprojecttoml-test-dependencies)
+    - [**Test Configuration**](#test-configuration)
+- [pyproject.toml pytest configuration](#pyprojecttoml-pytest-configuration)
+  - [📋 Testing Best Practices](#-testing-best-practices)
+    - [**Test Organization**](#test-organization)
+- [✅ CORRECT - Clear test structure](#-correct---clear-test-structure)
+    - [**Fixture Usage**](#fixture-usage)
+- [✅ CORRECT - Use centralized fixtures](#-correct---use-centralized-fixtures)
+- [❌ AVOID - Duplicate fixture code](#-avoid---duplicate-fixture-code)
+    - [**Mock Best Practices**](#mock-best-practices)
+- [✅ CORRECT - Comprehensive mocking](#-correct---comprehensive-mocking)
+  - [📊 Testing Metrics & Reporting](#-testing-metrics--reporting)
+    - [**Coverage Reporting**](#coverage-reporting)
+- [Generate coverage reports](#generate-coverage-reports)
+- [Coverage thresholds by directory](#coverage-thresholds-by-directory)
+    - [**Test Result Analysis**](#test-result-analysis)
+  - [🎯 Testing Roadmap](#-testing-roadmap)
+    - [**Phase 1: Critical Fixes (Immediate)**](#phase-1-critical-fixes-immediate)
+    - [**Phase 2: Infrastructure Enhancement (Week 2)**](#phase-2-infrastructure-enhancement-week-2)
+    - [**Phase 3: Test Expansion (Week 3)**](#phase-3-test-expansion-week-3)
+    - [**Phase 4: Automation & Monitoring (Week 4)**](#phase-4-automation--monitoring-week-4)
+  - [✅ Testing Completion Checklist](#-testing-completion-checklist)
+    - [**Infrastructure Completion**](#infrastructure-completion)
+    - [**Test Coverage Completion**](#test-coverage-completion)
+    - [**Process Completion**](#process-completion)
+
 
 **Version**: 0.9.0 | **Updated**: 2025-10-10 | **Status**: ⚠️ BLOCKED - Import failures preventing execution
 
@@ -265,7 +335,7 @@ jobs:
 ### **Current Failure Patterns**
 
 1. **Import Failures** (100% of tests):
-   ```
+``` yaml
    AttributeError: type object 'FlextModels' has no attribute 'BaseModel'
    ```
    **Solution**: Fix flext-meltano to use correct base classes

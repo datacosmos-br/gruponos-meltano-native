@@ -1,9 +1,48 @@
 # GrupoNOS Meltano Native Documentation
+## Table of Contents
+
+- [GrupoNOS Meltano Native Documentation](#gruponos-meltano-native-documentation)
+  - [📖 Documentation Structure](#-documentation-structure)
+    - [Core Documentation](#core-documentation)
+    - [Architecture & Design](#architecture--design)
+    - [API & Development](#api--development)
+    - [Operations & Deployment](#operations--deployment)
+    - [Business Context](#business-context)
+  - [🚨 CURRENT PROJECT STATUS](#-current-project-status)
+    - [**Critical Implementation Blockers**](#critical-implementation-blockers)
+    - [**Key Metrics**](#key-metrics)
+    - [**Immediate Action Items**](#immediate-action-items)
+  - [🚀 Quick Navigation](#-quick-navigation)
+    - [For Developers](#for-developers)
+    - [For DevOps Engineers](#for-devops-engineers)
+    - [For Business Users](#for-business-users)
+    - [For QA/Testers](#for-qatesters)
+  - [📋 Documentation Standards](#-documentation-standards)
+    - [**Status Indicators**](#status-indicators)
+    - [**Quality Standards**](#quality-standards)
+    - [**Update Frequency**](#update-frequency)
+  - [🔍 Current Development Phase](#-current-development-phase)
+    - [**Phase 4: Testing Infrastructure & Quality Gates**](#phase-4-testing-infrastructure--quality-gates)
+      - [**Phase 4 Objectives**](#phase-4-objectives)
+      - [**Critical Blockers**](#critical-blockers)
+  - [📊 Project Health Dashboard](#-project-health-dashboard)
+    - [**Architecture Compliance**](#architecture-compliance)
+    - [**Code Quality Metrics**](#code-quality-metrics)
+    - [**ETL Pipeline Status**](#etl-pipeline-status)
+    - [**Integration Status**](#integration-status)
+  - [🎯 Success Criteria](#-success-criteria)
+    - [**Minimum Viable Product (Current Status)**](#minimum-viable-product-current-status)
+    - [**Production Ready (Target Status)**](#production-ready-target-status)
+  - [📈 Implementation Progress](#-implementation-progress)
+    - [**Phase Completion History**](#phase-completion-history)
+    - [**Current Blockers Timeline**](#current-blockers-timeline)
+
 
 **Version**: 0.9.0 | **Framework**: FLEXT Ecosystem | **Technology**: Meltano 3.8.0 + Python 3.13
 **Status**: ⚠️ Production-Ready ETL Pipeline with Critical Testing Blockers
 
-Welcome to the comprehensive documentation for GrupoNOS Meltano Native, an enterprise-grade ETL pipeline implementation with complete Oracle WMS integration.
+Welcome to the comprehensive documentation for GrupoNOS Meltano Native,
+     an enterprise-grade ETL pipeline implementation with complete Oracle WMS integration.
 
 ## 📖 Documentation Structure
 

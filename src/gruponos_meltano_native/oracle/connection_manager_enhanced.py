@@ -211,9 +211,7 @@ class GruponosMeltanoOracleConnectionManager:
         try:
             result: FlextResult[object] = self.config.validate_domain_rules()
             if hasattr(result, "is_failure") and result.is_failure:
-                return FlextResult[bool].fail(
-                    result.error or "Invalid configuration"
-                )
+                return FlextResult[bool].fail(result.error or "Invalid configuration")
             return FlextResult[bool].ok(data=True)
         except Exception as exc:  # pydantic may raise ValueError
             return FlextResult[bool].fail(str(exc))
@@ -257,9 +255,7 @@ class GruponosMeltanoOracleConnectionManager:
                     result.value.connect()
                 self._connection = result.value
                 return FlextResult[bool].ok(data=True)
-            return FlextResult[bool].fail(
-                result.error or "Failed to create connection"
-            )
+            return FlextResult[bool].fail(result.error or "Failed to create connection")
         except Exception as exc:
             return FlextResult[bool].fail(str(exc))
 
@@ -268,7 +264,7 @@ class GruponosMeltanoOracleConnectionManager:
         conn = self._connection
         return bool(conn and getattr(conn, "connected", True))
 
-    def get_connection_info(self: object) -> FlextTypes.Dict:
+    def get_connection_info(self: object) -> dict[str, object]:
         """Retorna informações básicas da conexão."""
         return {
             "is_connected": self.is_connected(),
@@ -309,7 +305,7 @@ def create_gruponos_meltano_oracle_connection_manager(
       >>> manager = create_gruponos_meltano_oracle_connection_manager()
       >>>
       >>> # Usar configuração customizada
-      >>> config: FlextTypes.Dict = GruponosMeltanoOracleConnectionConfig(
+      >>> config: dict[str, object] = GruponosMeltanoOracleConnectionConfig(
       ...     host="custom-db"
       ... )
       >>> manager = create_gruponos_meltano_oracle_connection_manager(config)
@@ -323,7 +319,7 @@ def create_gruponos_meltano_oracle_connection_manager(
 # =============================================
 
 
-__all__: FlextTypes.StringList = [
+__all__: list[str] = [
     "GruponosMeltanoOracleConnectionManager",
     "create_gruponos_meltano_oracle_connection_manager",
 ]

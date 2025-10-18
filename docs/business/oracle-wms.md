@@ -1,10 +1,42 @@
 # Oracle WMS Integration
+## Table of Contents
 
-**Oracle Warehouse Management System Integration** - Business context, data models, and integration patterns for GrupoNOS Oracle WMS environment.
+- [Oracle WMS Integration](#oracle-wms-integration)
+  - [Business Overview](#business-overview)
+    - [Business Objectives](#business-objectives)
+    - [Key Performance Indicators (KPIs)](#key-performance-indicators-kpis)
+      - [Operational KPIs](#operational-kpis)
+      - [Integration KPIs](#integration-kpis)
+  - [Oracle WMS Data Architecture](#oracle-wms-data-architecture)
+    - [System Architecture Overview](#system-architecture-overview)
+    - [Core Business Entities](#core-business-entities)
+      - [1. Allocation Entity](#1-allocation-entity)
+      - [2. Order Header Entity](#2-order-header-entity)
+      - [3. Order Detail Entity](#3-order-detail-entity)
+  - [Oracle WMS API Integration](#oracle-wms-api-integration)
+    - [API Endpoint Structure](#api-endpoint-structure)
+    - [API Response Format](#api-response-format)
+  - [Business Rules and Validation](#business-rules-and-validation)
+    - [Data Quality Rules](#data-quality-rules)
+    - [Data Freshness Requirements](#data-freshness-requirements)
+  - [Data Transformation Patterns](#data-transformation-patterns)
+    - [dbt Business Logic Models](#dbt-business-logic-models)
+      - [Staging Layer - Data Standardization](#staging-layer---data-standardization)
+      - [Business Logic Layer - Performance Analytics](#business-logic-layer---performance-analytics)
+  - [Integration Monitoring](#integration-monitoring)
+    - [Business Process Monitoring](#business-process-monitoring)
+
+
+**Oracle Warehouse Management System Integration** - Business context, data models,
+     and integration patterns for GrupoNOS Oracle WMS environment.
 
 ## Business Overview
 
-GrupoNOS operates a sophisticated Oracle Warehouse Management System (WMS) that manages inventory, order fulfillment, and warehouse operations across multiple facilities. This integration provides real-time data synchronization for business intelligence, reporting, and analytics.
+GrupoNOS operates a sophisticated Oracle Warehouse Management System (WMS) that manages inventory,
+     order fulfillment,
+     and warehouse operations across multiple facilities. This integration provides real-time data synchronization for business intelligence,
+    
+     reporting, and analytics.
 
 ### Business Objectives
 
@@ -886,7 +918,8 @@ SELECT
     -- Audit and lineage
     CURRENT_TIMESTAMP as dbt_updated_at,
     '{{ invocation_id }}' as dbt_invocation_id,
-    {{ generate_surrogate_key(['dam.facility_code', 'dam.business_date', 'dam.item_code', 'dam.zone']) }} as performance_key
+    {{ generate_surrogate_key(['dam.facility_code', 'dam.business_date', 'dam.item_code',
+     'dam.zone']) }} as performance_key
 
 FROM daily_allocation_metrics dam
 JOIN facility_benchmarks fb

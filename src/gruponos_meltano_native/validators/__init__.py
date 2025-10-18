@@ -14,8 +14,6 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
-from flext_core import FlextCore
-
 from gruponos_meltano_native.validators.data_validator import (
     DataValidator,
     ValidationError,
@@ -23,7 +21,7 @@ from gruponos_meltano_native.validators.data_validator import (
     create_validator_for_environment,
 )
 
-__all__: FlextTypes.StringList = [
+__all__: list[str] = [
     "DataValidator",
     "ValidationError",
     "ValidationRule",

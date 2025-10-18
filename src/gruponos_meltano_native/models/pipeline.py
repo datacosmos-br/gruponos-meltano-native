@@ -83,12 +83,17 @@ class GruponosMeltanoNativeModels(FlextModels):
 
         # Status and timing with validation
         status: GruponosMeltanoNativeModels.PipelineStatus = Field(
-            default="PENDING",
-            description="Current pipeline execution status"
+            default="PENDING", description="Current pipeline execution status"
         )
-        start_time: datetime = Field(..., description="Pipeline execution start timestamp")
-        end_time: datetime | None = Field(None, description="Pipeline execution end timestamp")
-        duration_seconds: float | None = Field(None, ge=0, description="Total execution duration in seconds")
+        start_time: datetime = Field(
+            ..., description="Pipeline execution start timestamp"
+        )
+        end_time: datetime | None = Field(
+            None, description="Pipeline execution end timestamp"
+        )
+        duration_seconds: float | None = Field(
+            None, ge=0, description="Total execution duration in seconds"
+        )
 
         # Processing metrics with validation
         records_extracted: int = Field(
@@ -98,7 +103,9 @@ class GruponosMeltanoNativeModels(FlextModels):
             default=0, ge=0, description="Number of records successfully transformed"
         )
         records_loaded: int = Field(
-            default=0, ge=0, description="Number of records successfully loaded to target"
+            default=0,
+            ge=0,
+            description="Number of records successfully loaded to target",
         )
         records_failed: int = Field(
             default=0, ge=0, description="Number of records that failed processing"
@@ -106,10 +113,16 @@ class GruponosMeltanoNativeModels(FlextModels):
 
         # Quality metrics with percentage validation
         data_quality_score: float = Field(
-            default=0.0, ge=0.0, le=100.0, description="Overall data quality score (0-100%)"
+            default=0.0,
+            ge=0.0,
+            le=100.0,
+            description="Overall data quality score (0-100%)",
         )
         completeness_score: float = Field(
-            default=0.0, ge=0.0, le=100.0, description="Data completeness score (0-100%)"
+            default=0.0,
+            ge=0.0,
+            le=100.0,
+            description="Data completeness score (0-100%)",
         )
         accuracy_score: float = Field(
             default=0.0, ge=0.0, le=100.0, description="Data accuracy score (0-100%)"
@@ -120,24 +133,32 @@ class GruponosMeltanoNativeModels(FlextModels):
 
         # Performance metrics
         throughput_records_per_second: float = Field(
-            default=0.0, ge=0.0, description="Average processing throughput (records/second)"
+            default=0.0,
+            ge=0.0,
+            description="Average processing throughput (records/second)",
         )
         memory_peak_mb: float = Field(
             default=0.0, ge=0.0, description="Peak memory usage in megabytes"
         )
         cpu_average_percent: float = Field(
-            default=0.0, ge=0.0, le=100.0, description="Average CPU utilization percentage"
+            default=0.0,
+            ge=0.0,
+            le=100.0,
+            description="Average CPU utilization percentage",
         )
 
         # Error handling and metadata
-        errors: FlextTypes.List = Field(
-            default_factory=list, description="List of errors encountered during execution"
+        errors: list[object] = Field(
+            default_factory=list,
+            description="List of errors encountered during execution",
         )
-        warnings: FlextTypes.StringList = Field(
-            default_factory=list, description="List of warnings generated during execution"
+        warnings: list[str] = Field(
+            default_factory=list,
+            description="List of warnings generated during execution",
         )
-        metadata: FlextTypes.Dict = Field(
-            default_factory=dict, description="Additional execution metadata and context"
+        metadata: dict[str, object] = Field(
+            default_factory=dict,
+            description="Additional execution metadata and context",
         )
 
         @computed_field
@@ -201,30 +222,62 @@ class GruponosMeltanoNativeModels(FlextModels):
         )
 
         # Phase timing with automatic timestamp management
-        extraction_start_time: datetime | None = Field(None, description="Extraction phase start timestamp")
-        extraction_end_time: datetime | None = Field(None, description="Extraction phase end timestamp")
-        transformation_start_time: datetime | None = Field(None, description="Transformation phase start timestamp")
-        transformation_end_time: datetime | None = Field(None, description="Transformation phase end timestamp")
-        loading_start_time: datetime | None = Field(None, description="Loading phase start timestamp")
-        loading_end_time: datetime | None = Field(None, description="Loading phase end timestamp")
+        extraction_start_time: datetime | None = Field(
+            None, description="Extraction phase start timestamp"
+        )
+        extraction_end_time: datetime | None = Field(
+            None, description="Extraction phase end timestamp"
+        )
+        transformation_start_time: datetime | None = Field(
+            None, description="Transformation phase start timestamp"
+        )
+        transformation_end_time: datetime | None = Field(
+            None, description="Transformation phase end timestamp"
+        )
+        loading_start_time: datetime | None = Field(
+            None, description="Loading phase start timestamp"
+        )
+        loading_end_time: datetime | None = Field(
+            None, description="Loading phase end timestamp"
+        )
 
         # Resource usage metrics
-        memory_start_mb: float = Field(default=0.0, ge=0.0, description="Memory usage at start (MB)")
-        memory_peak_mb: float = Field(default=0.0, ge=0.0, description="Peak memory usage during execution (MB)")
-        memory_end_mb: float = Field(default=0.0, ge=0.0, description="Memory usage at end (MB)")
-        cpu_average_percent: float = Field(default=0.0, ge=0.0, le=100.0, description="Average CPU utilization (%)")
+        memory_start_mb: float = Field(
+            default=0.0, ge=0.0, description="Memory usage at start (MB)"
+        )
+        memory_peak_mb: float = Field(
+            default=0.0, ge=0.0, description="Peak memory usage during execution (MB)"
+        )
+        memory_end_mb: float = Field(
+            default=0.0, ge=0.0, description="Memory usage at end (MB)"
+        )
+        cpu_average_percent: float = Field(
+            default=0.0, ge=0.0, le=100.0, description="Average CPU utilization (%)"
+        )
 
         # Throughput and processing metrics
-        records_extracted: int = Field(default=0, ge=0, description="Total records extracted")
-        records_transformed: int = Field(default=0, ge=0, description="Total records transformed")
+        records_extracted: int = Field(
+            default=0, ge=0, description="Total records extracted"
+        )
+        records_transformed: int = Field(
+            default=0, ge=0, description="Total records transformed"
+        )
         records_loaded: int = Field(default=0, ge=0, description="Total records loaded")
         records_failed: int = Field(default=0, ge=0, description="Total records failed")
 
         # Quality and error tracking
-        data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0, description="Overall data quality score")
-        validation_errors: int = Field(default=0, ge=0, description="Number of validation errors")
-        transformation_errors: int = Field(default=0, ge=0, description="Number of transformation errors")
-        loading_errors: int = Field(default=0, ge=0, description="Number of loading errors")
+        data_quality_score: float = Field(
+            default=0.0, ge=0.0, le=100.0, description="Overall data quality score"
+        )
+        validation_errors: int = Field(
+            default=0, ge=0, description="Number of validation errors"
+        )
+        transformation_errors: int = Field(
+            default=0, ge=0, description="Number of transformation errors"
+        )
+        loading_errors: int = Field(
+            default=0, ge=0, description="Number of loading errors"
+        )
 
         def record_extraction_start(self) -> None:
             """Record extraction phase start timestamp."""
@@ -260,7 +313,9 @@ class GruponosMeltanoNativeModels(FlextModels):
         def total_duration_seconds(self) -> float:
             """Get total pipeline duration in seconds."""
             if self.loading_end_time and self.extraction_start_time:
-                return (self.loading_end_time - self.extraction_start_time).total_seconds()
+                return (
+                    self.loading_end_time - self.extraction_start_time
+                ).total_seconds()
             return 0.0
 
         @computed_field
@@ -268,7 +323,9 @@ class GruponosMeltanoNativeModels(FlextModels):
         def extraction_duration_seconds(self) -> float | None:
             """Get extraction phase duration in seconds."""
             if self.extraction_end_time and self.extraction_start_time:
-                return (self.extraction_end_time - self.extraction_start_time).total_seconds()
+                return (
+                    self.extraction_end_time - self.extraction_start_time
+                ).total_seconds()
             return None
 
         @computed_field
@@ -276,7 +333,9 @@ class GruponosMeltanoNativeModels(FlextModels):
         def transformation_duration_seconds(self) -> float | None:
             """Get transformation phase duration in seconds."""
             if self.transformation_end_time and self.transformation_start_time:
-                return (self.transformation_end_time - self.transformation_start_time).total_seconds()
+                return (
+                    self.transformation_end_time - self.transformation_start_time
+                ).total_seconds()
             return None
 
         @computed_field
@@ -322,26 +381,37 @@ class GruponosMeltanoNativeModels(FlextModels):
         # Core identification
         name: str = Field(..., description="Pipeline configuration name")
         job_name: str = Field(..., description="Associated job name")
-        environment: str = Field(default="dev", description="Execution environment (dev/staging/prod)")
+        environment: str = Field(
+            default="dev", description="Execution environment (dev/staging/prod)"
+        )
 
         # Extractor configuration with validation
-        extractor_name: str = Field(default="", description="Name of the extractor to use")
-        extractor_config: FlextTypes.Dict = Field(
-            default_factory=dict, description="Extractor-specific configuration parameters"
+        extractor_name: str = Field(
+            default="", description="Name of the extractor to use"
+        )
+        extractor_config: dict[str, object] = Field(
+            default_factory=dict,
+            description="Extractor-specific configuration parameters",
         )
 
         # Loader configuration with validation
         loader_name: str = Field(default="", description="Name of the loader to use")
-        loader_config: FlextTypes.Dict = Field(
+        loader_config: dict[str, object] = Field(
             default_factory=dict, description="Loader-specific configuration parameters"
         )
 
         # Pipeline execution settings
         batch_size: int = Field(
-            default=5000, ge=1, le=100000, description="Number of records to process in each batch"
+            default=5000,
+            ge=1,
+            le=100000,
+            description="Number of records to process in each batch",
         )
         timeout_seconds: int = Field(
-            default=1800, ge=60, le=86400, description="Maximum execution time in seconds"
+            default=1800,
+            ge=60,
+            le=86400,
+            description="Maximum execution time in seconds",
         )
         max_retries: int = Field(
             default=3, ge=0, le=10, description="Maximum number of retry attempts"
@@ -355,7 +425,10 @@ class GruponosMeltanoNativeModels(FlextModels):
             default=True, description="Whether to perform data quality checks"
         )
         quality_threshold: float = Field(
-            default=95.0, ge=0.0, le=100.0, description="Minimum quality score required (%)"
+            default=95.0,
+            ge=0.0,
+            le=100.0,
+            description="Minimum quality score required (%)",
         )
 
         # Monitoring and metrics settings
@@ -406,7 +479,7 @@ class GruponosMeltanoNativeModels(FlextModels):
             ...     pipeline_id="pipe-123",
             ...     pipeline_name="Customer Data Pipeline",
             ...     job_name="daily-sync",
-            ...     status=GruponosMeltanoNativeModels.PipelineStatus.RUNNING
+            ...     status=GruponosMeltanoNativeModels.PipelineStatus.RUNNING,
             ... )
             >>> if result.is_success:
             ...     pipeline_result = result.unwrap()
@@ -423,7 +496,9 @@ class GruponosMeltanoNativeModels(FlextModels):
             )
             return FlextResult[cls.PipelineResult].ok(pipeline_result)
         except Exception as e:
-            return FlextResult[cls.PipelineResult].fail(f"Failed to create pipeline result: {e!s}")
+            return FlextResult[cls.PipelineResult].fail(
+                f"Failed to create pipeline result: {e!s}"
+            )
 
     @classmethod
     def create_pipeline_config(
@@ -452,7 +527,7 @@ class GruponosMeltanoNativeModels(FlextModels):
             ...     job_name="daily-extract",
             ...     extractor_name="tap-mysql",
             ...     loader_name="target-postgres",
-            ...     environment="production"
+            ...     environment="production",
             ... )
 
         """
@@ -466,7 +541,9 @@ class GruponosMeltanoNativeModels(FlextModels):
             )
             return FlextResult[cls.PipelineConfiguration].ok(config)
         except Exception as e:
-            return FlextResult[cls.PipelineConfiguration].fail(f"Failed to create pipeline config: {e!s}")
+            return FlextResult[cls.PipelineConfiguration].fail(
+                f"Failed to create pipeline config: {e!s}"
+            )
 
 
 # =========================================================================

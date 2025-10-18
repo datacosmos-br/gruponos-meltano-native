@@ -62,7 +62,7 @@ class GruponosMeltanoPipelineResult:
     execution_time: float
     output: str
     error: str | None = None
-    metadata: FlextTypes.Dict | None = None
+    metadata: dict[str, object] | None = None
 
 
 # =============================================
@@ -181,9 +181,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         ]
         for field in required_fields:
             if not config_dict.get(field):
-                return FlextResult.fail(
-                    f"Required field '{field}' is missing or empty"
-                )
+                return FlextResult.fail(f"Required field '{field}' is missing or empty")
 
         return FlextResult.ok(None)
 
@@ -381,7 +379,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         return FlextResult.ok(job_result)
 
-    def list_jobs(self) -> FlextTypes.StringList:
+    def list_jobs(self) -> list[str]:
         """List all available pipeline jobs with FLEXT integration.
 
         Returns a list of all Meltano jobs available for execution in the current
@@ -389,7 +387,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         both standard ETL jobs and custom operations.
 
         Returns:
-            FlextTypes.StringList: List of available job names that can be executed
+            list[str]: List of available job names that can be executed
             via run_job() method.
 
         Example:
@@ -414,11 +412,11 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         self.logger.debug(f"Available jobs: {available_jobs}")
         return available_jobs
 
-    def list_pipelines(self) -> FlextTypes.StringList:
+    def list_pipelines(self) -> list[str]:
         """List available pipelines (alias for list_jobs).
 
         Returns:
-            FlextTypes.StringList: List of available pipeline names.
+            list[str]: List of available pipeline names.
 
         Note:
             This is an alias for list_jobs() for backward compatibility.
@@ -444,7 +442,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         """
         return self.run_job(pipeline_name)
 
-    def get_job_status(self, job_name: str) -> FlextResult[FlextTypes.Dict]:
+    def get_job_status(self, job_name: str) -> FlextResult[dict[str, object]]:
         """Get status of a specific job with comprehensive information.
 
         Args:
@@ -606,9 +604,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
     # PRIVATE METHODS
     # =============================================
 
-    def _execute_meltano_pipeline(
-        self, job_name: str
-    ) -> FlextResult[FlextTypes.Dict]:
+    def _execute_meltano_pipeline(self, job_name: str) -> FlextResult[dict[str, object]]:
         """Execute a Meltano pipeline using subprocess with comprehensive error handling.
 
         This method executes Meltano jobs via subprocess calls with proper environment
@@ -723,14 +719,14 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         # This should not be reached, but add fallback return
         return FlextResult.fail("Unexpected end of method execution")
 
-    def _build_meltano_environment(self) -> FlextTypes.StringDict:
+    def _build_meltano_environment(self) -> dict[str, str]:
         """Build comprehensive environment variables for Meltano execution.
 
         Constructs a complete environment dictionary with all necessary configuration
         for Meltano pipeline execution, including Oracle WMS and database credentials.
 
         Returns:
-            FlextTypes.StringDict: Environment variables dictionary for subprocess execution.
+            dict[str, str]: Environment variables dictionary for subprocess execution.
 
         FLEXT OPTIMIZATION:
         - Comprehensive environment setup
@@ -838,9 +834,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
             # Validate pipeline timeout
             if self.settings.pipeline_timeout_seconds <= 0:
-                return FlextResult.fail(
-                    "pipeline_timeout_seconds must be positive"
-                )
+                return FlextResult.fail("pipeline_timeout_seconds must be positive")
 
             self.logger.debug("Initial configuration validation passed")
             return FlextResult.ok(None)
@@ -871,9 +865,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             for file_name in required_files:
                 file_path = project_root / file_name
                 if not file_path.exists():
-                    return FlextResult.fail(
-                        f"Required file not found: {file_path}"
-                    )
+                    return FlextResult.fail(f"Required file not found: {file_path}")
 
             # Check for meltano environment
             if not self.settings.meltano_environment:
@@ -929,9 +921,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             return FlextResult.ok(None)
 
         except Exception as e:
-            return FlextResult.fail(
-                f"Environment configuration validation failed: {e}"
-            )
+            return FlextResult.fail(f"Environment configuration validation failed: {e}")
 
     def _validate_job_name(self, job_name: str) -> str:
         """Validate and sanitize job name to prevent command injection.
@@ -1116,7 +1106,7 @@ def create_gruponos_meltano_pipeline_runner(
 # Type aliases for backward compatibility
 
 # Module-level exports with comprehensive API surface
-__all__: FlextTypes.StringList = [
+__all__: list[str] = [
     "GruponosMeltanoModels",
     "GruponosMeltanoOrchestrator",
     "GruponosMeltanoPipelineResult",

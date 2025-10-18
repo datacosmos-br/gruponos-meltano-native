@@ -1,11 +1,46 @@
 # ADR 001: Technology Stack Selection
+## Table of Contents
+
+- [ADR 001: Technology Stack Selection](#adr-001-technology-stack-selection)
+  - [Status](#status)
+  - [Context](#context)
+  - [Decision](#decision)
+  - [Rationale](#rationale)
+    - [Python 3.13+ Selection](#python-313-selection)
+    - [Meltano 3.8.0 Native Orchestration](#meltano-380-native-orchestration)
+    - [Singer Protocol for Data Integration](#singer-protocol-for-data-integration)
+    - [Pydantic v2 for Configuration](#pydantic-v2-for-configuration)
+    - [Railway Pattern with FlextResult[T]](#railway-pattern-with-flextresultt)
+    - [FLEXT Ecosystem Integration](#flext-ecosystem-integration)
+  - [Consequences](#consequences)
+    - [Positive](#positive)
+    - [Negative](#negative)
+    - [Risks](#risks)
+    - [Mitigation Strategies](#mitigation-strategies)
+  - [Alternatives Considered](#alternatives-considered)
+    - [Alternative 1: Java/Spring Boot Stack](#alternative-1-javaspring-boot-stack)
+    - [Alternative 2: Node.js/Microservices Architecture](#alternative-2-nodejsmicroservices-architecture)
+    - [Alternative 3: Go/Kubernetes Native](#alternative-3-gokubernetes-native)
+    - [Alternative 4: Meltano with Custom Wrapper](#alternative-4-meltano-with-custom-wrapper)
+    - [Alternative 5: Apache Airflow for Orchestration](#alternative-5-apache-airflow-for-orchestration)
+  - [Implementation](#implementation)
+    - [Phase 1: Core Infrastructure (Week 1-2)](#phase-1-core-infrastructure-week-1-2)
+    - [Phase 2: Technology Integration (Week 3-4)](#phase-2-technology-integration-week-3-4)
+    - [Phase 3: Quality Assurance (Week 5-6)](#phase-3-quality-assurance-week-5-6)
+    - [Phase 4: Documentation (Week 7-8)](#phase-4-documentation-week-7-8)
+  - [References](#references)
+  - [Notes](#notes)
+
 
 ## Status
 Accepted
 
 ## Context
 
-The gruponos-meltano-native project requires a technology stack for building an enterprise-grade ETL pipeline that integrates Oracle Warehouse Management System (WMS) data with downstream analytics databases. The system must handle high-volume data processing, ensure data quality, provide robust error handling, and support production deployment in enterprise environments.
+The gruponos-meltano-native project requires a technology stack for building an enterprise-grade ETL pipeline that integrates Oracle Warehouse Management System (WMS) data with downstream analytics databases. The system must handle high-volume data processing,
+    
+     ensure data quality, provide robust error handling,
+     and support production deployment in enterprise environments.
 
 Key requirements include:
 - Data extraction from Oracle WMS REST APIs

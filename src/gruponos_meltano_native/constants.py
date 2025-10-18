@@ -96,7 +96,7 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_COMPRESSION_LEVEL: Final[int] = 9
 
         # Supported encodings
-        SUPPORTED_ENCODINGS: Final[FlextTypes.StringList] = [
+        SUPPORTED_ENCODINGS: Final[list[str]] = [
             "utf-8",
             "utf-16",
             "ascii",
@@ -136,7 +136,7 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_BACKUP_COUNT: Final[int] = 50
 
         # Valid log levels
-        VALID_LEVELS: Final[FlextTypes.StringList] = [
+        VALID_LEVELS: Final[list[str]] = [
             "DEBUG",
             "INFO",
             "WARNING",
@@ -183,12 +183,12 @@ class GruponosMeltanoNativeConstants(FlextConstants):
         MAX_SALT_LENGTH: Final[int] = 32
 
         # Supported algorithms
-        SUPPORTED_ENCRYPTION_ALGORITHMS: ClassVar[FlextTypes.StringList] = [
+        SUPPORTED_ENCRYPTION_ALGORITHMS: ClassVar[list[str]] = [
             "AES-256-GCM",
             "AES-128-GCM",
             "ChaCha20-Poly1305",
         ]
-        SUPPORTED_HASH_ALGORITHMS: ClassVar[FlextTypes.StringList] = [
+        SUPPORTED_HASH_ALGORITHMS: ClassVar[list[str]] = [
             "SHA-256",
             "SHA-512",
             "BLAKE2b",

@@ -1,4 +1,70 @@
 # Architecture Documentation
+## Table of Contents
+
+- [Architecture Documentation](#architecture-documentation)
+  - [📋 Architecture Documentation Overview](#-architecture-documentation-overview)
+    - [Documentation Frameworks Used](#documentation-frameworks-used)
+    - [Documentation Structure](#documentation-structure)
+  - [🎯 Key Architectural Decisions](#-key-architectural-decisions)
+    - [Technology Stack (ADR 001)](#technology-stack-adr-001)
+    - [Pipeline Architecture (ADR 002)](#pipeline-architecture-adr-002)
+    - [Quality Attributes](#quality-attributes)
+  - [🏗️ System Architecture Overview](#-system-architecture-overview)
+    - [C4 Model Summary](#c4-model-summary)
+    - [Core Components](#core-components)
+    - [Data Entities](#data-entities)
+  - [📊 Architecture Quality Metrics](#-architecture-quality-metrics)
+    - [Current Status Dashboard](#current-status-dashboard)
+    - [Quality Attributes Assessment](#quality-attributes-assessment)
+      - [Performance ✅](#performance-)
+      - [Reliability ✅](#reliability-)
+      - [Security ✅](#security-)
+      - [Maintainability ✅](#maintainability-)
+  - [🔄 Data Flow Architecture](#-data-flow-architecture)
+    - [ETL Pipeline Flow](#etl-pipeline-flow)
+    - [Error Handling Flow](#error-handling-flow)
+  - [🚀 Deployment Architecture](#-deployment-architecture)
+    - [Production Infrastructure](#production-infrastructure)
+    - [Infrastructure Requirements](#infrastructure-requirements)
+  - [🎯 Architecture Decision Records](#-architecture-decision-records)
+    - [Current ADRs](#current-adrs)
+    - [ADR Process](#adr-process)
+  - [📈 Architecture Evolution](#-architecture-evolution)
+    - [Phase 1: Foundation (Completed)](#phase-1-foundation-completed)
+    - [Phase 2: Core Functionality (Completed)](#phase-2-core-functionality-completed)
+    - [Phase 3: Quality & Reliability (In Progress)](#phase-3-quality--reliability-in-progress)
+    - [Phase 4: Enterprise Features (Planned)](#phase-4-enterprise-features-planned)
+  - [🔧 Architecture Tools & Automation](#-architecture-tools--automation)
+    - [Documentation Generation](#documentation-generation)
+- [Generate architecture diagrams](#generate-architecture-diagrams)
+- [Update architecture documentation](#update-architecture-documentation)
+- [Validate architecture consistency](#validate-architecture-consistency)
+    - [Quality Assurance](#quality-assurance)
+- [Run architecture validation](#run-architecture-validation)
+- [Check documentation completeness](#check-documentation-completeness)
+- [Validate ADRs](#validate-adrs)
+    - [Monitoring & Maintenance](#monitoring--maintenance)
+- [Architecture health check](#architecture-health-check)
+- [Update architecture metrics](#update-architecture-metrics)
+- [Generate architecture reports](#generate-architecture-reports)
+  - [📚 Documentation Maintenance](#-documentation-maintenance)
+    - [Automated Updates](#automated-updates)
+    - [Quality Gates](#quality-gates)
+    - [Review Process](#review-process)
+  - [🎯 Architecture Principles](#-architecture-principles)
+    - [Design Principles](#design-principles)
+    - [Quality Principles](#quality-principles)
+    - [Operational Principles](#operational-principles)
+  - [📋 Architecture Compliance Checklist](#-architecture-compliance-checklist)
+    - [Design Compliance ✅](#design-compliance-)
+    - [Quality Compliance ✅](#quality-compliance-)
+    - [Documentation Compliance 🟡](#documentation-compliance-)
+    - [Implementation Compliance ✅](#implementation-compliance-)
+  - [🔗 Related Documentation](#-related-documentation)
+  - [🚨 Architecture Risks & Mitigations](#-architecture-risks--mitigations)
+    - [High-Risk Items](#high-risk-items)
+    - [Medium-Risk Items](#medium-risk-items)
+
 
 **Project**: gruponos-meltano-native | **Version**: 0.9.0 | **Status**: Production-Ready ETL Pipeline
 **Frameworks**: C4 Model, Arc42, ADR, PlantUML | **Last Updated**: 2025-10-10
@@ -434,4 +500,6 @@ make architecture-report
 
 ---
 
-**Architecture Documentation** - Comprehensive system architecture using industry-standard frameworks ensuring consistency, maintainability, and clear communication of design decisions and implementation details.
+**Architecture Documentation** - Comprehensive system architecture using industry-standard frameworks ensuring consistency,
+    
+     maintainability, and clear communication of design decisions and implementation details.

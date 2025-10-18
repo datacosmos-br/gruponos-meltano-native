@@ -19,7 +19,7 @@ from gruponos_meltano_native.constants import GruponosMeltanoNativeConstants
 log = FlextLogger(__name__)
 
 
-def load_project_config() -> FlextTypes.Dict:
+def load_project_config() -> dict[str, object]:
     """Load project configuration from YAML file."""
     config_path = Path(__file__).parent.parent / "config" / "project.yml"
     if config_path.exists():
@@ -29,7 +29,7 @@ def load_project_config() -> FlextTypes.Dict:
     return {}
 
 
-def load_wms_config() -> FlextTypes.Dict:
+def load_wms_config() -> dict[str, object]:
     """Load WMS integration configuration from YAML file."""
     config_path = Path(__file__).parent.parent / "config" / "wms_integration.yml"
     if config_path.exists():
@@ -44,13 +44,13 @@ def get_env_value(key: str, default: str | None = None) -> str | None:
     return os.environ.get(key, default)
 
 
-def generate_meltano_config() -> FlextTypes.Dict:
+def generate_meltano_config() -> dict[str, object]:
     """Generate complete Meltano configuration from environment variables."""
     _ = load_project_config()  # Keep for future use
     _ = load_wms_config()  # Keep for future use
 
     # Base configuration
-    config: FlextTypes.Dict = {
+    config: dict[str, object] = {
         "version": 1,
         "default_environment": get_env_value("MELTANO_ENVIRONMENT", "dev"),
         "project_id": get_env_value("MELTANO_PROJECT_ID", "dynamic-wms-integration"),

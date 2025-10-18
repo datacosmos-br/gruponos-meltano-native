@@ -15,7 +15,7 @@ class ListPipelinesHandler:
         """Initialize the list pipelines handler."""
         self._orchestrator = orchestrator
 
-    def execute(self) -> FlextResult[FlextTypes.StringList]:
+    def execute(self) -> FlextResult[list[str]]:
         """Execute list pipelines command."""
         jobs = self._orchestrator.list_jobs()
-        return FlextResult[FlextTypes.StringList].ok(jobs)
+        return FlextResult[list[str]].ok(jobs)

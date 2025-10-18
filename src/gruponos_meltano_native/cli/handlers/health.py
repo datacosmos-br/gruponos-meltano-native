@@ -12,9 +12,9 @@ class HealthHandler:
     """Handler for health check command."""
 
     @staticmethod
-    def execute() -> FlextResult[FlextTypes.StringDict]:
+    def execute() -> FlextResult[dict[str, str]]:
         """Execute health check."""
-        return FlextResult[FlextTypes.StringDict].ok({
+        return FlextResult[dict[str, str]].ok({
             "status": "healthy",
             "timestamp": datetime.now(UTC).isoformat(),
         })

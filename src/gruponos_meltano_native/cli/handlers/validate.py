@@ -17,12 +17,12 @@ class ValidateHandler:
 
     def execute(
         self, output_format: str = "table"
-    ) -> FlextResult[FlextTypes.StringDict]:
+    ) -> FlextResult[dict[str, str]]:
         """Execute validate command."""
         validation_result = self._orchestrator.validate_configuration()
 
         if validation_result.is_failure:
-            return FlextResult[FlextTypes.StringDict].fail(
+            return FlextResult[dict[str, str]].fail(
                 f"Validation failed: {validation_result.error}"
             )
 
@@ -30,11 +30,11 @@ class ValidateHandler:
         wms_validation_result = FlextResult.ok("WMS validation placeholder")
 
         if wms_validation_result.is_failure:
-            return FlextResult[FlextTypes.StringDict].fail(
+            return FlextResult[dict[str, str]].fail(
                 f"WMS connection validation failed: {wms_validation_result.error}"
             )
 
-        return FlextResult[FlextTypes.StringDict].ok({
+        return FlextResult[dict[str, str]].ok({
             "validation": "passed",
             "format": output_format,
             "config_status": "valid",

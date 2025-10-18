@@ -239,9 +239,7 @@ class TestTableRecreationErrorHandling:
     def test_execute_ddl_failure(self, mock_execute_ddl: Mock) -> None:
         """Test handling of DDL execution failures."""
         # Mock DDL execution failure
-        mock_execute_ddl.return_value = FlextResult[None].fail(
-            "Invalid SQL syntax"
-        )
+        mock_execute_ddl.return_value = FlextResult[None].fail("Invalid SQL syntax")
 
         config = FlextDbOracleConfig(
             host="localhost",

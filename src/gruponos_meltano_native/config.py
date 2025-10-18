@@ -34,7 +34,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         webhook_enabled: bool
         webhook_url: str | None
         email_enabled: bool
-        email_recipients: FlextTypes.StringList
+        email_recipients: list[str]
         slack_enabled: bool
         slack_webhook_url: str | None
         alert_threshold: int
@@ -111,7 +111,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         default=False,
         description="Enable email alerts",
     )
-    email_recipients: FlextTypes.StringList = Field(
+    email_recipients: list[str] = Field(
         default_factory=list,
         description="Email recipients for alerts",
     )
@@ -512,9 +512,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
             # Oracle connection validation
             if self.oracle_host:
                 if not self.oracle_service_name:
-                    return FlextResult[None].fail(
-                        "Oracle service name is required"
-                    )
+                    return FlextResult[None].fail("Oracle service name is required")
                 if not self.oracle_username:
                     return FlextResult[None].fail("Oracle username is required")
                 if not self.oracle_password:
@@ -681,7 +679,7 @@ GruponosMeltanoWMSSourceConfig = GruponosMeltanoNativeConfig
 
 
 # Export configuration class (single class plus backward compatibility aliases)
-__all__: FlextTypes.StringList = [
+__all__: list[str] = [
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoJobConfig",
     "GruponosMeltanoNativeConfig",

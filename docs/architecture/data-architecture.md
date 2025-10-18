@@ -1,4 +1,39 @@
 # Data Architecture Documentation
+## Table of Contents
+
+- [Data Architecture Documentation](#data-architecture-documentation)
+  - [📋 Data Architecture Overview](#-data-architecture-overview)
+    - [Data Architecture Principles](#data-architecture-principles)
+    - [Data Flow Architecture](#data-flow-architecture)
+  - [🏗️ Data Model Architecture](#-data-model-architecture)
+    - [Core Data Entities](#core-data-entities)
+    - [Data Relationships & Constraints](#data-relationships--constraints)
+  - [🔄 Data Flow & Processing Architecture](#-data-flow--processing-architecture)
+    - [ETL Pipeline Data Flow](#etl-pipeline-data-flow)
+    - [Data Quality Pipeline](#data-quality-pipeline)
+  - [🗂️ Data Storage Architecture](#-data-storage-architecture)
+    - [Multi-Layer Storage Strategy](#multi-layer-storage-strategy)
+    - [Data Lifecycle Management](#data-lifecycle-management)
+  - [📊 Data Governance & Quality](#-data-governance--quality)
+    - [Data Governance Framework](#data-governance-framework)
+    - [Data Quality Dimensions](#data-quality-dimensions)
+    - [Data Quality Metrics Dashboard](#data-quality-metrics-dashboard)
+  - [🔄 Data Integration Patterns](#-data-integration-patterns)
+    - [Change Data Capture (CDC) Strategy](#change-data-capture-cdc-strategy)
+    - [Data Synchronization Patterns](#data-synchronization-patterns)
+  - [📈 Data Architecture Evolution](#-data-architecture-evolution)
+    - [Current State Assessment](#current-state-assessment)
+    - [Architecture Roadmap](#architecture-roadmap)
+      - [Phase 1: Foundation Enhancement (Q1 2026)](#phase-1-foundation-enhancement-q1-2026)
+      - [Phase 2: Advanced Analytics (Q2 2026)](#phase-2-advanced-analytics-q2-2026)
+      - [Phase 3: Data Mesh Architecture (Q3-Q4 2026)](#phase-3-data-mesh-architecture-q3-q4-2026)
+      - [Phase 4: AI-Driven Data Management (2027)](#phase-4-ai-driven-data-management-2027)
+  - [🎯 Data Architecture Quality Attributes](#-data-architecture-quality-attributes)
+    - [Data Quality Attributes](#data-quality-attributes)
+    - [Performance Attributes](#performance-attributes)
+    - [Operational Attributes](#operational-attributes)
+    - [Business Value Attributes](#business-value-attributes)
+
 
 **Project**: gruponos-meltano-native | **Version**: 0.9.0 | **Framework**: Data Mesh + Event-Driven Architecture
 **Last Updated**: 2025-10-10 | **Status**: Production Data Pipeline
@@ -7,7 +42,9 @@
 
 ## 📋 Data Architecture Overview
 
-The gruponos-meltano-native system implements a comprehensive data architecture that orchestrates the flow of warehouse management system (WMS) data through extraction, transformation, and loading processes while maintaining data quality, lineage, and governance.
+The gruponos-meltano-native system implements a comprehensive data architecture that orchestrates the flow of warehouse management system (WMS) data through extraction,
+    
+     transformation, and loading processes while maintaining data quality, lineage, and governance.
 
 ### Data Architecture Principles
 
@@ -34,7 +71,8 @@ System_Boundary(data_ecosystem, "Data Ecosystem") {
     }
 
     System_Boundary(data_platform, "Data Platform") {
-        System(etl_orchestrator, "ETL Orchestrator", "Data Pipeline Engine", "Orchestrates data extraction, transformation, loading")
+        System(etl_orchestrator, "ETL Orchestrator", "Data Pipeline Engine",
+     "Orchestrates data extraction, transformation, loading")
         System(data_quality, "Data Quality Engine", "Validation & Cleansing", "Ensures data quality and consistency")
         System(metadata_manager, "Metadata Manager", "Data Catalog", "Manages data definitions and lineage")
         System(monitoring_system, "Data Monitoring", "Observability", "Monitors data pipeline health and quality")
@@ -762,4 +800,7 @@ end note
 
 ---
 
-**Data Architecture Documentation** - Comprehensive data architecture implementing modern data mesh principles with robust ETL pipelines, quality assurance, governance frameworks, and scalable storage strategies for enterprise warehouse management data integration.
+**Data Architecture Documentation** - Comprehensive data architecture implementing modern data mesh principles with robust ETL pipelines,
+    
+     quality assurance, governance frameworks,
+     and scalable storage strategies for enterprise warehouse management data integration.

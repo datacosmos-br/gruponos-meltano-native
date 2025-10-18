@@ -1,4 +1,36 @@
 # ADR 002: Pipeline Architecture Pattern
+## Table of Contents
+
+- [ADR 002: Pipeline Architecture Pattern](#adr-002-pipeline-architecture-pattern)
+  - [Status](#status)
+  - [Context](#context)
+  - [Decision](#decision)
+    - [Full Sync Pipeline](#full-sync-pipeline)
+    - [Incremental Sync Pipeline](#incremental-sync-pipeline)
+  - [Rationale](#rationale)
+    - [Business Requirements Alignment](#business-requirements-alignment)
+    - [Technical Benefits](#technical-benefits)
+    - [Architecture Patterns](#architecture-patterns)
+  - [Consequences](#consequences)
+    - [Positive](#positive)
+    - [Negative](#negative)
+    - [Risks](#risks)
+    - [Mitigation Strategies](#mitigation-strategies)
+  - [Alternatives Considered](#alternatives-considered)
+    - [Alternative 1: Single Pipeline with Modes](#alternative-1-single-pipeline-with-modes)
+    - [Alternative 2: Event-Driven Incremental Only](#alternative-2-event-driven-incremental-only)
+    - [Alternative 3: Micro-batch Incremental Processing](#alternative-3-micro-batch-incremental-processing)
+    - [Alternative 4: Database-Level Change Tracking](#alternative-4-database-level-change-tracking)
+    - [Alternative 5: Time-Based Windowing](#alternative-5-time-based-windowing)
+  - [Implementation](#implementation)
+    - [Pipeline Configuration Structure](#pipeline-configuration-structure)
+- [Full sync pipeline configuration](#full-sync-pipeline-configuration)
+- [Incremental sync pipeline configuration](#incremental-sync-pipeline-configuration)
+    - [Shared Infrastructure Components](#shared-infrastructure-components)
+    - [Monitoring and Alerting](#monitoring-and-alerting)
+  - [References](#references)
+  - [Notes](#notes)
+
 
 ## Status
 Accepted
@@ -233,7 +265,8 @@ class PipelineMonitoring:
 
 ## Notes
 
-The dual pipeline architecture provides the best balance of data freshness, consistency, and operational flexibility. The separation allows each pipeline to be optimized for its specific use case while sharing common infrastructure components.
+The dual pipeline architecture provides the best balance of data freshness, consistency,
+     and operational flexibility. The separation allows each pipeline to be optimized for its specific use case while sharing common infrastructure components.
 
 Future evolution may include:
 - Event-driven incremental processing if Oracle WMS adds webhook support

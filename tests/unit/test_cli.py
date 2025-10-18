@@ -333,7 +333,7 @@ class TestCLIComprehensive:
             # Extract JSON from output (skip log messages)
             output_lines = result.output.strip().split("\n")
             # Find the first line that starts with '{'
-            json_lines: FlextTypes.StringList = []
+            json_lines: list[str] = []
             found_json = False
             for line in output_lines:
                 if line.strip().startswith("{"):
@@ -491,7 +491,7 @@ class TestCLIComprehensive:
             # Extract JSON from output (skip log messages)
             output_lines = result.output.strip().split("\n")
             # Find the first line that starts with '{'
-            json_lines: FlextTypes.StringList = []
+            json_lines: list[str] = []
             found_json = False
             for line in output_lines:
                 if line.strip().startswith("{"):

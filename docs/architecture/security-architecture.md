@@ -1,4 +1,61 @@
 # Security Architecture Documentation
+## Table of Contents
+
+- [Security Architecture Documentation](#security-architecture-documentation)
+  - [📋 Security Architecture Overview](#-security-architecture-overview)
+    - [Security Principles](#security-principles)
+    - [Security Objectives](#security-objectives)
+  - [🛡️ Security Architecture Components](#-security-architecture-components)
+    - [Authentication & Authorization](#authentication--authorization)
+    - [Trust Zones & Network Security](#trust-zones--network-security)
+    - [Data Protection Architecture](#data-protection-architecture)
+  - [🔐 Security Controls Implementation](#-security-controls-implementation)
+    - [Authentication Methods](#authentication-methods)
+    - [Authorization Model](#authorization-model)
+    - [Security Monitoring & Incident Response](#security-monitoring--incident-response)
+  - [📊 Security Metrics & Compliance](#-security-metrics--compliance)
+    - [Security KPIs](#security-kpis)
+    - [Compliance Requirements](#compliance-requirements)
+      - [GDPR Compliance](#gdpr-compliance)
+      - [ISO 27001 Compliance](#iso-27001-compliance)
+    - [Security Testing & Validation](#security-testing--validation)
+      - [Automated Security Testing](#automated-security-testing)
+- [Security test suite execution](#security-test-suite-execution)
+      - [Security Test Categories](#security-test-categories)
+  - [🚨 Threat Model & Risk Assessment](#-threat-model--risk-assessment)
+    - [Primary Threats](#primary-threats)
+    - [Attack Vectors & Controls](#attack-vectors--controls)
+    - [Risk Assessment Matrix](#risk-assessment-matrix)
+  - [🔧 Security Implementation Details](#-security-implementation-details)
+    - [Secure Configuration Management](#secure-configuration-management)
+- [Secure configuration patterns](#secure-configuration-patterns)
+    - [Secure Coding Practices](#secure-coding-practices)
+- [Railway pattern with security validation](#railway-pattern-with-security-validation)
+    - [Security Monitoring Integration](#security-monitoring-integration)
+- [Security event logging](#security-event-logging)
+  - [📋 Security Operations Procedures](#-security-operations-procedures)
+    - [Daily Security Operations](#daily-security-operations)
+    - [Weekly Security Operations](#weekly-security-operations)
+    - [Monthly Security Operations](#monthly-security-operations)
+    - [Incident Response Plan](#incident-response-plan)
+      - [Phase 1: Detection & Assessment (0-15 minutes)](#phase-1-detection--assessment-0-15-minutes)
+      - [Phase 2: Containment (15-60 minutes)](#phase-2-containment-15-60-minutes)
+      - [Phase 3: Eradication (1-4 hours)](#phase-3-eradication-1-4-hours)
+      - [Phase 4: Recovery (4-24 hours)](#phase-4-recovery-4-24-hours)
+      - [Phase 5: Lessons Learned (24-72 hours)](#phase-5-lessons-learned-24-72-hours)
+  - [🎯 Security Quality Attributes](#-security-quality-attributes)
+    - [Confidentiality](#confidentiality)
+    - [Integrity](#integrity)
+    - [Availability](#availability)
+    - [Non-Repudiation](#non-repudiation)
+  - [🔄 Security Evolution & Roadmap](#-security-evolution--roadmap)
+    - [Current Security Maturity Level: **Advanced**](#current-security-maturity-level-advanced)
+    - [Security Roadmap](#security-roadmap)
+      - [Q1 2026: Enhanced Threat Detection](#q1-2026-enhanced-threat-detection)
+      - [Q2 2026: Zero Trust Implementation](#q2-2026-zero-trust-implementation)
+      - [Q3 2026: Compliance Automation](#q3-2026-compliance-automation)
+      - [Q4 2026: Security Operations Center](#q4-2026-security-operations-center)
+
 
 **Project**: gruponos-meltano-native | **Version**: 0.9.0 | **Status**: Production Security Implementation
 **Framework**: Zero Trust Architecture | **Last Updated**: 2025-10-10
@@ -7,7 +64,8 @@
 
 ## 📋 Security Architecture Overview
 
-The gruponos-meltano-native system implements a comprehensive security architecture based on zero trust principles, ensuring end-to-end security for enterprise ETL operations with Oracle WMS integration.
+The gruponos-meltano-native system implements a comprehensive security architecture based on zero trust principles,
+     ensuring end-to-end security for enterprise ETL operations with Oracle WMS integration.
 
 ### Security Principles
 
@@ -698,4 +756,7 @@ class SecurityLogger:
 
 ---
 
-**Security Architecture Documentation** - Comprehensive security implementation following zero trust principles with enterprise-grade controls, compliance frameworks, and operational procedures for the gruponos-meltano-native ETL pipeline system.
+**Security Architecture Documentation** - Comprehensive security implementation following zero trust principles with enterprise-grade controls,
+    
+     compliance frameworks,
+     and operational procedures for the gruponos-meltano-native ETL pipeline system.

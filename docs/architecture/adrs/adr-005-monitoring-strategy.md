@@ -1,11 +1,46 @@
 # ADR 005: Monitoring Strategy
+## Table of Contents
+
+- [ADR 005: Monitoring Strategy](#adr-005-monitoring-strategy)
+  - [Status](#status)
+  - [Context](#context)
+  - [Decision](#decision)
+    - [Monitoring Layers](#monitoring-layers)
+    - [Technology Stack](#technology-stack)
+    - [Monitoring Categories](#monitoring-categories)
+  - [Rationale](#rationale)
+    - [FLEXT Observability Integration](#flext-observability-integration)
+    - [Layered Monitoring Approach](#layered-monitoring-approach)
+    - [Technology Choices](#technology-choices)
+  - [Consequences](#consequences)
+    - [Positive](#positive)
+    - [Negative](#negative)
+    - [Risks](#risks)
+    - [Mitigation Strategies](#mitigation-strategies)
+  - [Alternatives Considered](#alternatives-considered)
+    - [Alternative 1: Application Insights Only](#alternative-1-application-insights-only)
+    - [Alternative 2: Custom Monitoring Solution](#alternative-2-custom-monitoring-solution)
+    - [Alternative 3: ELK Stack Integration](#alternative-3-elk-stack-integration)
+    - [Alternative 4: Minimal Monitoring](#alternative-4-minimal-monitoring)
+  - [Implementation](#implementation)
+    - [Phase 1: Core Monitoring Infrastructure (Week 1-2)](#phase-1-core-monitoring-infrastructure-week-1-2)
+    - [Phase 2: Application Monitoring (Week 3-4)](#phase-2-application-monitoring-week-3-4)
+    - [Phase 3: Advanced Monitoring (Week 5-6)](#phase-3-advanced-monitoring-week-5-6)
+    - [Phase 4: Production Optimization (Week 7-8)](#phase-4-production-optimization-week-7-8)
+  - [References](#references)
+  - [Notes](#notes)
+
 
 ## Status
 Accepted
 
 ## Context
 
-The gruponos-meltano-native system requires comprehensive monitoring capabilities to ensure operational visibility, performance tracking, and proactive issue detection for enterprise ETL operations. The system processes critical warehouse data with strict SLAs and must provide real-time insights into pipeline health, data quality, and system performance.
+The gruponos-meltano-native system requires comprehensive monitoring capabilities to ensure operational visibility,
+     performance tracking,
+     and proactive issue detection for enterprise ETL operations. The system processes critical warehouse data with strict SLAs and must provide real-time insights into pipeline health,
+    
+     data quality, and system performance.
 
 Key monitoring requirements include:
 - Real-time pipeline execution visibility

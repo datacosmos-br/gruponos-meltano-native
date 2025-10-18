@@ -1,4 +1,56 @@
 # Architecture Decision Records (ADRs)
+## Table of Contents
+
+- [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
+  - [Overview](#overview)
+    - [ADR Process](#adr-process)
+    - [ADR Status Definitions](#adr-status-definitions)
+  - [ADR Template](#adr-template)
+- [ADR [Number]: [Title]](#adr-number-title)
+  - [Status](#status)
+  - [Context](#context)
+  - [Decision](#decision)
+  - [Rationale](#rationale)
+  - [Consequences](#consequences)
+    - [Positive](#positive)
+    - [Negative](#negative)
+    - [Risks](#risks)
+  - [Alternatives Considered](#alternatives-considered)
+  - [Implementation](#implementation)
+  - [References](#references)
+  - [Current ADRs](#current-adrs)
+    - [Accepted Decisions](#accepted-decisions)
+    - [ADR Index by Category](#adr-index-by-category)
+      - [Technology Decisions](#technology-decisions)
+      - [Architecture Patterns](#architecture-patterns)
+      - [Implementation Decisions](#implementation-decisions)
+  - [ADR Workflow](#adr-workflow)
+    - [Creating a New ADR](#creating-a-new-adr)
+    - [ADR Review Process](#adr-review-process)
+    - [ADR Maintenance](#adr-maintenance)
+  - [ADR Quality Standards](#adr-quality-standards)
+    - [Content Requirements](#content-requirements)
+    - [Review Criteria](#review-criteria)
+  - [Tools and Templates](#tools-and-templates)
+    - [ADR Creation Tools](#adr-creation-tools)
+- [Create new ADR (requires adr-tools)](#create-new-adr-requires-adr-tools)
+- [List all ADRs](#list-all-adrs)
+- [Generate ADR index](#generate-adr-index)
+    - [Template Variables](#template-variables)
+  - [Integration with Development Process](#integration-with-development-process)
+    - [Git Workflow](#git-workflow)
+- [ADR creation during development](#adr-creation-during-development)
+- [Create and review ADR](#create-and-review-adr)
+    - [CI/CD Integration](#cicd-integration)
+    - [Documentation Integration](#documentation-integration)
+  - [ADR Metrics and Reporting](#adr-metrics-and-reporting)
+    - [Quality Metrics](#quality-metrics)
+    - [Reporting](#reporting)
+  - [Examples and Best Practices](#examples-and-best-practices)
+    - [Good ADR Example](#good-adr-example)
+    - [ADR Anti-Patterns](#adr-anti-patterns)
+  - [Related Documentation](#related-documentation)
+
 
 **Project**: gruponos-meltano-native | **Framework**: ADR Template | **Status**: Active
 **Last Updated**: 2025-10-10 | **ADR Count**: 5
@@ -7,7 +59,9 @@
 
 ## Overview
 
-This directory contains Architecture Decision Records (ADRs) for the gruponos-meltano-native project. ADRs document architectural decisions, their context, rationale, and consequences.
+This directory contains Architecture Decision Records (ADRs) for the gruponos-meltano-native project. ADRs document architectural decisions,
+    
+     their context, rationale, and consequences.
 
 ### ADR Process
 
@@ -250,4 +304,5 @@ git push origin feature/architectural-decision
 
 ---
 
-**Architecture Decision Records** - Living documentation of architectural decisions ensuring consistency, maintainability, and knowledge sharing across the development team.
+**Architecture Decision Records** - Living documentation of architectural decisions ensuring consistency,
+     maintainability, and knowledge sharing across the development team.
