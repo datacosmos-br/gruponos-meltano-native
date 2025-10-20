@@ -604,7 +604,9 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
     # PRIVATE METHODS
     # =============================================
 
-    def _execute_meltano_pipeline(self, job_name: str) -> FlextResult[dict[str, object]]:
+    def _execute_meltano_pipeline(
+        self, job_name: str
+    ) -> FlextResult[dict[str, object]]:
         """Execute a Meltano pipeline using subprocess with comprehensive error handling.
 
         This method executes Meltano jobs via subprocess calls with proper environment

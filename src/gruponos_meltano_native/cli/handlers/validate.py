@@ -15,9 +15,7 @@ class ValidateHandler:
         """Initialize the validate handler."""
         self._orchestrator = orchestrator
 
-    def execute(
-        self, output_format: str = "table"
-    ) -> FlextResult[dict[str, str]]:
+    def execute(self, output_format: str = "table") -> FlextResult[dict[str, str]]:
         """Execute validate command."""
         validation_result = self._orchestrator.validate_configuration()
 

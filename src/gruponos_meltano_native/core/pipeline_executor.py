@@ -144,9 +144,7 @@ class MeltanoPipelineExecutor:
             return FlextResult[list[str]].ok(job_names)
 
         except Exception as e:
-            return FlextResult[list[str]].fail(
-                f"Failed to list jobs: {e!s}"
-            )
+            return FlextResult[list[str]].fail(f"Failed to list jobs: {e!s}")
 
     def list_pipelines(self) -> FlextResult[list[str]]:
         """List all available Meltano pipelines.
@@ -176,9 +174,7 @@ class MeltanoPipelineExecutor:
             return FlextResult[list[str]].ok(pipeline_names)
 
         except Exception as e:
-            return FlextResult[list[str]].fail(
-                f"Failed to list pipelines: {e!s}"
-            )
+            return FlextResult[list[str]].fail(f"Failed to list pipelines: {e!s}")
 
     def _validate_job_name(self, job_name: str) -> str | None:
         """Validate job name format and constraints.

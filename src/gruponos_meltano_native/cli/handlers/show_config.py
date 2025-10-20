@@ -17,9 +17,7 @@ class ShowConfigHandler:
         """Initialize the show config handler."""
         self._config = config
 
-    def execute(
-        self, output_format: str = "yaml"
-    ) -> FlextResult[dict[str, str]]:
+    def execute(self, output_format: str = "yaml") -> FlextResult[dict[str, str]]:
         """Execute show config command."""
         if output_format == "yaml":
             config_content = yaml.dump(

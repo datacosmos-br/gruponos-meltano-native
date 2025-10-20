@@ -115,9 +115,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
         ) -> None:
             self._orchestrator = orchestrator
 
-        def execute(
-            self, output_format: str = "table"
-        ) -> FlextResult[dict[str, str]]:
+        def execute(self, output_format: str = "table") -> FlextResult[dict[str, str]]:
             """Execute validate command."""
             validation_result = self._orchestrator.validate_configuration()
 
@@ -147,9 +145,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
         def __init__(self, config: GruponosMeltanoNativeConfig) -> None:
             self._config = config
 
-        def execute(
-            self, output_format: str = "yaml"
-        ) -> FlextResult[dict[str, str]]:
+        def execute(self, output_format: str = "yaml") -> FlextResult[dict[str, str]]:
             """Execute show config command."""
             if output_format == "yaml":
                 config_content = yaml.dump(

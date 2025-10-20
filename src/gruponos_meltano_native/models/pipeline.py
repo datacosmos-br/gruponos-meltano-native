@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from flext_core import FlextModels, FlextResult, FlextTypes
+from flext_core import FlextModels, FlextResult
 from pydantic import ConfigDict, Field, computed_field
 
 from gruponos_meltano_native.constants import GruponosMeltanoNativeConstants
