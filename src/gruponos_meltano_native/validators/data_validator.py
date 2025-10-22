@@ -176,7 +176,6 @@ class DataValidator:
             "number": self._validate_number,
             "date": self._validate_date,
             "boolean": self._validate_boolean,
-            "email": self._validate_email,
             "enum": self._validate_enum,
         }
         validation_method = validation_methods.get(rule.rule_type)
@@ -391,28 +390,6 @@ class DataValidator:
         """Validate boolean field."""
         if not isinstance(value, bool):
             error_msg: str = f"Field '{rule.field_name}' must be a boolean"
-            if self.strict_mode:
-                raise ValidationError(
-                    error_msg,
-                    validation_details={"field": rule.field_name},
-                )
-            logger.warning(
-                "Validation failed: %s (field: %s)",
-                error_msg,
-                rule.field_name,
-            )
-            errors.append(error_msg)
-
-    def _validate_email(
-        self,
-        rule: ValidationRule,
-        value: object,
-        errors: list[str],
-    ) -> None:
-        """Validate email field."""
-        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        if not isinstance(value, str) or not re.match(email_pattern, value):
-            error_msg: str = f"Field '{rule.field_name}' must be a valid email address"
             if self.strict_mode:
                 raise ValidationError(
                     error_msg,

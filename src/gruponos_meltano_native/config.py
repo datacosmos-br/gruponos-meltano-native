@@ -13,7 +13,7 @@ SPDX-License-Identifier: Proprietary
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Self, TypedDict
+from typing import Literal, Self, TypedDict
 
 from flext_meltano import FlextMeltanoService
 from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
@@ -307,7 +307,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         default=None,
         description="Configuration file path",
     )
-    log_level: str = Field(
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO",
         description="Logging level",
     )
@@ -348,17 +348,6 @@ class GruponosMeltanoNativeConfig(FlextConfig):
             msg = f"Load method must be one of {valid_methods}"
             raise ValueError(msg)
         return v
-
-    @field_validator("log_level")
-    @classmethod
-    def validate_log_level(cls, v: str) -> str:
-        """Validate log level."""
-        v_upper = v.upper()
-        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
-        if v_upper not in valid_levels:
-            msg = f"Invalid log level: {v}. Must be one of: {', '.join(valid_levels)}"
-            raise ValueError(msg)
-        return v_upper
 
     # Model validator
     @model_validator(mode="after")
