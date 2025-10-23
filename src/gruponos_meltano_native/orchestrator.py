@@ -14,11 +14,11 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import os
-import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
 
+from flext_core import FlextLogger, FlextUtilities
 from flext_meltano import FlextMeltanoService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
@@ -607,9 +607,9 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
     def _execute_meltano_pipeline(
         self, job_name: str
     ) -> FlextResult[dict[str, object]]:
-        """Execute a Meltano pipeline using subprocess with comprehensive error handling.
+        """Execute a Meltano pipeline with comprehensive error handling.
 
-        This method executes Meltano jobs via subprocess calls with proper environment
+        This method executes Meltano jobs via FlextUtilities with proper environment
         setup, timeout handling, and structured error reporting.
 
         Args:
@@ -665,29 +665,36 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
             execution_time = time.time() - start_time
 
-            # Process execution results
-            if result.is_success:
-                process_result = result.unwrap()
-                if process_result.returncode == 0:
-                    self.logger.info(
-                        "Meltano job completed successfully",
-                        extra={
-                            "job_name": sanitized_job_name,
-                            "execution_time": execution_time,
-                            "return_code": process_result.returncode,
-                        },
+            # Handle execution failures (timeout, command not found, etc.)
+            if result.is_failure:
+                error_msg = result.error
+                # Check for specific error types via message content
+                if "timed out" in error_msg.lower():
+                    timeout_error = f"Meltano job timed out after {execution_time:.2f}s"
+                    self.logger.exception(timeout_error, extra={"job_name": sanitized_job_name})
+                    return FlextResult.fail(timeout_error)
+                if "not found" in error_msg.lower():
+                    meltano_error = (
+                        "Meltano executable not found. Ensure Meltano is installed and in PATH."
                     )
+                    self.logger.exception(meltano_error, extra={"job_name": sanitized_job_name})
+                    return FlextResult.fail(meltano_error)
+                # Generic execution error
+                self.logger.exception(error_msg, extra={"job_name": sanitized_job_name})
+                return FlextResult.fail(error_msg)
 
-                    return FlextResult.ok({
+            # Process successful execution results
+            process_result = result.unwrap()
+            if process_result.returncode == 0:
+                self.logger.info(
+                    "Meltano job completed successfully",
+                    extra={
+                        "job_name": sanitized_job_name,
                         "execution_time": execution_time,
-                        "output": process_result.stdout.strip(),
-                        "metadata": {
-                            "return_code": process_result.returncode,
-                            "stderr": process_result.stderr.strip(),
-                            "job_name": sanitized_job_name,
-                        },
-                    })
-                # Job failed but process completed
+                        "return_code": process_result.returncode,
+                    },
+                )
+
                 return FlextResult.ok({
                     "execution_time": execution_time,
                     "output": process_result.stdout.strip(),
@@ -697,29 +704,22 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                         "job_name": sanitized_job_name,
                     },
                 })
-
-        except subprocess.TimeoutExpired:
-            execution_time = time.time() - start_time
-            timeout_error = f"Meltano job timed out after {execution_time:.2f}s"
-            self.logger.exception(timeout_error, extra={"job_name": job_name})
-            return FlextResult.fail(timeout_error)
-
-        except FileNotFoundError:
-            execution_time = time.time() - start_time
-            meltano_error = (
-                "Meltano executable not found. Ensure Meltano is installed and in PATH."
-            )
-            self.logger.exception(meltano_error, extra={"job_name": job_name})
-            return FlextResult.fail(meltano_error)
+            # Job failed but process completed
+            return FlextResult.ok({
+                "execution_time": execution_time,
+                "output": process_result.stdout.strip(),
+                "metadata": {
+                    "return_code": process_result.returncode,
+                    "stderr": process_result.stderr.strip(),
+                    "job_name": sanitized_job_name,
+                },
+            })
 
         except Exception as e:
             execution_time = time.time() - start_time
             unexpected_error = f"Unexpected error during Meltano job execution: {e}"
-            self.logger.exception(unexpected_error, extra={"job_name": job_name})
+            self.logger.exception(unexpected_error, extra={"job_name": sanitized_job_name})
             return FlextResult.fail(unexpected_error)
-
-        # This should not be reached, but add fallback return
-        return FlextResult.fail("Unexpected end of method execution")
 
     def _build_meltano_environment(self) -> dict[str, str]:
         """Build comprehensive environment variables for Meltano execution.
@@ -728,7 +728,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         for Meltano pipeline execution, including Oracle WMS and database credentials.
 
         Returns:
-            dict[str, str]: Environment variables dictionary for subprocess execution.
+            dict[str, str]: Environment variables dictionary for external command execution.
 
         FLEXT OPTIMIZATION:
         - Comprehensive environment setup

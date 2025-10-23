@@ -23,13 +23,18 @@ Version: 1.0.0
 import argparse
 import json
 import re
-import subprocess
 import sys
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
+
+try:
+    from git import Repo, InvalidGitRepositoryError
+except ImportError:
+    Repo = None  # type: ignore
+    InvalidGitRepositoryError = Exception  # type: ignore
 
 
 # Configuration
@@ -310,32 +315,38 @@ class DocsMaintainer:
         }
 
         try:
-            # Get recent git changes
-            result = subprocess.run(
-                ["git", "log", "--oneline", '--since="1 month ago"', "--", "src/"],
-                check=False,
-                capture_output=True,
-                text=True,
-                cwd=Path(),
-            )
+            # Get recent git changes using GitPython
+            if Repo is not None:
+                try:
+                    repo = Repo(Path.cwd())
+                    git = repo.git
 
-            if result.returncode == 0:
-                recent_commits = result.stdout.strip().split("\n")
-                sync_results["code_changes"] = [
-                    commit for commit in recent_commits if commit.strip()
-                ]
+                    # Get commits from the last month
+                    since_date = (datetime.now() - timedelta(days=30)).isoformat()
+                    commits = git.log(
+                        "--oneline",
+                        f'--since="{since_date}"',
+                        "--",
+                        "src/",
+                    ).split("\n")
 
-            # Check for new source files without documentation
-            result = subprocess.run(
-                ["find", "src/", "-name", "*.py", "-type", "f"],
-                check=False,
-                capture_output=True,
-                text=True,
-                cwd=Path(),
-            )
+                    sync_results["code_changes"] = [
+                        commit for commit in commits if commit.strip()
+                    ]
+                except (InvalidGitRepositoryError, Exception):
+                    # Fallback if not a git repo or git not available
+                    pass
 
-            if result.returncode == 0:
-                source_files = set(result.stdout.strip().split("\n"))
+            # Check for new source files without documentation using pathlib
+            source_files_path = Path("src/")
+            if source_files_path.exists():
+                source_files = set(
+                    str(f.relative_to(Path.cwd())) for f in source_files_path.glob("**/*.py")
+                )
+            else:
+                source_files = set()
+
+            if source_files:
                 documented_modules = set()
 
                 for doc_file in files:

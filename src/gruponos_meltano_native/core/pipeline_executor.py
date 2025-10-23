@@ -9,10 +9,10 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import os
-import subprocess
 from pathlib import Path
 from typing import Any
 
+from flext_core import FlextLogger, FlextResult, FlextUtilities
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.models.pipeline import (
     PipelineConfiguration,
@@ -83,24 +83,27 @@ class MeltanoPipelineExecutor:
 
         """
         try:
+            import json
+
             # Build environment
             env = self._build_meltano_environment()
 
             # Run meltano job list to get status
             cmd = ["meltano", "job", "list", "--format", "json"]
-            result = subprocess.run(
-                cmd, check=False, capture_output=True, text=True, env=env, timeout=30
+            exec_result = FlextUtilities.run_external_command(
+                cmd, env=env, timeout=30.0
             )
 
-            if result.returncode != 0:
+            if exec_result.is_failure:
+                if "timed out" in exec_result.error.lower():
+                    return FlextResult[dict[str, Any]].fail("Job status check timed out")
                 return FlextResult[dict[str, Any]].fail(
-                    f"Failed to get job status: {result.stderr}"
+                    f"Failed to get job status: {exec_result.error}"
                 )
 
             # Parse JSON output
-            import json
-
-            jobs_data = json.loads(result.stdout)
+            wrapper = exec_result.unwrap()
+            jobs_data = json.loads(wrapper.stdout)
 
             # Find the specific job
             for job in jobs_data.get("jobs", []):
@@ -109,8 +112,6 @@ class MeltanoPipelineExecutor:
 
             return FlextResult[dict[str, Any]].fail(f"Job not found: {job_name}")
 
-        except subprocess.TimeoutExpired:
-            return FlextResult[dict[str, Any]].fail("Job status check timed out")
         except json.JSONDecodeError as e:
             return FlextResult[dict[str, Any]].fail(f"Invalid JSON response: {e!s}")
         except Exception as e:
@@ -124,25 +125,30 @@ class MeltanoPipelineExecutor:
 
         """
         try:
+            import json
+
             env = self._build_meltano_environment()
 
             cmd = ["meltano", "job", "list", "--format", "json"]
-            result = subprocess.run(
-                cmd, check=False, capture_output=True, text=True, env=env, timeout=30
+            exec_result = FlextUtilities.run_external_command(
+                cmd, env=env, timeout=30.0
             )
 
-            if result.returncode != 0:
+            if exec_result.is_failure:
+                if "timed out" in exec_result.error.lower():
+                    return FlextResult[list[str]].fail("Job listing timed out")
                 return FlextResult[list[str]].fail(
-                    f"Failed to list jobs: {result.stderr}"
+                    f"Failed to list jobs: {exec_result.error}"
                 )
 
-            import json
-
-            jobs_data = json.loads(result.stdout)
+            wrapper = exec_result.unwrap()
+            jobs_data = json.loads(wrapper.stdout)
             job_names = [job["name"] for job in jobs_data.get("jobs", [])]
 
             return FlextResult[list[str]].ok(job_names)
 
+        except json.JSONDecodeError as e:
+            return FlextResult[list[str]].fail(f"Invalid JSON response: {e!s}")
         except Exception as e:
             return FlextResult[list[str]].fail(f"Failed to list jobs: {e!s}")
 
@@ -154,25 +160,30 @@ class MeltanoPipelineExecutor:
 
         """
         try:
+            import json
+
             env = self._build_meltano_environment()
 
             cmd = ["meltano", "pipeline", "list", "--format", "json"]
-            result = subprocess.run(
-                cmd, check=False, capture_output=True, text=True, env=env, timeout=30
+            exec_result = FlextUtilities.run_external_command(
+                cmd, env=env, timeout=30.0
             )
 
-            if result.returncode != 0:
+            if exec_result.is_failure:
+                if "timed out" in exec_result.error.lower():
+                    return FlextResult[list[str]].fail("Pipeline listing timed out")
                 return FlextResult[list[str]].fail(
-                    f"Failed to list pipelines: {result.stderr}"
+                    f"Failed to list pipelines: {exec_result.error}"
                 )
 
-            import json
-
-            pipelines_data = json.loads(result.stdout)
+            wrapper = exec_result.unwrap()
+            pipelines_data = json.loads(wrapper.stdout)
             pipeline_names = [p["name"] for p in pipelines_data.get("pipelines", [])]
 
             return FlextResult[list[str]].ok(pipeline_names)
 
+        except json.JSONDecodeError as e:
+            return FlextResult[list[str]].fail(f"Invalid JSON response: {e!s}")
         except Exception as e:
             return FlextResult[list[str]].fail(f"Failed to list pipelines: {e!s}")
 
@@ -215,13 +226,13 @@ class MeltanoPipelineExecutor:
 
         """
         try:
+            import uuid
+            from datetime import datetime
+
             # Initialize metrics collection
             metrics = PipelineMetrics()
 
             # Record start time
-            import uuid
-            from datetime import datetime
-
             pipeline_id = str(uuid.uuid4())
             start_time = datetime.now()
             metrics.record_extraction_start()
@@ -230,23 +241,27 @@ class MeltanoPipelineExecutor:
             cmd = ["meltano", "run", job_name]
             self.logger.info(f"Executing command: {' '.join(cmd)}")
 
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                env=env,
-                cwd=Path.cwd(),
+            exec_result = FlextUtilities.run_external_command(
+                cmd, env=env, timeout=3600.0  # 1 hour timeout
             )
-
-            # Monitor process execution
-            stdout, stderr = process.communicate(timeout=3600)  # 1 hour timeout
 
             end_time = datetime.now()
             duration = (end_time - start_time).total_seconds()
 
-            # Analyze results
-            success = process.returncode == 0
+            # Check for timeout
+            if exec_result.is_failure:
+                if "timed out" in exec_result.error.lower():
+                    return FlextResult[PipelineResult].fail("Pipeline execution timed out")
+                # Still create result object for failure case
+                return FlextResult[PipelineResult].fail(
+                    f"Pipeline execution error: {exec_result.error}"
+                )
+
+            # Process successful result
+            wrapper = exec_result.unwrap()
+            success = wrapper.returncode == 0
+            stdout = wrapper.stdout
+            stderr = wrapper.stderr
 
             # Create pipeline result
             result = PipelineResult(
@@ -270,8 +285,6 @@ class MeltanoPipelineExecutor:
 
             return FlextResult[PipelineResult].ok(result)
 
-        except subprocess.TimeoutExpired:
-            return FlextResult[PipelineResult].fail("Pipeline execution timed out")
         except Exception as e:
             return FlextResult[PipelineResult].fail(f"Pipeline execution error: {e!s}")
 
@@ -279,7 +292,7 @@ class MeltanoPipelineExecutor:
         """Build environment variables for Meltano execution.
 
         Returns:
-            Environment dictionary for subprocess execution
+            Environment dictionary for external command execution
 
         """
         env = os.environ.copy()
