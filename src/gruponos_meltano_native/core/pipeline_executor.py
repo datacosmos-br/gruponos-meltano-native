@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from flext_core import FlextLogger, FlextResult, FlextUtilities
+
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.models.pipeline import (
     PipelineConfiguration,
@@ -96,7 +97,9 @@ class MeltanoPipelineExecutor:
 
             if exec_result.is_failure:
                 if "timed out" in exec_result.error.lower():
-                    return FlextResult[dict[str, Any]].fail("Job status check timed out")
+                    return FlextResult[dict[str, Any]].fail(
+                        "Job status check timed out"
+                    )
                 return FlextResult[dict[str, Any]].fail(
                     f"Failed to get job status: {exec_result.error}"
                 )
@@ -242,7 +245,9 @@ class MeltanoPipelineExecutor:
             self.logger.info(f"Executing command: {' '.join(cmd)}")
 
             exec_result = FlextUtilities.run_external_command(
-                cmd, env=env, timeout=3600.0  # 1 hour timeout
+                cmd,
+                env=env,
+                timeout=3600.0,  # 1 hour timeout
             )
 
             end_time = datetime.now()
@@ -251,7 +256,9 @@ class MeltanoPipelineExecutor:
             # Check for timeout
             if exec_result.is_failure:
                 if "timed out" in exec_result.error.lower():
-                    return FlextResult[PipelineResult].fail("Pipeline execution timed out")
+                    return FlextResult[PipelineResult].fail(
+                        "Pipeline execution timed out"
+                    )
                 # Still create result object for failure case
                 return FlextResult[PipelineResult].fail(
                     f"Pipeline execution error: {exec_result.error}"

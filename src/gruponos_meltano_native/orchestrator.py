@@ -18,7 +18,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from flext_core import FlextLogger, FlextUtilities
+from flext_core import FlextUtilities
 from flext_meltano import FlextMeltanoService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
@@ -671,16 +671,18 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                 # Check for specific error types via message content
                 if "timed out" in error_msg.lower():
                     timeout_error = f"Meltano job timed out after {execution_time:.2f}s"
-                    self.logger.exception(timeout_error, extra={"job_name": sanitized_job_name})
+                    self.logger.error(
+                        timeout_error, extra={"job_name": sanitized_job_name}
+                    )
                     return FlextResult.fail(timeout_error)
                 if "not found" in error_msg.lower():
-                    meltano_error = (
-                        "Meltano executable not found. Ensure Meltano is installed and in PATH."
+                    meltano_error = "Meltano executable not found. Ensure Meltano is installed and in PATH."
+                    self.logger.error(
+                        meltano_error, extra={"job_name": sanitized_job_name}
                     )
-                    self.logger.exception(meltano_error, extra={"job_name": sanitized_job_name})
                     return FlextResult.fail(meltano_error)
                 # Generic execution error
-                self.logger.exception(error_msg, extra={"job_name": sanitized_job_name})
+                self.logger.error(error_msg, extra={"job_name": sanitized_job_name})
                 return FlextResult.fail(error_msg)
 
             # Process successful execution results
@@ -718,7 +720,9 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         except Exception as e:
             execution_time = time.time() - start_time
             unexpected_error = f"Unexpected error during Meltano job execution: {e}"
-            self.logger.exception(unexpected_error, extra={"job_name": sanitized_job_name})
+            self.logger.exception(
+                unexpected_error, extra={"job_name": sanitized_job_name}
+            )
             return FlextResult.fail(unexpected_error)
 
     def _build_meltano_environment(self) -> dict[str, str]:

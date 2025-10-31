@@ -31,7 +31,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 try:
-    from git import Repo, InvalidGitRepositoryError
+    from git import InvalidGitRepositoryError, Repo
 except ImportError:
     Repo = None  # type: ignore
     InvalidGitRepositoryError = Exception  # type: ignore
@@ -340,9 +340,10 @@ class DocsMaintainer:
             # Check for new source files without documentation using pathlib
             source_files_path = Path("src/")
             if source_files_path.exists():
-                source_files = set(
-                    str(f.relative_to(Path.cwd())) for f in source_files_path.glob("**/*.py")
-                )
+                source_files = {
+                    str(f.relative_to(Path.cwd()))
+                    for f in source_files_path.glob("**/*.py")
+                }
             else:
                 source_files = set()
 

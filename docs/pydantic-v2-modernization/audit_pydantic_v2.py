@@ -213,11 +213,22 @@ class PydanticV2Auditor:
         # This check ensures they don't accidentally reappear
         # NOTE: validate_pipeline is EXCLUDED - it's legitimate business logic for composing validators
         removed_validator_patterns = {
-            "validate_port", "validate_email", "validate_url", "validate_positive_integer",
-            "validate_non_negative_integer", "validate_string_length", "validate_string_pattern",
-            "validate_file_path", "validate_directory_path", "validate_timeout_seconds",
-            "validate_retry_count", "validate_log_level", "validate_string_not_none",
-            "validate_string_not_empty", "validate_string", "validate_host"
+            "validate_port",
+            "validate_email",
+            "validate_url",
+            "validate_positive_integer",
+            "validate_non_negative_integer",
+            "validate_string_length",
+            "validate_string_pattern",
+            "validate_file_path",
+            "validate_directory_path",
+            "validate_timeout_seconds",
+            "validate_retry_count",
+            "validate_log_level",
+            "validate_string_not_none",
+            "validate_string_not_empty",
+            "validate_string",
+            "validate_host",
         }
         for validator_name in removed_validator_patterns:
             pattern = rf"def {validator_name}\("
