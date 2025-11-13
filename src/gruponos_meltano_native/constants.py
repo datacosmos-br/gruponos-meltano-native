@@ -12,6 +12,8 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import ClassVar, Final
 
+from flext_core import FlextConstants
+
 
 class GruponosMeltanoNativeConstants(FlextConstants):
     """GrupoNOS Meltano Native constants extending FlextConstants.

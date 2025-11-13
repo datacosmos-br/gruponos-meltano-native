@@ -22,6 +22,8 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import override
 
+from flext_core import FlextExceptions, FlextLogger, FlextResult
+
 # Get dependencies via DI
 logger = FlextLogger(__name__)
 

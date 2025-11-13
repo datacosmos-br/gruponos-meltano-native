@@ -18,6 +18,7 @@ from __future__ import annotations
 import os
 from typing import override
 
+from flext_core import FlextResult
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig

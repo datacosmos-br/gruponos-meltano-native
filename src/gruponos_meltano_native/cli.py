@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 
 import yaml
 from flext_cli import FlextCli, FlextCliMain
+from flext_core import FlextLogger, FlextResult, FlextService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator

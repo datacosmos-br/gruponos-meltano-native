@@ -5,6 +5,8 @@ Handler for listing pipelines command operations.
 
 from __future__ import annotations
 
+from flext_core import FlextResult
+
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
 

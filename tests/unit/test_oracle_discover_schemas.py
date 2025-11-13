@@ -4,6 +4,7 @@ REAL IMPLEMENTATION TESTS - NO MOCKS OR FALLBACKS.
 Tests the actual Oracle schema discovery logic with basic functionality.
 """
 
+from flext_core import FlextLogger
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleMetadataManager
 
 

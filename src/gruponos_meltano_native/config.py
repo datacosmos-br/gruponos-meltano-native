@@ -15,6 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal, Self, TypedDict
 
+from flext_core import FlextConfig, FlextResult
 from flext_meltano import FlextMeltanoService
 from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict

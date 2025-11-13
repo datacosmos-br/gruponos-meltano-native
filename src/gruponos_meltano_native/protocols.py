@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
+from flext_core import FlextProtocols, FlextResult
+
 
 class GruponosMeltanoNativeProtocols(FlextProtocols):
     """GrupoNOS Meltano Native Protocols namespace class.

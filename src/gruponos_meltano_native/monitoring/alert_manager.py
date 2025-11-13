@@ -14,6 +14,7 @@ from enum import StrEnum
 from typing import override
 
 from flext_api import FlextApiClient
+from flext_core import FlextLogger, FlextModels, FlextResult
 
 from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
 

@@ -8,6 +8,7 @@ import re
 from typing import Protocol
 from unittest.mock import patch
 
+from flext_core import FlextResult
 from sqlalchemy import MetaData, Table, select
 from sqlalchemy.sql import Select
 

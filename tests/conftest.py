@@ -22,6 +22,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import pytest_asyncio
+from flext_core import FlextContainer
 
 from gruponos_meltano_native import (
     GruponosMeltanoNativeCli,

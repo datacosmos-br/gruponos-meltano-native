@@ -6,6 +6,7 @@ Handler for show config command operations.
 from __future__ import annotations
 
 import yaml
+from flext_core import FlextResult
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 

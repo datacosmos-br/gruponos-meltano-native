@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from flext_core import FlextResult
+
 
 class HealthHandler:
     """Handler for health check command."""

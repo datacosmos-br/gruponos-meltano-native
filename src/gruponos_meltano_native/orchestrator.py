@@ -18,7 +18,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from flext_core import FlextUtilities
+from flext_core import FlextResult, FlextService, FlextUtilities
 from flext_meltano import FlextMeltanoService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig

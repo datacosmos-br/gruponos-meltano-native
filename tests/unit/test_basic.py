@@ -2,7 +2,7 @@
 
 from unittest.mock import Mock, patch
 
-from flext_core import FlextCore
+from flext_core import FlextCore, FlextResult
 
 from gruponos_meltano_native import (
     GruponosMeltanoOracleConnectionConfig,
