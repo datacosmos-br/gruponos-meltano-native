@@ -8,7 +8,11 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 
 from __future__ import annotations
 
+import json
 import os
+import re
+import uuid
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -29,18 +33,27 @@ class MeltanoPipelineExecutor:
     Separated from orchestrator for better testability and maintainability.
     """
 
+    # Maximum allowed length for job names
+    MAX_JOB_NAME_LENGTH = 100
+
     def __init__(self, config: GruponosMeltanoNativeConfig) -> None:
+        """Initialize MeltanoPipelineExecutor.
+
+        Args:
+            config: Configuration for Meltano operations
+
+        """
         self.config = config
         self.logger = FlextLogger.get_logger(__name__)
 
     def execute_pipeline(
-        self, job_name: str, config: PipelineConfiguration
+        self, job_name: str, _config: PipelineConfiguration
     ) -> FlextResult[PipelineResult]:
         """Execute a Meltano pipeline job.
 
         Args:
             job_name: Name of the Meltano job to execute
-            config: Pipeline configuration
+            _config: Pipeline configuration (currently unused)
 
         Returns:
             PipelineResult with execution details
@@ -84,8 +97,6 @@ class MeltanoPipelineExecutor:
 
         """
         try:
-            import json
-
             # Build environment
             env = self._build_meltano_environment()
 
@@ -128,8 +139,6 @@ class MeltanoPipelineExecutor:
 
         """
         try:
-            import json
-
             env = self._build_meltano_environment()
 
             cmd = ["meltano", "job", "list", "--format", "json"]
@@ -163,8 +172,6 @@ class MeltanoPipelineExecutor:
 
         """
         try:
-            import json
-
             env = self._build_meltano_environment()
 
             cmd = ["meltano", "pipeline", "list", "--format", "json"]
@@ -204,12 +211,10 @@ class MeltanoPipelineExecutor:
             return None
 
         # Check length
-        if len(job_name) > 100:  # MAX_JOB_NAME_LENGTH
+        if len(job_name) > self.MAX_JOB_NAME_LENGTH:
             return None
 
         # Check for valid characters (alphanumeric, hyphens, underscores)
-        import re
-
         if not re.match(r"^[a-zA-Z0-9_-]+$", job_name):
             return None
 
@@ -229,15 +234,12 @@ class MeltanoPipelineExecutor:
 
         """
         try:
-            import uuid
-            from datetime import datetime
-
             # Initialize metrics collection
             metrics = PipelineMetrics()
 
             # Record start time
             pipeline_id = str(uuid.uuid4())
-            start_time = datetime.now()
+            start_time = datetime.now(tz=UTC)
             metrics.record_extraction_start()
 
             # Execute Meltano job
@@ -250,7 +252,7 @@ class MeltanoPipelineExecutor:
                 timeout=3600.0,  # 1 hour timeout
             )
 
-            end_time = datetime.now()
+            end_time = datetime.now(tz=UTC)
             duration = (end_time - start_time).total_seconds()
 
             # Check for timeout

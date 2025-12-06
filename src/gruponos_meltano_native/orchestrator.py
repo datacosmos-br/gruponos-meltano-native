@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import os
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from flext_core import FlextResult, FlextService, FlextUtilities
@@ -44,8 +44,9 @@ GruponosMeltanoModels = type(
 
 
 class GruponosMeltanoPipelineResult:
-    """Classe que representa o resultado de uma execução de pipeline ETL,
-    contendo informações de sucesso, tempos de execução, saídas e metadados.
+    """Classe que representa o resultado de uma execução de pipeline ETL.
+
+    Contendo informações de sucesso, tempos de execução, saídas e metadados.
 
     Attributes:
         success: Indica se a execução foi bem-sucedida.
@@ -230,13 +231,12 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             return FlextResult.fail(sync_result.error)
 
         sync_result.unwrap()
-        from datetime import datetime
 
         pipeline_result = PipelineResult(
-            pipeline_id=f"full-sync-{datetime.now().isoformat()}",
+            pipeline_id=f"full-sync-{datetime.now(tz=UTC).isoformat()}",
             pipeline_name="full-sync-job",
             status="SUCCESS" if sync_result.is_success else "FAILED",
-            start_time=datetime.now(),
+            start_time=datetime.now(tz=UTC),
             job_name="full-sync-job",
             records_extracted=0,
             records_loaded=0,
@@ -290,13 +290,12 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             return FlextResult.fail(sync_result.error)
 
         sync_result.unwrap()
-        from datetime import datetime
 
         pipeline_result = PipelineResult(
-            pipeline_id=f"incremental-sync-{datetime.now().isoformat()}",
+            pipeline_id=f"incremental-sync-{datetime.now(tz=UTC).isoformat()}",
             pipeline_name="incremental-sync-job",
             status="SUCCESS" if sync_result.is_success else "FAILED",
-            start_time=datetime.now(),
+            start_time=datetime.now(tz=UTC),
             job_name="incremental-sync-job",
             records_extracted=0,
             records_loaded=0,
@@ -359,10 +358,10 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         execution_result.unwrap()
         job_result = PipelineResult(
-            pipeline_id=f"job-{sanitized_job_name}-{datetime.now().isoformat()}",
+            pipeline_id=f"job-{sanitized_job_name}-{datetime.now(tz=UTC).isoformat()}",
             pipeline_name=sanitized_job_name,
             status="SUCCESS",
-            start_time=datetime.now(),
+            start_time=datetime.now(tz=UTC),
             job_name=sanitized_job_name,
             records_extracted=0,
             records_loaded=0,
@@ -522,7 +521,6 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             Args:
                 job_name: Name of the job to execute with retry.
                 max_retries: Maximum number of retry attempts (default: 3).
-                **kwargs: Additional arguments passed to the pipeline execution.
 
             Returns:
                 FlextResult[PipelineResult]: Railway-oriented result with retry metadata.

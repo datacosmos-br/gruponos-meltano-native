@@ -16,7 +16,9 @@ from pathlib import Path
 from typing import Literal, Self, TypedDict
 
 from flext_core import FlextConfig, FlextResult
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
 from flext_meltano import FlextMeltanoService
+from flext_oracle_wms import FlextOracleWmsApi
 from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
 
@@ -350,11 +352,9 @@ class GruponosMeltanoNativeConfig(FlextConfig):
             raise ValueError(msg)
         return v
 
-    # Model validator
-    @model_validator(mode="after")
-    def validate_configuration(self) -> Self:
-        """Validate complete configuration."""
-        # Alert configuration validation
+    # Helper methods for configuration validation (reduces cyclomatic complexity)
+    def _validate_alert_config(self) -> None:
+        """Validate alert configuration."""
         if self.webhook_enabled and not self.webhook_url:
             msg = "Webhook URL required when webhook alerts enabled"
             raise ValueError(msg)
@@ -367,36 +367,51 @@ class GruponosMeltanoNativeConfig(FlextConfig):
             msg = "Slack webhook URL required when Slack alerts enabled"
             raise ValueError(msg)
 
-        # Oracle connection validation
-        if self.oracle_host and not self.oracle_service_name:
+    def _validate_oracle_config_internal(self) -> None:
+        """Validate Oracle connection configuration."""
+        if not self.oracle_host:
+            return
+
+        if not self.oracle_service_name:
             msg = "Oracle service name is required when host is specified"
             raise ValueError(msg)
 
-        if self.oracle_host and not self.oracle_username:
+        if not self.oracle_username:
             msg = "Oracle username is required when host is specified"
             raise ValueError(msg)
 
-        if self.oracle_host and not self.oracle_password:
+        if not self.oracle_password:
             msg = "Oracle password is required when host is specified"
             raise ValueError(msg)
 
-        # WMS source validation
-        if self.wms_base_url and not self.wms_username:
+    def _validate_wms_config_internal(self) -> None:
+        """Validate WMS source configuration."""
+        if not self.wms_base_url:
+            return
+
+        if not self.wms_username:
             msg = "WMS username is required when base URL is specified"
             raise ValueError(msg)
 
-        if self.wms_base_url and not self.wms_password:
+        if not self.wms_password:
             msg = "WMS password is required when base URL is specified"
             raise ValueError(msg)
 
-        if self.wms_base_url and not self.wms_company_code:
+        if not self.wms_company_code:
             msg = "WMS company code is required when base URL is specified"
             raise ValueError(msg)
 
-        if self.wms_base_url and not self.wms_facility_code:
+        if not self.wms_facility_code:
             msg = "WMS facility code is required when base URL is specified"
             raise ValueError(msg)
 
+    # Model validator
+    @model_validator(mode="after")
+    def validate_configuration(self) -> Self:
+        """Validate complete configuration."""
+        self._validate_alert_config()
+        self._validate_oracle_config_internal()
+        self._validate_wms_config_internal()
         return self
 
     # Computed fields
@@ -480,51 +495,89 @@ class GruponosMeltanoNativeConfig(FlextConfig):
             return self.wms_password.get_secret_value()
         return None
 
+    def _validate_alert_config_result(self) -> FlextResult[None]:
+        """Validate alert configuration and return FlextResult."""
+        if self.webhook_enabled and not self.webhook_url:
+            return FlextResult[None].fail(
+                "Webhook URL required when webhook alerts enabled"
+            )
+
+        if self.email_enabled and not self.email_recipients:
+            return FlextResult[None].fail(
+                "Email recipients required when email alerts enabled"
+            )
+
+        if self.slack_enabled and not self.slack_webhook_url:
+            return FlextResult[None].fail(
+                "Slack webhook URL required when Slack alerts enabled"
+            )
+
+        return FlextResult[None].ok(None)
+
+    def _validate_oracle_config_result(self) -> FlextResult[None]:
+        """Validate Oracle connection and return FlextResult."""
+        if not self.oracle_host:
+            return FlextResult[None].ok(None)
+
+        if not self.oracle_service_name:
+            return FlextResult[None].fail("Oracle service name is required")
+
+        if not self.oracle_username:
+            return FlextResult[None].fail("Oracle username is required")
+
+        if not self.oracle_password:
+            return FlextResult[None].fail("Oracle password is required")
+
+        return FlextResult[None].ok(None)
+
+    def _validate_wms_config_result(self) -> FlextResult[None]:
+        """Validate WMS source and return FlextResult."""
+        if not self.wms_base_url:
+            return FlextResult[None].ok(None)
+
+        if not self.wms_username:
+            return FlextResult[None].fail("WMS username is required")
+
+        if not self.wms_password:
+            return FlextResult[None].fail("WMS password is required")
+
+        if not self.wms_company_code:
+            return FlextResult[None].fail("WMS company code is required")
+
+        if not self.wms_facility_code:
+            return FlextResult[None].fail("WMS facility code is required")
+
+        return FlextResult[None].ok(None)
+
+    def _validate_target_config_result(self) -> FlextResult[None]:
+        """Validate target configuration and return FlextResult."""
+        valid_methods = {"insert", "upsert", "append"}
+        if self.target_load_method not in valid_methods:
+            return FlextResult[None].fail(
+                f"Load method must be one of {valid_methods}"
+            )
+
+        return FlextResult[None].ok(None)
+
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate configuration business rules."""
         try:
-            # Alert configuration validation
-            if self.webhook_enabled and not self.webhook_url:
-                return FlextResult[None].fail(
-                    "Webhook URL required when webhook alerts enabled"
-                )
+            # Validate each configuration section
+            alert_result = self._validate_alert_config_result()
+            if alert_result.is_failure:
+                return alert_result
 
-            if self.email_enabled and not self.email_recipients:
-                return FlextResult[None].fail(
-                    "Email recipients required when email alerts enabled"
-                )
+            oracle_result = self._validate_oracle_config_result()
+            if oracle_result.is_failure:
+                return oracle_result
 
-            if self.slack_enabled and not self.slack_webhook_url:
-                return FlextResult[None].fail(
-                    "Slack webhook URL required when Slack alerts enabled"
-                )
+            wms_result = self._validate_wms_config_result()
+            if wms_result.is_failure:
+                return wms_result
 
-            # Oracle connection validation
-            if self.oracle_host:
-                if not self.oracle_service_name:
-                    return FlextResult[None].fail("Oracle service name is required")
-                if not self.oracle_username:
-                    return FlextResult[None].fail("Oracle username is required")
-                if not self.oracle_password:
-                    return FlextResult[None].fail("Oracle password is required")
-
-            # WMS source validation
-            if self.wms_base_url:
-                if not self.wms_username:
-                    return FlextResult[None].fail("WMS username is required")
-                if not self.wms_password:
-                    return FlextResult[None].fail("WMS password is required")
-                if not self.wms_company_code:
-                    return FlextResult[None].fail("WMS company code is required")
-                if not self.wms_facility_code:
-                    return FlextResult[None].fail("WMS facility code is required")
-
-            # Target configuration validation
-            valid_methods = {"insert", "upsert", "append"}
-            if self.target_load_method not in valid_methods:
-                return FlextResult[None].fail(
-                    f"Load method must be one of {valid_methods}"
-                )
+            target_result = self._validate_target_config_result()
+            if target_result.is_failure:
+                return target_result
 
             return FlextResult[None].ok(None)
         except Exception as e:
@@ -535,18 +588,18 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return self.validate_business_rules()
 
     # Factory methods for domain-specific configurations using FlextConfig as source
-    def create_meltano_config(self, **overrides: object) -> object:
+    def create_meltano_config(self, **_overrides: object) -> object:
         """Create Meltano configuration using GruponosMeltanoNativeConfig as source.
 
         Args:
-            **overrides: Configuration overrides (currently unused as domain library handles config)
+            **_overrides: Configuration overrides (currently unused as domain library handles config)
 
         Returns:
             Configured Meltano service instance
 
         """
         # Return configured service - domain libraries handle their own config via env vars
-        # overrides parameter reserved for future domain library API extensions
+        # _overrides parameter reserved for future domain library API extensions
         return FlextMeltanoService()
 
     def create_oracle_connection_config(self, **overrides: object) -> object:
@@ -559,8 +612,6 @@ class GruponosMeltanoNativeConfig(FlextConfig):
             FlextDbOracleConfig: Configured Oracle connection instance
 
         """
-        from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
-
         defaults = {
             "host": self.oracle_host,
             "port": self.oracle_port,
@@ -582,8 +633,6 @@ class GruponosMeltanoNativeConfig(FlextConfig):
             FlextOracleWmsConfig: Configured WMS instance
 
         """
-        from flext_oracle_wms import FlextOracleWmsApi
-
         defaults = {
             "base_url": self.wms_base_url,
             "username": self.wms_username,
