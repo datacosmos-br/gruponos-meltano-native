@@ -16,7 +16,7 @@ from enum import StrEnum
 from flext_core import FlextModels, FlextResult
 from pydantic import ConfigDict, Field, computed_field
 
-from gruponos_meltano_native.constants import GruponosMeltanoNativeConstants
+from gruponos_meltano_native.constants import c
 
 
 class GruponosMeltanoNativeModels(FlextModels):
@@ -38,16 +38,16 @@ class GruponosMeltanoNativeModels(FlextModels):
     class PipelineStatus(StrEnum):
         """Enumeration of pipeline execution statuses using constants."""
 
-        PENDING = GruponosMeltanoNativeConstants.Status.PENDING
-        RUNNING = GruponosMeltanoNativeConstants.Status.RUNNING
-        COMPLETED = GruponosMeltanoNativeConstants.Status.COMPLETED
-        FAILED = GruponosMeltanoNativeConstants.Status.FAILED
-        CANCELLED = GruponosMeltanoNativeConstants.Status.CANCELLED
-        PAUSED = GruponosMeltanoNativeConstants.Status.PAUSED
-        RETRYING = GruponosMeltanoNativeConstants.Status.RETRYING
-        TIMEOUT = GruponosMeltanoNativeConstants.Status.TIMEOUT
-        VALIDATING = GruponosMeltanoNativeConstants.Status.VALIDATING
-        TRANSFORMING = GruponosMeltanoNativeConstants.Status.TRANSFORMING
+        PENDING = c.Gruponos.Status.PENDING
+        RUNNING = c.Gruponos.Status.RUNNING
+        COMPLETED = c.Gruponos.Status.COMPLETED
+        FAILED = c.Gruponos.Status.FAILED
+        CANCELLED = c.Gruponos.Status.CANCELLED
+        PAUSED = c.Gruponos.Status.PAUSED
+        RETRYING = c.Gruponos.Status.RETRYING
+        TIMEOUT = c.Gruponos.Status.TIMEOUT
+        VALIDATING = c.Gruponos.Status.VALIDATING
+        TRANSFORMING = c.Gruponos.Status.TRANSFORMING
 
     # =========================================================================
     # DOMAIN MODELS - Core business entities for pipeline execution

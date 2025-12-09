@@ -553,9 +553,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         """Validate target configuration and return FlextResult."""
         valid_methods = {"insert", "upsert", "append"}
         if self.target_load_method not in valid_methods:
-            return FlextResult[None].fail(
-                f"Load method must be one of {valid_methods}"
-            )
+            return FlextResult[None].fail(f"Load method must be one of {valid_methods}")
 
         return FlextResult[None].ok(None)
 

@@ -192,7 +192,7 @@ We will use the following core technology stack:
 - [Meltano Documentation](https://docs.meltano.com/)
 - [Singer Protocol Specification](https://github.com/singer-io/getting-started)
 - [Pydantic v2 Documentation](https://docs.pydantic.dev/latest/)
-- [FLEXT Core Documentation](../flext-core/CLAUDE.md)
+- [FLEXT Core Documentation](https://github.com/organization/flext/tree/main/flext-core/CLAUDE.md)
 - [Railway Pattern](https://fsharpforfunandprofit.com/posts/recipe-part2/)
 - [ADR Template](https://adr.github.io/)
 

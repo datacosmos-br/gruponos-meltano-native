@@ -170,5 +170,10 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
             ...
 
 
-# Export protocols namespace
-__all__ = ["GruponosMeltanoNativeProtocols"]
+# Runtime alias for simplified usage
+p = GruponosMeltanoNativeProtocols
+
+__all__ = [
+    "GruponosMeltanoNativeProtocols",
+    "p",
+]
