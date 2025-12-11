@@ -482,7 +482,7 @@ class GruponosMeltanoNativeModels(FlextModels):
             ...     status=GruponosMeltanoNativeModels.PipelineStatus.RUNNING,
             ... )
             >>> if result.is_success:
-            ...     pipeline_result = result.unwrap()
+            ...     pipeline_result = result.value
             ...     print(f"Created result for: {pipeline_result.pipeline_name}")
 
         """

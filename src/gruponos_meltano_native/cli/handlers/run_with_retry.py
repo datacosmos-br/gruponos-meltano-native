@@ -34,7 +34,7 @@ class RunWithRetryHandler:
             execution_result = self._orchestrator.run_job(pipeline_name)
 
             if execution_result.is_success:
-                pipeline_result = execution_result.unwrap()
+                pipeline_result = execution_result.value
                 return FlextResult[dict[str, str | int]].ok({
                     "pipeline": pipeline_name,
                     "retries": max_retries,

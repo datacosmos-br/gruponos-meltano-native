@@ -375,9 +375,9 @@ class TestSprintTwoPatternConsistency:
         with Path(executor_path).open(encoding="utf-8") as f:
             source = f.read()
 
-        # Should use .unwrap() pattern to get wrapper
-        assert "wrapper = exec_result.unwrap()" in source, (
-            "Does not use .unwrap() pattern to extract wrapper from FlextResult"
+        # Should use .value pattern to get wrapper
+        assert "wrapper = exec_result.value" in source, (
+            "Does not use .value pattern to extract wrapper from FlextResult"
         )
 
     def test_wrapper_attribute_access(self) -> None:

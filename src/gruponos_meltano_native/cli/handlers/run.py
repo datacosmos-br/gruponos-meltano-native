@@ -46,7 +46,7 @@ class RunHandler:
                 f"Pipeline execution failed: {execution_result.error}"
             )
 
-        pipeline_result = execution_result.unwrap()
+        pipeline_result = execution_result.value
         return FlextResult[dict[str, str | bool]].ok({
             "pipeline": pipeline_name,
             "status": "completed",

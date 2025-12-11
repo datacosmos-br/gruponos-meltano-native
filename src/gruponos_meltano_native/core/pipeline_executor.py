@@ -74,7 +74,7 @@ class MeltanoPipelineExecutor:
             result = self._execute_meltano_pipeline(validated_job_name, env)
 
             if result.is_success:
-                pipeline_result = result.unwrap()
+                pipeline_result = result.value
                 self.logger.info(f"Pipeline execution completed: {job_name}")
                 return FlextResult[PipelineResult].ok(pipeline_result)
             error_msg = f"Pipeline execution failed: {result.error}"
@@ -116,7 +116,7 @@ class MeltanoPipelineExecutor:
                 )
 
             # Parse JSON output
-            wrapper = exec_result.unwrap()
+            wrapper = exec_result.value
             jobs_data = json.loads(wrapper.stdout)
 
             # Find the specific job
@@ -153,7 +153,7 @@ class MeltanoPipelineExecutor:
                     f"Failed to list jobs: {exec_result.error}"
                 )
 
-            wrapper = exec_result.unwrap()
+            wrapper = exec_result.value
             jobs_data = json.loads(wrapper.stdout)
             job_names = [job["name"] for job in jobs_data.get("jobs", [])]
 
@@ -186,7 +186,7 @@ class MeltanoPipelineExecutor:
                     f"Failed to list pipelines: {exec_result.error}"
                 )
 
-            wrapper = exec_result.unwrap()
+            wrapper = exec_result.value
             pipelines_data = json.loads(wrapper.stdout)
             pipeline_names = [p["name"] for p in pipelines_data.get("pipelines", [])]
 
@@ -267,7 +267,7 @@ class MeltanoPipelineExecutor:
                 )
 
             # Process successful result
-            wrapper = exec_result.unwrap()
+            wrapper = exec_result.value
             success = wrapper.returncode == 0
             stdout = wrapper.stdout
             stderr = wrapper.stderr

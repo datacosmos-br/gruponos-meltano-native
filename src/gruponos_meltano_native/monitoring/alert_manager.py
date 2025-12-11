@@ -271,7 +271,7 @@ class GruponosMeltanoAlertService:
                     f"Webhook failed: {response_result.error}"
                 )
 
-            response = response_result.unwrap()
+            response = response_result.value
             if response.status_code >= HTTP_ERROR_STATUS_THRESHOLD:
                 logger.warning(
                     "Webhook alert failed with status: %d", response.status_code
@@ -388,7 +388,7 @@ class GruponosMeltanoAlertService:
                 logger.warning("Slack alert failed: %s", response_result.error)
                 return FlextResult[bool].fail(f"Slack failed: {response_result.error}")
 
-            response = response_result.unwrap()
+            response = response_result.value
             if response.status_code >= HTTP_ERROR_STATUS_THRESHOLD:
                 logger.warning(
                     "Slack alert failed with status: %d", response.status_code
