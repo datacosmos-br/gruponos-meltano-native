@@ -23,7 +23,7 @@ from pydantic import Field, SecretStr, computed_field, field_validator, model_va
 from pydantic_settings import SettingsConfigDict
 
 
-class GruponosMeltanoNativeConfig(FlextConfig):
+class GruponosMeltanoNativeSettings(FlextConfig):
     """GrupoNOS Meltano Native Configuration using modern FlextConfig features.
 
     Extends FlextConfig with domain-specific fields and factory methods.
@@ -587,7 +587,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
 
     # Factory methods for domain-specific configurations using FlextConfig as source
     def create_meltano_config(self, **_overrides: object) -> object:
-        """Create Meltano configuration using GruponosMeltanoNativeConfig as source.
+        """Create Meltano configuration using GruponosMeltanoNativeSettings as source.
 
         Args:
             **_overrides: Configuration overrides (currently unused as domain library handles config)
@@ -601,7 +601,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return FlextMeltanoService()
 
     def create_oracle_connection_config(self, **overrides: object) -> object:
-        """Create Oracle connection configuration using GruponosMeltanoNativeConfig as source.
+        """Create Oracle connection configuration using GruponosMeltanoNativeSettings as source.
 
         Args:
             **overrides: Configuration overrides
@@ -622,7 +622,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return FlextDbOracleApi(config)
 
     def create_wms_config(self, **overrides: object) -> object:
-        """Create Oracle WMS configuration using GruponosMeltanoNativeConfig as source.
+        """Create Oracle WMS configuration using GruponosMeltanoNativeSettings as source.
 
         Args:
             **overrides: Configuration overrides
@@ -643,7 +643,7 @@ class GruponosMeltanoNativeConfig(FlextConfig):
         return FlextOracleWmsApi(**defaults)
 
     def create_alert_config(self, **overrides: object) -> object:
-        """Create alert configuration using GruponosMeltanoNativeConfig as source.
+        """Create alert configuration using GruponosMeltanoNativeSettings as source.
 
         Args:
             **overrides: Configuration overrides
@@ -706,20 +706,20 @@ class GruponosMeltanoNativeConfig(FlextConfig):
 # Removed create_gruponos_meltano_settings as dead code - not used anywhere
 
 
-# Backward compatibility aliases - all Config classes now use the single GruponosMeltanoNativeConfig
+# Backward compatibility aliases - all Config classes now use the single GruponosMeltanoNativeSettings
 # These provide compatibility for existing code while directing to the standardized Config
-GruponosMeltanoAlertConfig = GruponosMeltanoNativeConfig
-GruponosMeltanoJobConfig = GruponosMeltanoNativeConfig
-GruponosMeltanoOracleConnectionConfig = GruponosMeltanoNativeConfig
-GruponosMeltanoTargetOracleConfig = GruponosMeltanoNativeConfig
-GruponosMeltanoWMSSourceConfig = GruponosMeltanoNativeConfig
+GruponosMeltanoAlertConfig = GruponosMeltanoNativeSettings
+GruponosMeltanoJobConfig = GruponosMeltanoNativeSettings
+GruponosMeltanoOracleConnectionConfig = GruponosMeltanoNativeSettings
+GruponosMeltanoTargetOracleConfig = GruponosMeltanoNativeSettings
+GruponosMeltanoWMSSourceConfig = GruponosMeltanoNativeSettings
 
 
 # Export configuration class (single class plus backward compatibility aliases)
 __all__: list[str] = [
     "GruponosMeltanoAlertConfig",
     "GruponosMeltanoJobConfig",
-    "GruponosMeltanoNativeConfig",
+    "GruponosMeltanoNativeSettings",
     "GruponosMeltanoOracleConnectionConfig",
     "GruponosMeltanoTargetOracleConfig",
     "GruponosMeltanoWMSSourceConfig",
