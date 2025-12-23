@@ -259,6 +259,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
     @classmethod
     def cli(cls, *, debug: bool = False, config_file: str | None = None) -> None:
         """Main CLI entry point using unified CLI class."""
+        cli_instance: GruponosMeltanoNativeCli | None = None
         try:
             # Initialize unified CLI class - ONE CLASS PER MODULE
             cli_instance = cls()
@@ -287,10 +288,12 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
 
         except ValueError:
             # Suppress stdout for ValueError per tests; log only and exit 1
-            cli_instance.logger.exception("Failed to initialize CLI")
+            if cli_instance is not None:
+                cli_instance.logger.exception("Failed to initialize CLI")
             sys.exit(1)
         except Exception:
-            cli_instance.logger.exception("Failed to initialize CLI")
+            if cli_instance is not None:
+                cli_instance.logger.exception("Failed to initialize CLI")
             sys.exit(1)
 
 

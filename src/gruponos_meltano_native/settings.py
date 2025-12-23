@@ -1,6 +1,6 @@
-"""GrupoNOS Meltano Native Configuration - Advanced FlextConfig integration.
+"""GrupoNOS Meltano Native Configuration - Advanced FlextSettings integration.
 
-Provides GrupoNOS-specific configuration management using modern FlextConfig features:
+Provides GrupoNOS-specific configuration management using modern FlextSettings features:
 - Factory methods for domain-specific configurations
 - Computed fields for derived configuration
 - Protocol-based validation
@@ -15,7 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal, Self, TypedDict
 
-from flext_core import FlextConfig, FlextResult
+from flext_core import FlextResult, FlextSettings
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
 from flext_meltano import FlextMeltanoService
 from flext_oracle_wms import FlextOracleWmsApi
@@ -23,11 +23,11 @@ from pydantic import Field, SecretStr, computed_field, field_validator, model_va
 from pydantic_settings import SettingsConfigDict
 
 
-class GruponosMeltanoNativeSettings(FlextConfig):
-    """GrupoNOS Meltano Native Configuration using modern FlextConfig features.
+class GruponosMeltanoNativeSettings(FlextSettings):
+    """GrupoNOS Meltano Native Configuration using modern FlextSettings features.
 
-    Extends FlextConfig with domain-specific fields and factory methods.
-    Uses computed fields and direct FlextConfig integration without duplication.
+    Extends FlextSettings with domain-specific fields and factory methods.
+    Uses computed fields and direct FlextSettings integration without duplication.
     """
 
     # TypedDict structures for configuration validation
@@ -82,7 +82,7 @@ class GruponosMeltanoNativeSettings(FlextConfig):
     model_config = SettingsConfigDict(
         env_prefix="GRUPONOS_MELTANO_",
         case_sensitive=False,
-        extra="ignore",  # Changed from "allow" to match newer FlextConfig pattern
+        extra="ignore",  # Changed from "allow" to match newer FlextSettings pattern
         str_strip_whitespace=True,
         str_to_lower=False,
         validate_assignment=True,
@@ -90,14 +90,14 @@ class GruponosMeltanoNativeSettings(FlextConfig):
         frozen=False,
         use_enum_values=True,
         validate_default=True,
-        # Enhanced Pydantic 2.11+ features matching FlextConfig
+        # Enhanced Pydantic 2.11+ features matching FlextSettings
         cli_parse_args=False,
         cli_avoid_json=True,
         enable_decoding=True,
         nested_model_default_partial_update=True,
         json_schema_extra={
             "title": "GrupoNOS Meltano Native Configuration",
-            "description": "Enterprise Meltano native configuration extending FlextConfig",
+            "description": "Enterprise Meltano native configuration extending FlextSettings",
         },
     )
 
@@ -585,7 +585,7 @@ class GruponosMeltanoNativeSettings(FlextConfig):
         """Validate configuration semantic rules (alias for validate_business_rules)."""
         return self.validate_business_rules()
 
-    # Factory methods for domain-specific configurations using FlextConfig as source
+    # Factory methods for domain-specific configurations using FlextSettings as source
     def create_meltano_config(self, **_overrides: object) -> object:
         """Create Meltano configuration using GruponosMeltanoNativeSettings as source.
 

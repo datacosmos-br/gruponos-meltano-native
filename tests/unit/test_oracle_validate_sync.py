@@ -206,7 +206,6 @@ def _validate_single_table(cursor: OracleCursor, table_name: str) -> int:
     Args:
       cursor: Oracle database cursor
       table_name: Name of table to validate
-      entity_name: Entity name for the table
 
     Returns:
       Number of records validated, 0 if error or empty

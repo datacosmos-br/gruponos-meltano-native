@@ -230,7 +230,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         if sync_result.is_failure:
             return FlextResult.fail(sync_result.error)
 
-        sync_result.value
+        _sync_value = sync_result.value
 
         pipeline_result = PipelineResult(
             pipeline_id=f"full-sync-{datetime.now(tz=UTC).isoformat()}",
@@ -289,7 +289,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         if sync_result.is_failure:
             return FlextResult.fail(sync_result.error)
 
-        sync_result.value
+        _sync_value = sync_result.value
 
         pipeline_result = PipelineResult(
             pipeline_id=f"incremental-sync-{datetime.now(tz=UTC).isoformat()}",
@@ -356,7 +356,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             self.logger.error(f"Job execution failed: {execution_result.error}")
             return FlextResult.fail(execution_result.error)
 
-        execution_result.value
+        _execution_value = execution_result.value
         job_result = PipelineResult(
             pipeline_id=f"job-{sanitized_job_name}-{datetime.now(tz=UTC).isoformat()}",
             pipeline_name=sanitized_job_name,

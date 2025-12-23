@@ -238,8 +238,7 @@ def generate_meltano_config() -> dict[str, object]:
                     {
                         "name": f"sync-{entity}-incremental",
                         "tasks": [
-                            f"tap-oracle-wms-{entity}-incremental "
-                            "target-oracle-incremental",
+                            f"tap-oracle-wms-{entity}-incremental target-oracle-incremental",
                         ],
                     },
                 ],

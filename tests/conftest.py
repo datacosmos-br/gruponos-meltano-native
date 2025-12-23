@@ -13,9 +13,10 @@ Version: 1.0.0
 """
 
 import os
+import shutil
 import tempfile
 import uuid
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -37,7 +38,7 @@ TEST_OUTPUT_DIR = Path("test_output")
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_environment():
+def setup_test_environment() -> Generator[None]:
     """Set up global test environment before all tests."""
     # Create test directories
     TEST_CONFIG_PATH.mkdir(exist_ok=True)
@@ -50,8 +51,6 @@ def setup_test_environment():
     yield
 
     # Cleanup after all tests
-    import shutil
-
     if TEST_CONFIG_PATH.exists():
         shutil.rmtree(TEST_CONFIG_PATH)
     if TEST_OUTPUT_DIR.exists():
@@ -146,7 +145,7 @@ def sample_order_detail() -> dict[str, Any]:
 
 
 @pytest.fixture
-def mock_oracle_connection():
+def mock_oracle_connection() -> MagicMock:
     """Mock Oracle database connection."""
     mock_conn = MagicMock()
     mock_conn.execute.return_value = []
@@ -159,7 +158,7 @@ def mock_oracle_connection():
 
 
 @pytest.fixture
-def mock_wms_api_response():
+def mock_wms_api_response() -> dict[str, Any]:
     """Mock WMS API response."""
     return {
         "data": [
@@ -184,7 +183,7 @@ def mock_wms_api_response():
 
 
 @pytest.fixture
-def mock_httpx_client(mock_wms_api_response):
+def mock_httpx_client(mock_wms_api_response: dict[str, Any]) -> MagicMock:
     """Mock HTTPX client for WMS API calls."""
     mock_client = MagicMock()
     mock_response = MagicMock()
@@ -197,7 +196,7 @@ def mock_httpx_client(mock_wms_api_response):
 
 
 @pytest.fixture
-def mock_flext_container():
+def mock_flext_container() -> MagicMock:
     """Mock FLEXT dependency injection container."""
     mock_container = MagicMock()
     mock_service = MagicMock()
@@ -258,7 +257,7 @@ def sample_incremental_config() -> dict[str, Any]:
 
 
 @pytest.fixture
-def valid_gruponos_config(sample_pipeline_config) -> GruponosMeltanoNativeConfig:
+def valid_gruponos_config(sample_pipeline_config: dict[str, Any]) -> GruponosMeltanoNativeConfig:
     """Provide a valid GruponosMeltanoNativeConfig instance."""
     return GruponosMeltanoNativeConfig(
         environment="test",
@@ -269,7 +268,10 @@ def valid_gruponos_config(sample_pipeline_config) -> GruponosMeltanoNativeConfig
 
 
 @pytest.fixture
-def mock_orchestrator(valid_gruponos_config, mock_flext_container):
+def mock_orchestrator(
+    valid_gruponos_config: GruponosMeltanoNativeConfig,
+    mock_flext_container: MagicMock,
+) -> GruponosMeltanoOrchestrator:
     """Provide a mock orchestrator instance."""
     with patch(
         "gruponos_meltano_native.orchestrator.FlextContainer.get_global",
@@ -279,13 +281,13 @@ def mock_orchestrator(valid_gruponos_config, mock_flext_container):
 
 
 @pytest.fixture
-def mock_cli(valid_gruponos_config):
+def mock_cli(valid_gruponos_config: GruponosMeltanoNativeConfig) -> GruponosMeltanoNativeCli:
     """Provide a mock CLI instance."""
     return GruponosMeltanoNativeCli()
 
 
 @pytest.fixture
-def clean_flext_container():
+def clean_flext_container() -> Generator[FlextContainer]:
     """Provide a clean FLEXT container state for tests."""
     # This fixture ensures each test starts with a clean container state
 
@@ -321,7 +323,7 @@ def sample_file_data() -> dict[str, Any]:
 
 
 @pytest.fixture
-def mock_environment_variables():
+def mock_environment_variables() -> Generator[dict[str, str]]:
     """Mock environment variables for testing."""
     env_vars = {
         "TAP_ORACLE_WMS_BASE_URL": "https://test-wms.example.com",
@@ -369,7 +371,7 @@ def sample_monitoring_data() -> dict[str, Any]:
 
 
 @pytest.fixture
-def mock_alert_manager():
+def mock_alert_manager() -> MagicMock:
     """Mock alert manager for testing."""
     alert_manager = MagicMock()
     alert_manager.send_alert.return_value = True
@@ -378,7 +380,7 @@ def mock_alert_manager():
 
 
 @pytest.fixture
-def mock_metrics_collector():
+def mock_metrics_collector() -> MagicMock:
     """Mock metrics collector for testing."""
     collector = MagicMock()
     collector.collect_metrics.return_value = {
@@ -444,7 +446,9 @@ def sample_quality_metrics() -> dict[str, Any]:
 
 # Async fixtures for async tests
 @pytest_asyncio.fixture
-async def async_mock_wms_client(mock_wms_api_response):
+async def async_mock_wms_client(
+    mock_wms_api_response: dict[str, Any],
+) -> MagicMock:
     """Async mock WMS API client."""
     mock_client = MagicMock()
 
@@ -453,7 +457,7 @@ async def async_mock_wms_client(mock_wms_api_response):
     mock_client.__aexit__ = MagicMock(return_value=None)
 
     # Mock async get method
-    async def mock_get(url, **kwargs):
+    async def mock_get(url: str, **kwargs: Any) -> MagicMock:  # noqa: ANN401
         response = MagicMock()
         response.status_code = 200
         response.json = MagicMock(return_value=mock_wms_api_response)
@@ -501,10 +505,10 @@ def sample_etl_result() -> dict[str, Any]:
 
 # Factory fixtures for generating test data
 @pytest.fixture
-def allocation_factory():
+def allocation_factory() -> Callable[..., dict[str, Any]]:
     """Factory for creating test allocation records."""
 
-    def _create_allocation(**kwargs):
+    def _create_allocation(**kwargs: Any) -> dict[str, Any]:  # noqa: ANN401
         defaults = {
             "allocation_id": f"ALLOC{uuid.uuid4().hex[:6].upper()}",
             "item_code": f"ITEM{uuid.uuid4().hex[:6].upper()}",
@@ -522,10 +526,10 @@ def allocation_factory():
 
 
 @pytest.fixture
-def order_factory():
+def order_factory() -> Callable[..., dict[str, Any]]:
     """Factory for creating test order records."""
 
-    def _create_order(**kwargs):
+    def _create_order(**kwargs: Any) -> dict[str, Any]:  # noqa: ANN401
         defaults = {
             "order_id": str(uuid.uuid4()),
             "order_number": f"ORD-2024-{uuid.uuid4().hex[:6].upper()}",
@@ -544,7 +548,11 @@ def order_factory():
 
 # Configuration fixtures for different test scenarios
 @pytest.fixture(params=["full_sync", "incremental_sync"])
-def pipeline_scenario(request, sample_pipeline_config, sample_incremental_config):
+def pipeline_scenario(
+    request: pytest.FixtureRequest,
+    sample_pipeline_config: dict[str, Any],
+    sample_incremental_config: dict[str, Any],
+) -> dict[str, Any]:
     """Parameterized fixture for different pipeline scenarios."""
     if request.param == "full_sync":
         return {

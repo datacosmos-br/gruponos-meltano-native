@@ -14,14 +14,24 @@ Version: 1.0.0
 
 import argparse
 import ast
+import logging
 import os
 import re
 import sys
+import traceback
+from datetime import UTC, datetime
 from pathlib import Path
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Import serena tools if available
 try:
-    from gruponos_meltano_native.core.serena_client import SerenaClient
+    from gruponos_meltano_native.core.serena_client import SerenaClient  # noqa: F401
 
     SERENA_AVAILABLE = True
 except ImportError:
@@ -32,6 +42,7 @@ class UnusedCodeAnalyzer:
     """Analyzer for identifying unused/test-only code."""
 
     def __init__(self, project_root: Path) -> None:
+        """Initialize analyzer with project root path."""
         self.project_root = project_root
         self.src_dir = project_root / "src" / "gruponos_meltano_native"
         self.tests_dir = project_root / "tests"
@@ -74,8 +85,7 @@ class UnusedCodeAnalyzer:
         if not init_file.exists():
             return []
 
-        with Path(init_file).open(encoding="utf-8") as f:
-            content = f.read()
+        content = Path(init_file).read_text(encoding="utf-8")
 
         # Find __all__ list
         all_match = re.search(r"__all__\s*=\s*\[([^\]]+)\]", content, re.DOTALL)
@@ -126,8 +136,7 @@ class UnusedCodeAnalyzer:
         """Find where a symbol is defined."""
         for py_file in self.src_dir.rglob("*.py"):
             try:
-                with Path(py_file).open(encoding="utf-8") as f:
-                    content = f.read()
+                content = Path(py_file).read_text(encoding="utf-8")
 
                 # Check for class definition
                 if re.search(rf"^class\s+{re.escape(symbol)}\b", content, re.MULTILINE):
@@ -137,24 +146,33 @@ class UnusedCodeAnalyzer:
                 if re.search(rf"^def\s+{re.escape(symbol)}\b", content, re.MULTILINE):
                     return str(py_file.relative_to(self.project_root))
 
-            except Exception:
-                continue
+            except (OSError, ValueError) as e:
+                logger.debug(f"Error reading {py_file}: {e}")
 
         return "unknown"
 
     def _grep_symbol_usage(
-        self, symbol: str, search_dir: Path, exclude_tests: bool = True
+        self, symbol: str, search_dir: Path, *, exclude_tests: bool = True
     ) -> list[dict]:
-        """Find all usages of a symbol in a directory."""
-        usages = []
+        """Find all usages of a symbol in a directory.
+
+        Args:
+            symbol: The symbol name to search for.
+            search_dir: Directory to search in.
+            exclude_tests: Whether to exclude test files.
+
+        Returns:
+            List of usage dictionaries with file, line, and content.
+
+        """
+        usages: list[dict] = []
 
         for py_file in search_dir.rglob("*.py"):
             if exclude_tests and "test" in str(py_file).lower():
                 continue
 
             try:
-                with Path(py_file).open(encoding="utf-8") as f:
-                    content = f.read()
+                content = Path(py_file).read_text(encoding="utf-8")
 
                 # Find symbol usages (not definitions)
                 lines = content.split("\n")
@@ -179,14 +197,14 @@ class UnusedCodeAnalyzer:
                             "content": line.strip(),
                         })
 
-            except Exception:
-                continue
+            except (OSError, ValueError) as e:
+                logger.debug(f"Error reading {py_file}: {e}")
 
         return usages
 
     def _analyze_module_usage(self) -> None:
         """Analyze which modules are completely unused."""
-        modules = []
+        modules: list[dict] = []
 
         # Get all Python modules in src
         for py_file in self.src_dir.rglob("*.py"):
@@ -206,8 +224,7 @@ class UnusedCodeAnalyzer:
                     continue
 
                 try:
-                    with Path(other_file).open(encoding="utf-8") as f:
-                        content = f.read()
+                    content = Path(other_file).read_text(encoding="utf-8")
 
                     if (
                         f"from gruponos_meltano_native.{module_name}" in content
@@ -215,8 +232,8 @@ class UnusedCodeAnalyzer:
                     ):
                         imported = True
                         break
-                except Exception:
-                    continue
+                except (OSError, ValueError) as e:
+                    logger.debug(f"Error reading {other_file}: {e}")
 
             if not imported:
                 modules.append({
@@ -228,61 +245,81 @@ class UnusedCodeAnalyzer:
 
     def _identify_dead_code(self) -> None:
         """Identify potential dead code candidates."""
-        dead_candidates = []
+        dead_candidates: list[dict] = []
 
         # Look for functions/methods that are never called
         for py_file in self.src_dir.rglob("*.py"):
             try:
-                with Path(py_file).open(encoding="utf-8") as f:
-                    content = f.read()
+                content = Path(py_file).read_text(encoding="utf-8")
 
                 # Parse AST to find function definitions
                 tree = ast.parse(content)
 
                 for node in ast.walk(tree):
-                    if isinstance(node, ast.FunctionDef):
-                        func_name = node.name
+                    if not isinstance(node, ast.FunctionDef):
+                        continue
 
-                        # Skip special methods
-                        if func_name.startswith("_") or func_name in {
-                            "__init__",
-                            "__post_init__",
-                        }:
-                            continue
+                    func_name = node.name
 
-                        # Check if function is called anywhere
-                        called = False
-                        for other_file in self.src_dir.rglob("*.py"):
-                            if other_file == py_file:
-                                continue
+                    # Skip special methods
+                    if func_name.startswith("_") or func_name in {
+                        "__init__",
+                        "__post_init__",
+                    }:
+                        continue
 
-                            try:
-                                with Path(other_file).open(encoding="utf-8") as f2:
-                                    other_content = f2.read()
+                    # Check if function is called anywhere
+                    if not self._is_function_called(func_name, py_file):
+                        dead_candidates.append({
+                            "function": func_name,
+                            "file": str(py_file.relative_to(self.project_root)),
+                            "line": node.lineno,
+                        })
 
-                                if f"{func_name}(" in other_content:
-                                    called = True
-                                    break
-                            except Exception:
-                                continue
-
-                        if not called:
-                            dead_candidates.append({
-                                "function": func_name,
-                                "file": str(py_file.relative_to(self.project_root)),
-                                "line": node.lineno,
-                            })
-
-            except Exception:
-                continue
+            except (SyntaxError, OSError, ValueError) as e:
+                logger.debug(f"Error parsing {py_file}: {e}")
 
         self.results["dead_code_candidates"] = dead_candidates
 
+    def _is_function_called(self, func_name: str, current_file: Path) -> bool:
+        """Check if a function is called in any other file.
+
+        Args:
+            func_name: The function name to search for.
+            current_file: The file defining the function.
+
+        Returns:
+            True if the function is called somewhere, False otherwise.
+
+        """
+        for other_file in self.src_dir.rglob("*.py"):
+            if other_file == current_file:
+                continue
+
+            try:
+                other_content = Path(other_file).read_text(encoding="utf-8")
+
+                if f"{func_name}(" in other_content:
+                    return True
+            except (OSError, ValueError) as e:
+                logger.debug(f"Error reading {other_file}: {e}")
+
+        return False
+
     def generate_report(self, output_file: Path | None = None) -> str:
-        """Generate a comprehensive analysis report."""
+        """Generate a comprehensive analysis report.
+
+        Args:
+            output_file: Optional path to write the report to.
+
+        Returns:
+            The generated report as a string.
+
+        """
+        now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
         report = f"""# Unused/Test-Only Code Analysis Report
 
-**Generated:** {os.environ.get("USER", "system")} on {__import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**Generated:** {os.environ.get("USER", "system")} on {now}
 **Project:** gruponos-meltano-native
 **Analysis Tool:** Custom AST-based analyzer
 
@@ -438,15 +475,19 @@ Remove the following from `__all__`:
 
         if output_file:
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            with Path(output_file).open("w", encoding="utf-8") as f:
-                f.write(report)
+            Path(output_file).write_text(report, encoding="utf-8")
             print(f"📄 Report saved to: {output_file}")
 
         return report
 
 
 def main() -> int:
-    """Main entry point."""
+    """Main entry point for the unused code analyzer.
+
+    Returns:
+        Exit code: 0 on success, 1 on failure.
+
+    """
     parser = argparse.ArgumentParser(
         description="Analyze Unused/Test-Only Code in gruponos-meltano-native",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -499,8 +540,6 @@ Examples:
     except Exception as e:
         print(f"❌ Error during analysis: {e!s}")
         if args.verbose:
-            import traceback
-
             traceback.print_exc()
         return 1
 

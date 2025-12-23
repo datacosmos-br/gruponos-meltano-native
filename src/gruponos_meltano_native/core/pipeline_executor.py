@@ -14,7 +14,6 @@ import re
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 from flext_core import FlextLogger, FlextResult, FlextUtilities
 
@@ -86,7 +85,7 @@ class MeltanoPipelineExecutor:
             self.logger.exception(error_msg)
             return FlextResult[PipelineResult].fail(error_msg)
 
-    def get_job_status(self, job_name: str) -> FlextResult[dict[str, Any]]:
+    def get_job_status(self, job_name: str) -> FlextResult[dict[str, object]]:
         """Get status of a Meltano job.
 
         Args:
@@ -108,10 +107,10 @@ class MeltanoPipelineExecutor:
 
             if exec_result.is_failure:
                 if "timed out" in exec_result.error.lower():
-                    return FlextResult[dict[str, Any]].fail(
+                    return FlextResult[dict[str, object]].fail(
                         "Job status check timed out"
                     )
-                return FlextResult[dict[str, Any]].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"Failed to get job status: {exec_result.error}"
                 )
 
@@ -122,14 +121,14 @@ class MeltanoPipelineExecutor:
             # Find the specific job
             for job in jobs_data.get("jobs", []):
                 if job.get("name") == job_name:
-                    return FlextResult[dict[str, Any]].ok(job)
+                    return FlextResult[dict[str, object]].ok(job)
 
-            return FlextResult[dict[str, Any]].fail(f"Job not found: {job_name}")
+            return FlextResult[dict[str, object]].fail(f"Job not found: {job_name}")
 
         except json.JSONDecodeError as e:
-            return FlextResult[dict[str, Any]].fail(f"Invalid JSON response: {e!s}")
+            return FlextResult[dict[str, object]].fail(f"Invalid JSON response: {e!s}")
         except Exception as e:
-            return FlextResult[dict[str, Any]].fail(f"Unexpected error: {e!s}")
+            return FlextResult[dict[str, object]].fail(f"Unexpected error: {e!s}")
 
     def list_jobs(self) -> FlextResult[list[str]]:
         """List all available Meltano jobs.

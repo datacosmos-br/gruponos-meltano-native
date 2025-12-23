@@ -19,10 +19,18 @@ Version: 1.0.0
 
 import argparse
 import json
+import logging
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Configuration
 DASHBOARD_DIR = Path("docs/dashboard")
@@ -33,6 +41,7 @@ class DocsDashboard:
     """Documentation maintenance dashboard generator."""
 
     def __init__(self) -> None:
+        """Initialize the documentation dashboard generator."""
         self.dashboard_dir = DASHBOARD_DIR
         self.reports_dir = REPORTS_DIR
         self.dashboard_dir.mkdir(exist_ok=True)
@@ -69,12 +78,20 @@ class DocsDashboard:
         return reports
 
     def generate_dashboard(self, output_format: str = "html") -> Path:
-        """Generate comprehensive dashboard."""
+        """Generate comprehensive dashboard.
+
+        Args:
+            output_format: Output format for the dashboard (html, json, or markdown).
+
+        Returns:
+            Path to the generated dashboard file.
+
+        """
         print("📊 Generating documentation dashboard...")
 
         # Collect data from all reports
         dashboard_data = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "metrics": self._collect_metrics(),
             "trends": self._analyze_trends(),
             "issues": self._collect_issues(),
@@ -177,13 +194,14 @@ class DocsDashboard:
                     timestamp = data.get("timestamp", report_file.stat().st_mtime)
 
                     if isinstance(timestamp, (int, float)):
-                        date_str = datetime.fromtimestamp(timestamp).strftime("%m/%d")
+                        date_str = datetime.fromtimestamp(timestamp, tz=UTC).strftime("%m/%d")
                     else:
                         try:
                             date_str = datetime.fromisoformat(timestamp).strftime(
                                 "%m/%d"
                             )
-                        except:
+                        except (ValueError, TypeError) as e:
+                            logger.debug(f"Error parsing timestamp {timestamp}: {e}")
                             date_str = "Unknown"
 
                     trends["time_periods"].append(date_str)
@@ -271,7 +289,16 @@ class DocsDashboard:
         return recommendations
 
     def _generate_html_dashboard(self, data: dict[str, Any]) -> Path:
-        """Generate HTML dashboard."""
+        """Generate HTML dashboard.
+
+        Args:
+            data: Dashboard data dictionary containing metrics, trends, issues, and recommendations.
+
+        Returns:
+            Path to the generated HTML file.
+
+        """
+        current_time = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
         html_content = f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -357,7 +384,7 @@ class DocsDashboard:
     <div class="header">
         <h1>📊 Documentation Quality Dashboard</h1>
         <p>gruponos-meltano-native Project</p>
-        <p>Last Updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+        <p>Last Updated: {current_time}</p>
     </div>
 
     <div class="metrics-grid">
@@ -483,9 +510,10 @@ class DocsDashboard:
 """
         )
 
+        dashboard_date = datetime.now(UTC).strftime("%Y%m%d")
         dashboard_file = (
             self.dashboard_dir
-            / f"documentation_dashboard_{datetime.now().strftime('%Y%m%d')}.html"
+            / f"documentation_dashboard_{dashboard_date}.html"
         )
         dashboard_file.write_text(html_content, encoding="utf-8")
         return dashboard_file
@@ -514,20 +542,38 @@ class DocsDashboard:
         return html
 
     def _generate_json_dashboard(self, data: dict[str, Any]) -> Path:
-        """Generate JSON dashboard."""
+        """Generate JSON dashboard.
+
+        Args:
+            data: Dashboard data dictionary.
+
+        Returns:
+            Path to the generated JSON file.
+
+        """
+        dashboard_date = datetime.now(UTC).strftime("%Y%m%d")
         dashboard_file = (
             self.dashboard_dir
-            / f"documentation_dashboard_{datetime.now().strftime('%Y%m%d')}.json"
+            / f"documentation_dashboard_{dashboard_date}.json"
         )
         with Path(dashboard_file).open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
         return dashboard_file
 
     def _generate_markdown_dashboard(self, data: dict[str, Any]) -> Path:
-        """Generate Markdown dashboard."""
+        """Generate Markdown dashboard.
+
+        Args:
+            data: Dashboard data dictionary.
+
+        Returns:
+            Path to the generated Markdown file.
+
+        """
+        current_time = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
         md_content = f"""# 📊 Documentation Quality Dashboard
 
-**Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**Generated:** {current_time}
 **Project:** gruponos-meltano-native
 
 ## 📈 Current Metrics
@@ -597,9 +643,10 @@ class DocsDashboard:
 """
         )
 
+        dashboard_date = datetime.now(UTC).strftime("%Y%m%d")
         dashboard_file = (
             self.dashboard_dir
-            / f"documentation_dashboard_{datetime.now().strftime('%Y%m%d')}.md"
+            / f"documentation_dashboard_{dashboard_date}.md"
         )
         dashboard_file.write_text(md_content, encoding="utf-8")
         return dashboard_file

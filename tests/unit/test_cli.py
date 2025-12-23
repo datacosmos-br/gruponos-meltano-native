@@ -43,8 +43,7 @@ class TestCLIComprehensive:
         """Test config file flag functionality."""
         with self.runner.isolated_filesystem():
             # Create a temporary config file
-            with Path("test_config.yml").open("w", encoding="utf-8") as f:
-                f.write("test: config")
+            Path("test_config.yml").write_text("test: config", encoding="utf-8")
 
             with (
                 patch(

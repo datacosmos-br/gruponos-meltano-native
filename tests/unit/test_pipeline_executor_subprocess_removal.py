@@ -14,6 +14,8 @@ from pathlib import Path
 
 import pytest
 
+from gruponos_meltano_native.core.pipeline_executor import MeltanoPipelineExecutor
+
 
 class TestPipelineExecutorNoSubprocessImports:
     """Verify subprocess has been completely removed from imports."""
@@ -25,8 +27,7 @@ class TestPipelineExecutorNoSubprocessImports:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         # Parse AST
         tree = ast.parse(source)
@@ -50,8 +51,7 @@ class TestPipelineExecutorNoSubprocessImports:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         # Simple pattern matching (not AST based to catch all variations)
         assert "subprocess.run" not in source, "subprocess.run() still present in file"
@@ -69,8 +69,7 @@ class TestPipelineExecutorNoSubprocessImports:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         assert "FlextUtilities" in source, "FlextUtilities not imported"
         assert "from flext_core import" in source, "FLEXT core not imported"
@@ -82,8 +81,7 @@ class TestPipelineExecutorNoSubprocessImports:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         assert "FlextLogger" in source, "FlextLogger not imported"
 
@@ -98,8 +96,7 @@ class TestPipelineExecutorRunExternalCommandUsage:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         # Extract get_job_status method
         tree = ast.parse(source)
@@ -126,8 +123,7 @@ class TestPipelineExecutorRunExternalCommandUsage:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         tree = ast.parse(source)
         list_jobs_found = False
@@ -153,8 +149,7 @@ class TestPipelineExecutorRunExternalCommandUsage:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         tree = ast.parse(source)
         list_pipelines_found = False
@@ -180,8 +175,7 @@ class TestPipelineExecutorRunExternalCommandUsage:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         tree = ast.parse(source)
         execute_pipeline_found = False
@@ -217,8 +211,7 @@ class TestPipelineExecutorErrorHandling:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         tree = ast.parse(source)
         methods_to_check = [
@@ -229,13 +222,16 @@ class TestPipelineExecutorErrorHandling:
 
         for method_name in methods_to_check:
             for node in ast.walk(tree):
-                if isinstance(node, ast.FunctionDef) and node.name == method_name:
+                if (
+                    isinstance(node, ast.FunctionDef)
+                    and node.name == method_name
+                    and node.returns
+                ):
                     # Check return annotation
-                    if node.returns:
-                        annotation = ast.unparse(node.returns)
-                        assert "FlextResult" in annotation, (
-                            f"{method_name}() does not return FlextResult[T]"
-                        )
+                    annotation = ast.unparse(node.returns)
+                    assert "FlextResult" in annotation, (
+                        f"{method_name}() does not return FlextResult[T]"
+                    )
 
     def test_error_message_detection_instead_of_exceptions(self) -> None:
         """Verify error detection uses message checking instead of exception handlers."""
@@ -244,8 +240,7 @@ class TestPipelineExecutorErrorHandling:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         # Should have error message checking
         assert 'timed out" in' in source.lower(), (
@@ -261,8 +256,7 @@ class TestPipelineExecutorErrorHandling:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         # JSON parsing methods should still have JSONDecodeError handlers
         tree = ast.parse(source)
@@ -291,11 +285,6 @@ class TestPipelineExecutorModuleStructure:
     def test_module_can_be_imported(self) -> None:
         """Verify pipeline_executor module can be imported without subprocess errors."""
         try:
-            # Try importing the module
-            from gruponos_meltano_native.core.pipeline_executor import (
-                MeltanoPipelineExecutor,
-            )
-
             assert MeltanoPipelineExecutor is not None
         except ImportError as e:
             if "subprocess" in str(e):
@@ -304,10 +293,6 @@ class TestPipelineExecutorModuleStructure:
 
     def test_executor_class_has_required_methods(self) -> None:
         """Verify MeltanoPipelineExecutor has all required methods."""
-        from gruponos_meltano_native.core.pipeline_executor import (
-            MeltanoPipelineExecutor,
-        )
-
         required_methods = [
             "execute_pipeline",
             "get_job_status",
@@ -330,8 +315,7 @@ class TestPipelineExecutorModuleStructure:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         tree = ast.parse(source)
 
@@ -356,8 +340,7 @@ class TestSprintTwoPatternConsistency:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         # Check for proper timeout parameter format
         assert "timeout=30.0" in source, "Timeouts not specified as float (e.g., 30.0)"
@@ -372,8 +355,7 @@ class TestSprintTwoPatternConsistency:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         # Should use .value pattern to get wrapper
         assert "wrapper = exec_result.value" in source, (
@@ -387,8 +369,7 @@ class TestSprintTwoPatternConsistency:
             / "src/gruponos_meltano_native/core/pipeline_executor.py"
         )
 
-        with Path(executor_path).open(encoding="utf-8") as f:
-            source = f.read()
+        source = Path(executor_path).read_text(encoding="utf-8")
 
         # Should access wrapper attributes
         assert "wrapper.stdout" in source, "Does not access wrapper.stdout"

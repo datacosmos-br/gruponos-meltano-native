@@ -22,19 +22,29 @@ Version: 1.0.0
 
 import argparse
 import json
+import logging
 import re
 import sys
+import traceback
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import ClassVar
 from urllib.error import HTTPError, URLError
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 try:
     from git import InvalidGitRepositoryError, Repo
 except ImportError:
-    Repo = None  # type: ignore
-    InvalidGitRepositoryError = Exception  # type: ignore
+    Repo = None  # type: ignore[assignment]
+    InvalidGitRepositoryError = Exception  # type: ignore[assignment]
 
 
 # Configuration
@@ -42,30 +52,36 @@ class DocsConfig:
     """Configuration for documentation maintenance system."""
 
     # File patterns
-    DOC_EXTENSIONS = [".md", ".mdx"]
-    IGNORE_DIRS = [".git", "__pycache__", ".pytest_cache", "dist", "build"]
+    DOC_EXTENSIONS: ClassVar[list[str]] = [".md", ".mdx"]
+    IGNORE_DIRS: ClassVar[list[str]] = [".git", "__pycache__", ".pytest_cache", "dist", "build"]
 
     # Quality thresholds
-    MIN_WORDS_PER_DOC = 50
-    MAX_DAYS_SINCE_UPDATE = 90
-    MAX_LINK_CHECK_TIMEOUT = 10
-    MAX_BROKEN_LINK_RETRIES = 3
+    MIN_WORDS_PER_DOC: ClassVar[int] = 50
+    MAX_DAYS_SINCE_UPDATE: ClassVar[int] = 90
+    MAX_LINK_CHECK_TIMEOUT: ClassVar[int] = 10
+    MAX_BROKEN_LINK_RETRIES: ClassVar[int] = 3
 
     # Style rules
-    MAX_HEADING_LENGTH = 80
-    MAX_LINE_LENGTH = 88
-    REQUIRED_SECTIONS = ["Overview", "Installation", "Usage"]
+    MAX_HEADING_LENGTH: ClassVar[int] = 80
+    MAX_LINE_LENGTH: ClassVar[int] = 88
+    REQUIRED_SECTIONS: ClassVar[list[str]] = ["Overview", "Installation", "Usage"]
 
     # Paths
-    DOCS_DIR = Path("docs")
-    SCRIPTS_DIR = Path("scripts")
-    REPORTS_DIR = Path("docs/reports")
+    DOCS_DIR: ClassVar[Path] = Path("docs")
+    SCRIPTS_DIR: ClassVar[Path] = Path("scripts")
+    REPORTS_DIR: ClassVar[Path] = Path("docs/reports")
 
 
 class DocsMaintainer:
     """Main documentation maintenance class."""
 
-    def __init__(self, config: DocsConfig = None) -> None:
+    def __init__(self, config: DocsConfig | None = None) -> None:
+        """Initialize the documentation maintainer.
+
+        Args:
+            config: Optional configuration object.
+
+        """
         self.config = config or DocsConfig()
         self.docs_dir = self.config.DOCS_DIR
         self.reports_dir = self.config.REPORTS_DIR
@@ -135,13 +151,13 @@ class DocsMaintainer:
                 # File statistics
                 word_count = len(content.split())
                 line_count = len(content.splitlines())
-                last_modified = datetime.fromtimestamp(file_path.stat().st_mtime)
+                last_modified = datetime.fromtimestamp(file_path.stat().st_mtime, tz=UTC)
 
                 audit_results["file_stats"][str(relative_path)] = {
                     "word_count": word_count,
                     "line_count": line_count,
                     "last_modified": last_modified.isoformat(),
-                    "days_since_update": (datetime.now() - last_modified).days,
+                    "days_since_update": (datetime.now(UTC) - last_modified).days,
                 }
 
                 # Quality checks
@@ -150,7 +166,7 @@ class DocsMaintainer:
                     audit_results["quality_issues"][str(relative_path)] = issues
 
                 # Aging analysis
-                days_old = (datetime.now() - last_modified).days
+                days_old = (datetime.now(UTC) - last_modified).days
                 if days_old > self.config.MAX_DAYS_SINCE_UPDATE:
                     audit_results["aging_analysis"][str(relative_path)] = {
                         "days_old": days_old,
@@ -322,7 +338,7 @@ class DocsMaintainer:
                     git = repo.git
 
                     # Get commits from the last month
-                    since_date = (datetime.now() - timedelta(days=30)).isoformat()
+                    since_date = (datetime.now(UTC) - timedelta(days=30)).isoformat()
                     commits = git.log(
                         "--oneline",
                         f'--since="{since_date}"',
@@ -333,9 +349,9 @@ class DocsMaintainer:
                     sync_results["code_changes"] = [
                         commit for commit in commits if commit.strip()
                     ]
-                except (InvalidGitRepositoryError, Exception):
+                except (InvalidGitRepositoryError, Exception) as e:
                     # Fallback if not a git repo or git not available
-                    pass
+                    logger.debug(f"Could not retrieve git history: {e}")
 
             # Check for new source files without documentation using pathlib
             source_files_path = Path("src/")
@@ -359,8 +375,8 @@ class DocsMaintainer:
                             content,
                         )
                         documented_modules.update(modules)
-                    except:
-                        pass
+                    except (OSError, ValueError) as e:
+                        logger.debug(f"Error parsing documentation: {e}")
 
                 # Find undocumented modules
                 for source_file in source_files:
@@ -396,7 +412,7 @@ class DocsMaintainer:
         print("📊 Generating quality assurance report...")
 
         report = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "summary": {
                 "total_files": self.stats["total_files"],
                 "files_processed": self.stats["files_processed"],
@@ -446,9 +462,18 @@ class DocsMaintainer:
 
         return report
 
-    def _check_file_quality(self, file_path: Path, content: str) -> list[dict]:
-        """Check quality of a single file."""
-        issues = []
+    def _check_file_quality(self, file_path: Path, content: str) -> list[dict]:  # noqa: ARG002
+        """Check quality of a single file.
+
+        Args:
+            file_path: Path to the file being checked.
+            content: The file content to analyze.
+
+        Returns:
+            List of quality issues found.
+
+        """
+        issues: list[dict] = []
 
         # Check word count
         word_count = len(content.split())
@@ -520,9 +545,19 @@ class DocsMaintainer:
         }
 
     def _check_external_link(self, url: str) -> str:
-        """Check if external link is accessible."""
+        """Check if external link is accessible.
+
+        Args:
+            url: The URL to check.
+
+        Returns:
+            Status string indicating link health.
+
+        """
         try:
-            response = urlopen(url, timeout=self.config.MAX_LINK_CHECK_TIMEOUT)
+            # Build request with specific schemes
+            req = Request(url, headers={"User-Agent": "Mozilla/5.0"})  # noqa: S310
+            response = urlopen(req, timeout=self.config.MAX_LINK_CHECK_TIMEOUT)  # noqa: S310
             if response.status == 200:
                 return "OK"
             return f"HTTP_{response.status}"
@@ -533,8 +568,17 @@ class DocsMaintainer:
         except Exception as e:
             return f"UNKNOWN_{e!s}"
 
-    def _optimize_file_content(self, content: str, file_path: str) -> str:
-        """Optimize content of a single file."""
+    def _optimize_file_content(self, content: str, file_path: str) -> str:  # noqa: ARG002
+        """Optimize content of a single file.
+
+        Args:
+            content: The file content to optimize.
+            file_path: Path to the file (for context).
+
+        Returns:
+            Optimized content string.
+
+        """
         optimized = content
 
         # Add table of contents for long documents (if not present)
@@ -646,9 +690,18 @@ class DocsMaintainer:
         return recommendations
 
     def save_report(self, report: dict, filename: str | None = None) -> Path:
-        """Save quality report to file."""
+        """Save quality report to file.
+
+        Args:
+            report: The report dictionary to save.
+            filename: Optional filename for the report.
+
+        Returns:
+            Path to the saved report file.
+
+        """
         if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             filename = f"documentation_audit_{timestamp}.json"
 
         # Handle absolute paths vs relative filenames
@@ -667,14 +720,23 @@ class DocsMaintainer:
         return report_path
 
     def generate_html_report(self, report: dict) -> str:
-        """Generate HTML report from quality analysis."""
+        """Generate HTML report from quality analysis.
+
+        Args:
+            report: The report dictionary.
+
+        Returns:
+            HTML report as a string.
+
+        """
+        report_date = datetime.now(UTC).strftime("%Y-%m-%d")
         return f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation Quality Report - {datetime.now().strftime("%Y-%m-%d")}</title>
+    <title>Documentation Quality Report - {report_date}</title>
     <style>
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -768,7 +830,7 @@ class DocsMaintainer:
 <body>
     <div class="header">
         <h1>📊 Documentation Quality Report</h1>
-        <p>Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+        <p>Generated on {datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")}</p>
         <p>Project: gruponos-meltano-native</p>
     </div>
 
@@ -825,7 +887,7 @@ class DocsMaintainer:
     <div class="score-card">
         <h2>📋 Report Details</h2>
         <p><strong>Report Generated:</strong> {report["timestamp"]}</p>
-        <p><strong>Analysis Duration:</strong> {(datetime.now() - datetime.fromisoformat(report["timestamp"])).total_seconds():.2f} seconds</p>
+        <p><strong>Analysis Duration:</strong> {(datetime.now(UTC) - datetime.fromisoformat(report["timestamp"])).total_seconds():.2f} seconds</p>
         <p><strong>Maintenance System Version:</strong> 1.0.0</p>
     </div>
 </body>
@@ -929,8 +991,13 @@ class DocsMaintainer:
         html += "</div>"
         return html
 
-    def run_maintenance_cycle(self, args):
-        """Run complete maintenance cycle."""
+    def run_maintenance_cycle(self, args: argparse.Namespace) -> None:  # noqa: ARG002
+        """Run complete maintenance cycle.
+
+        Args:
+            args: Command line arguments namespace.
+
+        """
         print("🚀 Starting Documentation Maintenance Cycle")
         print("=" * 50)
 
@@ -1061,9 +1128,10 @@ Examples:
             if args.format == "html":
                 # Generate HTML report
                 html_report = maintainer.generate_html_report(report)
+                report_date = datetime.now(UTC).strftime("%Y%m%d")
                 output_file = (
                     args.output
-                    or f"documentation_report_{datetime.now().strftime('%Y%m%d')}.html"
+                    or f"documentation_report_{report_date}.html"
                 )
                 Path(output_file).write_text(html_report, encoding="utf-8")
                 print(f"📄 HTML report saved to: {output_file}")
@@ -1076,8 +1144,6 @@ Examples:
     except Exception as e:
         print(f"❌ Error during maintenance: {e!s}")
         if args.verbose:
-            import traceback
-
             traceback.print_exc()
         sys.exit(1)
 
