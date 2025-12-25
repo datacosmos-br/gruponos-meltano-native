@@ -22,21 +22,17 @@ from flext_core import FlextResult, FlextService, FlextUtilities
 from flext_meltano import FlextMeltanoService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
-from gruponos_meltano_native.models.pipeline import (
-    PipelineResult,
-)
+from gruponos_meltano_native.models.pipeline import GruponosMeltanoNativeModels
 
 # Constants for validation
 MAX_PORT_NUMBER = 65535
 MAX_JOB_NAME_LENGTH = 100
 
-GruponosMeltanoModels = type(
-    "GruponosMeltanoModels",
-    (),
-    {
-        "PipelineResult": PipelineResult,
-    },
-)
+# Use imported models directly
+m = GruponosMeltanoNativeModels
+
+# Short aliases for types
+PipelineResult = m.Pipeline.PipelineResult
 
 # =============================================
 # GRUPONOS MELTANO PIPELINE RESULT
@@ -1111,7 +1107,6 @@ def create_gruponos_meltano_pipeline_runner(
 
 # Module-level exports with comprehensive API surface
 __all__: list[str] = [
-    "GruponosMeltanoModels",
     "GruponosMeltanoOrchestrator",
     "GruponosMeltanoPipelineResult",
     "create_gruponos_meltano_orchestrator",

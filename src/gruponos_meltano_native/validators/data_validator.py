@@ -22,7 +22,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import override
 
-from flext_core import FlextExceptions, FlextLogger, FlextResult
+from flext_core import FlextExceptions, FlextLogger
 
 # Get dependencies via DI
 logger = FlextLogger(__name__)
@@ -184,7 +184,6 @@ class DataValidator:
         if validation_method is not None and value is not None:
             validation_method(rule, value, errors)
 
-    @override
     def validate(self, data: dict[str, object]) -> list[str]:
         """Valida dados contra regras configuradas.
 
@@ -411,7 +410,7 @@ class DataValidator:
         errors: list[str],
     ) -> None:
         """Validate enum field."""
-        allowed_values_raw: list[object] = rule.parameters.get("allowed_values", [])
+        allowed_values_raw = rule.parameters.get("allowed_values", [])
         allowed_values = (
             allowed_values_raw
             if isinstance(allowed_values_raw, (list, tuple, set))
@@ -649,7 +648,7 @@ class DataValidator:
             raise ValueError(msg)
         return str(value) if value is not None else None
 
-    def get_conversion_stats(self: object) -> dict[str, int]:
+    def get_conversion_stats(self) -> dict[str, int]:
         """Obtém estatísticas de conversão.
 
         Returns:
@@ -659,7 +658,7 @@ class DataValidator:
         """
         return self.conversion_stats.copy()
 
-    def reset_stats(self: object) -> None:
+    def reset_stats(self) -> None:
         """Reseta estatísticas de conversão.
 
         Zera todos os contadores de estatísticas de conversão
@@ -712,7 +711,7 @@ if __name__ == "__main__":
             "created_date": {"type": "string", "format": "date-time"},
         },
     }
-    result: FlextResult[object] = validator.validate_and_convert_record(
+    result: dict[str, object] = validator.validate_and_convert_record(
         test_record, test_schema
     )
     logger.info("Converted record: %s", result)
