@@ -14,11 +14,13 @@ Copyright (c) 2025 Grupo Nós. Todos os direitos reservados. Licença: Propriet�
 from __future__ import annotations
 
 import os
+import subprocess  # noqa: S404
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Self
 
-from flext_core import FlextResult, FlextService, FlextUtilities
+from flext_core import FlextResult, FlextService
 from flext_meltano import FlextMeltanoService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
@@ -32,7 +34,7 @@ MAX_JOB_NAME_LENGTH = 100
 m = GruponosMeltanoNativeModels
 
 # Short aliases for types
-PipelineResult = m.Pipeline.PipelineResult
+PipelineResult = m.PipelineResult
 
 # =============================================
 # GRUPONOS MELTANO PIPELINE RESULT
@@ -103,6 +105,13 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
       - Implements enterprise patterns for consistent error handling
 
     """
+
+    def __new__(
+        cls,
+        settings: GruponosMeltanoNativeConfig | None = None,  # noqa: ARG004
+    ) -> Self:
+        """Create orchestrator instance with optional settings."""
+        return super().__new__(cls)
 
     def __init__(self, settings: GruponosMeltanoNativeConfig | None = None) -> None:
         """Inicializa orquestrador com configurações GrupoNOS.
@@ -233,6 +242,8 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             pipeline_name="full-sync-job",
             status="SUCCESS" if sync_result.is_success else "FAILED",
             start_time=datetime.now(tz=UTC),
+            end_time=datetime.now(tz=UTC),
+            duration_seconds=0.0,
             job_name="full-sync-job",
             records_extracted=0,
             records_loaded=0,
@@ -292,6 +303,8 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             pipeline_name="incremental-sync-job",
             status="SUCCESS" if sync_result.is_success else "FAILED",
             start_time=datetime.now(tz=UTC),
+            end_time=datetime.now(tz=UTC),
+            duration_seconds=0.0,
             job_name="incremental-sync-job",
             records_extracted=0,
             records_loaded=0,
@@ -358,6 +371,8 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             pipeline_name=sanitized_job_name,
             status="SUCCESS",
             start_time=datetime.now(tz=UTC),
+            end_time=datetime.now(tz=UTC),
+            duration_seconds=0.0,
             job_name=sanitized_job_name,
             records_extracted=0,
             records_loaded=0,
@@ -467,7 +482,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         if not job_name or not job_name.strip():
             return FlextResult.fail("Job name cannot be empty")
 
-        job_status = {
+        job_status: dict[str, object] = {
             "job_name": job_name.strip(),
             "available": job_name.strip() in self.list_jobs(),
             "settings": self.settings.model_dump(),
@@ -622,6 +637,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         """
         start_time = time.time()
+        sanitized_job_name: str | None = None
 
         try:
             # Validate and sanitize job name
@@ -647,7 +663,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             )
 
             # Execute Meltano job with timeout protection
-            result = FlextUtilities.run_external_command(
+            process_result = subprocess.run(  # noqa: S603
                 cmd,
                 check=False,
                 cwd=working_dir,
@@ -659,28 +675,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
             execution_time = time.time() - start_time
 
-            # Handle execution failures (timeout, command not found, etc.)
-            if result.is_failure:
-                error_msg = result.error
-                # Check for specific error types via message content
-                if "timed out" in error_msg.lower():
-                    timeout_error = f"Meltano job timed out after {execution_time:.2f}s"
-                    self.logger.error(
-                        timeout_error, extra={"job_name": sanitized_job_name}
-                    )
-                    return FlextResult.fail(timeout_error)
-                if "not found" in error_msg.lower():
-                    meltano_error = "Meltano executable not found. Ensure Meltano is installed and in PATH."
-                    self.logger.error(
-                        meltano_error, extra={"job_name": sanitized_job_name}
-                    )
-                    return FlextResult.fail(meltano_error)
-                # Generic execution error
-                self.logger.error(error_msg, extra={"job_name": sanitized_job_name})
-                return FlextResult.fail(error_msg)
-
-            # Process successful execution results
-            process_result = result.value
+            # Process execution results
             if process_result.returncode == 0:
                 self.logger.info(
                     "Meltano job completed successfully",
@@ -700,7 +695,12 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                         "job_name": sanitized_job_name,
                     },
                 })
+
             # Job failed but process completed
+            error_details = f"Meltano job failed with return code {process_result.returncode}"
+            self.logger.error(
+                error_details, extra={"job_name": sanitized_job_name}
+            )
             return FlextResult.ok({
                 "execution_time": execution_time,
                 "output": process_result.stdout.strip(),
@@ -711,11 +711,24 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
                 },
             })
 
+        except subprocess.TimeoutExpired:
+            execution_time = time.time() - start_time
+            timeout_error = f"Meltano job timed out after {execution_time:.2f}s"
+            job_name_str = sanitized_job_name or job_name
+            self.logger.exception(timeout_error, extra={"job_name": job_name_str})
+            return FlextResult.fail(timeout_error)
+        except FileNotFoundError:
+            execution_time = time.time() - start_time
+            meltano_error = "Meltano executable not found. Ensure Meltano is installed and in PATH."
+            job_name_str = sanitized_job_name or job_name
+            self.logger.exception(meltano_error, extra={"job_name": job_name_str})
+            return FlextResult.fail(meltano_error)
         except Exception as e:
             execution_time = time.time() - start_time
             unexpected_error = f"Unexpected error during Meltano job execution: {e}"
+            job_name_str = sanitized_job_name or job_name
             self.logger.exception(
-                unexpected_error, extra={"job_name": sanitized_job_name}
+                unexpected_error, extra={"job_name": job_name_str}
             )
             return FlextResult.fail(unexpected_error)
 
@@ -781,11 +794,11 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         # Handle service name vs SID (backward compatibility)
         service_name = oracle_config.get("service_name")
         if service_name:
-            env["FLEXT_TARGET_ORACLE_SERVICE_NAME"] = service_name
+            env["FLEXT_TARGET_ORACLE_SERVICE_NAME"] = str(service_name)
 
         sid = oracle_config.get("sid")
         if sid:
-            env["FLEXT_TARGET_ORACLE_SID"] = sid
+            env["FLEXT_TARGET_ORACLE_SID"] = str(sid)
 
         self.logger.debug(
             "Meltano environment configured",
