@@ -1,4 +1,5 @@
 # API Reference
+
 ## Table of Contents
 
 - [API Reference](#api-reference)
@@ -30,7 +31,7 @@
     - [Exception Hierarchy](#exception-hierarchy)
 - [Base exception](#base-exception)
 - [Specific exceptions](#specific-exceptions)
-    - [Error Handling Patterns](#error-handling-patterns)
+  - [Error Handling Patterns](#error-handling-patterns)
   - [Factory Functions](#factory-functions)
     - [Main Factory Functions](#main-factory-functions)
 

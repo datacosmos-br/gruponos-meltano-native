@@ -1,60 +1,61 @@
 # Security Architecture Documentation
+
 ## Table of Contents
 
-- [Security Architecture Documentation](#security-architecture-documentation)
-  - [📋 Security Architecture Overview](#-security-architecture-overview)
-    - [Security Principles](#security-principles)
-    - [Security Objectives](#security-objectives)
-  - [🛡️ Security Architecture Components](#-security-architecture-components)
-    - [Authentication & Authorization](#authentication--authorization)
-    - [Trust Zones & Network Security](#trust-zones--network-security)
-    - [Data Protection Architecture](#data-protection-architecture)
-  - [🔐 Security Controls Implementation](#-security-controls-implementation)
-    - [Authentication Methods](#authentication-methods)
-    - [Authorization Model](#authorization-model)
-    - [Security Monitoring & Incident Response](#security-monitoring--incident-response)
-  - [📊 Security Metrics & Compliance](#-security-metrics--compliance)
-    - [Security KPIs](#security-kpis)
-    - [Compliance Requirements](#compliance-requirements)
-      - [GDPR Compliance](#gdpr-compliance)
-      - [ISO 27001 Compliance](#iso-27001-compliance)
-    - [Security Testing & Validation](#security-testing--validation)
-      - [Automated Security Testing](#automated-security-testing)
-- [Security test suite execution](#security-test-suite-execution)
-      - [Security Test Categories](#security-test-categories)
-  - [🚨 Threat Model & Risk Assessment](#-threat-model--risk-assessment)
-    - [Primary Threats](#primary-threats)
-    - [Attack Vectors & Controls](#attack-vectors--controls)
-    - [Risk Assessment Matrix](#risk-assessment-matrix)
-  - [🔧 Security Implementation Details](#-security-implementation-details)
-    - [Secure Configuration Management](#secure-configuration-management)
-- [Secure configuration patterns](#secure-configuration-patterns)
-    - [Secure Coding Practices](#secure-coding-practices)
-- [Railway pattern with security validation](#railway-pattern-with-security-validation)
-    - [Security Monitoring Integration](#security-monitoring-integration)
-- [Security event logging](#security-event-logging)
-  - [📋 Security Operations Procedures](#-security-operations-procedures)
-    - [Daily Security Operations](#daily-security-operations)
-    - [Weekly Security Operations](#weekly-security-operations)
-    - [Monthly Security Operations](#monthly-security-operations)
-    - [Incident Response Plan](#incident-response-plan)
-      - [Phase 1: Detection & Assessment (0-15 minutes)](#phase-1-detection--assessment-0-15-minutes)
-      - [Phase 2: Containment (15-60 minutes)](#phase-2-containment-15-60-minutes)
-      - [Phase 3: Eradication (1-4 hours)](#phase-3-eradication-1-4-hours)
-      - [Phase 4: Recovery (4-24 hours)](#phase-4-recovery-4-24-hours)
-      - [Phase 5: Lessons Learned (24-72 hours)](#phase-5-lessons-learned-24-72-hours)
-  - [🎯 Security Quality Attributes](#-security-quality-attributes)
-    - [Confidentiality](#confidentiality)
-    - [Integrity](#integrity)
-    - [Availability](#availability)
-    - [Non-Repudiation](#non-repudiation)
-  - [🔄 Security Evolution & Roadmap](#-security-evolution--roadmap)
-    - [Current Security Maturity Level: **Advanced**](#current-security-maturity-level-advanced)
-    - [Security Roadmap](#security-roadmap)
-      - [Q1 2026: Enhanced Threat Detection](#q1-2026-enhanced-threat-detection)
-      - [Q2 2026: Zero Trust Implementation](#q2-2026-zero-trust-implementation)
-      - [Q3 2026: Compliance Automation](#q3-2026-compliance-automation)
-      - [Q4 2026: Security Operations Center](#q4-2026-security-operations-center)
+- Security Architecture Documentation
+  - 📋 Security Architecture Overview
+    - Security Principles
+    - Security Objectives
+  - 🛡️ Security Architecture Components
+    - Authentication & Authorization
+    - Trust Zones & Network Security
+    - Data Protection Architecture
+  - 🔐 Security Controls Implementation
+    - Authentication Methods
+    - Authorization Model
+    - Security Monitoring & Incident Response
+  - 📊 Security Metrics & Compliance
+    - Security KPIs
+    - Compliance Requirements
+      - GDPR Compliance
+      - ISO 27001 Compliance
+    - Security Testing & Validation
+      - Automated Security Testing
+- Security test suite execution
+      - Security Test Categories
+  - 🚨 Threat Model & Risk Assessment
+    - Primary Threats
+    - Attack Vectors & Controls
+    - Risk Assessment Matrix
+  - 🔧 Security Implementation Details
+    - Secure Configuration Management
+- Secure configuration patterns
+  - Secure Coding Practices
+- Railway pattern with security validation
+  - Security Monitoring Integration
+- Security event logging
+  - 📋 Security Operations Procedures
+    - Daily Security Operations
+    - Weekly Security Operations
+    - Monthly Security Operations
+    - Incident Response Plan
+      - Phase 1: Detection & Assessment (0-15 minutes)
+      - Phase 2: Containment (15-60 minutes)
+      - Phase 3: Eradication (1-4 hours)
+      - Phase 4: Recovery (4-24 hours)
+      - Phase 5: Lessons Learned (24-72 hours)
+  - 🎯 Security Quality Attributes
+    - Confidentiality
+    - Integrity
+    - Availability
+    - Non-Repudiation
+  - 🔄 Security Evolution & Roadmap
+    - Current Security Maturity Level: **Advanced**
+    - Security Roadmap
+      - Q1 2026: Enhanced Threat Detection
+      - Q2 2026: Zero Trust Implementation
+      - Q3 2026: Compliance Automation
+      - Q4 2026: Security Operations Center
 
 
 **Project**: gruponos-meltano-native | **Version**: 0.9.0 | **Status**: Production Security Implementation
@@ -249,12 +250,10 @@ end note
 
 ### Authentication Methods
 
-| Method | Use Case | Implementation | Strength |
-|--------|----------|----------------|----------|
-| **JWT Tokens** | API authentication | RS256 signatures, 15min expiry | High |
-| **OAuth2** | External integrations | Authorization code flow | High |
-| **mTLS** | Service-to-service | Client certificates | Very High |
-| **API Keys** | Service accounts | HMAC signatures | Medium |
+Method: **JWT Tokens** - Use Case: API authentication - Implementation: RS256 signatures, 15min expiry - Strength: High
+Method: **OAuth2** - Use Case: External integrations - Implementation: Authorization code flow - Strength: High
+Method: **mTLS** - Use Case: Service-to-service - Implementation: Client certificates - Strength: Very High
+Method: **API Keys** - Use Case: Service accounts - Implementation: HMAC signatures - Strength: Medium
 
 ### Authorization Model
 
@@ -399,17 +398,16 @@ end note
 
 ### Security KPIs
 
-| Metric | Target | Current | Status |
-|--------|--------|---------|--------|
-| **Mean Time to Detect (MTTD)** | < 5 minutes | < 3 minutes | ✅ Excellent |
-| **Mean Time to Respond (MTTR)** | < 1 hour | < 30 minutes | ✅ Excellent |
-| **Security Incident Rate** | < 1/month | 0.2/month | ✅ Good |
-| **Compliance Audit Score** | 100% | 98% | 🟡 Minor gaps |
-| **Data Breach Prevention** | 100% | 100% | ✅ Perfect |
+Metric: **Mean Time to Detect (MTTD)** - Target: < 5 minutes - Current: < 3 minutes - Status: ✅ Excellent
+Metric: **Mean Time to Respond (MTTR)** - Target: < 1 hour - Current: < 30 minutes - Status: ✅ Excellent
+Metric: **Security Incident Rate** - Target: < 1/month - Current: 0.2/month - Status: ✅ Good
+Metric: **Compliance Audit Score** - Target: 100% - Current: 98% - Status: 🟡 Minor gaps
+Metric: **Data Breach Prevention** - Target: 100% - Current: 100% - Status: ✅ Perfect
 
 ### Compliance Requirements
 
 #### GDPR Compliance
+
 - **Data Protection**: End-to-end encryption for PII
 - **Access Controls**: Strict RBAC with audit trails
 - **Data Minimization**: Only necessary data collection
@@ -417,6 +415,7 @@ end note
 - **Right to Erasure**: Data deletion capabilities
 
 #### ISO 27001 Compliance
+
 - **Risk Management**: Continuous risk assessment
 - **Access Control**: Multi-factor authentication
 - **Cryptography**: Industry-standard encryption
@@ -426,6 +425,7 @@ end note
 ### Security Testing & Validation
 
 #### Automated Security Testing
+
 ```bash
 # Security test suite execution
 make security-test              # SAST, DAST, dependency scanning
@@ -436,27 +436,22 @@ make penetration-test          # Automated security testing
 
 #### Security Test Categories
 
-| Test Type | Frequency | Tools | Coverage |
-|-----------|-----------|-------|----------|
-| **SAST** | Every commit | Bandit, Semgrep | Code security |
-| **DAST** | Daily | OWASP ZAP | Runtime security |
-| **Dependency Scan** | Weekly | Snyk, Dependabot | Third-party risks |
-| **Container Scan** | Every build | Trivy, Clair | Image vulnerabilities |
-| **Compliance Audit** | Monthly | Custom scripts | Regulatory requirements |
-
+Test Type: **SAST** - Frequency: Every commit - Tools: Bandit, Semgrep - Coverage: Code security
+Test Type: **DAST** - Frequency: Daily - Tools: OWASP ZAP - Coverage: Runtime security
+Test Type: **Dependency Scan** - Frequency: Weekly - Tools: Snyk, Dependabot - Coverage: Third-party risks
+Test Type: **Container Scan** - Frequency: Every build - Tools: Trivy, Clair - Coverage: Image vulnerabilities
+Test Type: **Compliance Audit** - Frequency: Monthly - Tools: Custom scripts - Coverage: Regulatory requirements
 ---
 
 ## 🚨 Threat Model & Risk Assessment
 
 ### Primary Threats
 
-| Threat | Likelihood | Impact | Mitigation |
-|--------|------------|--------|------------|
-| **Unauthorized Data Access** | Medium | High | RBAC, encryption, audit logging |
-| **Data Exfiltration** | Low | Critical | DLP, network controls, monitoring |
-| **API Abuse** | High | Medium | Rate limiting, WAF, authentication |
-| **Supply Chain Attack** | Low | Critical | SBOM, signature verification |
-| **Insider Threat** | Low | High | Access monitoring, job rotation |
+Threat: **Unauthorized Data Access** - Likelihood: Medium - Impact: High - Mitigation: RBAC, encryption, audit logging
+Threat: **Data Exfiltration** - Likelihood: Low - Impact: Critical - Mitigation: DLP, network controls, monitoring
+Threat: **API Abuse** - Likelihood: High - Impact: Medium - Mitigation: Rate limiting, WAF, authentication
+Threat: **Supply Chain Attack** - Likelihood: Low - Impact: Critical - Mitigation: SBOM, signature verification
+Threat: **Insider Threat** - Likelihood: Low - Impact: High - Mitigation: Access monitoring, job rotation
 
 ### Attack Vectors & Controls
 
@@ -467,15 +462,12 @@ title Attack Vectors & Security Controls Matrix
 skinparam backgroundColor #FEFEFE
 skinparam backgroundColor<<Risk>> #FFAAAA
 
-| Attack Vector | Likelihood | Impact | Current Controls | Gap Analysis |
-| <b>SQL Injection</b> | Low | High | Parameterized queries, ORM | ✅ Covered |
-| <b>XSS Attacks</b> | Medium | Medium | Input sanitization, CSP | ✅ Covered |
-| <b>API Abuse</b> | High | Medium | Rate limiting, JWT validation | ⚠️ Monitor closely |
-| <b>Data Leakage</b> | Medium | Critical | Encryption, access controls | ✅ Covered |
-| <b>DDoS Attacks</b> | Low | High | Azure Front Door, rate limiting | ✅ Covered |
-| <b>Credential Stuffing</b> | Medium | High | MFA, account lockout | ✅ Covered |
-| <b>Supply Chain</b> | Low | Critical | Code signing, SBOM | 🟡 Partial coverage |
-@enduml
+Attack Vector: <b>XSS Attacks</b> - Likelihood: Medium - Impact: Medium - Current Controls: Input sanitization, CSP - Gap Analysis: ✅ Covered
+Attack Vector: <b>API Abuse</b> - Likelihood: High - Impact: Medium - Current Controls: Rate limiting, JWT validation - Gap Analysis: ⚠️ Monitor closely
+Attack Vector: <b>Data Leakage</b> - Likelihood: Medium - Impact: Critical - Current Controls: Encryption, access controls - Gap Analysis: ✅ Covered
+Attack Vector: <b>DDoS Attacks</b> - Likelihood: Low - Impact: High - Current Controls: Azure Front Door, rate limiting - Gap Analysis: ✅ Covered
+Attack Vector: <b>Credential Stuffing</b> - Likelihood: Medium - Impact: High - Current Controls: MFA, account lockout - Gap Analysis: ✅ Covered
+Attack Vector: <b>Supply Chain</b> - Likelihood: Low - Impact: Critical - Current Controls: Code signing, SBOM - Gap Analysis: 🟡 Partial coverage@enduml
 ```
 
 ### Risk Assessment Matrix
@@ -663,26 +655,31 @@ class SecurityLogger:
 ### Incident Response Plan
 
 #### Phase 1: Detection & Assessment (0-15 minutes)
+
 - Automated alerting triggers incident response
 - Security team assesses incident severity and scope
 - Initial containment measures implemented
 
 #### Phase 2: Containment (15-60 minutes)
+
 - Affected systems isolated
 - Evidence preservation initiated
 - Communication plan activated
 
 #### Phase 3: Eradication (1-4 hours)
+
 - Root cause analysis performed
 - Malicious activity removed
 - System hardening implemented
 
 #### Phase 4: Recovery (4-24 hours)
+
 - Systems restored from clean backups
 - Security monitoring validated
 - Service continuity confirmed
 
 #### Phase 5: Lessons Learned (24-72 hours)
+
 - Incident report completed
 - Process improvements identified
 - Team debriefing conducted
@@ -692,24 +689,28 @@ class SecurityLogger:
 ## 🎯 Security Quality Attributes
 
 ### Confidentiality
+
 - **Data Classification**: PII, sensitive, public data categories
 - **Encryption Standards**: AES-256 for data at rest, TLS 1.3 for transit
 - **Access Controls**: Need-to-know basis with audit trails
 - **Data Masking**: Automated masking for non-production environments
 
 ### Integrity
+
 - **Input Validation**: Comprehensive input sanitization and validation
 - **Business Rules**: Automated validation of business logic constraints
 - **Audit Trails**: Immutable audit logs for all data modifications
 - **Checksum Validation**: Data integrity verification during transfer
 
 ### Availability
+
 - **Redundancy**: Multi-zone deployment with automatic failover
 - **Load Balancing**: Distributed traffic with health monitoring
 - **Rate Limiting**: DDoS protection and abuse prevention
 - **Circuit Breakers**: Automatic degradation under load
 
 ### Non-Repudiation
+
 - **Digital Signatures**: Cryptographic proof of data origin
 - **Timestamping**: Trusted timestamps for all transactions
 - **Audit Logging**: Comprehensive activity logging
@@ -721,34 +722,36 @@ class SecurityLogger:
 
 ### Current Security Maturity Level: **Advanced**
 
-| Dimension | Current Level | Target Level | Timeline |
-|-----------|---------------|--------------|----------|
-| **Technology** | Advanced | Leading | 6-12 months |
-| **Processes** | Mature | Optimized | 3-6 months |
-| **People** | Trained | Expert | Ongoing |
-| **Compliance** | Compliant | Proactive | 3-6 months |
+Dimension: **Technology** - Current Level: Advanced - Target Level: Leading - Timeline: 6-12 months
+Dimension: **Processes** - Current Level: Mature - Target Level: Optimized - Timeline: 3-6 months
+Dimension: **People** - Current Level: Trained - Target Level: Expert - Timeline: Ongoing
+Dimension: **Compliance** - Current Level: Compliant - Target Level: Proactive - Timeline: 3-6 months
 
 ### Security Roadmap
 
 #### Q1 2026: Enhanced Threat Detection
+
 - AI-powered anomaly detection
 - Advanced behavioral analytics
 - Automated threat hunting
 - Integration with threat intelligence feeds
 
 #### Q2 2026: Zero Trust Implementation
+
 - Complete micro-segmentation
 - Service mesh security
 - Device trust validation
 - Continuous authentication
 
 #### Q3 2026: Compliance Automation
+
 - Automated compliance monitoring
 - Continuous compliance validation
 - Regulatory reporting automation
 - Audit trail analytics
 
 #### Q4 2026: Security Operations Center
+
 - 24/7 SOC operations
 - Advanced SIEM integration
 - Automated incident response
@@ -757,6 +760,6 @@ class SecurityLogger:
 ---
 
 **Security Architecture Documentation** - Comprehensive security implementation following zero trust principles with enterprise-grade controls,
-    
+
      compliance frameworks,
      and operational procedures for the gruponos-meltano-native ETL pipeline system.

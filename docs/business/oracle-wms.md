@@ -1,7 +1,9 @@
 # Oracle WMS Integration
+
 ## Table of Contents
 
 - [Oracle WMS Integration](#oracle-wms-integration)
+  - [Table of Contents](#table-of-contents)
   - [Business Overview](#business-overview)
     - [Business Objectives](#business-objectives)
     - [Key Performance Indicators (KPIs)](#key-performance-indicators-kpis)
@@ -32,11 +34,7 @@
 
 ## Business Overview
 
-GrupoNOS operates a sophisticated Oracle Warehouse Management System (WMS) that manages inventory,
-     order fulfillment,
-     and warehouse operations across multiple facilities. This integration provides real-time data synchronization for business intelligence,
-    
-     reporting, and analytics.
+GrupoNOS operates a sophisticated Oracle Warehouse Management System (WMS) that manages inventory, order fulfillment, and warehouse operations across multiple facilities. This integration provides real-time data synchronization for business intelligence, reporting, and analytics.
 
 ### Business Objectives
 

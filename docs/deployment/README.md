@@ -1,91 +1,92 @@
 # Deployment Guide
+
 ## Table of Contents
 
-- [Deployment Guide](#deployment-guide)
-  - [Deployment Overview](#deployment-overview)
-    - [Supported Deployment Patterns](#supported-deployment-patterns)
-  - [Prerequisites](#prerequisites)
-    - [Infrastructure Requirements](#infrastructure-requirements)
-      - [Minimum System Requirements](#minimum-system-requirements)
-      - [Production Requirements](#production-requirements)
-    - [External Dependencies](#external-dependencies)
-      - [Oracle WMS System](#oracle-wms-system)
-      - [Oracle Target Database](#oracle-target-database)
-    - [Software Dependencies](#software-dependencies)
-      - [Container Runtime](#container-runtime)
-- [Docker Engine 20.10+](#docker-engine-2010)
-- [Docker Compose v2.0+](#docker-compose-v20)
-      - [Kubernetes (Production)](#kubernetes-production)
-- [kubectl client](#kubectl-client)
-- [Helm package manager](#helm-package-manager)
-  - [Environment Configuration](#environment-configuration)
-    - [Environment Variable Templates](#environment-variable-templates)
-      - [Development Environment (.env.dev)](#development-environment-envdev)
-- [FLEXT Framework Configuration](#flext-framework-configuration)
-- [Oracle WMS Configuration (Development)](#oracle-wms-configuration-development)
-- [Oracle Target Database (Development)](#oracle-target-database-development)
-- [Pipeline Configuration (Development)](#pipeline-configuration-development)
-      - [Production Environment (Kubernetes Secrets)](#production-environment-kubernetes-secrets)
-    - [Configuration Management](#configuration-management)
-      - [ConfigMap for Non-Secret Configuration](#configmap-for-non-secret-configuration)
-  - [Docker Deployment](#docker-deployment)
-    - [Development Docker Compose](#development-docker-compose)
-- [docker-compose.dev.yml](#docker-composedevyml)
-    - [Production Dockerfile](#production-dockerfile)
-- [Dockerfile](#dockerfile)
-- [System dependencies](#system-dependencies)
-- [Install Poetry](#install-poetry)
-- [Copy dependency files](#copy-dependency-files)
-- [Development stage](#development-stage)
-- [Production stage](#production-stage)
-- [Install only production dependencies](#install-only-production-dependencies)
-- [Create non-root user](#create-non-root-user)
-- [Copy application code](#copy-application-code)
-- [Health check](#health-check)
-- [Default command](#default-command)
-    - [Docker Build and Run](#docker-build-and-run)
-- [Build development image](#build-development-image)
-- [Build production image](#build-production-image)
-- [Run development environment](#run-development-environment)
-- [Run production container](#run-production-container)
-  - [Kubernetes Deployment](#kubernetes-deployment)
-    - [Namespace Setup](#namespace-setup)
-- [namespace.yaml](#namespaceyaml)
-    - [Deployment Configuration](#deployment-configuration)
-- [deployment.yaml](#deploymentyaml)
-    - [Service and Ingress](#service-and-ingress)
-- [service.yaml](#serviceyaml)
-- [ingress.yaml](#ingressyaml)
-    - [CronJob for Scheduled Pipelines](#cronjob-for-scheduled-pipelines)
-- [cronjob.yaml](#cronjobyaml)
-  - [Monitoring and Observability](#monitoring-and-observability)
-    - [Prometheus Monitoring](#prometheus-monitoring)
-- [servicemonitor.yaml](#servicemonitoryaml)
-    - [Grafana Dashboard](#grafana-dashboard)
-    - [Alerting Rules](#alerting-rules)
-- [alerts.yaml](#alertsyaml)
-  - [Security Configuration](#security-configuration)
-    - [RBAC Configuration](#rbac-configuration)
-- [rbac.yaml](#rbacyaml)
-    - [Network Policies](#network-policies)
-- [networkpolicy.yaml](#networkpolicyyaml)
-  - [Backup and Disaster Recovery](#backup-and-disaster-recovery)
-    - [Data Backup Strategy](#data-backup-strategy)
-- [backup-meltano-data.sh](#backup-meltano-datash)
-- [Backup Meltano state and configuration](#backup-meltano-state-and-configuration)
-- [Copy backup to persistent storage](#copy-backup-to-persistent-storage)
-- [Backup secrets and configurations](#backup-secrets-and-configurations)
-    - [Disaster Recovery Procedure](#disaster-recovery-procedure)
-- [disaster-recovery.sh](#disaster-recoverysh)
-- [1. Restore namespace](#1-restore-namespace)
-- [2. Restore secrets and configmaps](#2-restore-secrets-and-configmaps)
-- [3. Restore deployment](#3-restore-deployment)
-- [4. Restore Meltano data](#4-restore-meltano-data)
-- [5. Verify deployment](#5-verify-deployment)
-  - [Deployment Checklist](#deployment-checklist)
-    - [Pre-Deployment Validation](#pre-deployment-validation)
-    - [Deployment Steps](#deployment-steps)
-    - [Post-Deployment Validation](#post-deployment-validation)
+- Deployment Guide
+  - Deployment Overview
+    - Supported Deployment Patterns
+  - Prerequisites
+    - Infrastructure Requirements
+      - Minimum System Requirements
+      - Production Requirements
+    - External Dependencies
+      - Oracle WMS System
+      - Oracle Target Database
+    - Software Dependencies
+      - Container Runtime
+- Docker Engine 20.10+
+- Docker Compose v2.0+
+      - Kubernetes (Production)
+- kubectl client
+- Helm package manager
+  - Environment Configuration
+    - Environment Variable Templates
+      - Development Environment (.env.dev)
+- FLEXT Framework Configuration
+- Oracle WMS Configuration (Development)
+- Oracle Target Database (Development)
+- Pipeline Configuration (Development)
+      - Production Environment (Kubernetes Secrets)
+  - Configuration Management
+    - ConfigMap for Non-Secret Configuration
+  - Docker Deployment
+    - Development Docker Compose
+- docker-compose.dev.yml
+  - Production Dockerfile
+- Dockerfile
+- System dependencies
+- Install Poetry
+- Copy dependency files
+- Development stage
+- Production stage
+- Install only production dependencies
+- Create non-root user
+- Copy application code
+- Health check
+- Default command
+  - Docker Build and Run
+- Build development image
+- Build production image
+- Run development environment
+- Run production container
+  - Kubernetes Deployment
+    - Namespace Setup
+- namespace.YAML
+  - Deployment Configuration
+- deployment.YAML
+  - Service and Ingress
+- service.YAML
+- ingress.YAML
+  - CronJob for Scheduled Pipelines
+- cronjob.YAML
+  - Monitoring and Observability
+    - Prometheus Monitoring
+- servicemonitor.YAML
+  - Grafana Dashboard
+  - Alerting Rules
+- alerts.YAML
+  - Security Configuration
+    - RBAC Configuration
+- rbac.YAML
+  - Network Policies
+- networkpolicy.YAML
+  - Backup and Disaster Recovery
+    - Data Backup Strategy
+- backup-meltano-data.sh
+- Backup Meltano state and configuration
+- Copy backup to persistent storage
+- Backup secrets and configurations
+  - Disaster Recovery Procedure
+- disaster-recovery.sh
+- 1. Restore namespace
+- 2. Restore secrets and configmaps
+- 3. Restore deployment
+- 4. Restore Meltano data
+- 5. Verify deployment
+  - Deployment Checklist
+    - Pre-Deployment Validation
+    - Deployment Steps
+    - Post-Deployment Validation
 
 
 **GrupoNOS Meltano Native Production Deployment** - Enterprise deployment strategies,
@@ -94,7 +95,7 @@
 ## Deployment Overview
 
 GrupoNOS Meltano Native supports multiple deployment patterns designed for enterprise environments with high availability,
-    
+
      scalability, and security requirements.
 
 ### Supported Deployment Patterns

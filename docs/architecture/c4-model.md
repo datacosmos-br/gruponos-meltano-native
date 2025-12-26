@@ -1,72 +1,76 @@
 # C4 Model Architecture Documentation
+
+
 ## Table of Contents
 
-- [C4 Model Architecture Documentation](#c4-model-architecture-documentation)
-  - [📋 C4 Model Overview](#-c4-model-overview)
-  - [🌐 1. System Context (C4 Level 1)](#-1-system-context-c4-level-1)
-    - [System Purpose](#system-purpose)
-    - [Context Diagram](#context-diagram)
-    - [Key Relationships](#key-relationships)
-  - [🏗️ 2. Container Architecture (C4 Level 2)](#-2-container-architecture-c4-level-2)
-    - [Container Diagram](#container-diagram)
-    - [Container Descriptions](#container-descriptions)
-      - [**CLI Application**](#cli-application)
-      - [**API Service**](#api-service)
-      - [**Pipeline Orchestrator**](#pipeline-orchestrator)
-      - [**Configuration Manager**](#configuration-manager)
-      - [**Monitoring Service**](#monitoring-service)
-  - [🔧 3. Component Architecture (C4 Level 3)](#-3-component-architecture-c4-level-3)
-    - [ETL Pipeline Components](#etl-pipeline-components)
-    - [Data Flow Components](#data-flow-components)
-    - [Component Details](#component-details)
-      - [**Pipeline Runner**](#pipeline-runner)
-      - [**Plugin Manager**](#plugin-manager)
-      - [**Configuration Validator**](#configuration-validator)
-  - [💻 4. Code Architecture (C4 Level 4)](#-4-code-architecture-c4-level-4)
-    - [Package Structure](#package-structure)
-    - [Key Classes and Relationships](#key-classes-and-relationships)
-      - [**Main Application Classes**](#main-application-classes)
-      - [**Domain Model Classes**](#domain-model-classes)
-      - [**Infrastructure Classes**](#infrastructure-classes)
-  - [🔄 5. Data Flow Architecture](#-5-data-flow-architecture)
-    - [ETL Pipeline Data Flow](#etl-pipeline-data-flow)
-    - [Configuration Data Flow](#configuration-data-flow)
-  - [🛡️ 6. Security Architecture](#-6-security-architecture)
-    - [Security Boundaries](#security-boundaries)
-    - [Authentication & Authorization](#authentication--authorization)
-  - [📊 7. Performance & Scalability](#-7-performance--scalability)
-    - [Performance Characteristics](#performance-characteristics)
-    - [Scalability Patterns](#scalability-patterns)
-  - [📋 8. Architecture Decision Records (ADRs)](#-8-architecture-decision-records-adrs)
-    - [ADR Template](#adr-template)
-- [ADR [Number]: [Title]](#adr-number-title)
-  - [Status](#status)
-  - [Context](#context)
-  - [Decision](#decision)
-  - [Consequences](#consequences)
-    - [Positive](#positive)
-    - [Negative](#negative)
-    - [Risks](#risks)
-  - [Alternatives Considered](#alternatives-considered)
-  - [Implementation Notes](#implementation-notes)
-  - [References](#references)
-    - [Current ADRs](#current-adrs)
-      - [**ADR 001: Native Meltano Orchestration**](#adr-001-native-meltano-orchestration)
-      - [**ADR 002: Dual Pipeline Architecture**](#adr-002-dual-pipeline-architecture)
-      - [**ADR 003: Railway Pattern for Error Handling**](#adr-003-railway-pattern-for-error-handling)
-  - [🔧 9. Deployment Architecture](#-9-deployment-architecture)
-    - [Production Deployment](#production-deployment)
-    - [Infrastructure Requirements](#infrastructure-requirements)
-  - [🎯 Summary](#-summary)
-    - [Architecture Highlights](#architecture-highlights)
-    - [Key Architectural Decisions](#key-architectural-decisions)
-    - [Quality Attributes](#quality-attributes)
+- C4 Model Architecture Documentation
+  - 📋 C4 Model Overview
+  - 🌐 1. System Context (C4 Level 1)
+    - System Purpose
+    - Context Diagram
+    - Key Relationships
+  - 🏗️ 2. Container Architecture (C4 Level 2)
+    - Container Diagram
+    - Container Descriptions
+      - **CLI Application**
+      - **API Service**
+      - **Pipeline Orchestrator**
+      - **Configuration Manager**
+      - **Monitoring Service**
+  - 🔧 3. Component Architecture (C4 Level 3)
+    - ETL Pipeline Components
+    - Data Flow Components
+    - Component Details
+      - **Pipeline Runner**
+      - **Plugin Manager**
+      - **Configuration Validator**
+  - 💻 4. Code Architecture (C4 Level 4)
+    - Package Structure
+    - Key Classes and Relationships
+      - **Main Application Classes**
+      - **Domain Model Classes**
+      - **Infrastructure Classes**
+  - 🔄 5. Data Flow Architecture
+    - ETL Pipeline Data Flow
+    - Configuration Data Flow
+  - 🛡️ 6. Security Architecture
+    - Security Boundaries
+    - Authentication & Authorization
+  - 📊 7. Performance & Scalability
+    - Performance Characteristics
+    - Scalability Patterns
+  - 📋 8. Architecture Decision Records (ADRs)
+    - ADR Template
+- ADR [Number]: [Title]
+  - Status
+  - Context
+  - Decision
+  - Consequences
+    - Positive
+    - Negative
+    - Risks
+  - Alternatives Considered
+  - Implementation Notes
+  - References
+    - Current ADRs
+      - **ADR 001: Native Meltano Orchestration**
+      - **ADR 002: Dual Pipeline Architecture**
+      - **ADR 003: Railway Pattern for Error Handling**
+  - 🔧 9. Deployment Architecture
+    - Production Deployment
+    - Infrastructure Requirements
+  - 🎯 Summary
+    - Architecture Highlights
+    - Key Architectural Decisions
+    - Quality Attributes
 
 
 **Project**: gruponos-meltano-native | **Version**: 0.9.0 | **Framework**: C4 Model + PlantUML
 **Last Updated**: 2025-10-10 | **Status**: Production-Ready ETL Pipeline
 
----
+
+##
+
 
 ## 📋 C4 Model Overview
 
@@ -77,12 +81,17 @@ This document provides a comprehensive architectural view of the gruponos-meltan
 - **Components (Level 3)**: Major building blocks
 - **Code (Level 4)**: Implementation details
 
----
+
+##
+
 
 ## 🌐 1. System Context (C4 Level 1)
 
+
 ### System Purpose
+
 **gruponos-meltano-native** is an enterprise-grade ETL pipeline that orchestrates data integration between Oracle Warehouse Management System (WMS) and downstream analytics databases using Meltano orchestration platform.
+
 
 ### Context Diagram
 
@@ -110,19 +119,20 @@ Rel(gruponos_meltano_native, flext_ecosystem, "Depends on", "Local libraries")
 @enduml
 ```
 
+
 ### Key Relationships
 
-| Component | Relationship | Purpose | Technology |
-|-----------|-------------|---------|------------|
-| **Data Analyst** | Uses system | Access WMS data for analytics | REST API, CLI |
-| **Oracle WMS** | Data source | Provides warehouse operational data | REST API |
-| **Oracle Analytics DB** | Data target | Stores transformed analytics data | SQL |
-| **Meltano Hub** | Plugin ecosystem | Provides extraction/loading plugins | HTTP |
-| **FLEXT Ecosystem** | Shared libraries | Provides common patterns and utilities | Local dependencies |
+Component: **Data Analyst** - Relationship: Uses system - Purpose: Access WMS data for analytics - Technology: REST API, CLI
+Component: **Oracle WMS** - Relationship: Data source - Purpose: Provides warehouse operational data - Technology: REST API
+Component: **Oracle Analytics DB** - Relationship: Data target - Purpose: Stores transformed analytics data - Technology: SQL
+Component: **Meltano Hub** - Relationship: Plugin ecosystem - Purpose: Provides extraction/loading plugins - Technology: HTTP
+Component: **FLEXT Ecosystem** - Relationship: Shared libraries - Purpose: Provides common patterns and utilities - Technology: Local dependencies
 
----
+##
+
 
 ## 🏗️ 2. Container Architecture (C4 Level 2)
+
 
 ### Container Diagram
 
@@ -170,9 +180,13 @@ Rel(orchestrator, flext_core, "Uses", "Result patterns, DI")
 @enduml
 ```
 
+
 ### Container Descriptions
 
+
+
 #### **CLI Application**
+
 - **Technology**: Python 3.13, Click framework
 - **Purpose**: Command-line interface for pipeline operations
 - **Responsibilities**:
@@ -181,7 +195,10 @@ Rel(orchestrator, flext_core, "Uses", "Result patterns, DI")
   - Status monitoring
   - Interactive operations
 
+
+
 #### **API Service**
+
 - **Technology**: Python 3.13, FastAPI
 - **Purpose**: REST API for programmatic access
 - **Responsibilities**:
@@ -190,7 +207,10 @@ Rel(orchestrator, flext_core, "Uses", "Result patterns, DI")
   - Configuration management
   - Integration with external systems
 
+
+
 #### **Pipeline Orchestrator**
+
 - **Technology**: Python 3.13, Meltano 3.8.0
 - **Purpose**: Core ETL orchestration engine
 - **Responsibilities**:
@@ -199,7 +219,10 @@ Rel(orchestrator, flext_core, "Uses", "Result patterns, DI")
   - Error handling and recovery
   - Progress monitoring
 
+
+
 #### **Configuration Manager**
+
 - **Technology**: Python 3.13, Pydantic v2
 - **Purpose**: Centralized configuration management
 - **Responsibilities**:
@@ -208,7 +231,10 @@ Rel(orchestrator, flext_core, "Uses", "Result patterns, DI")
   - Runtime configuration updates
   - Secret management
 
+
+
 #### **Monitoring Service**
+
 - **Technology**: Python 3.13, FLEXT Observability
 - **Purpose**: System observability and alerting
 - **Responsibilities**:
@@ -217,9 +243,12 @@ Rel(orchestrator, flext_core, "Uses", "Result patterns, DI")
   - Error alerting
   - Health checks
 
----
+
+##
+
 
 ## 🔧 3. Component Architecture (C4 Level 3)
+
 
 ### ETL Pipeline Components
 
@@ -261,6 +290,7 @@ Rel(health_checker, metrics_collector, "Reports", "Health metrics")
 @enduml
 ```
 
+
 ### Data Flow Components
 
 ```plantuml
@@ -292,9 +322,13 @@ Rel(completeness_checker, consistency_checker, "Checks", "Data integrity")
 @enduml
 ```
 
+
 ### Component Details
 
+
+
 #### **Pipeline Runner**
+
 - **Responsibilities**:
   - Execute Meltano ELT pipelines
   - Handle pipeline failures and retries
@@ -303,7 +337,10 @@ Rel(completeness_checker, consistency_checker, "Checks", "Data integrity")
 - **Key Classes**: `GruponosMeltanoOrchestrator`, `PipelineRunner`
 - **Dependencies**: Meltano runtime, FLEXT core
 
+
+
 #### **Plugin Manager**
+
 - **Responsibilities**:
   - Install and configure Singer plugins
   - Manage plugin lifecycle
@@ -312,7 +349,10 @@ Rel(completeness_checker, consistency_checker, "Checks", "Data integrity")
 - **Key Classes**: `PluginManager`, `SingerCoordinator`
 - **Dependencies**: Meltano plugin system, Singer protocol
 
+
+
 #### **Configuration Validator**
+
 - **Responsibilities**:
   - Validate pipeline configuration schemas
   - Check environment variable completeness
@@ -321,9 +361,12 @@ Rel(completeness_checker, consistency_checker, "Checks", "Data integrity")
 - **Key Classes**: `GruponosMeltanoConfig`, `ConfigValidator`
 - **Dependencies**: Pydantic v2, custom validation rules
 
----
+
+##
+
 
 ## 💻 4. Code Architecture (C4 Level 4)
+
 
 ### Package Structure
 
@@ -406,35 +449,36 @@ orchestrator_class --> plugin_class : coordinates
 @enduml
 ```
 
+
 ### Key Classes and Relationships
+
+
 
 #### **Main Application Classes**
 
-| Class | Purpose | Key Methods | Dependencies |
-|-------|---------|-------------|--------------|
-| `GruponosMeltanoNativeCli` | CLI interface | `main()`, `run_pipeline()` | Click, orchestrator |
-| `GruponosMeltanoOrchestrator` | Pipeline execution | `execute_pipeline()`, `validate_config()` | Meltano, FLEXT core |
-| `GruponosMeltanoNativeConfig` | Configuration | `load_env()`, `validate()` | Pydantic, python-dotenv |
+Class: `GruponosMeltanoNativeCli` - Purpose: CLI interface - Key Methods: `main()`, `run_pipeline()` - Dependencies: Click, orchestrator
+Class: `GruponosMeltanoOrchestrator` - Purpose: Pipeline execution - Key Methods: `execute_pipeline()`, `validate_config()` - Dependencies: Meltano, FLEXT core
+Class: `GruponosMeltanoNativeConfig` - Purpose: Configuration - Key Methods: `load_env()`, `validate()` - Dependencies: Pydantic, Python-dotenv
+
 
 #### **Domain Model Classes**
 
-| Class | Purpose | Key Attributes | Validation |
-|-------|---------|----------------|------------|
-| `WmsAllocation` | Warehouse allocation data | `allocation_id`, `item_code`, `quantity` | Pydantic v2 |
-| `OrderHeader` | Order header information | `order_id`, `customer_id`, `order_date` | Business rules |
-| `OrderDetail` | Order line items | `line_id`, `item_code`, `quantity` | Referential integrity |
+Class: `WmsAllocation` - Purpose: Warehouse allocation data - Key Attributes: `allocation_id`, `item_code`, `quantity` - Validation: Pydantic v2
+Class: `OrderHeader` - Purpose: Order header information - Key Attributes: `order_id`, `customer_id`, `order_date` - Validation: Business rules
+Class: `OrderDetail` - Purpose: Order line items - Key Attributes: `line_id`, `item_code`, `quantity` - Validation: Referential integrity
+
 
 #### **Infrastructure Classes**
 
-| Class | Purpose | Key Methods | Technologies |
-|-------|---------|-------------|--------------|
-| `GruponosMeltanoDiContainer` | Dependency injection | `register()`, `get()` | FLEXT container |
-| `OracleConnectionManager` | Database connectivity | `connect()`, `execute()` | cx_Oracle, FLEXT DB |
-| `AlertManager` | Alert handling | `send_alert()`, `check_thresholds()` | FLEXT observability |
+Class: `GruponosMeltanoDiContainer` - Purpose: Dependency injection - Key Methods: `register()`, `get()` - Technologies: FLEXT container
+Class: `OracleConnectionManager` - Purpose: Database connectivity - Key Methods: `connect()`, `execute()` - Technologies: cx_Oracle, FLEXT DB
+Class: `AlertManager` - Purpose: Alert handling - Key Methods: `send_alert()`, `check_thresholds()` - Technologies: FLEXT observability
 
----
+##
+
 
 ## 🔄 5. Data Flow Architecture
+
 
 ### ETL Pipeline Data Flow
 
@@ -473,6 +517,7 @@ loader -> target: Rollback Transaction
 @enduml
 ```
 
+
 ### Configuration Data Flow
 
 ```plantuml
@@ -509,9 +554,12 @@ validator -> app: Validation Results
 @enduml
 ```
 
----
+
+##
+
 
 ## 🛡️ 6. Security Architecture
+
 
 ### Security Boundaries
 
@@ -565,6 +613,7 @@ note right of oracle_db : Database Encryption\nRow-level Security\nAudit Logging
 @enduml
 ```
 
+
 ### Authentication & Authorization
 
 ```plantuml
@@ -602,9 +651,12 @@ gateway -> client: Refreshed Token
 @enduml
 ```
 
----
+
+##
+
 
 ## 📊 7. Performance & Scalability
+
 
 ### Performance Characteristics
 
@@ -644,6 +696,7 @@ resources --> volume : Capacity limits
 note right : Performance degrades with\nlarge datasets. Consider\npartitioning for >1M records.
 @enduml
 ```
+
 
 ### Scalability Patterns
 
@@ -702,67 +755,93 @@ end note
 @enduml
 ```
 
----
+
+##
+
 
 ## 📋 8. Architecture Decision Records (ADRs)
+
 
 ### ADR Template
 
 ```markdown
 # ADR [Number]: [Title]
 
+
 ## Status
 [Proposed | Accepted | Rejected | Deprecated | Superseded]
+
 
 ## Context
 [Describe the context and problem statement]
 
+
 ## Decision
 [Describe the decision made and the solution]
 
+
 ## Consequences
+
 ### Positive
 - [List positive consequences]
+
 
 ### Negative
 - [List negative consequences]
 
+
 ### Risks
 - [List risks and mitigation strategies]
+
 
 ## Alternatives Considered
 - [List alternatives and why they were not chosen]
 
+
 ## Implementation Notes
 [Technical details, code references, testing considerations]
+
 
 ## References
 - [Links to related documents, issues, PRs]
 ```
 
+
 ### Current ADRs
 
+
+
 #### **ADR 001: Native Meltano Orchestration**
+
 - **Status**: Accepted
 - **Decision**: Use Meltano 3.8.0 native orchestration instead of flext-meltano wrapper
 - **Rationale**: Direct control, better integration, reduced abstraction overhead
 - **Consequences**: Tighter coupling to Meltano, direct plugin management
 
+
+
 #### **ADR 002: Dual Pipeline Architecture**
+
 - **Status**: Accepted
 - **Decision**: Implement separate full sync and incremental sync pipelines
 - **Rationale**: Performance optimization, different load patterns, data freshness requirements
 - **Consequences**: Increased complexity, separate scheduling, configuration duplication
 
+
+
 #### **ADR 003: Railway Pattern for Error Handling**
+
 - **Status**: Accepted
 - **Decision**: Use FlextResult[T] railway pattern throughout the application
 - **Rationale**: Composable error handling, functional programming approach, type safety
 - **Consequences**: Learning curve, different from traditional exception handling
 
----
+
+##
+
 
 ## 🔧 9. Deployment Architecture
+
 
 ### Production Deployment
 
@@ -827,20 +906,21 @@ api_deployment -> orchestrator_deployment : Pipeline control
 @enduml
 ```
 
+
 ### Infrastructure Requirements
 
-| Component | Specification | Scaling | HA |
-|-----------|---------------|---------|----|
-| **Orchestrator** | 2 vCPU, 4GB RAM | 1-3 pods | Rolling updates |
-| **Workers** | 1 vCPU, 2GB RAM | 1-10 pods | Horizontal scaling |
-| **API Server** | 1 vCPU, 2GB RAM | 2-6 pods | Load balancing |
-| **Oracle DB** | 4 vCPU, 16GB RAM | Primary + 1 replica | Failover clustering |
-| **Redis Cache** | 1 vCPU, 2GB RAM | 1-3 pods | Redis clustering |
-| **Monitoring** | 1 vCPU, 2GB RAM | 1-2 pods | External monitoring |
+Component: **Orchestrator** - Specification: 2 vCPU, 4GB RAM - Scaling: 1-3 pods - HA: Rolling updates
+Component: **Workers** - Specification: 1 vCPU, 2GB RAM - Scaling: 1-10 pods - HA: Horizontal scaling
+Component: **API Server** - Specification: 1 vCPU, 2GB RAM - Scaling: 2-6 pods - HA: Load balancing
+Component: **Oracle DB** - Specification: 4 vCPU, 16GB RAM - Scaling: Primary + 1 replica - HA: Failover clustering
+Component: **Redis Cache** - Specification: 1 vCPU, 2GB RAM - Scaling: 1-3 pods - HA: Redis clustering
+Component: **Monitoring** - Specification: 1 vCPU, 2GB RAM - Scaling: 1-2 pods - HA: External monitoring
 
----
+##
+
 
 ## 🎯 Summary
+
 
 ### Architecture Highlights
 
@@ -851,6 +931,7 @@ api_deployment -> orchestrator_deployment : Pipeline control
 - **Enterprise Security**: Multi-zone architecture with proper boundaries
 - **Scalable Deployment**: Kubernetes-native with horizontal scaling
 
+
 ### Key Architectural Decisions
 
 1. **Native Meltano**: Direct control over orchestration vs abstracted wrappers
@@ -858,6 +939,7 @@ api_deployment -> orchestrator_deployment : Pipeline control
 3. **Railway Pattern**: Functional error handling throughout the application
 4. **FLEXT Integration**: Shared patterns and infrastructure across ecosystem
 5. **Container-First**: Kubernetes-native deployment from design phase
+
 
 ### Quality Attributes
 
@@ -867,6 +949,7 @@ api_deployment -> orchestrator_deployment : Pipeline control
 - **Maintainability**: Clean architecture with clear separation of concerns
 - **Scalability**: Horizontal scaling support with queue-based processing
 
----
+
+##
 
 **C4 Model Documentation** - Comprehensive architectural views using industry-standard C4 model approach for clear communication of system design and implementation details.

@@ -1,134 +1,226 @@
 # Arc42 Architecture Documentation
+
 ## Table of Contents
 
-- [Arc42 Architecture Documentation](#arc42-architecture-documentation)
-  - [📋 Arc42 Overview](#-arc42-overview)
-    - [Documentation Structure](#documentation-structure)
-  - [1. Introduction & Goals](#1-introduction--goals)
-    - [1.1 Business Context](#11-business-context)
-    - [1.2 Business Goals](#12-business-goals)
-      - [Primary Business Goals](#primary-business-goals)
-      - [Secondary Business Goals](#secondary-business-goals)
-    - [1.3 Technical Goals](#13-technical-goals)
-      - [Functional Requirements](#functional-requirements)
-      - [Quality Requirements](#quality-requirements)
-    - [1.4 Stakeholders](#14-stakeholders)
-  - [2. Constraints](#2-constraints)
-    - [2.1 Technical Constraints](#21-technical-constraints)
-      - [Platform Constraints](#platform-constraints)
-      - [Integration Constraints](#integration-constraints)
-    - [2.2 Organizational Constraints](#22-organizational-constraints)
-      - [Team Constraints](#team-constraints)
-      - [Compliance Constraints](#compliance-constraints)
-    - [2.3 Conventions](#23-conventions)
-      - [Coding Standards](#coding-standards)
-      - [Development Practices](#development-practices)
-  - [3. Context & Scope](#3-context--scope)
-    - [3.1 Business Context](#31-business-context)
-    - [3.2 System Scope](#32-system-scope)
-      - [In Scope](#in-scope)
-      - [Out of Scope](#out-of-scope)
-    - [3.3 System Boundaries](#33-system-boundaries)
-    - [3.4 External Interfaces](#34-external-interfaces)
-      - [Data Interfaces](#data-interfaces)
-      - [Management Interfaces](#management-interfaces)
-  - [4. Solution Strategy](#4-solution-strategy)
-    - [4.1 Technology Strategy](#41-technology-strategy)
-      - [Core Technology Choices](#core-technology-choices)
-      - [Architecture Principles](#architecture-principles)
-    - [4.2 Design Decisions](#42-design-decisions)
-      - [Pipeline Architecture Decision](#pipeline-architecture-decision)
-      - [Native Meltano Decision](#native-meltano-decision)
-    - [4.3 Quality Measures](#43-quality-measures)
-      - [Code Quality](#code-quality)
-      - [Architecture Quality](#architecture-quality)
-  - [5. Building Block View](#5-building-block-view)
-    - [5.1 Level 1: System Overview](#51-level-1-system-overview)
-    - [5.2 Level 2: Pipeline Engine Breakdown](#52-level-2-pipeline-engine-breakdown)
-    - [5.3 Level 3: Component Internal Structure](#53-level-3-component-internal-structure)
-      - [Pipeline Orchestrator Internal Structure](#pipeline-orchestrator-internal-structure)
-  - [6. Runtime View](#6-runtime-view)
-    - [6.1 Full Sync Pipeline Runtime](#61-full-sync-pipeline-runtime)
-    - [6.2 Incremental Sync Pipeline Runtime](#62-incremental-sync-pipeline-runtime)
-    - [6.3 Error Recovery Scenarios](#63-error-recovery-scenarios)
-  - [7. Deployment View](#7-deployment-view)
-    - [7.1 Infrastructure Overview](#71-infrastructure-overview)
-    - [7.2 Container Configuration](#72-container-configuration)
-      - [Orchestrator Container](#orchestrator-container)
-- [Dockerfile for Pipeline Orchestrator](#dockerfile-for-pipeline-orchestrator)
-- [Install system dependencies](#install-system-dependencies)
-- [Install Poetry](#install-poetry)
-- [Set work directory](#set-work-directory)
-- [Copy dependency files](#copy-dependency-files)
-- [Install Python dependencies](#install-python-dependencies)
-- [Copy application code](#copy-application-code)
-- [Create non-root user](#create-non-root-user)
-- [Health check](#health-check)
-- [Expose port](#expose-port)
-- [Start application](#start-application)
-      - [Infrastructure Requirements](#infrastructure-requirements)
-    - [7.3 Configuration Management](#73-configuration-management)
-      - [Environment Configuration](#environment-configuration)
-- [config/environments/dev.yml](#configenvironmentsdevyml)
-- [config/environments/prod.yml](#configenvironmentsprodyml)
-  - [8. Concepts (Cross-cutting Concerns)](#8-concepts-cross-cutting-concerns)
-    - [8.1 Domain Concepts](#81-domain-concepts)
-      - [Core Business Entities](#core-business-entities)
-      - [Business Rules](#business-rules)
-    - [8.2 Error Handling Concept](#82-error-handling-concept)
-      - [Railway Pattern Implementation](#railway-pattern-implementation)
-    - [8.3 Security Concepts](#83-security-concepts)
-      - [Authentication & Authorization](#authentication--authorization)
-    - [8.4 Performance Concepts](#84-performance-concepts)
-      - [Caching Strategy](#caching-strategy)
-  - [9. Architecture Decisions](#9-architecture-decisions)
-    - [9.1 Architectural Decision Records (ADRs)](#91-architectural-decision-records-adrs)
-      - [ADR 001: Technology Stack Selection](#adr-001-technology-stack-selection)
-      - [ADR 002: Pipeline Architecture Pattern](#adr-002-pipeline-architecture-pattern)
-      - [ADR 003: Error Handling Strategy](#adr-003-error-handling-strategy)
-    - [9.2 Decision Log](#92-decision-log)
-  - [10. Quality Requirements](#10-quality-requirements)
-    - [10.1 Quality Tree](#101-quality-tree)
-    - [10.2 Quality Scenarios](#102-quality-scenarios)
-      - [Performance Scenario: High Volume Data Load](#performance-scenario-high-volume-data-load)
-      - [Reliability Scenario: Network Failure](#reliability-scenario-network-failure)
-      - [Security Scenario: Unauthorized Access Attempt](#security-scenario-unauthorized-access-attempt)
-  - [11. Risks & Technical Debt](#11-risks--technical-debt)
-    - [11.1 Identified Risks](#111-identified-risks)
-      - [High Risk Items](#high-risk-items)
-      - [Medium Risk Items](#medium-risk-items)
-    - [11.2 Technical Debt](#112-technical-debt)
-      - [Code Quality Debt](#code-quality-debt)
-      - [Architecture Debt](#architecture-debt)
-      - [Infrastructure Debt](#infrastructure-debt)
-    - [11.3 Risk Mitigation Strategies](#113-risk-mitigation-strategies)
-      - [Proactive Measures](#proactive-measures)
-      - [Contingency Plans](#contingency-plans)
-  - [12. Glossary](#12-glossary)
-    - [A](#a)
-    - [C](#c)
-    - [D](#d)
-    - [E](#e)
-    - [F](#f)
-    - [J](#j)
-    - [K](#k)
-    - [M](#m)
-    - [O](#o)
-    - [P](#p)
-    - [R](#r)
-    - [S](#s)
-    - [T](#t)
-    - [W](#w)
+- Arc42 Architecture Documentation
+  - 📋 Arc42 Overview
+    ```
+    - Documentation Structure
+  - 1. Introduction & Goals
+    ```
+    - 1.1 Business Context
+    ```
+    - 1.2 Business Goals
+    ```
+      - Primary Business Goals
+    ```
+      - Secondary Business Goals
+    ```
+    - 1.3 Technical Goals
+    ```
+      - Functional Requirements
+    ```
+      - Quality Requirements
+    ```
+    - 1.4 Stakeholders
+  - 2. Constraints
+    ```
+    - 2.1 Technical Constraints
+    ```
+      - Platform Constraints
+    ```
+      - Integration Constraints
+    ```
+    - 2.2 Organizational Constraints
+    ```
+      - Team Constraints
+    ```
+      - Compliance Constraints
+    ```
+    - 2.3 Conventions
+    ```
+      - Coding Standards
+    ```
+      - Development Practices
+  - 3. Context & Scope
+    ```
+    - 3.1 Business Context
+    ```
+    - 3.2 System Scope
+    ```
+      - In Scope
+    ```
+      - Out of Scope
+    ```
+    - 3.3 System Boundaries
+    ```
+    - 3.4 External Interfaces
+    ```
+      - Data Interfaces
+    ```
+      - Management Interfaces
+  - 4. Solution Strategy
+    ```
+    - 4.1 Technology Strategy
+    ```
+      - Core Technology Choices
+    ```
+      - Architecture Principles
+    ```
+    - 4.2 Design Decisions
+    ```
+      - Pipeline Architecture Decision
+    ```
+      - Native Meltano Decision
+    ```
+    - 4.3 Quality Measures
+    ```
+      - Code Quality
+    ```
+      - Architecture Quality
+  - 5. Building Block View
+    ```
+    - 5.1 Level 1: System Overview
+    ```
+    - 5.2 Level 2: Pipeline Engine Breakdown
+    ```
+    - 5.3 Level 3: Component Internal Structure
+    ```
+      - Pipeline Orchestrator Internal Structure
+  - 6. Runtime View
+    ```
+    - 6.1 Full Sync Pipeline Runtime
+    ```
+    - 6.2 Incremental Sync Pipeline Runtime
+    ```
+    - 6.3 Error Recovery Scenarios
+  - 7. Deployment View
+    ```
+    - 7.1 Infrastructure Overview
+    ```
+    - 7.2 Container Configuration
+    ```
+      - Orchestrator Container
+- Dockerfile for Pipeline Orchestrator
+- Install system dependencies
+- Install Poetry
+- Set work directory
+- Copy dependency files
+- Install Python dependencies
+- Copy application code
+- Create non-root user
+- Health check
+- Expose port
+- Start application
+    ```
+      - Infrastructure Requirements
+  - 7.3 Configuration Management
+    ```
+    - Environment Configuration
+- config/environments/dev.yml
+- config/environments/prod.yml
+  - 8. Concepts (Cross-cutting Concerns)
+    ```
+    - 8.1 Domain Concepts
+    ```
+      - Core Business Entities
+    ```
+      - Business Rules
+    ```
+    - 8.2 Error Handling Concept
+    ```
+      - Railway Pattern Implementation
+    ```
+    - 8.3 Security Concepts
+    ```
+      - Authentication & Authorization
+    ```
+    - 8.4 Performance Concepts
+    ```
+      - Caching Strategy
+  - 9. Architecture Decisions
+    ```
+    - 9.1 Architectural Decision Records (ADRs)
+    ```
+      - ADR 001: Technology Stack Selection
+    ```
+      - ADR 002: Pipeline Architecture Pattern
+    ```
+      - ADR 003: Error Handling Strategy
+    ```
+    - 9.2 Decision Log
+  - 10. Quality Requirements
+    ```
+    - 10.1 Quality Tree
+    ```
+    - 10.2 Quality Scenarios
+    ```
+      - Performance Scenario: High Volume Data Load
+    ```
+      - Reliability Scenario: Network Failure
+    ```
+      - Security Scenario: Unauthorized Access Attempt
+  - 11. Risks & Technical Debt
+    ```
+    - 11.1 Identified Risks
+    ```
+      - High Risk Items
+    ```
+      - Medium Risk Items
+    ```
+    - 11.2 Technical Debt
+    ```
+      - Code Quality Debt
+    ```
+      - Architecture Debt
+    ```
+      - Infrastructure Debt
+    ```
+    - 11.3 Risk Mitigation Strategies
+    ```
+      - Proactive Measures
+    ```
+      - Contingency Plans
+  - 12. Glossary
+    ```
+    - A
+    ```
+    - C
+    ```
+    - D
+    ```
+    - E
+    ```
+    - F
+    ```
+    - J
+    ```
+    - K
+    ```
+    - M
+    ```
+    - O
+    ```
+    - P
+    ```
+    - R
+    ```
+    - S
+    ```
+    - T
+    ```
+    - W
 
 
 **Project**: gruponos-meltano-native | **Version**: 0.9.0 | **Framework**: Arc42 Template
 **Last Updated**: 2025-10-10 | **Status**: Production-Ready ETL Pipeline
 
----
+##
 
 ## 📋 Arc42 Overview
 
 This document follows the [Arc42](https://arc42.org/) template for comprehensive software architecture documentation. Arc42 provides a standardized structure for documenting software systems with 12 main sections covering all aspects of system architecture.
+
 
 ### Documentation Structure
 
@@ -147,127 +239,168 @@ This document follows the [Arc42](https://arc42.org/) template for comprehensive
 12. Glossary
 ```
 
----
+##
 
 ## 1. Introduction & Goals
+
 
 ### 1.1 Business Context
 
 **GrupoNOS Meltano Native** is an enterprise-grade ETL (Extract, Transform,
+    ```
      Load) pipeline implementation specifically designed for integrating Oracle Warehouse Management System (WMS) data with downstream analytics databases. The system serves Grupo Nos,
-    
+
+    ```
      a Portuguese energy company, by providing reliable,
+    ```
      scalable data integration capabilities for their warehouse operations.
+
 
 ### 1.2 Business Goals
 
+
 #### Primary Business Goals
+
 - **Data Availability**: Ensure WMS operational data is available for analytics within 2 hours of creation
 - **Data Quality**: Maintain 99.9% data accuracy and completeness in analytics systems
 - **Operational Efficiency**: Reduce manual data integration efforts by 80%
 - **Business Intelligence**: Enable real-time warehouse performance analytics and reporting
 
+
 #### Secondary Business Goals
+
 - **Scalability**: Support warehouse operations growth from current 50K to 500K+ daily transactions
 - **Reliability**: Achieve 99.5% pipeline uptime with automated error recovery
 - **Cost Efficiency**: Minimize infrastructure and maintenance costs through automation
 
+
 ### 1.3 Technical Goals
 
+
 #### Functional Requirements
+
 - Extract data from Oracle WMS via REST API
 - Transform and validate data according to business rules
 - Load data into Oracle Analytics database with appropriate indexing
 - Provide both full sync (weekly) and incremental sync (2-hourly) capabilities
 - Support schema evolution and data quality validation
 
+
 #### Quality Requirements
+
 - **Performance**: Process 100K records in < 30 minutes for full sync
 - **Reliability**: 99.5% uptime with automatic recovery
 - **Security**: End-to-end encryption and role-based access control
 - **Maintainability**: Modular design with clear separation of concerns
 - **Observability**: Comprehensive monitoring and alerting capabilities
 
+
 ### 1.4 Stakeholders
 
-| Role | Responsibilities | Concerns |
-|------|------------------|----------|
-| **Data Analysts** | Use WMS data for reporting and analytics | Data freshness, accuracy, availability |
-| **Warehouse Managers** | Monitor warehouse operations | Real-time visibility, performance metrics |
-| **IT Operations** | Deploy and maintain the system | Reliability, scalability, security |
-| **Data Engineers** | Design and optimize data pipelines | Performance, data quality, maintainability |
-| **System Architects** | Define technical standards | Compliance, scalability, integration |
-
----
+Role: **Data Analysts** - Responsibilities: Use WMS data for reporting and analytics - Concerns: Data freshness, accuracy, availability
+Role: **Warehouse Managers** - Responsibilities: Monitor warehouse operations - Concerns: Real-time visibility, performance metrics
+Role: **IT Operations** - Responsibilities: Deploy and maintain the system - Concerns: Reliability, scalability, security
+Role: **Data Engineers** - Responsibilities: Design and optimize data pipelines - Concerns: Performance, data quality, maintainability
+Role: **System Architects** - Responsibilities: Define technical standards - Concerns: Compliance, scalability, integration
+##
 
 ## 2. Constraints
 
+
 ### 2.1 Technical Constraints
 
+
 #### Platform Constraints
+
 - **Python Version**: Must use Python 3.13+ (latest stable with enhanced typing)
 - **Database**: Target database must be Oracle (existing analytics infrastructure)
 - **Orchestration**: Must use Meltano 3.8.0+ for ETL orchestration
 - **Deployment**: Must support containerized deployment (Docker/Kubernetes)
 
+
 #### Integration Constraints
+
 - **Source System**: Oracle WMS REST API (no direct database access)
 - **Authentication**: Must support OAuth2/JWT for API authentication
 - **Data Format**: Source provides JSON, target requires relational schema
 - **Network Security**: Must operate within corporate firewall restrictions
 
+
 ### 2.2 Organizational Constraints
 
+
 #### Team Constraints
+
 - **Development Team**: 2-3 full-time developers with Python expertise
 - **Operations Team**: Separate DevOps team handles infrastructure
 - **Timeline**: 3-month development cycle with monthly releases
 - **Budget**: Fixed budget with focus on open-source technologies
 
+
 #### Compliance Constraints
+
 - **Data Privacy**: Must comply with GDPR for customer data handling
 - **Security Standards**: Must meet ISO 27001 security requirements
 - **Audit Requirements**: Must provide comprehensive audit trails
 - **Change Management**: Must follow corporate change management processes
 
+
 ### 2.3 Conventions
 
+
 #### Coding Standards
+
 - **Language**: Python 3.13+ with strict type annotations
 - **Architecture**: FLEXT Clean Architecture patterns
 - **Error Handling**: Railway pattern with FlextResult[T]
 - **Testing**: 90%+ code coverage with pytest
 - **Documentation**: Arc42 + C4 model documentation standards
 
+
 #### Development Practices
+
 - **Version Control**: Git with trunk-based development
 - **CI/CD**: Automated testing and deployment pipelines
 - **Code Review**: Mandatory peer review for all changes
 - **Documentation**: Updated with each feature implementation
 
----
+##
 
 ## 3. Context & Scope
+
 
 ### 3.1 Business Context
 
 ```
 [Grupo Nos Organization]
+    ```
     ├── Energy Production Division
+    ```
     │   ├── Power Plants (Hydro, Wind, Solar)
+    ```
     │   └── Grid Operations
+    ```
     ├── Energy Distribution Division
+    ```
     │   ├── Warehouse Operations ← [TARGET DOMAIN]
+    ```
     │   ├── Logistics & Transportation
+    ```
     │   └── Customer Service
+    ```
     └── Corporate Functions
+    ```
         ├── Finance & Analytics ← [PRIMARY USERS]
+    ```
         └── IT & Operations
 ```
 
+
 ### 3.2 System Scope
 
+
 #### In Scope
+
 - **Data Extraction**: Oracle WMS operational data (allocations, orders, inventory)
 - **Data Transformation**: Business rule validation and data cleansing
 - **Data Loading**: Relational schema loading with referential integrity
@@ -275,12 +408,15 @@ This document follows the [Arc42](https://arc42.org/) template for comprehensive
 - **Monitoring & Alerting**: System health and performance monitoring
 - **API Integration**: REST API for external system integration
 
+
 #### Out of Scope
+
 - **Source System Modification**: Cannot modify Oracle WMS database schema
 - **Legacy Data Migration**: Historical data before 2024-01-01
 - **Real-time Streaming**: Sub-second latency requirements
 - **Advanced Analytics**: BI tool integration or dashboard creation
 - **Mobile Applications**: Direct user-facing mobile interfaces
+
 
 ### 3.3 System Boundaries
 
@@ -289,8 +425,11 @@ This document follows the [Arc42](https://arc42.org/) template for comprehensive
 !include <C4/C4_Context>
 
 System_Boundary(gruponos_meltano_native, "GrupoNOS Meltano Native") {
+    ```
     System(etl_pipeline, "ETL Pipeline", "Data extraction, transformation, loading")
+    ```
     System(api_service, "API Service", "External integration interfaces")
+    ```
     System(monitoring, "Monitoring", "System observability and alerting")
 }
 
@@ -313,40 +452,37 @@ note right : System Boundary:\n- ETL operations only\n- No source system modific
 @enduml
 ```
 
+
 ### 3.4 External Interfaces
+
 
 #### Data Interfaces
 
-| Interface | Protocol | Direction | Frequency | Volume |
-|-----------|----------|-----------|-----------|--------|
-| **WMS REST API** | HTTPS/JSON | Inbound | Continuous | 10K-50K records/hour |
-| **Analytics DB** | SQL/TCP | Outbound | Batch | 1K-10K records/load |
-| **Monitoring API** | HTTPS/JSON | Outbound | Continuous | 100 metrics/minute |
+Interface: **WMS REST API** - Protocol: HTTPS/JSON - Direction: Inbound - Frequency: Continuous - Volume: 10K-50K records/hour
+Interface: **Analytics DB** - Protocol: SQL/TCP - Direction: Outbound - Frequency: Batch - Volume: 1K-10K records/load
+Interface: **Monitoring API** - Protocol: HTTPS/JSON - Direction: Outbound - Frequency: Continuous - Volume: 100 metrics/minute
 
 #### Management Interfaces
 
-| Interface | Purpose | Users | Authentication |
-|-----------|---------|-------|----------------|
-| **CLI Interface** | Pipeline operations | Data engineers | OS credentials |
-| **REST API** | System integration | External systems | JWT tokens |
-| **Monitoring Dashboard** | System observability | Operations team | SSO |
-
----
+Interface: **CLI Interface** - Purpose: Pipeline operations - Users: Data engineers - Authentication: OS credentials
+Interface: **REST API** - Purpose: System integration - Users: External systems - Authentication: JWT tokens
+Interface: **Monitoring Dashboard** - Purpose: System observability - Users: Operations team - Authentication: SSO
+##
 
 ## 4. Solution Strategy
 
+
 ### 4.1 Technology Strategy
+
 
 #### Core Technology Choices
 
-| Concern | Technology | Rationale |
-|---------|------------|-----------|
-| **Language** | Python 3.13+ | Type safety, ecosystem maturity, data science capabilities |
-| **Orchestration** | Meltano 3.8.0 | Native ELT framework, Singer ecosystem, proven reliability |
-| **Data Integration** | Singer Protocol | Standard specification, rich plugin ecosystem |
-| **Configuration** | Pydantic v2 | Type-safe configuration, validation, serialization |
-| **Error Handling** | Railway Pattern | Functional error handling, composability |
-| **Dependency Injection** | FLEXT Container | Centralized service management, testability |
+Concern: **Language** - Technology: Python 3.13+ - Rationale: Type safety, ecosystem maturity, data science capabilities
+Concern: **Orchestration** - Technology: Meltano 3.8.0 - Rationale: Native ELT framework, Singer ecosystem, proven reliability
+Concern: **Data Integration** - Technology: Singer Protocol - Rationale: Standard specification, rich plugin ecosystem
+Concern: **Configuration** - Technology: Pydantic v2 - Rationale: Type-safe configuration, validation, serialization
+Concern: **Error Handling** - Technology: Railway Pattern - Rationale: Functional error handling, composability
+Concern: **Dependency Injection** - Technology: FLEXT Container - Rationale: Centralized service management, testability
 
 #### Architecture Principles
 
@@ -356,52 +492,65 @@ note right : System Boundary:\n- ETL operations only\n- No source system modific
 4. **Test-Driven Development**: High test coverage with comprehensive validation
 5. **Infrastructure as Code**: Automated deployment and configuration management
 
+
 ### 4.2 Design Decisions
+
 
 #### Pipeline Architecture Decision
 
 **Decision**: Implement dual pipeline architecture (full sync + incremental sync)
 
 **Rationale**:
+
 - **Full Sync**: Handles schema changes, data reconciliation, comprehensive updates
 - **Incremental Sync**: Provides data freshness, reduces processing overhead
 - **Separation of Concerns**: Different performance characteristics and business requirements
 
 **Trade-offs**:
+
 - **Positive**: Optimized performance, flexible scheduling, independent scaling
 - **Negative**: Increased complexity, configuration duplication, maintenance overhead
+
 
 #### Native Meltano Decision
 
 **Decision**: Use Meltano 3.8.0 native orchestration instead of abstracted wrapper
 
 **Rationale**:
+
 - **Direct Control**: Full access to Meltano capabilities and configuration
 - **Performance**: Reduced abstraction overhead
 - **Integration**: Native plugin ecosystem and community support
 - **Future-Proofing**: Direct updates from Meltano project
 
 **Trade-offs**:
+
 - **Positive**: Maximum flexibility, latest features, community support
 - **Negative**: Tighter coupling, manual plugin management, version compatibility
 
+
 ### 4.3 Quality Measures
 
+
 #### Code Quality
+
 - **Type Coverage**: 100% type annotations with Pyrefly strict mode
 - **Test Coverage**: 90%+ code coverage with comprehensive integration tests
 - **Linting**: Ruff with zero violations across all code
 - **Documentation**: Arc42 + C4 model with automated maintenance
 
+
 #### Architecture Quality
+
 - **Clean Architecture**: Verified separation of concerns
 - **SOLID Principles**: Single responsibility, open/closed, dependency inversion
 - **DRY Principle**: Eliminated code duplication through shared libraries
 - **YAGNI Principle**: Focused on current requirements without over-engineering
 
----
+##
 
 ## 5. Building Block View
+
 
 ### 5.1 Level 1: System Overview
 
@@ -412,9 +561,13 @@ note right : System Boundary:\n- ETL operations only\n- No source system modific
 title Level 1: System Overview
 
 System_Boundary(gruponos_meltano_native, "GrupoNOS Meltano Native") {
+    ```
     Container(cli_interface, "CLI Interface", "Python/Click", "Command-line operations")
+    ```
     Container(api_interface, "API Interface", "Python/FastAPI", "REST API operations")
+    ```
     Container(pipeline_engine, "Pipeline Engine", "Python/Meltano", "ETL orchestration")
+    ```
     Container(monitoring_system, "Monitoring System", "Python/FLEXT", "Observability")
 }
 
@@ -430,6 +583,7 @@ Rel(monitoring_system, pipeline_engine, "Monitors", "Metrics")
 @enduml
 ```
 
+
 ### 5.2 Level 2: Pipeline Engine Breakdown
 
 ```plantuml
@@ -439,10 +593,15 @@ Rel(monitoring_system, pipeline_engine, "Monitors", "Metrics")
 title Level 2: Pipeline Engine Components
 
 Container_Boundary(pipeline_engine, "Pipeline Engine") {
+    ```
     Component(orchestrator, "Pipeline Orchestrator", "Python", "Coordinates ETL operations")
+    ```
     Component(extractor, "Data Extractor", "Singer Tap", "Extracts from Oracle WMS")
+    ```
     Component(transformer, "Data Transformer", "Python", "Validates and transforms data")
+    ```
     Component(loader, "Data Loader", "Singer Target", "Loads to Oracle Analytics")
+    ```
     Component(state_manager, "State Manager", "Python/JSON", "Tracks execution state")
 }
 
@@ -455,7 +614,9 @@ Rel(orchestrator, state_manager, "Persists", "Execution state")
 @enduml
 ```
 
+
 ### 5.3 Level 3: Component Internal Structure
+
 
 #### Pipeline Orchestrator Internal Structure
 
@@ -466,11 +627,17 @@ Rel(orchestrator, state_manager, "Persists", "Execution state")
 title Level 3: Orchestrator Internal Structure
 
 Package "orchestrator" as orch {
+    ```
     Class "GruponosMeltanoOrchestrator" as main_orch
+    ```
     Class "PipelineExecutor" as executor
+    ```
     Class "JobScheduler" as scheduler
+    ```
     Class "PluginCoordinator" as coordinator
+    ```
     Class "StateManager" as state_mgr
+    ```
     Class "ErrorHandler" as error_handler
 }
 
@@ -487,9 +654,10 @@ coordinator --> error_handler : reports
 @enduml
 ```
 
----
+##
 
 ## 6. Runtime View
+
 
 ### 6.1 Full Sync Pipeline Runtime
 
@@ -545,6 +713,7 @@ monitor -> "Alert System": Send alerts if needed
 @enduml
 ```
 
+
 ### 6.2 Incremental Sync Pipeline Runtime
 
 ```plantuml
@@ -584,6 +753,7 @@ orch -> scheduler: Report successful completion
 
 @enduml
 ```
+
 
 ### 6.3 Error Recovery Scenarios
 
@@ -635,9 +805,10 @@ orch -> monitor: Continue with reduced load
 @enduml
 ```
 
----
+##
 
 ## 7. Deployment View
+
 
 ### 7.1 Infrastructure Overview
 
@@ -648,30 +819,48 @@ orch -> monitor: Continue with reduced load
 title Infrastructure Deployment Overview
 
 Deployment_Node(development, "Development Environment", "Local/DevContainer") {
+    ```
     Container(dev_orchestrator, "Orchestrator", "Python 3.13", "Local development")
+    ```
     Container(dev_database, "Local DB", "SQLite/PostgreSQL", "Development database")
 }
 
 Deployment_Node(staging, "Staging Environment", "Azure/AKS") {
+    ```
     Deployment_Node(staging_cluster, "AKS Cluster", "Kubernetes") {
+    ```
         Container(staging_orchestrator, "Orchestrator", "Docker", "Staging deployment")
+    ```
         Container(staging_api, "API Service", "Docker", "Staging API")
+    ```
         Container(staging_db, "Staging DB", "Azure Database", "Staging database")
+    ```
     }
 }
 
 Deployment_Node(production, "Production Environment", "Azure/AKS") {
+    ```
     Deployment_Node(prod_cluster, "AKS Cluster", "Kubernetes") {
+    ```
         Container(prod_orchestrator, "Orchestrator", "Docker", "Production pipeline")
+    ```
         Container(prod_workers, "Worker Nodes", "Docker", "Parallel processing")
+    ```
         Container(prod_api, "API Gateway", "nginx", "Load balancing")
+    ```
         Container(prod_monitoring, "Monitoring", "Prometheus", "System monitoring")
+    ```
     }
 
+    ```
     Deployment_Node(prod_database, "Database Layer", "Azure") {
+    ```
         Container(prod_primary, "Oracle Primary", "Azure VM", "Primary database")
+    ```
         Container(prod_replica, "Oracle Replica", "Azure VM", "Read replica")
+    ```
         Container(prod_cache, "Redis Cache", "Azure Cache", "Caching layer")
+    ```
     }
 }
 
@@ -684,7 +873,9 @@ prod_workers -> prod_replica : Read operations
 @enduml
 ```
 
+
 ### 7.2 Container Configuration
+
 
 #### Orchestrator Container
 
@@ -694,8 +885,11 @@ FROM python:3.13-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    ```
     curl \
+    ```
     git \
+    ```
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
@@ -709,6 +903,7 @@ COPY pyproject.toml poetry.lock ./
 
 # Install Python dependencies
 RUN poetry config virtualenvs.create false \
+    ```
     && poetry install --no-dev --no-interaction
 
 # Copy application code
@@ -716,11 +911,13 @@ COPY src/ ./src/
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
+    ```
     && chown -R app:app /app
 USER app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    ```
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Expose port
@@ -730,15 +927,15 @@ EXPOSE 8000
 CMD ["python", "-m", "gruponos_meltano_native.cli", "serve"]
 ```
 
+
 #### Infrastructure Requirements
 
-| Environment | CPU | Memory | Storage | Network |
-|-------------|-----|--------|---------|---------|
-| **Development** | 2 cores | 4GB | 50GB | 100Mbps |
-| **Staging** | 4 cores | 8GB | 100GB | 500Mbps |
-| **Production** | 8-16 cores | 16-32GB | 500GB | 1Gbps |
+Environment: **Development** - CPU: 2 cores - Memory: 4GB - Storage: 50GB - Network: 100Mbps
+Environment: **Staging** - CPU: 4 cores - Memory: 8GB - Storage: 100GB - Network: 500Mbps
+Environment: **Production** - CPU: 8-16 cores - Memory: 16-32GB - Storage: 500GB - Network: 1Gbps
 
 ### 7.3 Configuration Management
+
 
 #### Environment Configuration
 
@@ -787,11 +984,13 @@ monitoring:
   alerts_enabled: true
 ```
 
----
+##
 
 ## 8. Concepts (Cross-cutting Concerns)
 
+
 ### 8.1 Domain Concepts
+
 
 #### Core Business Entities
 
@@ -828,6 +1027,7 @@ Allocation --> OrderDetail : references
 OrderHeader --> OrderDetail : contains
 ```
 
+
 #### Business Rules
 
 1. **Allocation Consistency**: Total allocated quantity cannot exceed available inventory
@@ -835,7 +1035,9 @@ OrderHeader --> OrderDetail : contains
 3. **Data Freshness**: Incremental updates must use modification timestamp
 4. **Schema Validation**: All data must conform to predefined schemas
 
+
 ### 8.2 Error Handling Concept
+
 
 #### Railway Pattern Implementation
 
@@ -849,15 +1051,24 @@ start
 if (Validation Success?) then (yes)
   :Transform Data;
   if (Transform Success?) then (yes)
+    ```
     :Load Data;
+    ```
     if (Load Success?) then (yes)
+    ```
       :Return Success;
+    ```
     else (no)
+    ```
       :Log Load Error;
+    ```
       :Return Failure;
+    ```
     endif
   else (no)
+    ```
     :Log Transform Error;
+    ```
     :Return Failure;
   endif
 else (no)
@@ -869,7 +1080,9 @@ stop
 @enduml
 ```
 
+
 ### 8.3 Security Concepts
+
 
 #### Authentication & Authorization
 
@@ -879,40 +1092,59 @@ title Security Architecture Concepts
 
 package "Authentication" {
   class JWTToken {
+    ```
     +user_id: str
+    ```
     +roles: list
+    ```
     +expires_at: datetime
+    ```
     +validate(): bool
   }
 
   class OAuth2Client {
+    ```
     +client_id: str
+    ```
     +client_secret: str
+    ```
     +token_url: str
+    ```
     +authenticate(): JWTToken
   }
 }
 
 package "Authorization" {
   class RoleBasedAccess {
+    ```
     +user_roles: list
+    ```
     +resource_permissions: dict
+    ```
     +check_permission(action, resource): bool
   }
 
   class ResourceGuard {
+    ```
     +resource_type: str
+    ```
     +required_permissions: list
+    ```
     +validate_access(user, action): bool
   }
 }
 
 package "Security Context" {
   class SecurityContext {
+    ```
     +user: User
+    ```
     +token: JWTToken
+    ```
     +permissions: list
+    ```
     +is_authenticated(): bool
+    ```
     +has_permission(permission): bool
   }
 }
@@ -923,7 +1155,9 @@ RoleBasedAccess --> SecurityContext : provides
 ResourceGuard --> RoleBasedAccess : uses
 ```
 
+
 ### 8.4 Performance Concepts
+
 
 #### Caching Strategy
 
@@ -933,38 +1167,55 @@ title Multi-Level Caching Architecture
 
 package "Application Cache" {
   class MemoryCache {
+    ```
     +ttl: int
+    ```
     +max_size: int
+    ```
     +get(key): object
+    ```
     +set(key, value, ttl): void
   }
 
   class RedisCache {
+    ```
     +host: str
+    ```
     +port: int
+    ```
     +db: int
+    ```
     +pipeline: bool
   }
 }
 
 package "Database Cache" {
   class QueryCache {
+    ```
     +max_age: int
+    ```
     +invalidate_pattern: str
+    ```
     +warmup_queries: list
   }
 
   class ConnectionPool {
+    ```
     +min_connections: int
+    ```
     +max_connections: int
+    ```
     +idle_timeout: int
   }
 }
 
 package "CDN Cache" {
   class StaticCache {
+    ```
     +cache_control: str
+    ```
     +max_age: int
+    ```
     +compression: bool
   }
 }
@@ -975,11 +1226,13 @@ QueryCache --> ConnectionPool : uses
 StaticCache --> CDN : serves
 ```
 
----
+##
 
 ## 9. Architecture Decisions
 
+
 ### 9.1 Architectural Decision Records (ADRs)
+
 
 #### ADR 001: Technology Stack Selection
 
@@ -988,18 +1241,22 @@ StaticCache --> CDN : serves
 **Context**: Need to select technology stack for enterprise ETL pipeline with Oracle WMS integration.
 
 **Decision**: Use Python 3.13+ with Meltano 3.8.0 orchestration, FLEXT ecosystem libraries,
+    ```
      and Pydantic for configuration.
 
 **Rationale**:
+
 - Python provides excellent data processing capabilities
 - Meltano offers proven ELT orchestration with Singer ecosystem
 - FLEXT provides enterprise patterns and shared infrastructure
 - Pydantic ensures type-safe configuration management
 
 **Consequences**:
+
 - **Positive**: Strong ecosystem support, type safety, proven patterns
 - **Negative**: Python GIL limitations for CPU-intensive tasks
 - **Risks**: Dependency on FLEXT ecosystem maintenance
+
 
 #### ADR 002: Pipeline Architecture Pattern
 
@@ -1010,14 +1267,17 @@ StaticCache --> CDN : serves
 **Context**: Need to balance data freshness requirements with processing efficiency.
 
 **Rationale**:
+
 - Full sync ensures data consistency and handles schema changes
 - Incremental sync provides real-time data freshness
 - Separation allows independent scaling and optimization
 
 **Consequences**:
+
 - **Positive**: Optimized performance, flexible scheduling, independent scaling
 - **Negative**: Increased complexity, configuration duplication
 - **Mitigation**: Shared configuration management and monitoring
+
 
 #### ADR 003: Error Handling Strategy
 
@@ -1028,28 +1288,29 @@ StaticCache --> CDN : serves
 **Context**: Need robust error handling for enterprise data pipeline with complex failure scenarios.
 
 **Rationale**:
+
 - Railway pattern provides composable error handling
 - FlextResult[T] ensures type safety in error scenarios
 - Functional approach prevents exception-based control flow
 
 **Consequences**:
+
 - **Positive**: Predictable error handling, type safety, composability
 - **Negative**: Learning curve for functional programming concepts
 - **Training**: Team training on railway pattern implementation
 
+
 ### 9.2 Decision Log
 
-| Date | Decision | Status | Impact |
-|------|----------|--------|---------|
-| 2025-01-15 | Technology Stack | Accepted | Foundation |
-| 2025-02-01 | Pipeline Architecture | Accepted | Core Design |
-| 2025-02-15 | Error Handling | Accepted | Implementation |
-| 2025-03-01 | Deployment Strategy | Accepted | Operations |
-| 2025-03-15 | Monitoring Strategy | Accepted | Observability |
-
----
+Date: 2025-01-15 - Decision: Technology Stack - Status: Accepted - Impact: Foundation
+Date: 2025-02-01 - Decision: Pipeline Architecture - Status: Accepted - Impact: Core Design
+Date: 2025-02-15 - Decision: Error Handling - Status: Accepted - Impact: Implementation
+Date: 2025-03-01 - Decision: Deployment Strategy - Status: Accepted - Impact: Operations
+Date: 2025-03-15 - Decision: Monitoring Strategy - Status: Accepted - Impact: Observability
+##
 
 ## 10. Quality Requirements
+
 
 ### 10.1 Quality Tree
 
@@ -1057,164 +1318,234 @@ StaticCache --> CDN : serves
 @startuml Quality_Tree
 mindmap
   root((Quality Requirements))
+    ```
     **Functional**
+    ```
       ++ Data Accuracy
+    ```
         +++ 99.9% accuracy requirement
+    ```
         +++ Schema validation
+    ```
         +++ Business rule enforcement
+    ```
       ++ Data Completeness
+    ```
         +++ 99.5% completeness
+    ```
         +++ Referential integrity
+    ```
         +++ Required field validation
+    ```
       ++ Data Freshness
+    ```
         +++ Full sync: weekly
+    ```
         +++ Incremental: 2 hours
+    ```
         +++ Real-time alerting
+    ```
     **Performance**
+    ```
       ++ Throughput
+    ```
         +++ Full sync: 100K records/30min
+    ```
         +++ Incremental: 10K records/5min
+    ```
         +++ API response: <2 seconds
+    ```
       ++ Scalability
+    ```
         +++ Horizontal scaling support
+    ```
         +++ Resource utilization <80%
+    ```
         +++ Auto-scaling capabilities
+    ```
       ++ Efficiency
+    ```
         +++ Memory usage <2GB
+    ```
         +++ CPU utilization optimization
+    ```
         +++ Network bandwidth optimization
+    ```
     **Security**
+    ```
       ++ Authentication
+    ```
         +++ JWT token validation
+    ```
         +++ Multi-factor authentication
+    ```
         +++ Session management
+    ```
       ++ Authorization
+    ```
         +++ Role-based access control
+    ```
         +++ Principle of least privilege
+    ```
         +++ Permission granularity
+    ```
       ++ Data Protection
+    ```
         +++ End-to-end encryption
+    ```
         +++ Data masking for sensitive fields
+    ```
         +++ Audit trail completeness
+    ```
     **Reliability**
+    ```
       ++ Availability
+    ```
         +++ 99.5% uptime SLA
+    ```
         +++ Automatic failover
+    ```
         +++ Graceful degradation
+    ```
       ++ Fault Tolerance
+    ```
         +++ Circuit breaker pattern
+    ```
         +++ Retry mechanisms
+    ```
         +++ Error recovery procedures
+    ```
       ++ Resilience
+    ```
         +++ Self-healing capabilities
+    ```
         +++ Monitoring and alerting
+    ```
         +++ Incident response automation
+    ```
     **Maintainability**
+    ```
       ++ Code Quality
+    ```
         +++ 90%+ test coverage
+    ```
         +++ Zero linting violations
+    ```
         +++ Type safety compliance
+    ```
       ++ Documentation
+    ```
         +++ Arc42 + C4 model coverage
+    ```
         +++ Automated maintenance
+    ```
         +++ Up-to-date API docs
+    ```
       ++ Operability
+    ```
         +++ Automated deployment
+    ```
         +++ Configuration management
+    ```
         +++ Runbook completeness
 @enduml
 ```
 
+
 ### 10.2 Quality Scenarios
 
+
 #### Performance Scenario: High Volume Data Load
+
 - **Stimulus**: 100,000 records arrive for processing
 - **Environment**: Normal production load
 - **Response**: Process completes within 30 minutes
 - **Measure**: 99% of records processed successfully, <5% resource utilization spike
 
+
 #### Reliability Scenario: Network Failure
+
 - **Stimulus**: Network connection to Oracle WMS fails
 - **Environment**: Peak business hours
 - **Response**: Automatic retry with exponential backoff
 - **Measure**: Recovery within 5 minutes, no data loss
 
+
 #### Security Scenario: Unauthorized Access Attempt
+
 - **Stimulus**: Invalid authentication token presented
 - **Environment**: Production API endpoint
 - **Response**: Immediate rejection with audit logging
 - **Measure**: No access granted, full audit trail captured
 
----
+##
 
 ## 11. Risks & Technical Debt
 
+
 ### 11.1 Identified Risks
+
 
 #### High Risk Items
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| **FLEXT Dependency Failure** | Medium | High | Local testing, version pinning, contingency plans |
-| **Oracle WMS API Changes** | Low | High | Contractual agreements, monitoring, adapter pattern |
-| **Data Volume Growth** | High | Medium | Scalability design, performance monitoring, capacity planning |
-| **Security Vulnerabilities** | Medium | High | Regular security audits, dependency scanning, patch management |
+Risk: **FLEXT Dependency Failure** - Probability: Medium - Impact: High - Mitigation: Local testing, version pinning, contingency plans
+Risk: **Oracle WMS API Changes** - Probability: Low - Impact: High - Mitigation: Contractual agreements, monitoring, adapter pattern
+Risk: **Data Volume Growth** - Probability: High - Impact: Medium - Mitigation: Scalability design, performance monitoring, capacity planning
+Risk: **Security Vulnerabilities** - Probability: Medium - Impact: High - Mitigation: Regular security audits, dependency scanning, patch management
 
 #### Medium Risk Items
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| **Team Knowledge Gap** | High | Medium | Training programs, documentation, knowledge sharing |
-| **Third-party Service Outages** | Medium | Medium | Circuit breakers, fallback mechanisms, monitoring |
-| **Configuration Drift** | Medium | Medium | Infrastructure as code, automated validation |
-| **Performance Degradation** | Medium | Medium | Performance monitoring, profiling, optimization |
+Risk: **Team Knowledge Gap** - Probability: High - Impact: Medium - Mitigation: Training programs, documentation, knowledge sharing
+Risk: **Third-party Service Outages** - Probability: Medium - Impact: Medium - Mitigation: Circuit breakers, fallback mechanisms, monitoring
+Risk: **Configuration Drift** - Probability: Medium - Impact: Medium - Mitigation: Infrastructure as code, automated validation
+Risk: **Performance Degradation** - Probability: Medium - Impact: Medium - Mitigation: Performance monitoring, profiling, optimization
 
 ### 11.2 Technical Debt
 
+
 #### Code Quality Debt
 
-| Item | Severity | Effort | Priority |
-|------|----------|--------|----------|
-| **Test Coverage Gaps** | Medium | 2 weeks | High |
-| **Documentation Synchronization** | Low | 1 week | Medium |
-| **Configuration Validation** | Medium | 1 week | High |
-| **Error Message Standardization** | Low | 3 days | Low |
+Item: **Test Coverage Gaps** - Severity: Medium - Effort: 2 weeks - Priority: High
+Item: **Documentation Synchronization** - Severity: Low - Effort: 1 week - Priority: Medium
+Item: **Configuration Validation** - Severity: Medium - Effort: 1 week - Priority: High
+Item: **Error Message Standardization** - Severity: Low - Effort: 3 days - Priority: Low
 
 #### Architecture Debt
 
-| Item | Severity | Effort | Priority |
-|------|----------|--------|----------|
-| **Dependency Path Hardcoding** | High | 2 weeks | Critical |
-| **Monitoring Integration** | Medium | 1 week | High |
-| **Security Hardening** | Medium | 2 weeks | High |
-| **Performance Optimization** | Low | 3 weeks | Medium |
+Item: **Dependency Path Hardcoding** - Severity: High - Effort: 2 weeks - Priority: Critical
+Item: **Monitoring Integration** - Severity: Medium - Effort: 1 week - Priority: High
+Item: **Security Hardening** - Severity: Medium - Effort: 2 weeks - Priority: High
+Item: **Performance Optimization** - Severity: Low - Effort: 3 weeks - Priority: Medium
 
 #### Infrastructure Debt
 
-| Item | Severity | Effort | Priority |
-|------|----------|--------|----------|
-| **Deployment Automation** | Medium | 2 weeks | High |
-| **Environment Consistency** | Medium | 1 week | Medium |
-| **Backup and Recovery** | High | 3 weeks | High |
-| **Disaster Recovery** | High | 4 weeks | Critical |
+Item: **Deployment Automation** - Severity: Medium - Effort: 2 weeks - Priority: High
+Item: **Environment Consistency** - Severity: Medium - Effort: 1 week - Priority: Medium
+Item: **Backup and Recovery** - Severity: High - Effort: 3 weeks - Priority: High
+Item: **Disaster Recovery** - Severity: High - Effort: 4 weeks - Priority: Critical
 
 ### 11.3 Risk Mitigation Strategies
 
+
 #### Proactive Measures
+
 1. **Regular Security Audits**: Monthly dependency vulnerability scanning
 2. **Performance Monitoring**: Continuous resource utilization tracking
 3. **Automated Testing**: Comprehensive CI/CD pipeline with quality gates
 4. **Documentation Maintenance**: Automated documentation synchronization
 
+
 #### Contingency Plans
+
 1. **Dependency Failure**: Local library forks, alternative implementations
 2. **Service Outage**: Circuit breaker patterns, graceful degradation
 3. **Data Loss**: Point-in-time recovery, backup validation
 4. **Security Breach**: Incident response plan, forensic capabilities
 
----
+##
 
 ## 12. Glossary
+
 
 ### A
 
@@ -1224,6 +1555,7 @@ mindmap
 
 **Arc42**: Template for comprehensive software architecture documentation
 
+
 ### C
 
 **C4 Model**: Hierarchical model for software architecture documentation (Context, Containers, Components, Code)
@@ -1232,18 +1564,22 @@ mindmap
 
 **Container**: Lightweight, standalone executable package including code, runtime, and dependencies
 
+
 ### D
 
 **DDD (Domain-Driven Design)**: Software development approach focusing on business domain modeling
 
 **Docker**: Platform for developing, shipping, and running containerized applications
 
+
 ### E
 
 **ETL (Extract, Transform, Load)**: Data integration process extracting data from sources,
+    ```
      transforming it, and loading into targets
 
 **ELT (Extract, Load, Transform)**: Variation of ETL where transformation occurs after loading
+
 
 ### F
 
@@ -1251,21 +1587,26 @@ mindmap
 
 **FastAPI**: Modern, fast web framework for building APIs with Python 3.7+
 
+
 ### J
 
 **JWT (JSON Web Token)**: Compact, URL-safe means of representing claims between parties
+
 
 ### K
 
 **Kubernetes**: Open-source system for automating deployment, scaling, and management of containerized applications
 
+
 ### M
 
 **Meltano**: Open-source platform for building and running ELT pipelines
 
+
 ### O
 
 **OAuth2**: Open standard for access delegation, commonly used for token-based authentication
+
 
 ### P
 
@@ -1273,11 +1614,13 @@ mindmap
 
 **Python 3.13**: Latest stable version of Python programming language
 
+
 ### R
 
 **RBAC (Role-Based Access Control)**: Access control method based on user roles and permissions
 
 **REST (Representational State Transfer)**: Architectural style for distributed systems
+
 
 ### S
 
@@ -1287,14 +1630,16 @@ mindmap
 
 **SQL**: Structured Query Language for managing relational databases
 
+
 ### T
 
 **TCP (Transmission Control Protocol)**: Connection-oriented protocol for reliable data transmission
+
 
 ### W
 
 **WMS (Warehouse Management System)**: Software for managing warehouse operations and inventory
 
----
+##
 
 **Arc42 Documentation** - Comprehensive software architecture documentation following industry-standard template with C4 model integration for clear communication of system design and implementation details.

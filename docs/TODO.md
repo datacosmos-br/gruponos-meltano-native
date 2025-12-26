@@ -1,7 +1,9 @@
 # GrupoNOS Meltano Native - Technical Debt and Issues
+
 ## Table of Contents
 
 - [GrupoNOS Meltano Native - Technical Debt and Issues](#gruponos-meltano-native---technical-debt-and-issues)
+  - [Table of Contents](#table-of-contents)
   - [✅ RESOLVED ISSUES (Completed 2025-08-04)](#-resolved-issues-completed-2025-08-04)
     - [✅ **Documentation Standardization - COMPLETED**](#-documentation-standardization---completed)
     - [✅ **Missing Environment File Template - RESOLVED**](#-missing-environment-file-template---resolved)
@@ -19,7 +21,7 @@
     - [11. **Unused Directory Structure**](#11-unused-directory-structure)
     - [12. **Inconsistent Import Patterns**](#12-inconsistent-import-patterns)
     - [13. **Missing LDAP Implementation**](#13-missing-ldap-implementation)
-  - [⚠️ MEDIUM PRIORITY ISSUES](#-medium-priority-issues)
+  - [⚠️ MEDIUM PRIORITY ISSUES](#️-medium-priority-issues)
     - [14. **Oversized Test Files**](#14-oversized-test-files)
     - [15. **Missing Type Stubs**](#15-missing-type-stubs)
     - [16. **Inconsistent Error Handling**](#16-inconsistent-error-handling)
@@ -97,11 +99,13 @@
 **Priority**: CRITICAL | **Impact**: Complete Test Infrastructure Failure | **Effort**: 2-4 hours
 
 **Issue**: `flext_meltano.models.py` uses non-existent `FlextModels.BaseModel`:
+
 ```python
 class TapRunParams(FlextModels.BaseModel):  # ❌ Doesn't exist
 ```
 
 **Root Cause**: flext-meltano depends on incorrect FlextModels base class. Available classes:
+
 - ✅ `FlextModels.ArbitraryTypesModel`
 - ✅ `FlextModels.StrictArbitraryTypesModel`
 - ✅ `FlextModels.FrozenStrictModel`
@@ -116,6 +120,7 @@ class TapRunParams(FlextModels.BaseModel):  # ❌ Doesn't exist
 **Issue**: 344 tests lack shared fixtures, database setup, and mock configurations
 **Impact**: Test duplication, inconsistent setup, maintenance burden
 **Solution**: Create comprehensive `tests/conftest.py` with centralized fixtures:
+
 - Oracle database connections
 - Meltano configuration fixtures
 - WMS API mocks
@@ -126,6 +131,7 @@ class TapRunParams(FlextModels.BaseModel):  # ❌ Doesn't exist
 **Priority**: CRITICAL | **Impact**: Production Deployment Impossible | **Effort**: 2-3 days
 
 **Issue**: All FLEXT dependencies use hardcoded local paths:
+
 ```toml
 flext-core @ file:../flext-core  # ❌ Cannot deploy
 ```

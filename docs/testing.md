@@ -1,73 +1,74 @@
 # Testing Plan - GrupoNOS Meltano Native
+
 ## Table of Contents
 
-- [Testing Plan - GrupoNOS Meltano Native](#testing-plan---gruponos-meltano-native)
-  - [📋 Testing Overview](#-testing-overview)
-    - [**Current Testing Status**](#current-testing-status)
-    - [**Testing Architecture**](#testing-architecture)
-  - [🚨 CRITICAL TESTING BLOCKERS](#-critical-testing-blockers)
-    - [**Blocker 1: Import Failures**](#blocker-1-import-failures)
-- [❌ BROKEN - This import fails](#-broken---this-import-fails)
-- [Leads to: AttributeError: type object 'FlextModels' has no attribute 'BaseModel'](#leads-to-attributeerror-type-object-flextmodels-has-no-attribute-basemodel)
-- [✅ CORRECT - Use available base classes](#-correct---use-available-base-classes)
-    - [**Blocker 2: Missing conftest.py**](#blocker-2-missing-conftestpy)
-  - [📊 Testing Strategy](#-testing-strategy)
-    - [**Test Categories & Coverage Targets**](#test-categories--coverage-targets)
-    - [**Test Markers**](#test-markers)
-- [Unit tests (fast, isolated)](#unit-tests-fast-isolated)
-- [Integration tests (with dependencies)](#integration-tests-with-dependencies)
-- [Special categories](#special-categories)
-  - [🔧 Required Testing Infrastructure](#-required-testing-infrastructure)
-    - [**conftest.py Implementation**](#conftestpy-implementation)
-- [tests/conftest.py - CENTRALIZED TEST INFRASTRUCTURE](#testsconftestpy---centralized-test-infrastructure)
-    - [**Test Database Setup**](#test-database-setup)
-    - [**Mock Infrastructure**](#mock-infrastructure)
-  - [📋 Test Execution Procedures](#-test-execution-procedures)
-    - [**Local Development Testing**](#local-development-testing)
-- [After fixing import issues:](#after-fixing-import-issues)
-- [Run all tests](#run-all-tests)
-- [Run specific categories](#run-specific-categories)
-- [Run with coverage](#run-with-coverage)
-- [Run specific test files](#run-specific-test-files)
-- [Run with markers](#run-with-markers)
-    - [**CI/CD Testing Pipeline**](#cicd-testing-pipeline)
-- [.github/workflows/test.yml](#githubworkflowstestyml)
-  - [🔍 Test Coverage Analysis](#-test-coverage-analysis)
-    - [**Coverage Requirements by Module**](#coverage-requirements-by-module)
-    - [**Critical Path Coverage**](#critical-path-coverage)
-  - [🚨 Test Failure Analysis](#-test-failure-analysis)
-    - [**Current Failure Patterns**](#current-failure-patterns)
-    - [**Expected Test Results After Fixes**](#expected-test-results-after-fixes)
-  - [📈 Performance Testing](#-performance-testing)
-    - [**Performance Test Categories**](#performance-test-categories)
-    - [**Performance Baselines**](#performance-baselines)
-  - [🔧 Testing Tools & Dependencies](#-testing-tools--dependencies)
-    - [**Core Testing Stack**](#core-testing-stack)
-- [pyproject.toml test dependencies](#pyprojecttoml-test-dependencies)
-    - [**Test Configuration**](#test-configuration)
-- [pyproject.toml pytest configuration](#pyprojecttoml-pytest-configuration)
-  - [📋 Testing Best Practices](#-testing-best-practices)
-    - [**Test Organization**](#test-organization)
-- [✅ CORRECT - Clear test structure](#-correct---clear-test-structure)
-    - [**Fixture Usage**](#fixture-usage)
-- [✅ CORRECT - Use centralized fixtures](#-correct---use-centralized-fixtures)
-- [❌ AVOID - Duplicate fixture code](#-avoid---duplicate-fixture-code)
-    - [**Mock Best Practices**](#mock-best-practices)
-- [✅ CORRECT - Comprehensive mocking](#-correct---comprehensive-mocking)
-  - [📊 Testing Metrics & Reporting](#-testing-metrics--reporting)
-    - [**Coverage Reporting**](#coverage-reporting)
-- [Generate coverage reports](#generate-coverage-reports)
-- [Coverage thresholds by directory](#coverage-thresholds-by-directory)
-    - [**Test Result Analysis**](#test-result-analysis)
-  - [🎯 Testing Roadmap](#-testing-roadmap)
-    - [**Phase 1: Critical Fixes (Immediate)**](#phase-1-critical-fixes-immediate)
-    - [**Phase 2: Infrastructure Enhancement (Week 2)**](#phase-2-infrastructure-enhancement-week-2)
-    - [**Phase 3: Test Expansion (Week 3)**](#phase-3-test-expansion-week-3)
-    - [**Phase 4: Automation & Monitoring (Week 4)**](#phase-4-automation--monitoring-week-4)
-  - [✅ Testing Completion Checklist](#-testing-completion-checklist)
-    - [**Infrastructure Completion**](#infrastructure-completion)
-    - [**Test Coverage Completion**](#test-coverage-completion)
-    - [**Process Completion**](#process-completion)
+- Testing Plan - GrupoNOS Meltano Native
+  - 📋 Testing Overview
+    - **Current Testing Status**
+    - **Testing Architecture**
+  - 🚨 CRITICAL TESTING BLOCKERS
+    - **Blocker 1: Import Failures**
+- ❌ BROKEN - This import fails
+- Leads to: AttributeError: type object 'FlextModels' has no attribute 'BaseModel'
+- ✅ CORRECT - Use available base classes
+  - **Blocker 2: Missing conftest.py**
+  - 📊 Testing Strategy
+    - **Test Categories & Coverage Targets**
+    - **Test Markers**
+- Unit tests (fast, isolated)
+- Integration tests (with dependencies)
+- Special categories
+  - 🔧 Required Testing Infrastructure
+    - **conftest.py Implementation**
+- tests/conftest.py - CENTRALIZED TEST INFRASTRUCTURE
+  - **Test Database Setup**
+  - **Mock Infrastructure**
+  - 📋 Test Execution Procedures
+    - **Local Development Testing**
+- After fixing import issues:
+- Run all tests
+- Run specific categories
+- Run with coverage
+- Run specific test files
+- Run with markers
+  - **CI/CD Testing Pipeline**
+- .github/workflows/test.yml
+  - 🔍 Test Coverage Analysis
+    - **Coverage Requirements by Module**
+    - **Critical Path Coverage**
+  - 🚨 Test Failure Analysis
+    - **Current Failure Patterns**
+    - **Expected Test Results After Fixes**
+  - 📈 Performance Testing
+    - **Performance Test Categories**
+    - **Performance Baselines**
+  - 🔧 Testing Tools & Dependencies
+    - **Core Testing Stack**
+- pyproject.toml test dependencies
+  - **Test Configuration**
+- pyproject.toml pytest configuration
+  - 📋 Testing Best Practices
+    - **Test Organization**
+- ✅ CORRECT - Clear test structure
+  - **Fixture Usage**
+- ✅ CORRECT - Use centralized fixtures
+- ❌ AVOID - Duplicate fixture code
+  - **Mock Best Practices**
+- ✅ CORRECT - Comprehensive mocking
+  - 📊 Testing Metrics & Reporting
+    - **Coverage Reporting**
+- Generate coverage reports
+- Coverage thresholds by directory
+  - **Test Result Analysis**
+  - 🎯 Testing Roadmap
+    - **Phase 1: Critical Fixes (Immediate)**
+    - **Phase 2: Infrastructure Enhancement (Week 2)**
+    - **Phase 3: Test Expansion (Week 3)**
+    - **Phase 4: Automation & Monitoring (Week 4)**
+  - ✅ Testing Completion Checklist
+    - **Infrastructure Completion**
+    - **Test Coverage Completion**
+    - **Process Completion**
 
 
 **Version**: 0.9.0 | **Updated**: 2025-10-10 | **Status**: ⚠️ BLOCKED - Import failures preventing execution
@@ -77,6 +78,7 @@
 ## 📋 Testing Overview
 
 ### **Current Testing Status**
+
 - **Coverage Target**: 90% minimum (configured in pyproject.toml)
 - **Test Categories**: Unit, integration, WMS, Oracle, performance, smoke, e2e
 - **Test Framework**: pytest with comprehensive markers and fixtures
@@ -84,6 +86,7 @@
 - **Critical Issue**: ❌ **BLOCKED** - flext-meltano import failures prevent all test execution
 
 ### **Testing Architecture**
+
 ```
 tests/
 ├── unit/                          # Unit tests (300+ tests)
@@ -109,6 +112,7 @@ tests/
 **Status**: ❌ **CRITICAL** - No tests can execute
 
 **Issue**: `flext_meltano.models.py` line 50 uses non-existent `FlextModels.BaseModel`:
+
 ```python
 # ❌ BROKEN - This import fails
 from gruponos_meltano_native import GruponosMeltanoOrchestrator
@@ -118,12 +122,14 @@ from gruponos_meltano_native import GruponosMeltanoOrchestrator
 **Root Cause**: flext-meltano dependency uses incorrect FlextModels base class.
 
 **Impact**:
+
 - Cannot run any tests
 - Cannot validate ETL pipeline functionality
 - Cannot generate coverage reports
 - Blocks CI/CD pipeline execution
 
 **Required Fix**:
+
 ```python
 # ✅ CORRECT - Use available base classes
 class TapRunParams(FlextModels.ArbitraryTypesModel):  # Instead of BaseModel
@@ -137,6 +143,7 @@ class OtherModel(FlextModels.StrictArbitraryTypesModel):
 **Issue**: 344 tests lack centralized fixtures, database setup, and mock infrastructure.
 
 **Missing Components**:
+
 - Oracle database connection fixtures
 - Meltano configuration fixtures
 - WMS API mock fixtures
@@ -144,6 +151,7 @@ class OtherModel(FlextModels.StrictArbitraryTypesModel):
 - Environment variable mocking
 
 **Impact**:
+
 - Test duplication across files
 - Inconsistent test setup
 - No shared database state management
@@ -155,14 +163,12 @@ class OtherModel(FlextModels.StrictArbitraryTypesModel):
 
 ### **Test Categories & Coverage Targets**
 
-| Category | Target Coverage | Current Status | Description |
-|----------|----------------|----------------|-------------|
-| **Unit Tests** | 85% | ❌ Blocked | Individual component testing |
-| **Integration Tests** | 90% | ❌ Blocked | End-to-end pipeline testing |
-| **Oracle Tests** | 95% | ❌ Blocked | Database connectivity and operations |
-| **WMS Tests** | 95% | ❌ Blocked | REST API integration testing |
-| **Performance Tests** | 80% | ❌ Blocked | Load and performance validation |
-| **Security Tests** | 100% | ❌ Blocked | Security vulnerability testing |
+Category: **Unit Tests** - Target Coverage: 85% - Current Status: ❌ Blocked - Description: Individual component testing
+Category: **Integration Tests** - Target Coverage: 90% - Current Status: ❌ Blocked - Description: End-to-end pipeline testing
+Category: **Oracle Tests** - Target Coverage: 95% - Current Status: ❌ Blocked - Description: Database connectivity and operations
+Category: **WMS Tests** - Target Coverage: 95% - Current Status: ❌ Blocked - Description: REST API integration testing
+Category: **Performance Tests** - Target Coverage: 80% - Current Status: ❌ Blocked - Description: Load and performance validation
+Category: **Security Tests** - Target Coverage: 100% - Current Status: ❌ Blocked - Description: Security vulnerability testing
 
 ### **Test Markers**
 
@@ -230,6 +236,7 @@ def temp_etl_data():
 **Status**: ❌ Missing - Required for integration tests
 
 **Requirements**:
+
 - Oracle test database instance (or Docker container)
 - Schema setup and teardown scripts
 - Test data seeding procedures
@@ -241,6 +248,7 @@ def temp_etl_data():
 **Status**: ⚠️ Partial - Basic mocking exists but not centralized
 
 **Required Enhancements**:
+
 - Centralized mock factories
 - Consistent response patterns
 - Error scenario simulation
@@ -280,6 +288,7 @@ PYTHONPATH=src pytest -m "not slow" -v
 **Status**: ❌ Blocked - Cannot implement until import issues resolved
 
 **Required Pipeline**:
+
 ```yaml
 # .github/workflows/test.yml
 name: Test Suite
@@ -310,18 +319,17 @@ jobs:
 
 ### **Coverage Requirements by Module**
 
-| Module | Lines | Target | Status | Notes |
-|--------|-------|--------|--------|-------|
-| `cli.py` | 443 | 90% | ❌ Blocked | Click command handling |
-| `orchestrator.py` | 389 | 95% | ❌ Blocked | Meltano pipeline orchestration |
-| `config.py` | 267 | 90% | ❌ Blocked | Pydantic configuration |
-| `models.py` | 198 | 85% | ❌ Blocked | Domain models |
-| `constants.py` | 156 | 80% | ❌ Blocked | System constants |
-| **Total** | **1453** | **90%** | ❌ Blocked | Overall project coverage |
+Module: `cli.py` - Lines: 443 - Target: 90% - Status: ❌ Blocked - Notes: Click command handling
+Module: `orchestrator.py` - Lines: 389 - Target: 95% - Status: ❌ Blocked - Notes: Meltano pipeline orchestration
+Module: `config.py` - Lines: 267 - Target: 90% - Status: ❌ Blocked - Notes: Pydantic configuration
+Module: `models.py` - Lines: 198 - Target: 85% - Status: ❌ Blocked - Notes: Domain models
+Module: `constants.py` - Lines: 156 - Target: 80% - Status: ❌ Blocked - Notes: System constants
+Module: **Total** - Lines: **1453** - Target: **90%** - Status: ❌ Blocked - Notes: Overall project coverage
 
 ### **Critical Path Coverage**
 
 **Must achieve 95%+ coverage on**:
+
 - ETL pipeline orchestration logic
 - Oracle connectivity and error handling
 - WMS API integration points
@@ -335,26 +343,33 @@ jobs:
 ### **Current Failure Patterns**
 
 1. **Import Failures** (100% of tests):
+
 ``` yaml
    AttributeError: type object 'FlextModels' has no attribute 'BaseModel'
    ```
+
    **Solution**: Fix flext-meltano to use correct base classes
 
 2. **Missing Fixtures** (Integration tests):
+
    ```
    fixture 'oracle_connection' not found
    ```
+
    **Solution**: Implement conftest.py with centralized fixtures
 
 3. **Database Connection Issues** (Oracle tests):
+
    ```
    Connection refused or credentials invalid
    ```
+
    **Solution**: Setup test database infrastructure
 
 ### **Expected Test Results After Fixes**
 
 **Unit Tests** (300+ tests):
+
 - ✅ CLI command parsing and validation
 - ✅ Configuration loading and validation
 - ✅ Model serialization and validation
@@ -362,6 +377,7 @@ jobs:
 - ✅ Error handling and recovery
 
 **Integration Tests** (44 tests):
+
 - ✅ Full ETL pipeline execution
 - ✅ Oracle WMS API connectivity
 - ✅ Oracle database loading
@@ -374,16 +390,15 @@ jobs:
 
 ### **Performance Test Categories**
 
-| Test Type | Target | Status | Description |
-|-----------|--------|--------|-------------|
-| **Data Loading** | < 5 min for 10K records | ❌ Blocked | ETL pipeline throughput |
-| **Memory Usage** | < 500MB peak | ❌ Blocked | Memory consumption monitoring |
-| **Concurrent Pipelines** | 3+ simultaneous | ❌ Blocked | Multi-pipeline execution |
-| **Large Dataset** | 1M+ records | ❌ Blocked | Scalability validation |
+Test Type: **Data Loading** - Target: < 5 min for 10K records - Status: ❌ Blocked - Description: ETL pipeline throughput
+Test Type: **Memory Usage** - Target: < 500MB peak - Status: ❌ Blocked - Description: Memory consumption monitoring
+Test Type: **Concurrent Pipelines** - Target: 3+ simultaneous - Status: ❌ Blocked - Description: Multi-pipeline execution
+Test Type: **Large Dataset** - Target: 1M+ records - Status: ❌ Blocked - Description: Scalability validation
 
 ### **Performance Baselines**
 
 **Target Performance Metrics**:
+
 - Full sync pipeline: < 30 minutes for 100K records
 - Incremental sync: < 5 minutes for 10K changes
 - Memory usage: < 1GB for 500K record processing
@@ -503,6 +518,7 @@ PYTHONPATH=src pytest --cov=src/gruponos_meltano_native \
 ### **Test Result Analysis**
 
 **Key Metrics to Track**:
+
 - Test execution time trends
 - Coverage percentage trends
 - Failure rates by category
@@ -514,24 +530,28 @@ PYTHONPATH=src pytest --cov=src/gruponos_meltano_native \
 ## 🎯 Testing Roadmap
 
 ### **Phase 1: Critical Fixes (Immediate)**
+
 - [ ] Fix flext-meltano import issues
 - [ ] Implement conftest.py with basic fixtures
 - [ ] Validate test execution works
 - [ ] Establish 90% coverage baseline
 
 ### **Phase 2: Infrastructure Enhancement (Week 2)**
+
 - [ ] Complete conftest.py with all fixtures
 - [ ] Setup test database infrastructure
 - [ ] Implement comprehensive mocking
 - [ ] Add integration test fixtures
 
 ### **Phase 3: Test Expansion (Week 3)**
+
 - [ ] Add missing integration tests
 - [ ] Implement performance testing
 - [ ] Add security testing
 - [ ] Complete end-to-end test coverage
 
 ### **Phase 4: Automation & Monitoring (Week 4)**
+
 - [ ] Implement CI/CD testing pipeline
 - [ ] Add automated coverage reporting
 - [ ] Setup test result monitoring
@@ -542,18 +562,21 @@ PYTHONPATH=src pytest --cov=src/gruponos_meltano_native \
 ## ✅ Testing Completion Checklist
 
 ### **Infrastructure Completion**
+
 - [ ] conftest.py implemented with comprehensive fixtures
 - [ ] Test database infrastructure operational
 - [ ] CI/CD testing pipeline configured
 - [ ] Coverage reporting automated
 
 ### **Test Coverage Completion**
+
 - [ ] 90%+ overall coverage achieved
 - [ ] All critical path code covered
 - [ ] Integration tests for all major workflows
 - [ ] Performance and load testing implemented
 
 ### **Process Completion**
+
 - [ ] Automated testing procedures documented
 - [ ] Code review includes test validation
 - [ ] Testing standards established and followed

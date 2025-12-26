@@ -1,4 +1,5 @@
 # FLEXT Framework Integration
+
 ## Table of Contents
 
 - [FLEXT Framework Integration](#flext-framework-integration)
@@ -11,13 +12,13 @@
   - [FLEXT Component Integration](#flext-component-integration)
     - [flext-core Integration](#flext-core-integration)
 - [Base settings extending FLEXT patterns](#base-settings-extending-flext-patterns)
-    - [flext-observability Integration](#flext-observability-integration)
-    - [flext-db-oracle Integration](#flext-db-oracle-integration)
+  - [flext-observability Integration](#flext-observability-integration)
+  - [flext-db-oracle Integration](#flext-db-oracle-integration)
   - [Singer/Meltano FLEXT Integration](#singermeltano-flext-integration)
     - [flext-tap-oracle-wms Integration](#flext-tap-oracle-wms-integration)
 - [Meltano configuration with FLEXT taps](#meltano-configuration-with-flext-taps)
 - [meltano.yml](#meltanoyml)
-    - [flext-target-oracle Integration](#flext-target-oracle-integration)
+  - [flext-target-oracle Integration](#flext-target-oracle-integration)
 - [Target configuration with FLEXT patterns](#target-configuration-with-flext-patterns)
   - [Exception Handling Integration](#exception-handling-integration)
 - [Runtime exception generation using FLEXT patterns](#runtime-exception-generation-using-flext-patterns)

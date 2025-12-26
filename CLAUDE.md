@@ -14,12 +14,14 @@
 **Coverage Target**: 90%
 
 **Key Architecture**:
+
 - Single consolidated service class: `GruponosMeltanoNativeCli`
 - Wraps Meltano 3.8.0 orchestration with FLEXT patterns internally
 - Uses flext-core patterns: `FlextResult[T]` railway pattern, `FlextContainer` DI
 - Native Meltano configuration (NOT flext-meltano wrapper)
 
 **CRITICAL CONSTRAINT - ZERO TOLERANCE**:
+
 - **cli.py** is the ONLY file that may import Click directly
 - **orchestrator.py** is the ONLY file that may import Meltano directly
 - ALL other code must use FLEXT abstraction layers
@@ -69,6 +71,7 @@ if result.is_success:
 ### ZERO TOLERANCE Policies
 
 **ABSOLUTELY FORBIDDEN**:
+
 - ❌ Direct Click imports outside cli.py
 - ❌ Direct Meltano imports outside orchestrator.py
 - ❌ Exception-based error handling (use FlextResult)
@@ -76,6 +79,7 @@ if result.is_success:
 - ❌ Mockpatch in tests
 
 **MANDATORY**:
+
 - ✅ Use `FlextResult[T]` for all operations
 - ✅ Complete type annotations
 - ✅ Zero Ruff violations

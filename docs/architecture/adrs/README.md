@@ -1,4 +1,5 @@
 # Architecture Decision Records (ADRs)
+
 ## Table of Contents
 
 - [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
@@ -36,13 +37,13 @@
 - [Create new ADR (requires adr-tools)](#create-new-adr-requires-adr-tools)
 - [List all ADRs](#list-all-adrs)
 - [Generate ADR index](#generate-adr-index)
-    - [Template Variables](#template-variables)
+  - [Template Variables](#template-variables)
   - [Integration with Development Process](#integration-with-development-process)
     - [Git Workflow](#git-workflow)
 - [ADR creation during development](#adr-creation-during-development)
 - [Create and review ADR](#create-and-review-adr)
-    - [CI/CD Integration](#cicd-integration)
-    - [Documentation Integration](#documentation-integration)
+  - [CI/CD Integration](#cicd-integration)
+  - [Documentation Integration](#documentation-integration)
   - [ADR Metrics and Reporting](#adr-metrics-and-reporting)
     - [Quality Metrics](#quality-metrics)
     - [Reporting](#reporting)
@@ -60,7 +61,7 @@
 ## Overview
 
 This directory contains Architecture Decision Records (ADRs) for the gruponos-meltano-native project. ADRs document architectural decisions,
-    
+
      their context, rationale, and consequences.
 
 ### ADR Process
@@ -138,15 +139,18 @@ This directory contains Architecture Decision Records (ADRs) for the gruponos-me
 ### ADR Index by Category
 
 #### Technology Decisions
+
 - [ADR 001](adr-001-technology-stack.md): Core technology stack selection
 - [ADR 004](adr-004-deployment-strategy.md): Infrastructure and deployment approach
 
 #### Architecture Patterns
+
 - [ADR 002](adr-002-pipeline-architecture.md): ETL pipeline design patterns
 - [ADR 003](adr-003-error-handling.md): Error handling and resilience patterns
 - [ADR 005](adr-005-monitoring-strategy.md): Observability and monitoring patterns
 
 #### Implementation Decisions
+
 - Future ADRs will document specific implementation choices
 
 ---

@@ -1,106 +1,107 @@
 # 📚 Documentation Maintenance System
+
 ## Table of Contents
 
-- [📚 Documentation Maintenance System](#-documentation-maintenance-system)
-  - [🎯 Overview](#-overview)
-  - [🏗️ System Architecture](#-system-architecture)
-  - [🚀 Quick Start](#-quick-start)
-    - [1. Run Complete Maintenance Cycle](#1-run-complete-maintenance-cycle)
-- [Run full maintenance cycle (recommended)](#run-full-maintenance-cycle-recommended)
-- [Or use the automated script](#or-use-the-automated-script)
-    - [2. Generate Quality Dashboard](#2-generate-quality-dashboard)
-- [Generate HTML dashboard](#generate-html-dashboard)
-- [View metrics summary](#view-metrics-summary)
-    - [3. Check for Critical Issues](#3-check-for-critical-issues)
-- [Check current alerts](#check-current-alerts)
-- [View quality trends](#view-quality-trends)
-  - [📋 Maintenance Commands](#-maintenance-commands)
-    - [Core Maintenance Script](#core-maintenance-script)
-- [Complete maintenance cycle](#complete-maintenance-cycle)
-- [Individual operations](#individual-operations)
-    - [Automated Maintenance Script](#automated-maintenance-script)
-- [Scheduled maintenance (use with cron)](#scheduled-maintenance-use-with-cron)
-- [Utility commands](#utility-commands)
-    - [Dashboard Commands](#dashboard-commands)
-- [Generate dashboards](#generate-dashboards)
-- [Analysis commands](#analysis-commands)
-  - [⚙️ Configuration](#-configuration)
-    - [Main Configuration File](#main-configuration-file)
-    - [Scheduling Configuration](#scheduling-configuration)
-- [Install scheduled maintenance](#install-scheduled-maintenance)
-- [Or manually configure:](#or-manually-configure)
-- [Daily: 0 8 * * 1-5 /path/to/project/scripts/automated_docs_maintenance.sh daily](#daily-0-8---1-5-pathtoprojectscriptsautomated_docs_maintenancesh-daily)
-- [Weekly: 0 9 * * 0 /path/to/project/scripts/automated_docs_maintenance.sh weekly](#weekly-0-9---0-pathtoprojectscriptsautomated_docs_maintenancesh-weekly)
-- [Monthly: 0 10 1 * * /path/to/project/scripts/automated_docs_maintenance.sh monthly](#monthly-0-10-1---pathtoprojectscriptsautomated_docs_maintenancesh-monthly)
-  - [📊 Quality Metrics](#-quality-metrics)
-    - [Current Status Dashboard](#current-status-dashboard)
-    - [Quality Thresholds](#quality-thresholds)
-  - [🔍 Quality Audit Features](#-quality-audit-features)
-    - [Content Quality Analysis](#content-quality-analysis)
-    - [Link Validation](#link-validation)
-    - [Style Consistency](#style-consistency)
-    - [Content Optimization](#content-optimization)
-  - [📈 Reporting and Analytics](#-reporting-and-analytics)
-    - [Report Types](#report-types)
-    - [Dashboard Features](#dashboard-features)
-    - [Trend Analysis](#trend-analysis)
-  - [🔄 CI/CD Integration](#-cicd-integration)
-    - [GitHub Actions Workflow](#github-actions-workflow)
-- [Triggered by:](#triggered-by)
-- [- Daily schedule (8 AM UTC)](#--daily-schedule-8-am-utc)
-- [- Documentation changes (push/PR)](#--documentation-changes-pushpr)
-- [- Manual workflow dispatch](#--manual-workflow-dispatch)
-- [Features:](#features)
-- [- Automated quality audits](#--automated-quality-audits)
-- [- Link validation](#--link-validation)
-- [- Report generation](#--report-generation)
-- [- Issue creation for critical problems](#--issue-creation-for-critical-problems)
-- [- PR comments with results](#--pr-comments-with-results)
-    - [Quality Gates](#quality-gates)
-  - [🚨 Alert Management](#-alert-management)
-    - [Alert Types](#alert-types)
-    - [Notification Channels](#notification-channels)
-  - [🛠️ Troubleshooting](#-troubleshooting)
-    - [Common Issues](#common-issues)
-- [Issue: flext-meltano import failures](#issue-flext-meltano-import-failures)
-- [Solution: Fix FlextModels.BaseModel references](#solution-fix-flextmodelsbasemodel-references)
-- [Run: Check flext-meltano dependencies](#run-check-flext-meltano-dependencies)
-- [Issue: No maintenance reports generated](#issue-no-maintenance-reports-generated)
-- [Solution: Check script permissions and paths](#solution-check-script-permissions-and-paths)
-- [Run: ./scripts/automated_docs_maintenance.sh health](#run-scriptsautomated_docs_maintenancesh-health)
-- [Issue: HTML dashboard not displaying charts](#issue-html-dashboard-not-displaying-charts)
-- [Solution: Check Chart.js CDN availability](#solution-check-chartjs-cdn-availability)
-- [Alternative: Use markdown or JSON formats](#alternative-use-markdown-or-json-formats)
-    - [Health Checks](#health-checks)
-- [Run system health check](#run-system-health-check)
-- [Check recent maintenance activity](#check-recent-maintenance-activity)
-- [View latest dashboard](#view-latest-dashboard)
-  - [📋 Maintenance Procedures](#-maintenance-procedures)
-    - [Daily Maintenance (Automated)](#daily-maintenance-automated)
-    - [Weekly Maintenance (Automated)](#weekly-maintenance-automated)
-    - [Monthly Maintenance (Automated)](#monthly-maintenance-automated)
-    - [Manual Maintenance](#manual-maintenance)
-- [Emergency maintenance](#emergency-maintenance)
-- [Specific operations](#specific-operations)
-  - [🔧 Customization](#-customization)
-    - [Adding Custom Rules](#adding-custom-rules)
-- [In docs_maintenance_config.json](#in-docs_maintenance_configjson)
-    - [Extending Validation](#extending-validation)
-- [Add custom validation in DocsMaintainer class](#add-custom-validation-in-docsmaintainer-class)
-  - [📚 Documentation Resources](#-documentation-resources)
-    - [User Guides](#user-guides)
-    - [Technical Documentation](#technical-documentation)
-    - [Reports and Dashboards](#reports-and-dashboards)
-  - [🤝 Contributing](#-contributing)
-    - [Adding New Maintenance Features](#adding-new-maintenance-features)
-    - [Quality Standards](#quality-standards)
-  - [📈 Performance Metrics](#-performance-metrics)
-    - [System Performance](#system-performance)
-    - [Scalability](#scalability)
-  - [🔒 Security Considerations](#-security-considerations)
-  - [📞 Support](#-support)
-    - [Getting Help](#getting-help)
-    - [Reporting Issues](#reporting-issues)
+- 📚 Documentation Maintenance System
+  - 🎯 Overview
+  - 🏗️ System Architecture
+  - 🚀 Quick Start
+    - 1. Run Complete Maintenance Cycle
+- Run full maintenance cycle (recommended)
+- Or use the automated script
+  - 2. Generate Quality Dashboard
+- Generate HTML dashboard
+- View metrics summary
+  - 3. Check for Critical Issues
+- Check current alerts
+- View quality trends
+  - 📋 Maintenance Commands
+    - Core Maintenance Script
+- Complete maintenance cycle
+- Individual operations
+  - Automated Maintenance Script
+- Scheduled maintenance (use with cron)
+- Utility commands
+  - Dashboard Commands
+- Generate dashboards
+- Analysis commands
+  - ⚙️ Configuration
+    - Main Configuration File
+    - Scheduling Configuration
+- Install scheduled maintenance
+- Or manually configure:
+- Daily: `0 8 * * 1-5` /path/to/project/scripts/automated_docs_maintenance.sh daily
+- Weekly: `0 9 * * 0` /path/to/project/scripts/automated_docs_maintenance.sh weekly
+- Monthly: `0 10 1 * *` /path/to/project/scripts/automated_docs_maintenance.sh monthly
+  - 📊 Quality Metrics
+    - Current Status Dashboard
+    - Quality Thresholds
+  - 🔍 Quality Audit Features
+    - Content Quality Analysis
+    - Link Validation
+    - Style Consistency
+    - Content Optimization
+  - 📈 Reporting and Analytics
+    - Report Types
+    - Dashboard Features
+    - Trend Analysis
+  - 🔄 CI/CD Integration
+    - GitHub Actions Workflow
+- Triggered by:
+- - Daily schedule (8 AM UTC)
+- - Documentation changes (push/PR)
+- - Manual workflow dispatch
+- Features:
+- - Automated quality audits
+- - Link validation
+- - Report generation
+- - Issue creation for critical problems
+- - PR comments with results
+  - Quality Gates
+  - 🚨 Alert Management
+    - Alert Types
+    - Notification Channels
+  - 🛠️ Troubleshooting
+    - Common Issues
+- Issue: flext-meltano import failures
+- Solution: Fix FlextModels.BaseModel references
+- Run: Check flext-meltano dependencies
+- Issue: No maintenance reports generated
+- Solution: Check script permissions and paths
+- Run: ./scripts/automated_docs_maintenance.sh health
+- Issue: HTML dashboard not displaying charts
+- Solution: Check Chart.js CDN availability
+- Alternative: Use markdown or JSON formats
+  - Health Checks
+- Run system health check
+- Check recent maintenance activity
+- View latest dashboard
+  - 📋 Maintenance Procedures
+    - Daily Maintenance (Automated)
+    - Weekly Maintenance (Automated)
+    - Monthly Maintenance (Automated)
+    - Manual Maintenance
+- Emergency maintenance
+- Specific operations
+  - 🔧 Customization
+    - Adding Custom Rules
+- In docs_maintenance_config.JSON
+  - Extending Validation
+- Add custom validation in DocsMaintainer class
+  - 📚 Documentation Resources
+    - User Guides
+    - Technical Documentation
+    - Reports and Dashboards
+  - 🤝 Contributing
+    - Adding New Maintenance Features
+    - Quality Standards
+  - 📈 Performance Metrics
+    - System Performance
+    - Scalability
+  - 🔒 Security Considerations
+  - 📞 Support
+    - Getting Help
+    - Reporting Issues
 
 
 **Version**: 1.0.0 | **Status**: Active | **Coverage**: 26 documentation files
@@ -261,13 +262,11 @@ crontab scripts/docs_maintenance_crontab
 
 ### Current Status Dashboard
 
-| Metric | Current | Target | Status |
-|--------|---------|--------|--------|
-| Quality Score | 85% | 90% | ⚠️ Needs Attention |
-| Files Processed | 26 | - | ✅ Complete |
-| Critical Issues | 3 | 0 | ❌ Action Required |
-| Broken Links | 0 | 0 | ✅ Good |
-| Stale Documents | 2 | 0 | ⚠️ Monitor |
+Metric: Quality Score - Current: 85% - Target: 90% - Status: ⚠️ Needs Attention
+Metric: Files Processed - Current: 26 - Target: - - Status: ✅ Complete
+Metric: Critical Issues - Current: 3 - Target: 0 - Status: ❌ Action Required
+Metric: Broken Links - Current: 0 - Target: 0 - Status: ✅ Good
+Metric: Stale Documents - Current: 2 - Target: 0 - Status: ⚠️ Monitor
 
 ### Quality Thresholds
 
@@ -374,6 +373,7 @@ The system includes automated CI/CD integration:
 ### Common Issues
 
 **Import Errors in Tests**
+
 ```bash
 # Issue: flext-meltano import failures
 # Solution: Fix FlextModels.BaseModel references
@@ -381,6 +381,7 @@ The system includes automated CI/CD integration:
 ```
 
 **Missing Reports**
+
 ```bash
 # Issue: No maintenance reports generated
 # Solution: Check script permissions and paths
@@ -388,6 +389,7 @@ The system includes automated CI/CD integration:
 ```
 
 **Dashboard Not Loading**
+
 ```bash
 # Issue: HTML dashboard not displaying charts
 # Solution: Check Chart.js CDN availability
@@ -480,16 +482,19 @@ def custom_validation(self, content: str) -> List[Dict]:
 ## 📚 Documentation Resources
 
 ### User Guides
+
 - **[Quick Start](quick_start.md)**: Getting started with maintenance
 - **[Configuration Guide](configuration.md)**: Customizing the system
 - **[Troubleshooting](troubleshooting.md)**: Common issues and solutions
 
 ### Technical Documentation
+
 - **[API Reference](api_reference.md)**: Complete API documentation
 - **[Architecture](architecture.md)**: System design and components
 - **[Contributing](contributing.md)**: Adding new features
 
 ### Reports and Dashboards
+
 - **Quality Reports**: `docs/reports/` (auto-generated)
 - **Dashboards**: `docs/dashboard/` (auto-generated)
 - **Historical Data**: All reports archived for trend analysis
@@ -513,12 +518,14 @@ def custom_validation(self, content: str) -> List[Dict]:
 ## 📈 Performance Metrics
 
 ### System Performance
+
 - **Audit Speed**: ~2 seconds per document
 - **Link Checking**: ~5 concurrent requests
 - **Report Generation**: ~10 seconds for full cycle
 - **Dashboard Creation**: ~5 seconds
 
 ### Scalability
+
 - **Document Count**: Tested with 100+ documents
 - **Report History**: 12-month retention with cleanup
 - **Concurrent Operations**: Safe for CI/CD parallel execution
@@ -550,6 +557,7 @@ def custom_validation(self, content: str) -> List[Dict]:
 **Documentation Maintenance System** - Ensuring documentation quality and consistency across the gruponos-meltano-native project.
 
 **Quick Links**:
+
 - **[Configuration](docs/docs_maintenance_config.json)**: System configuration
 - **[Reports](docs/reports/)**: Generated maintenance reports
 - **[Dashboard](docs/dashboard/)**: Interactive quality dashboards

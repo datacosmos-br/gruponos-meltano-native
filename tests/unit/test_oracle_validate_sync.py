@@ -112,7 +112,8 @@ def _count_table_records(cursor: OracleCursor, table_name: str) -> int:
         # Use parameterized query to prevent SQL injection
         # Note: Oracle doesn't support table name parameters, so we validate the name
         if (
-            not table_name.replace("_", "")
+            not table_name
+            .replace("_", "")
             .replace("0", "")
             .replace("1", "")
             .replace("2", "")

@@ -45,7 +45,8 @@ logger = Mock()  # This line was removed from the new_code, so it's removed here
 #         "flext_observability.logging": Mock(),
 #     },
 # ):
-# from gruponos_meltano_native import (
+#
+
 #         GruponosMeltanoOracleConnectionManager,
 #     )
 

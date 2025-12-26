@@ -1,7 +1,9 @@
 # ADR 005: Monitoring Strategy
+
 ## Table of Contents
 
 - [ADR 005: Monitoring Strategy](#adr-005-monitoring-strategy)
+  - [Table of Contents](#table-of-contents)
   - [Status](#status)
   - [Context](#context)
   - [Decision](#decision)
@@ -32,17 +34,15 @@
 
 
 ## Status
+
 Accepted
 
 ## Context
 
-The gruponos-meltano-native system requires comprehensive monitoring capabilities to ensure operational visibility,
-     performance tracking,
-     and proactive issue detection for enterprise ETL operations. The system processes critical warehouse data with strict SLAs and must provide real-time insights into pipeline health,
-    
-     data quality, and system performance.
+The gruponos-meltano-native system requires comprehensive monitoring capabilities to ensure operational visibility, performance tracking, and proactive issue detection for enterprise ETL operations. The system processes critical warehouse data with strict SLAs and must provide real-time insights into pipeline health, data quality, and system performance.
 
 Key monitoring requirements include:
+
 - Real-time pipeline execution visibility
 - Data quality and completeness monitoring
 - Performance metrics and bottleneck detection
@@ -55,12 +55,14 @@ Key monitoring requirements include:
 Implement a comprehensive monitoring strategy using FLEXT Observability framework with layered monitoring approach:
 
 ### Monitoring Layers
+
 1. **Infrastructure Monitoring**: System resources and container health
 2. **Application Monitoring**: Pipeline execution and component performance
 3. **Data Monitoring**: Quality metrics and pipeline throughput
 4. **Business Monitoring**: SLA compliance and operational KPIs
 
 ### Technology Stack
+
 - **FLEXT Observability**: Primary monitoring framework
 - **Prometheus**: Metrics collection and storage
 - **Grafana**: Visualization and dashboards
@@ -68,6 +70,7 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 - **Structured Logging**: Context-aware logging with correlation IDs
 
 ### Monitoring Categories
+
 - **Health Checks**: Component availability and responsiveness
 - **Performance Metrics**: Throughput, latency, resource utilization
 - **Error Tracking**: Exception monitoring and error rate analysis
@@ -79,12 +82,14 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 ### FLEXT Observability Integration
 
 **Unified Monitoring Framework**:
+
 - Consistent monitoring patterns across FLEXT ecosystem
 - Pre-built dashboards and alerting rules
 - Standardized metrics collection and reporting
 - Integrated security and compliance monitoring
 
 **Enterprise Features**:
+
 - Multi-tenant monitoring capabilities
 - Advanced analytics and trend analysis
 - Automated anomaly detection
@@ -93,24 +98,28 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 ### Layered Monitoring Approach
 
 **Infrastructure Layer**:
+
 - Container health and resource utilization
 - Network connectivity and latency monitoring
 - Database connection pool monitoring
 - Storage capacity and I/O performance
 
 **Application Layer**:
+
 - Pipeline execution status and progress
 - Component performance and bottleneck detection
 - Memory usage and garbage collection metrics
 - Thread pool utilization and concurrency monitoring
 
 **Data Layer**:
+
 - Data volume and throughput metrics
 - Quality score tracking and trend analysis
 - Error rates and data rejection monitoring
 - Schema validation and constraint compliance
 
 **Business Layer**:
+
 - SLA compliance monitoring (99.5% uptime)
 - Data freshness and timeliness tracking
 - Business rule violation detection
@@ -119,18 +128,21 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 ### Technology Choices
 
 **Prometheus for Metrics**:
+
 - Industry-standard metrics collection
 - Powerful query language (PromQL)
 - Horizontal scalability and reliability
 - Rich ecosystem of exporters and integrations
 
 **Grafana for Visualization**:
+
 - Flexible dashboard creation and customization
 - Multiple data source integration
 - Alerting and notification capabilities
 - Enterprise authentication and authorization
 
 **FLEXT Observability Benefits**:
+
 - Domain-specific monitoring for ETL operations
 - Pre-configured dashboards for common use cases
 - Automated metric collection and correlation
@@ -139,6 +151,7 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 ## Consequences
 
 ### Positive
+
 - **Operational Visibility**: Complete system observability across all layers
 - **Proactive Issue Detection**: Automated alerting and anomaly detection
 - **Performance Optimization**: Data-driven performance tuning and capacity planning
@@ -147,6 +160,7 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 - **Business Intelligence**: Real-time operational insights and KPIs
 
 ### Negative
+
 - **Implementation Complexity**: Multi-layer monitoring setup and configuration
 - **Resource Overhead**: Additional infrastructure and operational costs
 - **Alert Fatigue**: Potential for excessive alerting without proper tuning
@@ -154,6 +168,7 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 - **Maintenance Overhead**: Ongoing dashboard and alert rule maintenance
 
 ### Risks
+
 - **Monitoring Blind Spots**: Incomplete coverage leading to undetected issues
 - **Alert Overload**: Too many alerts reducing response effectiveness
 - **Performance Impact**: Monitoring overhead affecting system performance
@@ -161,6 +176,7 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 - **Dependency on Tools**: Vendor lock-in and tool reliability dependencies
 
 ### Mitigation Strategies
+
 - **Phased Implementation**: Start with core metrics and expand gradually
 - **Alert Tuning**: Implement alert thresholds and deduplication
 - **Performance Testing**: Monitor monitoring system performance impact
@@ -171,24 +187,28 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 ## Alternatives Considered
 
 ### Alternative 1: Application Insights Only
+
 - **Description**: Use Azure Application Insights for all monitoring needs
 - **Pros**: Native Azure integration, managed service, comprehensive features
 - **Cons**: Vendor lock-in, potential cost issues, less control over data
 - **Rejected**: FLEXT ecosystem integration requirements, need for custom ETL metrics
 
 ### Alternative 2: Custom Monitoring Solution
+
 - **Description**: Build custom monitoring using Python logging and metrics
 - **Pros**: Full control, tailored to specific needs, no external dependencies
 - **Cons**: High development and maintenance cost, reinventing existing solutions
 - **Rejected**: Time and resource constraints, need for proven monitoring capabilities
 
 ### Alternative 3: ELK Stack Integration
+
 - **Description**: Use Elasticsearch, Logstash, Kibana for comprehensive monitoring
 - **Pros**: Powerful log analysis, flexible visualization, open-source
 - **Cons**: Complex setup and maintenance, resource intensive, learning curve
 - **Rejected**: FLEXT ecosystem already provides monitoring framework, avoid complexity
 
 ### Alternative 4: Minimal Monitoring
+
 - **Description**: Basic logging and error tracking without comprehensive metrics
 - **Pros**: Simple implementation, low overhead, quick to deploy
 - **Cons**: Limited visibility, reactive instead of proactive, compliance gaps
@@ -197,24 +217,28 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 ## Implementation
 
 ### Phase 1: Core Monitoring Infrastructure (Week 1-2)
+
 - [x] Set up FLEXT Observability framework integration
 - [x] Implement basic health checks and heartbeat monitoring
 - [x] Configure structured logging with correlation IDs
 - [x] Set up basic metric collection (CPU, memory, disk)
 
 ### Phase 2: Application Monitoring (Week 3-4)
+
 - [x] Implement pipeline execution monitoring
 - [x] Add data quality and throughput metrics
 - [x] Configure error tracking and alerting
 - [x] Set up performance profiling and bottleneck detection
 
 ### Phase 3: Advanced Monitoring (Week 5-6)
+
 - [x] Implement business KPI monitoring
 - [x] Configure SLA compliance tracking
 - [x] Set up automated anomaly detection
 - [x] Create comprehensive dashboards and reports
 
 ### Phase 4: Production Optimization (Week 7-8)
+
 - [x] Fine-tune alert thresholds and reduce noise
 - [x] Implement monitoring scalability and performance optimization
 - [x] Set up monitoring backup and disaster recovery
@@ -234,12 +258,14 @@ Implement a comprehensive monitoring strategy using FLEXT Observability framewor
 The monitoring strategy provides comprehensive observability across all system layers while leveraging FLEXT ecosystem capabilities. The layered approach ensures both technical and business monitoring requirements are met.
 
 Key success factors include:
+
 - Proper alert tuning to avoid fatigue
 - Regular dashboard maintenance and updates
 - Integration with existing enterprise monitoring tools
 - Continuous improvement based on operational feedback
 
 Future enhancements may include:
+
 - AI-powered anomaly detection
 - Predictive maintenance capabilities
 - Advanced performance analytics

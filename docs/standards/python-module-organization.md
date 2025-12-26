@@ -1,89 +1,90 @@
 # Python Module Organization & Semantic Patterns
+
 ## Table of Contents
 
-- [Python Module Organization & Semantic Patterns](#python-module-organization--semantic-patterns)
-  - [🏗️ **Module Architecture Overview**](#-module-architecture-overview)
-    - [**Core Design Principles**](#core-design-principles)
-  - [📁 **Module Structure & Responsibilities**](#-module-structure--responsibilities)
-    - [**Foundation Layer**](#foundation-layer)
-- [Core application foundation](#core-application-foundation)
-- [Standard application imports](#standard-application-imports)
-    - [**Configuration & Settings Layer**](#configuration--settings-layer)
-- [Configuration management with FLEXT integration](#configuration-management-with-flext-integration)
-- [Environment-aware configuration](#environment-aware-configuration)
-- [Oracle WMS configuration with validation](#oracle-wms-configuration-with-validation)
-    - [**Domain Layer (Business Logic)**](#domain-layer-business-logic)
-- [ETL domain models and business rules](#etl-domain-models-and-business-rules)
-    - [**Application Service Layer**](#application-service-layer)
-- [Application orchestration and use cases](#application-orchestration-and-use-cases)
-    - [**Infrastructure Layer**](#infrastructure-layer)
-- [External system integrations](#external-system-integrations)
-- [Oracle integration with FLEXT patterns](#oracle-integration-with-flext-patterns)
-    - [**Validation Layer**](#validation-layer)
-- [Data validation and quality assurance](#data-validation-and-quality-assurance)
-    - [**Exception Handling Layer**](#exception-handling-layer)
-- [Domain-specific exception hierarchy](#domain-specific-exception-hierarchy)
-- [Exception usage in ETL operations](#exception-usage-in-etl-operations)
-  - [🎯 **Semantic Naming Conventions**](#-semantic-naming-conventions)
-    - [**Module-Level Naming**](#module-level-naming)
-- [ETL-specific module naming patterns](#etl-specific-module-naming-patterns)
-    - [**Class Naming Conventions**](#class-naming-conventions)
-- [Domain entities follow business terminology](#domain-entities-follow-business-terminology)
-- [Service classes use descriptive names](#service-classes-use-descriptive-names)
-- [Configuration classes reflect their scope](#configuration-classes-reflect-their-scope)
-    - [**Function and Method Naming**](#function-and-method-naming)
-- [ETL operation naming patterns](#etl-operation-naming-patterns)
-- [Configuration and setup methods](#configuration-and-setup-methods)
-  - [📦 **Import Patterns & Best Practices**](#-import-patterns--best-practices)
-    - [**Recommended Import Styles**](#recommended-import-styles)
-      - [**1. FLEXT Foundation Imports**](#1-flext-foundation-imports)
-- [Core FLEXT patterns - always import these first](#core-flext-patterns---always-import-these-first)
-- [Application domain imports](#application-domain-imports)
-      - [**2. Domain Model Imports**](#2-domain-model-imports)
-- [Domain entities and value objects](#domain-entities-and-value-objects)
-- [Domain services and validation](#domain-services-and-validation)
-      - [**3. Infrastructure Imports**](#3-infrastructure-imports)
-- [Infrastructure and external integrations](#infrastructure-and-external-integrations)
-      - [**4. Application Service Imports**](#4-application-service-imports)
-- [Application orchestration and CLI](#application-orchestration-and-cli)
-- [Exception handling](#exception-handling)
-    - [**Anti-Patterns (Forbidden)**](#anti-patterns-forbidden)
-- [❌ Don't import everything](#-dont-import-everything)
-- [❌ Don't use deep imports for internal modules](#-dont-use-deep-imports-for-internal-modules)
-- [❌ Don't import test modules in production code](#-dont-import-test-modules-in-production-code)
-- [❌ Don't alias core types confusingly](#-dont-alias-core-types-confusingly)
-- [❌ Don't import Meltano internals directly](#-dont-import-meltano-internals-directly)
-  - [🏛️ **Clean Architecture Layers**](#-clean-architecture-layers)
-    - [**Layer Separation**](#layer-separation)
-- [Clean Architecture with ETL specialization](#clean-architecture-with-etl-specialization)
-    - [**Dependency Direction**](#dependency-direction)
-- [Dependencies flow inward (Clean Architecture principle)](#dependencies-flow-inward-clean-architecture-principle)
-  - [🔄 **ETL-Specific Patterns**](#-etl-specific-patterns)
-    - [**Pipeline Orchestration Pattern**](#pipeline-orchestration-pattern)
-    - [**Data Validation Chain Pattern**](#data-validation-chain-pattern)
-    - [**Connection Management Pattern**](#connection-management-pattern)
-- [Usage in ETL operations](#usage-in-etl-operations)
-  - [🧪 **Testing Patterns**](#-testing-patterns)
-    - [**Test Organization**](#test-organization)
-- [Test structure mirrors source structure](#test-structure-mirrors-source-structure)
-    - [**ETL Testing Patterns**](#etl-testing-patterns)
-  - [📏 **Code Quality Standards**](#-code-quality-standards)
-    - [**Type Annotation Requirements**](#type-annotation-requirements)
-- [✅ Complete type annotations for ETL operations](#-complete-type-annotations-for-etl-operations)
-- [✅ Generic type usage for reusable patterns](#-generic-type-usage-for-reusable-patterns)
-    - [**Error Handling Standards**](#error-handling-standards)
-- [✅ Always use FlextResult for ETL operations](#-always-use-flextresult-for-etl-operations)
-- [✅ Chain ETL operations safely](#-chain-etl-operations-safely)
-    - [**Documentation Standards**](#documentation-standards)
-  - [🌐 **FLEXT Ecosystem Integration**](#-flext-ecosystem-integration)
-    - [**FLEXT Dependencies Integration**](#flext-dependencies-integration)
-- [✅ Standard FLEXT ecosystem imports](#-standard-flext-ecosystem-imports)
-- [✅ Consistent error handling across FLEXT projects](#-consistent-error-handling-across-flext-projects)
-    - [**Configuration Integration**](#configuration-integration)
-- [✅ Extend FlextConfig for all configuration](#-extend-flextconfig-for-all-configuration)
-  - [📋 **ETL Module Checklist**](#-etl-module-checklist)
-    - [**Module Creation Checklist**](#module-creation-checklist)
-    - [**ETL Quality Gates**](#etl-quality-gates)
+- Python Module Organization & Semantic Patterns
+  - 🏗️ **Module Architecture Overview**
+    - **Core Design Principles**
+  - 📁 **Module Structure & Responsibilities**
+    - **Foundation Layer**
+- Core application foundation
+- Standard application imports
+  - **Configuration & Settings Layer**
+- Configuration management with FLEXT integration
+- Environment-aware configuration
+- Oracle WMS configuration with validation
+  - **Domain Layer (Business Logic)**
+- ETL domain models and business rules
+  - **Application Service Layer**
+- Application orchestration and use cases
+  - **Infrastructure Layer**
+- External system integrations
+- Oracle integration with FLEXT patterns
+  - **Validation Layer**
+- Data validation and quality assurance
+  - **Exception Handling Layer**
+- Domain-specific exception hierarchy
+- Exception usage in ETL operations
+  - 🎯 **Semantic Naming Conventions**
+    - **Module-Level Naming**
+- ETL-specific module naming patterns
+  - **Class Naming Conventions**
+- Domain entities follow business terminology
+- Service classes use descriptive names
+- Configuration classes reflect their scope
+  - **Function and Method Naming**
+- ETL operation naming patterns
+- Configuration and setup methods
+  - 📦 **Import Patterns & Best Practices**
+    - **Recommended Import Styles**
+      - **1. FLEXT Foundation Imports**
+- Core FLEXT patterns - always import these first
+- Application domain imports
+      - **2. Domain Model Imports**
+- Domain entities and value objects
+- Domain services and validation
+      - **3. Infrastructure Imports**
+- Infrastructure and external integrations
+      - **4. Application Service Imports**
+- Application orchestration and CLI
+- Exception handling
+  - **Anti-Patterns (Forbidden)**
+- ❌ Don't import everything
+- ❌ Don't use deep imports for internal modules
+- ❌ Don't import test modules in production code
+- ❌ Don't alias core types confusingly
+- ❌ Don't import Meltano internals directly
+  - 🏛️ **Clean Architecture Layers**
+    - **Layer Separation**
+- Clean Architecture with ETL specialization
+  - **Dependency Direction**
+- Dependencies flow inward (Clean Architecture principle)
+  - 🔄 **ETL-Specific Patterns**
+    - **Pipeline Orchestration Pattern**
+    - **Data Validation Chain Pattern**
+    - **Connection Management Pattern**
+- Usage in ETL operations
+  - 🧪 **Testing Patterns**
+    - **Test Organization**
+- Test structure mirrors source structure
+  - **ETL Testing Patterns**
+  - 📏 **Code Quality Standards**
+    - **Type Annotation Requirements**
+- ✅ Complete type annotations for ETL operations
+- ✅ Generic type usage for reusable patterns
+  - **Error Handling Standards**
+- ✅ Always use FlextResult for ETL operations
+- ✅ Chain ETL operations safely
+  - **Documentation Standards**
+  - 🌐 **FLEXT Ecosystem Integration**
+    - **FLEXT Dependencies Integration**
+- ✅ Standard FLEXT ecosystem imports
+- ✅ Consistent error handling across FLEXT projects
+  - **Configuration Integration**
+- ✅ Extend FlextConfig for all configuration
+  - 📋 **ETL Module Checklist**
+    - **Module Creation Checklist**
+    - **ETL Quality Gates**
 
 
 **GrupoNOS Meltano Native - ETL Pipeline Architecture & Best Practices**
