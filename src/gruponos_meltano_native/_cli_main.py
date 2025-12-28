@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 
 import yaml
 from flext_cli import FlextCli, FlextCliMain
-from flext_core import FlextLogger, FlextResult, FlextService
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes as t
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
@@ -210,7 +210,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
     # CLI handler methods removed as dead code - not connected to actual command execution
 
     @staticmethod
-    def _initialize_cli_environment(*, debug: bool = False) -> dict[str, object]:
+    def _initialize_cli_environment(*, debug: bool = False) -> dict[str, t.GeneralValueType]:
         """Inicializa ambiente CLI usando padrões do framework FLEXT CLI.
 
         Esta função configura o ambiente CLI completo incluindo logging,
@@ -221,7 +221,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
                  Se False, usa configuração de produção.
 
         Returns:
-          dict[str, object]: Contexto do ambiente CLI com configuração e console.
+          dict[str, t.GeneralValueType]: Contexto do ambiente CLI com configuração e console.
 
         Note:
           Integração:

@@ -14,7 +14,7 @@ from enum import StrEnum
 from typing import override
 
 from flext_api import FlextApiClient
-from flext_core import FlextLogger, FlextModels, FlextResult
+from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes as t
 
 from gruponos_meltano_native.config import GruponosMeltanoAlertConfig
 
@@ -91,7 +91,7 @@ class GruponosMeltanoAlert(FlextModels.Value):
     message: str
     severity: GruponosMeltanoAlertSeverity
     alert_type: GruponosMeltanoAlertType
-    context: dict[str, object]
+    context: dict[str, t.GeneralValueType]
     timestamp: str
     pipeline_name: str | None = None
 
@@ -151,7 +151,7 @@ class GruponosMeltanoAlertService:
             config: Instância da configuração de alertas.
 
         """
-        self.config: dict[str, object] = config
+        self.config: dict[str, t.GeneralValueType] = config
         self._failure_count = 0
 
         logger.info(
@@ -449,7 +449,7 @@ class GruponosMeltanoAlertManager:
         self,
         pipeline_name: str,
         error_message: str,
-        context: dict[str, object] | None = None,
+        context: dict[str, t.GeneralValueType] | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de falha de pipeline.
 
@@ -486,7 +486,7 @@ class GruponosMeltanoAlertManager:
         self,
         target: str,
         error_message: str,
-        context: dict[str, object] | None = None,
+        context: dict[str, t.GeneralValueType] | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de falha de conectividade.
 
@@ -522,7 +522,7 @@ class GruponosMeltanoAlertManager:
         self,
         issue_description: str,
         pipeline_name: str | None = None,
-        context: dict[str, object] | None = None,
+        context: dict[str, t.GeneralValueType] | None = None,
     ) -> FlextResult[bool]:
         """Envia alerta de problema de qualidade de dados.
 
@@ -601,7 +601,7 @@ def create_gruponos_meltano_alert_manager(
       >>> manager = create_gruponos_meltano_alert_manager()
       >>>
       >>> # Usar configuração customizada
-      >>> config: dict[str, object] = GruponosMeltanoAlertConfig(webhook_enabled=True)
+      >>> config: dict[str, t.GeneralValueType] = GruponosMeltanoAlertConfig(webhook_enabled=True)
       >>> manager = create_gruponos_meltano_alert_manager(config)
 
     """

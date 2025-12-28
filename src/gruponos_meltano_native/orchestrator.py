@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Self
 
-from flext_core import FlextResult, FlextService
+from flext_core import FlextResult, FlextService, FlextTypes as t
 from flext_meltano import FlextMeltanoService
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
@@ -61,7 +61,7 @@ class GruponosMeltanoPipelineResult:
     execution_time: float
     output: str
     error: str | None = None
-    metadata: dict[str, object] | None = None
+    metadata: dict[str, t.GeneralValueType] | None = None
 
 
 # =============================================
@@ -452,7 +452,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         """
         return self.run_job(pipeline_name)
 
-    def get_job_status(self, job_name: str) -> FlextResult[dict[str, object]]:
+    def get_job_status(self, job_name: str) -> FlextResult[dict[str, t.GeneralValueType]]:
         """Get status of a specific job with comprehensive information.
 
         Args:
@@ -482,7 +482,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
         if not job_name or not job_name.strip():
             return FlextResult.fail("Job name cannot be empty")
 
-        job_status: dict[str, object] = {
+        job_status: dict[str, t.GeneralValueType] = {
             "job_name": job_name.strip(),
             "available": job_name.strip() in self.list_jobs(),
             "settings": self.settings.model_dump(),
@@ -615,7 +615,7 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
     def _execute_meltano_pipeline(
         self, job_name: str
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[dict[str, t.GeneralValueType]]:
         """Execute a Meltano pipeline with comprehensive error handling.
 
         This method executes Meltano jobs via FlextUtilities with proper environment

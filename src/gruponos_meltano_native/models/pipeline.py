@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from flext_core import FlextModels, FlextResult
+from flext_core import FlextModels, FlextResult, FlextTypes as t
 from pydantic import ConfigDict, Field, computed_field
 
 from gruponos_meltano_native.constants import c
@@ -148,7 +148,7 @@ class GruponosMeltanoNativeModels(FlextModels):
         )
 
         # Error handling and metadata
-        errors: list[object] = Field(
+        errors: list[t.GeneralValueType] = Field(
             default_factory=list,
             description="List of errors encountered during execution",
         )
@@ -156,7 +156,7 @@ class GruponosMeltanoNativeModels(FlextModels):
             default_factory=list,
             description="List of warnings generated during execution",
         )
-        metadata: dict[str, object] = Field(
+        metadata: dict[str, t.GeneralValueType] = Field(
             default_factory=dict,
             description="Additional execution metadata and context",
         )
@@ -389,14 +389,14 @@ class GruponosMeltanoNativeModels(FlextModels):
         extractor_name: str = Field(
             default="", description="Name of the extractor to use"
         )
-        extractor_config: dict[str, object] = Field(
+        extractor_config: dict[str, t.GeneralValueType] = Field(
             default_factory=dict,
             description="Extractor-specific configuration parameters",
         )
 
         # Loader configuration with validation
         loader_name: str = Field(default="", description="Name of the loader to use")
-        loader_config: dict[str, object] = Field(
+        loader_config: dict[str, t.GeneralValueType] = Field(
             default_factory=dict, description="Loader-specific configuration parameters"
         )
 

@@ -8,7 +8,7 @@ import re
 from typing import Protocol
 from unittest.mock import patch
 
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes as t
 from sqlalchemy import MetaData, Table, select
 from sqlalchemy.sql import Select
 
@@ -25,11 +25,11 @@ class OracleCursor(Protocol):
     def execute(
         self,
         query: str,
-        params: list[object] | dict[str, object] | None = None,
+        params: list[t.GeneralValueType] | dict[str, t.GeneralValueType] | None = None,
     ) -> None:
         """Execute a query."""
 
-    def fetchone(self) -> list[object] | None:
+    def fetchone(self) -> list[t.GeneralValueType] | None:
         """Fetch one row."""
 
 
@@ -138,7 +138,7 @@ def _count_table_records(cursor: OracleCursor, table_name: str) -> int:
         return 0
 
 
-def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, object]:
+def _get_table_details(cursor: OracleCursor, table_name: str) -> dict[str, t.GeneralValueType]:
     """Get Oracle table details using cursor.
 
     Args:
@@ -402,7 +402,7 @@ class TestOracleValidateSync:
         # Mock cursor that returns valid details
         call_count = [0]  # Use list to allow modification in lambda
 
-        def mock_fetchone() -> list[object]:
+        def mock_fetchone() -> list[t.GeneralValueType]:
             call_count[0] += 1
             if call_count[0] == 1:  # First call (MIN/MAX/COUNT query)
                 return ["2024-01-01", "2024-12-31", 1000]
@@ -457,7 +457,7 @@ class TestOracleValidateSync:
         # Mock cursor for table that exists and has records
         call_count = [0]
 
-        def mock_fetchone() -> list[object]:
+        def mock_fetchone() -> list[t.GeneralValueType]:
             call_count[0] += 1
             if call_count[0] == 1:  # table exists check
                 return [1]
@@ -504,7 +504,7 @@ class TestOracleValidateSync:
         # Mock cursor for table that exists but has no records
         call_count = [0]
 
-        def mock_fetchone() -> list[object]:
+        def mock_fetchone() -> list[t.GeneralValueType]:
             call_count[0] += 1
             if call_count[0] == 1:  # First call - table exists check
                 return [1]  # Table exists

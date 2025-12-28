@@ -18,7 +18,7 @@ from __future__ import annotations
 import os
 from typing import override
 
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes as t
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
 
 from gruponos_meltano_native.config import GruponosMeltanoOracleConnectionConfig
@@ -265,7 +265,7 @@ class GruponosMeltanoOracleConnectionManager:
         conn = self._connection
         return bool(conn and getattr(conn, "connected", True))
 
-    def get_connection_info(self: object) -> dict[str, object]:
+    def get_connection_info(self: object) -> dict[str, t.GeneralValueType]:
         """Retorna informações básicas da conexão."""
         return {
             "is_connected": self.is_connected(),
@@ -306,7 +306,7 @@ def create_gruponos_meltano_oracle_connection_manager(
       >>> manager = create_gruponos_meltano_oracle_connection_manager()
       >>>
       >>> # Usar configuração customizada
-      >>> config: dict[str, object] = GruponosMeltanoOracleConnectionConfig(
+      >>> config: dict[str, t.GeneralValueType] = GruponosMeltanoOracleConnectionConfig(
       ...     host="custom-db"
       ... )
       >>> manager = create_gruponos_meltano_oracle_connection_manager(config)

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextProtocols, FlextResult
+from flext_core import FlextProtocols, FlextResult, FlextTypes as t
 
 
 class GruponosMeltanoNativeProtocols(FlextProtocols):
@@ -26,7 +26,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
     class ConfigValidator(Protocol):
         """Protocol for configuration validation with enterprise error handling."""
 
-        def validate_config(self, config: dict[str, object]) -> FlextResult[bool]:
+        def validate_config(self, config: dict[str, t.GeneralValueType]) -> FlextResult[bool]:
             """Validate configuration using Railway Pattern.
 
             Args:
@@ -43,7 +43,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
 
         def execute_pipeline(
             self, pipeline_name: str, **kwargs: object
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Execute a pipeline by name with Railway Pattern error handling.
 
             Args:
@@ -59,7 +59,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
     class Orchestrator(Protocol):
         """Protocol for Meltano orchestration operations."""
 
-        def run_full_sync(self) -> FlextResult[dict[str, object]]:
+        def run_full_sync(self) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Execute full synchronization pipeline.
 
             Returns:
@@ -68,7 +68,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
             """
             ...
 
-        def run_incremental_sync(self) -> FlextResult[dict[str, object]]:
+        def run_incremental_sync(self) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Execute incremental synchronization pipeline.
 
             Returns:
@@ -93,7 +93,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
             self,
             message: str,
             severity: str,
-            metadata: dict[str, object] | None = None,
+            metadata: dict[str, t.GeneralValueType] | None = None,
         ) -> FlextResult[None]:
             """Send an alert with Railway Pattern error handling.
 
@@ -112,7 +112,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
         """Protocol for comprehensive data validation."""
 
         def validate_batch(
-            self, data: list[dict[str, object]], schema: dict[str, object]
+            self, data: list[dict[str, t.GeneralValueType]], schema: dict[str, t.GeneralValueType]
         ) -> FlextResult[list[str]]:
             """Validate batch of data against schema with detailed error reporting.
 
@@ -130,7 +130,7 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
         """Protocol for enterprise monitoring and observability."""
 
         def record_metric(
-            self, name: str, value: float, tags: dict[str, object] | None = None
+            self, name: str, value: float, tags: dict[str, t.GeneralValueType] | None = None
         ) -> FlextResult[None]:
             """Record a metric with optional tags.
 

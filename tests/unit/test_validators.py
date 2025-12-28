@@ -1,6 +1,7 @@
 """Unit tests for validation functionality."""
-
 from decimal import Decimal
+
+from flext_core import FlextTypes as t
 
 from gruponos_meltano_native import (
     DataValidator,
@@ -66,7 +67,7 @@ class TestDataValidators:
         validator = DataValidator(rules)
 
         # Test with missing field
-        data: dict[str, object] = {}
+        data: dict[str, t.GeneralValueType] = {}
         errors = validator.validate(data)
         assert len(errors) > 0
         if not any("required_field" in str(error) for error in errors):

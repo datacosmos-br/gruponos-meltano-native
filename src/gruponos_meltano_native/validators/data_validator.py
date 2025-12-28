@@ -22,7 +22,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import override
 
-from flext_core import FlextExceptions, FlextLogger
+from flext_core import FlextExceptions, FlextLogger, FlextTypes as t
 
 # Get dependencies via DI
 logger = FlextLogger(__name__)
@@ -41,7 +41,7 @@ class ValidationError(FlextExceptions.ValidationError):
     def __init__(
         self,
         message: str,
-        validation_details: dict[str, object] | None = None,
+        validation_details: dict[str, t.GeneralValueType] | None = None,
         **kwargs: object,
     ) -> None:
         """Inicializa erro de validação com código de erro consistente.
@@ -82,7 +82,7 @@ class ValidationRule:
         self,
         field_name: str,
         rule_type: str,
-        parameters: dict[str, object] | None = None,
+        parameters: dict[str, t.GeneralValueType] | None = None,
         **kwargs: object,
     ) -> None:
         """Inicializa regra de validação.
@@ -141,7 +141,7 @@ class DataValidator:
     def _validate_required_field(
         self,
         rule: ValidationRule,
-        data: dict[str, object],
+        data: dict[str, t.GeneralValueType],
         errors: list[str],
     ) -> bool:
         """Validate required field presence."""
@@ -184,7 +184,7 @@ class DataValidator:
         if validation_method is not None and value is not None:
             validation_method(rule, value, errors)
 
-    def validate(self, data: dict[str, object]) -> list[str]:
+    def validate(self, data: dict[str, t.GeneralValueType]) -> list[str]:
         """Valida dados contra regras configuradas.
 
         Aplica todas as regras de validação configuradas aos dados fornecidos,
@@ -434,9 +434,9 @@ class DataValidator:
 
     def validate_and_convert_record(
         self,
-        record: dict[str, object],
-        schema: dict[str, object],
-    ) -> dict[str, object]:
+        record: dict[str, t.GeneralValueType],
+        schema: dict[str, t.GeneralValueType],
+    ) -> dict[str, t.GeneralValueType]:
         """Valida e converte um registro de acordo com schema.
 
         Processa um registro de dados aplicando conversões de tipo
@@ -448,7 +448,7 @@ class DataValidator:
             schema: Schema definindo tipos esperados dos campos.
 
         Returns:
-            dict[str, object]: Registro convertido com tipos apropriados.
+            dict[str, t.GeneralValueType]: Registro convertido com tipos apropriados.
 
         Raises:
             ValueError: Se conversão de tipo falhar.
@@ -465,7 +465,7 @@ class DataValidator:
         properties = schema.get("properties")
         if not properties or not isinstance(properties, dict):
             return record
-        converted_record: dict[str, object] = {}
+        converted_record: dict[str, t.GeneralValueType] = {}
         for field_name, field_value in record.items():
             if field_name in properties:
                 field_schema = properties[field_name]
@@ -695,14 +695,14 @@ def create_validator_for_environment(environment: str = "dev") -> DataValidator:
 if __name__ == "__main__":
     # Test the validator
     validator = DataValidator(strict_mode=False)
-    test_record: dict[str, object] = {
+    test_record: dict[str, t.GeneralValueType] = {
         "id": 123,
         "amount": 540.50,
         "count": 42,
         "active": True,
         "created_date": "2025-07-02T10:00:00",
     }
-    test_schema: dict[str, object] = {
+    test_schema: dict[str, t.GeneralValueType] = {
         "properties": {
             "id": {"type": "integer"},
             "amount": {"type": "number"},
@@ -711,7 +711,7 @@ if __name__ == "__main__":
             "created_date": {"type": "string", "format": "date-time"},
         },
     }
-    result: dict[str, object] = validator.validate_and_convert_record(
+    result: dict[str, t.GeneralValueType] = validator.validate_and_convert_record(
         test_record, test_schema
     )
     logger.info("Converted record: %s", result)
