@@ -53,7 +53,13 @@ class DocsConfig:
 
     # File patterns
     DOC_EXTENSIONS: ClassVar[list[str]] = [".md", ".mdx"]
-    IGNORE_DIRS: ClassVar[list[str]] = [".git", "__pycache__", ".pytest_cache", "dist", "build"]
+    IGNORE_DIRS: ClassVar[list[str]] = [
+        ".git",
+        "__pycache__",
+        ".pytest_cache",
+        "dist",
+        "build",
+    ]
 
     # Quality thresholds
     MIN_WORDS_PER_DOC: ClassVar[int] = 50
@@ -151,7 +157,9 @@ class DocsMaintainer:
                 # File statistics
                 word_count = len(content.split())
                 line_count = len(content.splitlines())
-                last_modified = datetime.fromtimestamp(file_path.stat().st_mtime, tz=UTC)
+                last_modified = datetime.fromtimestamp(
+                    file_path.stat().st_mtime, tz=UTC
+                )
 
                 audit_results["file_stats"][str(relative_path)] = {
                     "word_count": word_count,
@@ -1129,10 +1137,7 @@ Examples:
                 # Generate HTML report
                 html_report = maintainer.generate_html_report(report)
                 report_date = datetime.now(UTC).strftime("%Y%m%d")
-                output_file = (
-                    args.output
-                    or f"documentation_report_{report_date}.html"
-                )
+                output_file = args.output or f"documentation_report_{report_date}.html"
                 Path(output_file).write_text(html_report, encoding="utf-8")
                 print(f"📄 HTML report saved to: {output_file}")
             else:

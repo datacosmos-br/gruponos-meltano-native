@@ -194,7 +194,9 @@ class DocsDashboard:
                     timestamp = data.get("timestamp", report_file.stat().st_mtime)
 
                     if isinstance(timestamp, (int, float)):
-                        date_str = datetime.fromtimestamp(timestamp, tz=UTC).strftime("%m/%d")
+                        date_str = datetime.fromtimestamp(timestamp, tz=UTC).strftime(
+                            "%m/%d"
+                        )
                     else:
                         try:
                             date_str = datetime.fromisoformat(timestamp).strftime(
@@ -512,8 +514,7 @@ class DocsDashboard:
 
         dashboard_date = datetime.now(UTC).strftime("%Y%m%d")
         dashboard_file = (
-            self.dashboard_dir
-            / f"documentation_dashboard_{dashboard_date}.html"
+            self.dashboard_dir / f"documentation_dashboard_{dashboard_date}.html"
         )
         dashboard_file.write_text(html_content, encoding="utf-8")
         return dashboard_file
@@ -553,8 +554,7 @@ class DocsDashboard:
         """
         dashboard_date = datetime.now(UTC).strftime("%Y%m%d")
         dashboard_file = (
-            self.dashboard_dir
-            / f"documentation_dashboard_{dashboard_date}.json"
+            self.dashboard_dir / f"documentation_dashboard_{dashboard_date}.json"
         )
         with Path(dashboard_file).open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
@@ -645,8 +645,7 @@ class DocsDashboard:
 
         dashboard_date = datetime.now(UTC).strftime("%Y%m%d")
         dashboard_file = (
-            self.dashboard_dir
-            / f"documentation_dashboard_{dashboard_date}.md"
+            self.dashboard_dir / f"documentation_dashboard_{dashboard_date}.md"
         )
         dashboard_file.write_text(md_content, encoding="utf-8")
         return dashboard_file

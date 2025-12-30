@@ -601,7 +601,9 @@ def create_gruponos_meltano_alert_manager(
       >>> manager = create_gruponos_meltano_alert_manager()
       >>>
       >>> # Usar configuração customizada
-      >>> config: dict[str, t.GeneralValueType] = GruponosMeltanoAlertConfig(webhook_enabled=True)
+      >>> config: dict[str, t.GeneralValueType] = GruponosMeltanoAlertConfig(
+      ...     webhook_enabled=True
+      ... )
       >>> manager = create_gruponos_meltano_alert_manager(config)
 
     """

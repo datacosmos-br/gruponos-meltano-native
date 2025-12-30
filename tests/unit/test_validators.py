@@ -1,4 +1,5 @@
 """Unit tests for validation functionality."""
+
 from decimal import Decimal
 
 from flext_core import FlextTypes as t

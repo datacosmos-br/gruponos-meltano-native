@@ -13,10 +13,10 @@ SPDX-License-Identifier: Proprietary
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal, Self, TypedDict
+from typing import Self, TypedDict
 
 from flext_core import FlextResult, FlextSettings
-from flext_db_oracle import FlextDbOracleApi, FlextDbOracleModels
+from flext_db_oracle import FlextDbOracleApi
 from flext_meltano import FlextMeltanoService
 from flext_oracle_wms import FlextOracleWmsApi
 from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
@@ -310,10 +310,6 @@ class GruponosMeltanoNativeSettings(FlextSettings):
         default=None,
         description="Configuration file path",
     )
-    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
-        default="INFO",
-        description="Logging level",
-    )
 
     # Meltano-specific configuration
     meltano_project_root: str | None = Field(
@@ -586,76 +582,122 @@ class GruponosMeltanoNativeSettings(FlextSettings):
         return self.validate_business_rules()
 
     # Factory methods for domain-specific configurations using FlextSettings as source
-    def create_meltano_config(self, **_overrides: object) -> object:
+    def create_meltano_config(self, **_overrides: object) -> FlextMeltanoService:
         """Create Meltano configuration using GruponosMeltanoNativeSettings as source.
 
         Args:
             **_overrides: Configuration overrides (currently unused as domain library handles config)
 
         Returns:
-            Configured Meltano service instance
+            FlextMeltanoService: Configured Meltano service instance
 
         """
         # Return configured service - domain libraries handle their own config via env vars
         # _overrides parameter reserved for future domain library API extensions
         return FlextMeltanoService()
 
-    def create_oracle_connection_config(self, **overrides: object) -> object:
+    def create_oracle_connection_config(
+        self,
+        *,
+        host: str | None = None,
+        port: int | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        name: str | None = None,
+    ) -> FlextDbOracleApi:
         """Create Oracle connection configuration using GruponosMeltanoNativeSettings as source.
 
         Args:
-            **overrides: Configuration overrides
+            host: Override Oracle host
+            port: Override Oracle port
+            username: Override Oracle username
+            password: Override Oracle password
+            name: Override Oracle service name
 
         Returns:
-            FlextDbOracleConfig: Configured Oracle connection instance
+            FlextDbOracleApi: Configured Oracle connection API
 
         """
         defaults = {
-            "host": self.oracle_host,
-            "port": self.oracle_port,
-            "username": self.oracle_username,
-            "password": self.get_oracle_password_value(),
-            "name": self.oracle_service_name,
+            "host": host if host is not None else self.oracle_host,
+            "port": port if port is not None else self.oracle_port,
+            "username": username if username is not None else self.oracle_username,
+            "password": password if password is not None else self.get_oracle_password_value(),
+            "name": name if name is not None else self.oracle_service_name,
         }
-        defaults.update(overrides)
-        config = FlextDbOracleModels.OracleConfig(**defaults)
-        return FlextDbOracleApi(config)
+        return FlextDbOracleApi(**defaults)
 
-    def create_wms_config(self, **overrides: object) -> object:
+    def create_wms_config(
+        self,
+        *,
+        base_url: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        company_code: str | None = None,
+        facility_code: str | None = None,
+        timeout: int | None = None,
+    ) -> FlextOracleWmsApi:
         """Create Oracle WMS configuration using GruponosMeltanoNativeSettings as source.
 
         Args:
-            **overrides: Configuration overrides
+            base_url: Override WMS base URL
+            username: Override WMS username
+            password: Override WMS password
+            company_code: Override company code
+            facility_code: Override facility code
+            timeout: Override WMS timeout
 
         Returns:
-            FlextOracleWmsConfig: Configured WMS instance
+            FlextOracleWmsApi: Configured WMS API instance
 
         """
         defaults = {
-            "base_url": self.wms_base_url,
-            "username": self.wms_username,
-            "password": self.get_wms_password_value(),
-            "company_code": self.wms_company_code,
-            "facility_code": self.wms_facility_code,
-            "timeout": self.wms_timeout,
+            "base_url": base_url if base_url is not None else self.wms_base_url,
+            "username": username if username is not None else self.wms_username,
+            "password": password if password is not None else self.get_wms_password_value(),
+            "company_code": company_code if company_code is not None else self.wms_company_code,
+            "facility_code": facility_code if facility_code is not None else self.wms_facility_code,
+            "timeout": timeout if timeout is not None else self.wms_timeout,
         }
-        defaults.update(overrides)
         return FlextOracleWmsApi(**defaults)
 
-    def create_alert_config(self, **overrides: object) -> object:
+    def create_alert_config(
+        self,
+        *,
+        webhook_enabled: bool | None = None,
+        webhook_url: str | None = None,
+        email_enabled: bool | None = None,
+        email_recipients: list[str] | None = None,
+        slack_enabled: bool | None = None,
+        slack_webhook_url: str | None = None,
+        alert_threshold: int | None = None,
+    ) -> AlertConfigDict:
         """Create alert configuration using GruponosMeltanoNativeSettings as source.
 
         Args:
-            **overrides: Configuration overrides
+            webhook_enabled: Override webhook enabled setting
+            webhook_url: Override webhook URL
+            email_enabled: Override email enabled setting
+            email_recipients: Override email recipients list
+            slack_enabled: Override Slack enabled setting
+            slack_webhook_url: Override Slack webhook URL
+            alert_threshold: Override alert threshold
 
         Returns:
-            FlextAlertConfig: Configured alert instance
+            AlertConfigDict: Configured alert configuration dictionary
 
         """
-        # Return alert configuration dict from computed field
-        config = self.alert_config.copy()
-        config.update(overrides)
-        return config
+        # Build config dict with provided overrides or defaults from computed field
+        base_config = self.alert_config
+        return {
+            "webhook_enabled": webhook_enabled if webhook_enabled is not None else base_config["webhook_enabled"],
+            "webhook_url": webhook_url if webhook_url is not None else base_config["webhook_url"],
+            "email_enabled": email_enabled if email_enabled is not None else base_config["email_enabled"],
+            "email_recipients": email_recipients if email_recipients is not None else base_config["email_recipients"],
+            "slack_enabled": slack_enabled if slack_enabled is not None else base_config["slack_enabled"],
+            "slack_webhook_url": slack_webhook_url if slack_webhook_url is not None else base_config["slack_webhook_url"],
+            "alert_threshold": alert_threshold if alert_threshold is not None else base_config["alert_threshold"],
+        }
 
     # Environment-specific configuration methods using direct instantiation
     @classmethod

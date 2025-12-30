@@ -210,7 +210,9 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
     # CLI handler methods removed as dead code - not connected to actual command execution
 
     @staticmethod
-    def _initialize_cli_environment(*, debug: bool = False) -> dict[str, t.GeneralValueType]:
+    def _initialize_cli_environment(
+        *, debug: bool = False
+    ) -> dict[str, t.GeneralValueType]:
         """Inicializa ambiente CLI usando padrões do framework FLEXT CLI.
 
         Esta função configura o ambiente CLI completo incluindo logging,

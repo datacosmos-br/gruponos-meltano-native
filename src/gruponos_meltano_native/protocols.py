@@ -26,7 +26,9 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
     class ConfigValidator(Protocol):
         """Protocol for configuration validation with enterprise error handling."""
 
-        def validate_config(self, config: dict[str, t.GeneralValueType]) -> FlextResult[bool]:
+        def validate_config(
+            self, config: dict[str, t.GeneralValueType]
+        ) -> FlextResult[bool]:
             """Validate configuration using Railway Pattern.
 
             Args:
@@ -112,7 +114,9 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
         """Protocol for comprehensive data validation."""
 
         def validate_batch(
-            self, data: list[dict[str, t.GeneralValueType]], schema: dict[str, t.GeneralValueType]
+            self,
+            data: list[dict[str, t.GeneralValueType]],
+            schema: dict[str, t.GeneralValueType],
         ) -> FlextResult[list[str]]:
             """Validate batch of data against schema with detailed error reporting.
 
@@ -130,7 +134,10 @@ class GruponosMeltanoNativeProtocols(FlextProtocols):
         """Protocol for enterprise monitoring and observability."""
 
         def record_metric(
-            self, name: str, value: float, tags: dict[str, t.GeneralValueType] | None = None
+            self,
+            name: str,
+            value: float,
+            tags: dict[str, t.GeneralValueType] | None = None,
         ) -> FlextResult[None]:
             """Record a metric with optional tags.
 

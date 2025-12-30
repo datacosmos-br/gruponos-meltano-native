@@ -85,7 +85,9 @@ class MeltanoPipelineExecutor:
             self.logger.exception(error_msg)
             return FlextResult[PipelineResult].fail(error_msg)
 
-    def get_job_status(self, job_name: str) -> FlextResult[dict[str, t.GeneralValueType]]:
+    def get_job_status(
+        self, job_name: str
+    ) -> FlextResult[dict[str, t.GeneralValueType]]:
         """Get status of a Meltano job.
 
         Args:
@@ -123,12 +125,18 @@ class MeltanoPipelineExecutor:
                 if job.get("name") == job_name:
                     return FlextResult[dict[str, t.GeneralValueType]].ok(job)
 
-            return FlextResult[dict[str, t.GeneralValueType]].fail(f"Job not found: {job_name}")
+            return FlextResult[dict[str, t.GeneralValueType]].fail(
+                f"Job not found: {job_name}"
+            )
 
         except json.JSONDecodeError as e:
-            return FlextResult[dict[str, t.GeneralValueType]].fail(f"Invalid JSON response: {e!s}")
+            return FlextResult[dict[str, t.GeneralValueType]].fail(
+                f"Invalid JSON response: {e!s}"
+            )
         except Exception as e:
-            return FlextResult[dict[str, t.GeneralValueType]].fail(f"Unexpected error: {e!s}")
+            return FlextResult[dict[str, t.GeneralValueType]].fail(
+                f"Unexpected error: {e!s}"
+            )
 
     def list_jobs(self) -> FlextResult[list[str]]:
         """List all available Meltano jobs.
