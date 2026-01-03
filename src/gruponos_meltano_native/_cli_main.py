@@ -11,29 +11,47 @@ from __future__ import annotations
 import sys
 import time
 from datetime import UTC, datetime
+from typing import override
 
 import yaml
-from flext_cli import FlextCli, FlextCliMain
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes as t
+from flext_cli import FlextCli
+from flext_core import FlextResult, FlextService, FlextTypes as t
 
 from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 
 
 # Unified CLI class with nested command handlers - ONE CLASS PER MODULE
-class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
+class GruponosMeltanoNativeCli(FlextService[dict[str, str]]):
     """Unified CLI class for GrupoNOS Meltano Native - ONE CLASS PER MODULE.
 
     Follows FLEXT standards: single class with nested command handlers,
     no separate functions, direct access to domain libraries.
+
+    Note: This class is intentionally abstract (does not implement execute())
+    as CLI commands are handled by nested handler classes.
     """
+
+    _orchestrator: GruponosMeltanoOrchestrator
 
     def __init__(self, config: GruponosMeltanoNativeConfig | None = None) -> None:
         """Initialize the CLI with required services."""
         super().__init__()
-        self._config = config or GruponosMeltanoNativeConfig()
-        self.logger = FlextLogger(__name__)
-        self._orchestrator = GruponosMeltanoOrchestrator(self._config)
+        # Use parent's _config with proper type
+        config_instance = config or GruponosMeltanoNativeConfig()
+        object.__setattr__(self, "_config", config_instance)
+        # logger property is inherited from FlextMixins - auto-creates FlextLogger
+        # Note: GruponosMeltanoOrchestrator validates config and may raise ValueError
+        self._orchestrator = GruponosMeltanoOrchestrator(config_instance)
+
+    @override
+    def execute(self) -> FlextResult[dict[str, str]]:
+        """Execute CLI - dispatches to nested command handlers.
+
+        CLI commands are handled by nested handler classes (_HealthHandler, _RunHandler, etc.)
+        This method provides a default health check response when called directly.
+        """
+        return self._HealthHandler.execute()
 
     # Nested command handler classes - NO SEPARATE FUNCTIONS
     class _HealthHandler:
@@ -49,6 +67,8 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
     class _RunHandler:
         """Nested handler for pipeline run command."""
 
+        _orchestrator: GruponosMeltanoOrchestrator
+
         def __init__(
             self,
             orchestrator: GruponosMeltanoOrchestrator,
@@ -61,16 +81,16 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             *,
             dry_run: bool = False,
             force: bool = False,
-        ) -> FlextResult[dict[str, str | bool]]:
+        ) -> FlextResult[dict[str, str | bool | float]]:
             """Execute pipeline run command."""
             if dry_run:
                 validation_result = self._orchestrator.validate_configuration()
                 if validation_result.is_failure:
-                    return FlextResult[dict[str, str | bool]].fail(
+                    return FlextResult[dict[str, str | bool | float]].fail(
                         f"Pipeline validation failed: {validation_result.error}"
                     )
 
-                return FlextResult[dict[str, str | bool]].ok({
+                return FlextResult[dict[str, str | bool | float]].ok({
                     "pipeline": pipeline_name,
                     "status": "validated",
                     "dry_run": True,
@@ -80,12 +100,12 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             execution_result = self._orchestrator.run_job(pipeline_name)
 
             if execution_result.is_failure:
-                return FlextResult[dict[str, str | bool]].fail(
+                return FlextResult[dict[str, str | bool | float]].fail(
                     f"Pipeline execution failed: {execution_result.error}"
                 )
 
             pipeline_result = execution_result.value
-            return FlextResult[dict[str, str | bool]].ok({
+            return FlextResult[dict[str, str | bool | float]].ok({
                 "pipeline": pipeline_name,
                 "status": "completed",
                 "execution_time": pipeline_result.execution_time,
@@ -95,6 +115,8 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
 
     class _ListHandler:
         """Nested handler for list pipelines command."""
+
+        _orchestrator: GruponosMeltanoOrchestrator
 
         def __init__(
             self,
@@ -109,6 +131,8 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
 
     class _ValidateHandler:
         """Nested handler for validate command."""
+
+        _orchestrator: GruponosMeltanoOrchestrator
 
         def __init__(
             self,
@@ -143,6 +167,8 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
     class _ShowConfigHandler:
         """Nested handler for show config command."""
 
+        _config: GruponosMeltanoNativeConfig
+
         def __init__(self, config: GruponosMeltanoNativeConfig) -> None:
             self._config = config
 
@@ -164,6 +190,8 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
     class _RunWithRetryHandler:
         """Nested handler for run with retry command."""
 
+        _orchestrator: GruponosMeltanoOrchestrator
+
         def __init__(
             self,
             orchestrator: GruponosMeltanoOrchestrator,
@@ -176,7 +204,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             max_retries: int = 3,
             *,
             retry_delay: int = 5,
-        ) -> FlextResult[dict[str, str | int]]:
+        ) -> FlextResult[dict[str, str | int | float]]:
             """Execute run with retry command."""
             attempts_used = 0
 
@@ -198,12 +226,12 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
                 if attempt < max_retries:
                     time.sleep(retry_delay)
                 else:
-                    return FlextResult[dict[str, str | int]].fail(
+                    return FlextResult[dict[str, str | int | float]].fail(
                         f"Pipeline execution failed after {attempts_used} attempts: {execution_result.error}"
                     )
 
             # This should not be reached, but just in case
-            return FlextResult[dict[str, str | int]].fail(
+            return FlextResult[dict[str, str | int | float]].fail(
                 "Unexpected error in retry logic"
             )
 
@@ -232,20 +260,17 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
 
         """
         # Lightweight initialization: defer config creation to individual commands
-        cli_api = FlextCli()
+        # Note: FlextCli instance created on-demand in create_gruponos_cli()
         return {
-            "cli_api": cli_api,
             "debug": debug,
+            "initialized": True,
         }
 
-    def create_gruponos_cli(self) -> FlextResult[FlextCliMain]:
+    def create_gruponos_cli(self) -> FlextResult[FlextCli]:
         """Create GrupoNOS CLI using flext-cli foundation - NO click imports."""
         try:
             # Initialize CLI through flext-cli (abstracts Click internally)
-            cli_main = FlextCliMain(
-                name="gruponos-meltano-native",
-                description="GrupoNOS Meltano Native - Gerenciador de Pipeline ETL Empresarial",
-            )
+            cli_main = FlextCli()
 
             # Register commands directly with unified class handlers
             # TODO(marlonsc): [https://github.com/flext-sh/flext/issues/TBD] Fix CLI registration API once flext-cli API is clarified # noqa: FIX002
@@ -254,9 +279,9 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
                 "CLI framework initialized - commands registration pending flext-cli API clarification"
             )
 
-            return FlextResult[FlextCliMain].ok(cli_main)
+            return FlextResult[FlextCli].ok(cli_main)
         except Exception as e:
-            return FlextResult[FlextCliMain].fail(f"CLI creation failed: {e}")
+            return FlextResult[FlextCli].fail(f"CLI creation failed: {e}")
 
     @classmethod
     def cli(cls, *, debug: bool = False, config_file: str | None = None) -> None:
@@ -277,7 +302,7 @@ class GruponosMeltanoNativeCli(FlextService[GruponosMeltanoNativeConfig]):
             )
 
             # Create and execute the flext-cli implementation
-            cli_result: FlextResult[FlextCliMain] = cli_instance.create_gruponos_cli()
+            cli_result: FlextResult[FlextCli] = cli_instance.create_gruponos_cli()
             if cli_result.is_failure:
                 cli_instance.logger.error(f"Failed to create CLI: {cli_result.error}")
                 sys.exit(1)

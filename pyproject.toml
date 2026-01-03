@@ -19,16 +19,11 @@
     dependencies = [
         "click (>=8.2.1)",
         "dotenv (>=0.9.9)",
-        "flext-core @ file:../flext-core",
-        "flext-db-oracle @ file:../flext-db-oracle",
-        "flext-observability @ file:../flext-observability",
-        "flext-tap-oracle-wms @ file:../flext-tap-oracle-wms",
-        "meltano (>=3.8.0)",
+        "meltano (>=4.0.8,<5.0.0)",
         "pydantic (>=2.12.3)",
         "pyyaml (>=6.0.2)",
         "requests (>=2.32.4)",
         "structlog (>=25.4.0)",
-        "flext-cli @ file:///home/marlonsc/flext/flext-cli",
     ]
     description = "Grupo Nos Meltano Native - Enterprise ETL Pipeline for Grupo Nos"
     keywords = [
@@ -117,11 +112,14 @@
             isort          = ">=6.0.1"
             pre-commit     = ">=4.0.1"
             pylint         = ">=3.3.0"
-            pyrefly        = "^0.34.0"
+            pyrefly        = "^0.46.3"
             pyupgrade      = ">=3.19.0"
             radon          = ">=6.0.1"
             ruff           = ">=0.12.3"
             vulture        = ">=2.13"
+        pytest-cov = "^7.0.0"
+        pytest = "^9.0.2"
+        prompt-toolkit = ">=3.0.52"
 
         [tool.poetry.group.test.dependencies]
             
@@ -132,7 +130,7 @@ factory-boy         = ">=3.3.1"
             pytest              = ">=8.4.0"
             pytest-benchmark    = ">=5.1.0"
             pytest-clarity      = ">=1.0.1"
-            pytest-cov = "=7.0.0"
+            pytest-cov = ">=7.0.0"
             pytest-deadfixtures = ">=2.2.1"
             pytest-env          = ">=1.1.5"
             pytest-mock         = ">=3.14.0"

@@ -13,6 +13,8 @@ from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 class ListPipelinesHandler:
     """Handler for list pipelines command."""
 
+    _orchestrator: GruponosMeltanoOrchestrator
+
     def __init__(self, orchestrator: GruponosMeltanoOrchestrator) -> None:
         """Initialize the list pipelines handler."""
         self._orchestrator = orchestrator

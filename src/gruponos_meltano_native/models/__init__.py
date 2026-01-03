@@ -7,3 +7,7 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+
+from gruponos_meltano_native.models.pipeline import GruponosMeltanoNativeModels
+
+__all__ = ["GruponosMeltanoNativeModels"]

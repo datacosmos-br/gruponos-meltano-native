@@ -15,6 +15,8 @@ from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 class RunWithRetryHandler:
     """Handler for run with retry command."""
 
+    _orchestrator: GruponosMeltanoOrchestrator
+
     def __init__(self, orchestrator: GruponosMeltanoOrchestrator) -> None:
         """Initialize the run with retry handler."""
         self._orchestrator = orchestrator
@@ -25,7 +27,7 @@ class RunWithRetryHandler:
         max_retries: int = 3,
         *,
         retry_delay: int = 5,
-    ) -> FlextResult[dict[str, str | int]]:
+    ) -> FlextResult[dict[str, str | int | float]]:
         """Execute run with retry command."""
         attempts_used = 0
 
@@ -47,9 +49,11 @@ class RunWithRetryHandler:
             if attempt < max_retries:
                 time.sleep(retry_delay)
             else:
-                return FlextResult[dict[str, str | int]].fail(
+                return FlextResult[dict[str, str | int | float]].fail(
                     f"Pipeline execution failed after {attempts_used} attempts: {execution_result.error}"
                 )
 
         # This should not be reached, but just in case
-        return FlextResult[dict[str, str | int]].fail("Unexpected error in retry logic")
+        return FlextResult[dict[str, str | int | float]].fail(
+            "Unexpected error in retry logic"
+        )

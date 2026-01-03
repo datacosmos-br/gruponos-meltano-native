@@ -7,3 +7,10 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+
+from gruponos_meltano_native.core.external_command import (
+    ExternalCommandResult,
+    run_external_command,
+)
+
+__all__ = ["ExternalCommandResult", "run_external_command"]

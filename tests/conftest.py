@@ -461,7 +461,7 @@ async def async_mock_wms_client(
     mock_client.__aexit__ = MagicMock(return_value=None)
 
     # Mock async get method
-    async def mock_get(url: str, **kwargs: Any) -> MagicMock:
+    async def mock_get(url: str, **kwargs: object) -> MagicMock:
         response = MagicMock()
         response.status_code = 200
         response.json = MagicMock(return_value=mock_wms_api_response)
@@ -512,7 +512,7 @@ def sample_etl_result() -> dict[str, Any]:
 def allocation_factory() -> Callable[..., dict[str, Any]]:
     """Factory for creating test allocation records."""
 
-    def _create_allocation(**kwargs: Any) -> dict[str, Any]:
+    def _create_allocation(**kwargs: object) -> dict[str, Any]:
         defaults = {
             "allocation_id": f"ALLOC{uuid.uuid4().hex[:6].upper()}",
             "item_code": f"ITEM{uuid.uuid4().hex[:6].upper()}",
@@ -533,7 +533,7 @@ def allocation_factory() -> Callable[..., dict[str, Any]]:
 def order_factory() -> Callable[..., dict[str, Any]]:
     """Factory for creating test order records."""
 
-    def _create_order(**kwargs: Any) -> dict[str, Any]:
+    def _create_order(**kwargs: object) -> dict[str, Any]:
         defaults = {
             "order_id": str(uuid.uuid4()),
             "order_number": f"ORD-2024-{uuid.uuid4().hex[:6].upper()}",

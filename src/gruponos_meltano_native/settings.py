@@ -16,11 +16,17 @@ from pathlib import Path
 from typing import Self, TypedDict
 
 from flext_core import FlextResult, FlextSettings
-from flext_db_oracle import FlextDbOracleApi
+from flext_db_oracle import FlextDbOracleApi, FlextDbOracleSettings
 from flext_meltano import FlextMeltanoService
 from flext_oracle_wms import FlextOracleWmsApi
 from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
+
+# Type alias for settings override values (after SecretStr import)
+SettingsOverrideValue = str | int | bool | list[str] | SecretStr | Path | None
+
+# Re-export FlextDbOracleSettings for type checking purposes
+_FlextDbOracleSettings = FlextDbOracleSettings
 
 
 class GruponosMeltanoNativeSettings(FlextSettings):
@@ -618,14 +624,17 @@ class GruponosMeltanoNativeSettings(FlextSettings):
             FlextDbOracleApi: Configured Oracle connection API
 
         """
-        defaults = {
-            "host": host if host is not None else self.oracle_host,
-            "port": port if port is not None else self.oracle_port,
-            "username": username if username is not None else self.oracle_username,
-            "password": password if password is not None else self.get_oracle_password_value(),
-            "name": name if name is not None else self.oracle_service_name,
-        }
-        return FlextDbOracleApi(**defaults)
+        # Build FlextDbOracleSettings with overrides or defaults from this config
+        oracle_settings = _FlextDbOracleSettings(
+            host=host if host is not None else (self.oracle_host or ""),
+            port=port if port is not None else self.oracle_port,
+            username=username if username is not None else (self.oracle_username or ""),
+            password=SecretStr(password)
+            if password is not None
+            else (self.oracle_password or SecretStr("")),
+            service_name=name if name is not None else (self.oracle_service_name or ""),
+        )
+        return FlextDbOracleApi(oracle_settings)
 
     def create_wms_config(
         self,
@@ -654,9 +663,15 @@ class GruponosMeltanoNativeSettings(FlextSettings):
         defaults = {
             "base_url": base_url if base_url is not None else self.wms_base_url,
             "username": username if username is not None else self.wms_username,
-            "password": password if password is not None else self.get_wms_password_value(),
-            "company_code": company_code if company_code is not None else self.wms_company_code,
-            "facility_code": facility_code if facility_code is not None else self.wms_facility_code,
+            "password": password
+            if password is not None
+            else self.get_wms_password_value(),
+            "company_code": company_code
+            if company_code is not None
+            else self.wms_company_code,
+            "facility_code": facility_code
+            if facility_code is not None
+            else self.wms_facility_code,
             "timeout": timeout if timeout is not None else self.wms_timeout,
         }
         return FlextOracleWmsApi(**defaults)
@@ -690,13 +705,27 @@ class GruponosMeltanoNativeSettings(FlextSettings):
         # Build config dict with provided overrides or defaults from computed field
         base_config = self.alert_config
         return {
-            "webhook_enabled": webhook_enabled if webhook_enabled is not None else base_config["webhook_enabled"],
-            "webhook_url": webhook_url if webhook_url is not None else base_config["webhook_url"],
-            "email_enabled": email_enabled if email_enabled is not None else base_config["email_enabled"],
-            "email_recipients": email_recipients if email_recipients is not None else base_config["email_recipients"],
-            "slack_enabled": slack_enabled if slack_enabled is not None else base_config["slack_enabled"],
-            "slack_webhook_url": slack_webhook_url if slack_webhook_url is not None else base_config["slack_webhook_url"],
-            "alert_threshold": alert_threshold if alert_threshold is not None else base_config["alert_threshold"],
+            "webhook_enabled": webhook_enabled
+            if webhook_enabled is not None
+            else base_config["webhook_enabled"],
+            "webhook_url": webhook_url
+            if webhook_url is not None
+            else base_config["webhook_url"],
+            "email_enabled": email_enabled
+            if email_enabled is not None
+            else base_config["email_enabled"],
+            "email_recipients": email_recipients
+            if email_recipients is not None
+            else base_config["email_recipients"],
+            "slack_enabled": slack_enabled
+            if slack_enabled is not None
+            else base_config["slack_enabled"],
+            "slack_webhook_url": slack_webhook_url
+            if slack_webhook_url is not None
+            else base_config["slack_webhook_url"],
+            "alert_threshold": alert_threshold
+            if alert_threshold is not None
+            else base_config["alert_threshold"],
         }
 
     # Environment-specific configuration methods using direct instantiation

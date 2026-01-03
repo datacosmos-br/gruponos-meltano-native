@@ -14,6 +14,8 @@ from gruponos_meltano_native.config import GruponosMeltanoNativeConfig
 class ShowConfigHandler:
     """Handler for show config command."""
 
+    _config: GruponosMeltanoNativeConfig
+
     def __init__(self, config: GruponosMeltanoNativeConfig) -> None:
         """Initialize the show config handler."""
         self._config = config

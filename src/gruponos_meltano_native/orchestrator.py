@@ -60,8 +60,26 @@ class GruponosMeltanoPipelineResult:
     job_name: str
     execution_time: float
     output: str
-    error: str | None = None
-    metadata: dict[str, t.GeneralValueType] | None = None
+    error: str | None
+    metadata: dict[str, t.GeneralValueType] | None
+
+    def __init__(
+        self,
+        *,
+        success: bool,
+        job_name: str,
+        execution_time: float,
+        output: str,
+        error: str | None = None,
+        metadata: dict[str, t.GeneralValueType] | None = None,
+    ) -> None:
+        """Initialize pipeline result."""
+        self.success = success
+        self.job_name = job_name
+        self.execution_time = execution_time
+        self.output = output
+        self.error = error
+        self.metadata = metadata
 
 
 # =============================================
@@ -105,6 +123,9 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
       - Implements enterprise patterns for consistent error handling
 
     """
+
+    settings: GruponosMeltanoNativeConfig
+    _meltano_service: FlextMeltanoService
 
     def __new__(
         cls,
@@ -152,6 +173,19 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             raise ValueError(init_error_msg)
 
         self.logger.debug("GruponosMeltanoOrchestrator initialized successfully")
+
+    def execute(self) -> FlextResult[GruponosMeltanoNativeConfig]:
+        """Execute orchestrator validation and return configuration.
+
+        This implements the abstract execute() method from FlextService.
+        Returns the validated configuration as the result.
+        """
+        validation_result = self._validate_initial_configuration()
+        if validation_result.is_failure:
+            return FlextResult[GruponosMeltanoNativeConfig].fail(
+                validation_result.error or "Configuration validation failed"
+            )
+        return FlextResult[GruponosMeltanoNativeConfig].ok(self.settings)
 
     # =============================================
     # PUBLIC API METHODS

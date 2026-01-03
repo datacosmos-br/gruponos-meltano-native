@@ -13,6 +13,8 @@ from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 class RunHandler:
     """Handler for pipeline run command."""
 
+    _orchestrator: GruponosMeltanoOrchestrator
+
     def __init__(self, orchestrator: GruponosMeltanoOrchestrator) -> None:
         """Initialize the run handler."""
         self._orchestrator = orchestrator
@@ -23,16 +25,16 @@ class RunHandler:
         *,
         dry_run: bool = False,
         force: bool = False,
-    ) -> FlextResult[dict[str, str | bool]]:
+    ) -> FlextResult[dict[str, str | bool | float]]:
         """Execute pipeline run command."""
         if dry_run:
             validation_result = self._orchestrator.validate_configuration()
             if validation_result.is_failure:
-                return FlextResult[dict[str, str | bool]].fail(
+                return FlextResult[dict[str, str | bool | float]].fail(
                     f"Pipeline validation failed: {validation_result.error}"
                 )
 
-            return FlextResult[dict[str, str | bool]].ok({
+            return FlextResult[dict[str, str | bool | float]].ok({
                 "pipeline": pipeline_name,
                 "status": "validated",
                 "dry_run": True,
@@ -42,12 +44,12 @@ class RunHandler:
         execution_result = self._orchestrator.run_job(pipeline_name)
 
         if execution_result.is_failure:
-            return FlextResult[dict[str, str | bool]].fail(
+            return FlextResult[dict[str, str | bool | float]].fail(
                 f"Pipeline execution failed: {execution_result.error}"
             )
 
         pipeline_result = execution_result.value
-        return FlextResult[dict[str, str | bool]].ok({
+        return FlextResult[dict[str, str | bool | float]].ok({
             "pipeline": pipeline_name,
             "status": "completed",
             "execution_time": pipeline_result.execution_time,

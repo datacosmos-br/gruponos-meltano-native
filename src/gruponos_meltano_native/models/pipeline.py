@@ -82,8 +82,9 @@ class GruponosMeltanoNativeModels(FlextModels):
         job_name: str = Field(..., description="Associated job name for execution")
 
         # Status and timing with validation
-        status: GruponosMeltanoNativeModels.PipelineStatus = Field(
-            default="PENDING", description="Current pipeline execution status"
+        status: str = Field(
+            default=c.Gruponos.Status.PENDING,
+            description="Current pipeline execution status",
         )
         start_time: datetime = Field(
             ..., description="Pipeline execution start timestamp"
@@ -197,6 +198,12 @@ class GruponosMeltanoNativeModels(FlextModels):
             if total_processed == 0:
                 return 0.0
             return (self.records_failed / total_processed) * 100.0
+
+        @computed_field
+        @property
+        def execution_time(self) -> float:
+            """Alias for duration_seconds for backward compatibility."""
+            return self.duration_seconds or 0.0
 
     class PipelineMetrics(FlextModels.Value):
         """Pipeline execution metrics with comprehensive performance tracking.
@@ -491,8 +498,10 @@ class GruponosMeltanoNativeModels(FlextModels):
                 pipeline_id=pipeline_id,
                 pipeline_name=pipeline_name,
                 job_name=job_name,
-                status=status or cls.PipelineStatus.PENDING,
+                status=status or c.Gruponos.Status.PENDING,
                 start_time=datetime.now(UTC),
+                end_time=None,
+                duration_seconds=None,
             )
             return FlextResult[cls.PipelineResult].ok(pipeline_result)
         except Exception as e:

@@ -13,6 +13,8 @@ from gruponos_meltano_native.orchestrator import GruponosMeltanoOrchestrator
 class ValidateHandler:
     """Handler for validate command."""
 
+    _orchestrator: GruponosMeltanoOrchestrator
+
     def __init__(self, orchestrator: GruponosMeltanoOrchestrator) -> None:
         """Initialize the validate handler."""
         self._orchestrator = orchestrator
