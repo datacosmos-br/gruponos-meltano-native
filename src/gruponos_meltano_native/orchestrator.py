@@ -794,54 +794,33 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
             ),
         })
 
-        # Oracle WMS source configuration
-        wms_config = self.settings.wms_source_config
-        # Add WMS configuration to environment
-        wms_base_url = wms_config.get("base_url") or ""
-        wms_username = wms_config.get("username") or ""
-        wms_password = wms_config.get("password") or ""
-        wms_company_code = wms_config.get("company_code") or ""
-        wms_facility_code = wms_config.get("facility_code") or ""
-
+        wms = self.settings.wms_source_config
         env.update([
-            ("TAP_ORACLE_WMS_BASE_URL", wms_base_url),
-            ("TAP_ORACLE_WMS_USERNAME", wms_username),
-            ("TAP_ORACLE_WMS_PASSWORD", wms_password),
-            ("TAP_ORACLE_WMS_COMPANY_CODE", wms_company_code),
-            ("TAP_ORACLE_WMS_FACILITY_CODE", wms_facility_code),
+            ("TAP_ORACLE_WMS_BASE_URL", wms.base_url or ""),
+            ("TAP_ORACLE_WMS_USERNAME", wms.username or ""),
+            ("TAP_ORACLE_WMS_PASSWORD", wms.password or ""),
+            ("TAP_ORACLE_WMS_COMPANY_CODE", wms.company_code or ""),
+            ("TAP_ORACLE_WMS_FACILITY_CODE", wms.facility_code or ""),
         ])
 
-        # Oracle target database configuration
-        oracle_config = self.settings.oracle_connection_config
-        oracle_host = oracle_config.get("host") or ""
-        oracle_port = str(oracle_config.get("port") or "")
-        oracle_username = oracle_config.get("username") or ""
-        oracle_password = oracle_config.get("password") or ""
-        oracle_schema = oracle_config.get("schema") or ""
-
+        ora = self.settings.oracle_connection_config
         env.update([
-            ("FLEXT_TARGET_ORACLE_HOST", oracle_host),
-            ("FLEXT_TARGET_ORACLE_PORT", oracle_port),
-            ("FLEXT_TARGET_ORACLE_USERNAME", oracle_username),
-            ("FLEXT_TARGET_ORACLE_PASSWORD", oracle_password),
-            ("FLEXT_TARGET_ORACLE_SCHEMA", oracle_schema),
+            ("FLEXT_TARGET_ORACLE_HOST", ora.host or ""),
+            ("FLEXT_TARGET_ORACLE_PORT", str(ora.port)),
+            ("FLEXT_TARGET_ORACLE_USERNAME", ora.username or ""),
+            ("FLEXT_TARGET_ORACLE_PASSWORD", ora.password or ""),
+            ("FLEXT_TARGET_ORACLE_SCHEMA", ora.db_schema or ""),
         ])
 
-        # Handle service name vs SID (backward compatibility)
-        service_name = oracle_config.get("service_name")
-        if service_name:
-            env["FLEXT_TARGET_ORACLE_SERVICE_NAME"] = str(service_name)
-
-        sid = oracle_config.get("sid")
-        if sid:
-            env["FLEXT_TARGET_ORACLE_SID"] = str(sid)
+        if ora.service_name:
+            env["FLEXT_TARGET_ORACLE_SERVICE_NAME"] = ora.service_name
 
         self.logger.debug(
             "Meltano environment configured",
             extra={
                 "environment": self.settings.meltano_environment,
-                "wms_base_url": wms_config.get("base_url", ""),
-                "oracle_host": oracle_config.get("host", ""),
+                "wms_base_url": wms.base_url or "",
+                "oracle_host": ora.host or "",
             },
         )
 
@@ -942,29 +921,29 @@ class GruponosMeltanoOrchestrator(FlextService[GruponosMeltanoNativeConfig]):
 
         """
         try:
-            # Validate WMS configuration
-            wms_config = self.settings.wms_source_config
-            required_wms_fields = ["base_url", "username", "password", "company_code"]
-            for field in required_wms_fields:
-                if not wms_config.get(field):
-                    return FlextResult.fail(f"WMS {field} is required")
+            wms = self.settings.wms_source_config
+            if not wms.base_url:
+                return FlextResult.fail("WMS base_url is required")
+            if not wms.username:
+                return FlextResult.fail("WMS username is required")
+            if not wms.password:
+                return FlextResult.fail("WMS password is required")
+            if not wms.company_code:
+                return FlextResult.fail("WMS company_code is required")
 
-            # Validate Oracle configuration
-            oracle_config = self.settings.oracle_connection_config
-            required_oracle_fields = ["host", "port", "username", "password", "schema"]
-            for field in required_oracle_fields:
-                if not oracle_config.get(field):
-                    return FlextResult.fail(f"Oracle {field} is required")
-
-            # Validate port is valid
-            try:
-                port = int(oracle_config.get("port", 0))
-                if port <= 0 or port > MAX_PORT_NUMBER:
-                    return FlextResult.fail(
-                        f"Oracle port must be between 1 and {MAX_PORT_NUMBER}"
-                    )
-            except (ValueError, TypeError):
-                return FlextResult.fail("Oracle port must be a valid number")
+            cfg = self.settings.oracle_connection_config
+            if not cfg.host:
+                return FlextResult.fail("Oracle host is required")
+            if not cfg.username:
+                return FlextResult.fail("Oracle username is required")
+            if not cfg.password:
+                return FlextResult.fail("Oracle password is required")
+            if not cfg.db_schema:
+                return FlextResult.fail("Oracle schema is required")
+            if cfg.port <= 0 or cfg.port > MAX_PORT_NUMBER:
+                return FlextResult.fail(
+                    f"Oracle port must be between 1 and {MAX_PORT_NUMBER}"
+                )
 
             self.logger.debug("Environment configuration validation passed")
             return FlextResult.ok(None)

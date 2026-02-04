@@ -13,13 +13,21 @@ SPDX-License-Identifier: Proprietary
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Self, TypedDict
+from typing import Self
 
 from flext_core import FlextResult, FlextSettings
 from flext_db_oracle import FlextDbOracleApi, FlextDbOracleSettings
 from flext_meltano import FlextMeltanoService
 from flext_oracle_wms import FlextOracleWmsApi
-from pydantic import Field, SecretStr, computed_field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SecretStr,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import SettingsConfigDict
 
 # Type alias for settings override values (after SecretStr import)
@@ -29,61 +37,75 @@ SettingsOverrideValue = str | int | bool | list[str] | SecretStr | Path | None
 _FlextDbOracleSettings = FlextDbOracleSettings
 
 
+class AlertConfigDict(BaseModel):
+    """Alert configuration model."""
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    webhook_enabled: bool = Field(default=False)
+    webhook_url: str | None = Field(default=None)
+    email_enabled: bool = Field(default=False)
+    email_recipients: list[str] = Field(default_factory=list)
+    slack_enabled: bool = Field(default=False)
+    slack_webhook_url: str | None = Field(default=None)
+    alert_threshold: int = Field(default=1)
+
+
+class JobConfigDict(BaseModel):
+    """Job configuration model."""
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    enabled: bool = Field(default=True)
+    schedule: str | None = Field(default=None)
+    timeout: int = Field(default=3600)
+    retries: int = Field(default=3)
+    parallelism: int = Field(default=1)
+    environment: str = Field(default="production")
+
+
+class OracleConnectionConfigDict(BaseModel):
+    """Oracle connection configuration model."""
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    host: str | None = Field(default=None)
+    port: int = Field(default=1521)
+    service_name: str | None = Field(default=None)
+    username: str | None = Field(default=None)
+    password: str | None = Field(default=None)
+    db_schema: str | None = Field(default=None)
+    pool_size: int = Field(default=5)
+
+
+class TargetOracleConfigDict(BaseModel):
+    """Target Oracle configuration model."""
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    batch_size: int = Field(default=1000)
+    load_method: str = Field(default="upsert")
+
+
+class WMSSourceConfigDict(BaseModel):
+    """WMS source configuration model."""
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    base_url: str | None = Field(default=None)
+    username: str | None = Field(default=None)
+    password: str | None = Field(default=None)
+    company_code: str | None = Field(default=None)
+    facility_code: str | None = Field(default=None)
+    timeout: int = Field(default=30)
+
+
 class GruponosMeltanoNativeSettings(FlextSettings):
     """GrupoNOS Meltano Native Configuration using modern FlextSettings features.
 
     Extends FlextSettings with domain-specific fields and factory methods.
     Uses computed fields and direct FlextSettings integration without duplication.
     """
-
-    # TypedDict structures for configuration validation
-    class AlertConfigDict(TypedDict):
-        """Alert configuration dictionary structure."""
-
-        webhook_enabled: bool
-        webhook_url: str | None
-        email_enabled: bool
-        email_recipients: list[str]
-        slack_enabled: bool
-        slack_webhook_url: str | None
-        alert_threshold: int
-
-    class JobConfigDict(TypedDict):
-        """Job configuration dictionary structure."""
-
-        enabled: bool
-        schedule: str | None
-        timeout: int
-        retries: int
-        parallelism: int
-        environment: str
-
-    class OracleConnectionConfigDict(TypedDict):
-        """Oracle connection configuration dictionary structure."""
-
-        host: str | None
-        port: int
-        service_name: str | None
-        username: str | None
-        password: str | None  # Note: will be SecretStr in actual fields
-        schema: str | None
-        pool_size: int
-
-    class TargetOracleConfigDict(TypedDict):
-        """Target Oracle configuration dictionary structure."""
-
-        batch_size: int
-        load_method: str
-
-    class WMSSourceConfigDict(TypedDict):
-        """WMS source configuration dictionary structure."""
-
-        base_url: str | None
-        username: str | None
-        password: str | None  # Note: will be SecretStr in actual fields
-        company_code: str | None
-        facility_code: str | None
-        timeout: int
 
     model_config = SettingsConfigDict(
         env_prefix="GRUPONOS_MELTANO_",
@@ -420,69 +442,69 @@ class GruponosMeltanoNativeSettings(FlextSettings):
     @computed_field
     @property
     def alert_config(self) -> AlertConfigDict:
-        """Get alert configuration as dictionary."""
-        return {
-            "webhook_enabled": self.webhook_enabled,
-            "webhook_url": self.webhook_url,
-            "email_enabled": self.email_enabled,
-            "email_recipients": self.email_recipients,
-            "slack_enabled": self.slack_enabled,
-            "slack_webhook_url": self.slack_webhook_url,
-            "alert_threshold": self.alert_threshold,
-        }
+        """Get alert configuration as model."""
+        return AlertConfigDict(
+            webhook_enabled=self.webhook_enabled,
+            webhook_url=self.webhook_url,
+            email_enabled=self.email_enabled,
+            email_recipients=self.email_recipients,
+            slack_enabled=self.slack_enabled,
+            slack_webhook_url=self.slack_webhook_url,
+            alert_threshold=self.alert_threshold,
+        )
 
     @computed_field
     @property
     def job_config(self) -> JobConfigDict:
-        """Get job configuration as dictionary."""
-        return {
-            "enabled": self.job_enabled,
-            "schedule": self.job_schedule,
-            "timeout": self.job_timeout,
-            "retries": self.job_retries,
-            "parallelism": self.job_parallelism,
-            "environment": self.job_environment,
-        }
+        """Get job configuration as model."""
+        return JobConfigDict(
+            enabled=self.job_enabled,
+            schedule=self.job_schedule,
+            timeout=self.job_timeout,
+            retries=self.job_retries,
+            parallelism=self.job_parallelism,
+            environment=self.job_environment,
+        )
 
     @computed_field
     @property
     def oracle_connection_config(self) -> OracleConnectionConfigDict:
-        """Get Oracle connection configuration as dictionary."""
-        return {
-            "host": self.oracle_host,
-            "port": self.oracle_port,
-            "service_name": self.oracle_service_name,
-            "username": self.oracle_username,
-            "password": self.oracle_password.get_secret_value()
+        """Get Oracle connection configuration as model."""
+        return OracleConnectionConfigDict(
+            host=self.oracle_host,
+            port=self.oracle_port,
+            service_name=self.oracle_service_name,
+            username=self.oracle_username,
+            password=self.oracle_password.get_secret_value()
             if self.oracle_password
             else None,
-            "schema": self.oracle_schema,
-            "pool_size": self.oracle_pool_size,
-        }
+            db_schema=self.oracle_schema,
+            pool_size=self.oracle_pool_size,
+        )
 
     @computed_field
     @property
     def target_oracle_config(self) -> TargetOracleConfigDict:
-        """Get target Oracle configuration as dictionary."""
-        return {
-            "batch_size": self.target_batch_size,
-            "load_method": self.target_load_method,
-        }
+        """Get target Oracle configuration as model."""
+        return TargetOracleConfigDict(
+            batch_size=self.target_batch_size,
+            load_method=self.target_load_method,
+        )
 
     @computed_field
     @property
     def wms_source_config(self) -> WMSSourceConfigDict:
-        """Get WMS source configuration as dictionary."""
-        return {
-            "base_url": self.wms_base_url,
-            "username": self.wms_username,
-            "password": self.wms_password.get_secret_value()
+        """Get WMS source configuration as model."""
+        return WMSSourceConfigDict(
+            base_url=self.wms_base_url,
+            username=self.wms_username,
+            password=self.wms_password.get_secret_value()
             if self.wms_password
             else None,
-            "company_code": self.wms_company_code,
-            "facility_code": self.wms_facility_code,
-            "timeout": self.wms_timeout,
-        }
+            company_code=self.wms_company_code,
+            facility_code=self.wms_facility_code,
+            timeout=self.wms_timeout,
+        )
 
     # Utility methods
     def get_oracle_password_value(self) -> str | None:
@@ -625,13 +647,18 @@ class GruponosMeltanoNativeSettings(FlextSettings):
 
         """
         # Build FlextDbOracleSettings with overrides or defaults from this config
+        resolved_password: str = (
+            password
+            if password is not None
+            else (
+                self.oracle_password.get_secret_value() if self.oracle_password else ""
+            )
+        )
         oracle_settings = _FlextDbOracleSettings(
             host=host if host is not None else (self.oracle_host or ""),
             port=port if port is not None else self.oracle_port,
             username=username if username is not None else (self.oracle_username or ""),
-            password=SecretStr(password)
-            if password is not None
-            else (self.oracle_password or SecretStr("")),
+            password=resolved_password,
             service_name=name if name is not None else (self.oracle_service_name or ""),
         )
         return FlextDbOracleApi(oracle_settings)
@@ -645,22 +672,9 @@ class GruponosMeltanoNativeSettings(FlextSettings):
         company_code: str | None = None,
         facility_code: str | None = None,
         timeout: int | None = None,
-    ) -> FlextOracleWmsApi:
-        """Create Oracle WMS configuration using GruponosMeltanoNativeSettings as source.
-
-        Args:
-            base_url: Override WMS base URL
-            username: Override WMS username
-            password: Override WMS password
-            company_code: Override company code
-            facility_code: Override facility code
-            timeout: Override WMS timeout
-
-        Returns:
-            FlextOracleWmsApi: Configured WMS API instance
-
-        """
-        defaults = {
+    ) -> dict[str, str | int | None]:
+        """Create Oracle WMS configuration dict using GruponosMeltanoNativeSettings."""
+        return {
             "base_url": base_url if base_url is not None else self.wms_base_url,
             "username": username if username is not None else self.wms_username,
             "password": password
@@ -674,7 +688,6 @@ class GruponosMeltanoNativeSettings(FlextSettings):
             else self.wms_facility_code,
             "timeout": timeout if timeout is not None else self.wms_timeout,
         }
-        return FlextOracleWmsApi(**defaults)
 
     def create_alert_config(
         self,
@@ -702,76 +715,82 @@ class GruponosMeltanoNativeSettings(FlextSettings):
             AlertConfigDict: Configured alert configuration dictionary
 
         """
-        # Build config dict with provided overrides or defaults from computed field
+        # Build config model with provided overrides or defaults from computed field
         base_config = self.alert_config
-        return {
-            "webhook_enabled": webhook_enabled
+        return AlertConfigDict(
+            webhook_enabled=webhook_enabled
             if webhook_enabled is not None
-            else base_config["webhook_enabled"],
-            "webhook_url": webhook_url
+            else base_config.webhook_enabled,
+            webhook_url=webhook_url
             if webhook_url is not None
-            else base_config["webhook_url"],
-            "email_enabled": email_enabled
+            else base_config.webhook_url,
+            email_enabled=email_enabled
             if email_enabled is not None
-            else base_config["email_enabled"],
-            "email_recipients": email_recipients
+            else base_config.email_enabled,
+            email_recipients=email_recipients
             if email_recipients is not None
-            else base_config["email_recipients"],
-            "slack_enabled": slack_enabled
+            else base_config.email_recipients,
+            slack_enabled=slack_enabled
             if slack_enabled is not None
-            else base_config["slack_enabled"],
-            "slack_webhook_url": slack_webhook_url
+            else base_config.slack_enabled,
+            slack_webhook_url=slack_webhook_url
             if slack_webhook_url is not None
-            else base_config["slack_webhook_url"],
-            "alert_threshold": alert_threshold
+            else base_config.slack_webhook_url,
+            alert_threshold=alert_threshold
             if alert_threshold is not None
-            else base_config["alert_threshold"],
-        }
+            else base_config.alert_threshold,
+        )
 
     # Environment-specific configuration methods using direct instantiation
     @classmethod
-    def create_for_development(cls, **overrides: object) -> Self:
+    def create_for_development(
+        cls, overrides: dict[str, SettingsOverrideValue] | None = None
+    ) -> Self:
         """Create configuration for development environment using direct instantiation."""
-        dev_overrides = {
+        dev_defaults: dict[str, str | int | bool] = {
             "job_environment": "development",
-            "job_timeout": 1800,  # 30 minutes for development
-            "target_batch_size": 100,  # Smaller batches for development
-            "wms_timeout": 60,  # Longer timeout for development
+            "job_timeout": 1800,
+            "target_batch_size": 100,
+            "wms_timeout": 60,
             "log_level": "DEBUG",
             "debug": True,
-            **overrides,
         }
-        return cls(**dev_overrides)
+        merged = {**dev_defaults, **(overrides or {})}
+        return cls.model_validate(merged)
 
     @classmethod
-    def create_for_production(cls, **overrides: object) -> Self:
+    def create_for_production(
+        cls, overrides: dict[str, SettingsOverrideValue] | None = None
+    ) -> Self:
         """Create configuration for production environment using direct instantiation."""
-        prod_overrides = {
+        prod_defaults: dict[str, str | int | bool] = {
             "job_environment": "production",
-            "job_timeout": 3600,  # 1 hour for production
-            "target_batch_size": 1000,  # Larger batches for production
-            "wms_timeout": 30,  # Standard timeout for production
+            "job_timeout": 3600,
+            "target_batch_size": 1000,
+            "wms_timeout": 30,
             "log_level": "INFO",
-            "job_retries": 5,  # More retries for production
+            "job_retries": 5,
             "debug": False,
-            **overrides,
         }
-        return cls(**prod_overrides)
+        merged = {**prod_defaults, **(overrides or {})}
+        return cls.model_validate(merged)
 
     @classmethod
-    def create_for_testing(cls, **overrides: object) -> Self:
+    def create_for_testing(
+        cls, overrides: dict[str, SettingsOverrideValue] | None = None
+    ) -> Self:
         """Create configuration for testing environment using direct instantiation."""
-        test_overrides = {
+        test_defaults: dict[str, str | int | bool] = {
             "job_environment": "staging",
-            "job_timeout": 600,  # 10 minutes for testing
-            "target_batch_size": 10,  # Very small batches for testing
-            "wms_timeout": 15,  # Short timeout for testing
+            "job_timeout": 600,
+            "target_batch_size": 10,
+            "wms_timeout": 15,
             "log_level": "DEBUG",
-            "job_retries": 1,  # Fewer retries for testing
+            "job_retries": 1,
             "debug": True,
-            **overrides,
         }
-        return cls(**test_overrides)
+        merged = {**test_defaults, **(overrides or {})}
+        return cls.model_validate(merged)
 
 
 # Removed create_gruponos_meltano_settings as dead code - not used anywhere

@@ -41,25 +41,13 @@ class ValidationError(FlextExceptions.ValidationError):
     def __init__(
         self,
         message: str,
-        validation_details: dict[str, t.GeneralValueType] | None = None,
-        **kwargs: object,
+        validation_details: dict[str, t.MetadataAttributeValue] | None = None,
     ) -> None:
-        """Inicializa erro de validação com código de erro consistente.
-
-        Args:
-            message: Mensagem de erro descritiva.
-            validation_details: Detalhes adicionais de validação.
-            **kwargs: Argumentos adicionais mesclados no contexto.
-
-        """
-        context = validation_details if validation_details is not None else {}
-        # Merge kwargs into context if needed
-        if kwargs:
-            context.update(kwargs)
+        """Inicializa erro de validação com código de erro consistente."""
         super().__init__(
             message,
             error_code="VALIDATION_ERROR",
-            context=context,
+            context=validation_details,
         )
 
 
@@ -475,8 +463,7 @@ class DataValidator:
                     field_name=field_name,
                     strict=self.strict_mode,
                 )
-            else:
-                # Pass through unknown fields
+            elif isinstance(field_value, str | int | float | bool | type(None)):
                 converted_record[field_name] = field_value
         return converted_record
 
@@ -487,14 +474,14 @@ class DataValidator:
         field_schema: object,
         field_name: str,
         strict: bool = False,
-    ) -> object:
+    ) -> t.GeneralValueType:
         """Convert a single field according to its schema."""
         if value is None or not value:
             self.conversion_stats["nulls_handled"] += 1
             return None
 
         if not isinstance(field_schema, dict):
-            return value  # Pass through if schema is not a dict
+            return str(value) if value is not None else None
 
         expected_type = field_schema.get("type", "string")
         # Handle type arrays (nullable types)
@@ -531,7 +518,7 @@ class DataValidator:
         value: object,
         expected_type: object,
         _field_name: str,
-    ) -> object:
+    ) -> int | float | None:
         """Convert value to number (int or float)."""
         if isinstance(value, (int, float)):
             return value
@@ -541,12 +528,9 @@ class DataValidator:
 
     def _convert_string_to_number(
         self,
-        value: object,
+        value: str,
         expected_type: object,
-    ) -> object:
-        """Convert string value to number."""
-        if not isinstance(value, str):
-            return value  # Pass through non-string values
+    ) -> int | float | None:
         cleaned_value = self._clean_numeric_string(value)
         if not cleaned_value:
             return None
@@ -579,7 +563,7 @@ class DataValidator:
         self,
         value: object,
         expected_type: object,
-    ) -> object:
+    ) -> int | float | None:
         """Convert non-string types to number."""
         if value is None:
             return None
@@ -626,7 +610,7 @@ class DataValidator:
         value: object,
         _date_format: object,
         _field_name: str,
-    ) -> object:
+    ) -> str | None:
         """Convert value to date string."""
         if isinstance(value, (datetime, date)):
             self.conversion_stats["dates_normalized"] += 1
